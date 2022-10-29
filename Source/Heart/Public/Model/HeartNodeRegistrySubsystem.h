@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "ModelView/HeartGraphBehavior.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "HeartGraph.h"
 #include "HeartNodeRegistrySubsystem.generated.h"
 
 class UHeartGraphNode;
@@ -40,7 +40,7 @@ private:
 };
 
 /**
- *
+ * Global singleton that stores which graphs can use which registries.
  */
 UCLASS()
 class HEART_API UHeartNodeRegistrySubsystem : public UGameInstanceSubsystem
@@ -49,7 +49,7 @@ class HEART_API UHeartNodeRegistrySubsystem : public UGameInstanceSubsystem
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Registry Subsystem")
-	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraphBehavior> Class);
+	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Registry Subsystem")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar);
@@ -59,5 +59,5 @@ public:
 
 private:
 	UPROPERTY()
-	TMap<TSubclassOf<UHeartGraphBehavior>, TObjectPtr<UHeartGraphNodeRegistry>> NodeRegistries;
+	TMap<TSubclassOf<UHeartGraph>, TObjectPtr<UHeartGraphNodeRegistry>> NodeRegistries;
 };

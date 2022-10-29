@@ -17,6 +17,8 @@ class HEART_API UHeartGraphBehavior : public UObject
 	GENERATED_BODY()
 
 protected:
+	// @todo is this a good idea. why?? cant this be restricted by node actions.
+
 	/** Override to specify the node graph class for the graph class. Nodes added to the graph must inherit from it */
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphBehavior")
 	TSubclassOf<UHeartGraphNode> GetGraphNodeClass() const;

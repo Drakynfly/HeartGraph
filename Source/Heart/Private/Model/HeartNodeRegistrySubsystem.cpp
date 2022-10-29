@@ -2,6 +2,7 @@
 
 #include "Model/HeartNodeRegistrySubsystem.h"
 #include "Model/GraphNodeRegistrar.h"
+#include "ModelView/HeartGraphNode.h"
 
 TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(UClass* NodeClass) const
 {
@@ -36,7 +37,7 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(UGraphNodeRegistrar* Registrar)
 
 }
 
-UHeartGraphNodeRegistry* UHeartNodeRegistrySubsystem::GetRegistry(const TSubclassOf<UHeartGraphBehavior> Class)
+UHeartGraphNodeRegistry* UHeartNodeRegistrySubsystem::GetRegistry(const TSubclassOf<UHeartGraph> Class)
 {
 	if (auto&& FoundRegistry = NodeRegistries.Find(Class))
 	{

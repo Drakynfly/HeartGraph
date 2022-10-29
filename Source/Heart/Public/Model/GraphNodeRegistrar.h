@@ -5,7 +5,7 @@
 #include "Engine/DataAsset.h"
 #include "GraphNodeRegistrar.generated.h"
 
-class UHeartGraphBehavior;
+class UHeartGraph;
 class UHeartGraphNode;
 
 /**
@@ -22,7 +22,7 @@ class HEART_API UGraphNodeRegistrar : public UPrimaryDataAsset
 protected:
 	// Behavior classes to register these nodes for
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<TSubclassOf<UHeartGraphBehavior>> RegisterWith;
+	TArray<TSubclassOf<UHeartGraph>> RegisterWith;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false))
 	TArray<TObjectPtr<UClass>> NodeClasses;
