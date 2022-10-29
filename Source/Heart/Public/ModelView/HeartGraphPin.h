@@ -51,6 +51,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
 	int32 GetNumLinks() const { return Links.Num(); }
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
+	TArray<UHeartGraphPin*> GetAllConnections();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Pin")
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
 

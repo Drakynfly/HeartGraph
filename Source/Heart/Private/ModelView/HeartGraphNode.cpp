@@ -31,6 +31,11 @@ UHeartGraph* UHeartGraphNode::GetGraph() const
 
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
 {
+	Location = FVector(NewLocation.X, NewLocation.Y, 0);
+}
+
+void UHeartGraphNode::SetLocation3D(const FVector& NewLocation)
+{
 	Location = NewLocation;
 }
 

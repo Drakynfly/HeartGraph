@@ -42,10 +42,16 @@ public:
 	UClass* GetSupportedClass() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
-	FVector2D GetLocation() const { return Location; }
+	FVector2D GetLocation() const { return FVector2D(Location); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
 	void SetLocation(const FVector2D& NewLocation);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
+	FVector GetLocation3D() const { return Location; }
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
+	void SetLocation3D(const FVector& NewLocation);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
 	UHeartGraphPin* GetPin(const FHeartPinGuid& PinGuid);
@@ -60,8 +66,9 @@ protected:
 	UPROPERTY(SaveGame)
 	FHeartNodeGuid Guid;
 
+	// Location is stored as a FVector for cases where a third dimensions is wanted.
 	UPROPERTY(SaveGame)
-	FVector2D Location;
+	FVector Location;
 
 	UPROPERTY(SaveGame, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TMap<FHeartPinGuid, TObjectPtr<UHeartGraphPin>> Pins;

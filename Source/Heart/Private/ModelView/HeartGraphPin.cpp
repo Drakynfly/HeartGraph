@@ -28,6 +28,27 @@ FHeartGraphPinReference UHeartGraphPin::GetReference() const
 	return { GetNode()->GetGuid(), Guid };
 }
 
+TArray<UHeartGraphPin*> UHeartGraphPin::GetAllConnections()
+{
+	TArray<UHeartGraphPin*> OutConnections;
+
+	if (auto&& Graph = GetNode()->GetGraph())
+	{
+		for (auto&& Link : Links)
+		{
+			if (auto&& Node = Graph->GetNode(Link.NodeGuid))
+			{
+				if (auto&& Pin = Node->GetPin(Link.PinGuid))
+				{
+					OutConnections.Add(Pin);
+				}
+			}
+		}
+	}
+
+	return OutConnections;
+}
+
 UHeartGraphPin* UHeartGraphPin::ResolveConnection(const int32 Index) const
 {
 	if (!ensure(Links.IsValidIndex(Index)))
