@@ -4,6 +4,25 @@
 #include "Model/GraphNodeRegistrar.h"
 #include "ModelView/HeartGraphNode.h"
 
+void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const
+{
+	if (!ensure(Filter.IsBound()))
+	{
+		return;
+	}
+
+	for (auto NodeClass : NodeClasses)
+	{
+		if (ensure(IsValid(NodeClass)))
+		{
+			if (Filter.Execute(NodeClass))
+			{
+				OutClasses.Add(NodeClass);
+			}
+		}
+	}
+}
+
 TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(UClass* NodeClass) const
 {
 	if (auto&& FoundClass = GraphNodeMap.Find(NodeClass))

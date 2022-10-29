@@ -9,6 +9,8 @@
 class UHeartGraphNode;
 class UGraphNodeRegistrar;
 
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, Class);
+
 UCLASS()
 class HEART_API UHeartGraphNodeRegistry : public UObject
 {
@@ -16,7 +18,10 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphBehavior")
-	TArray<UClass*> GetNodeClasses() const { return NodeClasses.Array(); }
+	void GetNodeClasses(TArray<UClass*>& OutClasses) const { OutClasses = NodeClasses.Array(); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphBehavior")
+	void GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
 
 	/**
 	 * Get the graph node class that we use to represent the given arbitrary class.

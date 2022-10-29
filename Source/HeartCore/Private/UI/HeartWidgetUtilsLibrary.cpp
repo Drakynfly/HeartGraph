@@ -1,7 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-
-#include "View/HeartWidgetUtilsLibrary.h"
+#include "UI/HeartWidgetUtilsLibrary.h"
 
 void UHeartWidgetUtilsLibrary::DrawSpline(FPaintContext& Context, const FVector2D& From, const FVector2D& FromTangent,
 		const FVector2D& To, const FVector2D& ToTangent, const float Thickness, const FLinearColor& Tint)

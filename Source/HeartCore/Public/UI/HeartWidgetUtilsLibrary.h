@@ -10,7 +10,7 @@
  *
  */
 UCLASS()
-class HEART_API UHeartWidgetUtilsLibrary : public UBlueprintFunctionLibrary
+class HEARTCORE_API UHeartWidgetUtilsLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

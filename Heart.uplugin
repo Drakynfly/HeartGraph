@@ -23,6 +23,11 @@
       "Name": "HeartEditor",
       "Type": "Editor",
       "LoadingPhase": "Default"
+    },
+    {
+      "Name": "HeartCore",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
     }
   ]
 }
