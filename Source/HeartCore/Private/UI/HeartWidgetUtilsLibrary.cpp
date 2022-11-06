@@ -34,3 +34,25 @@ void UHeartWidgetUtilsLibrary::DrawCubicBezierSpline(FPaintContext& Context, con
 		ESlateDrawEffect::None,
 		Tint);
 }
+
+FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterLocal(UWidget* Widget)
+{
+	if (!ensure(IsValid(Widget)))
+	{
+		return FVector2D::ZeroVector;
+	}
+
+	auto&& Geometry = Widget->GetCachedGeometry();
+	return Geometry.GetLocalSize() * 0.5;
+}
+
+FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(UWidget* Widget)
+{
+	if (!ensure(IsValid(Widget)))
+	{
+		return FVector2D::ZeroVector;
+	}
+
+	auto&& Geometry = Widget->GetCachedGeometry();
+	return Geometry.LocalToAbsolute(Geometry.GetLocalSize() * 0.5);
+}

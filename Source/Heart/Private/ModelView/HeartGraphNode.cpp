@@ -24,6 +24,11 @@ void UHeartGraphNode::NewGuid()
 	Guid = FHeartNodeGuid::NewGuid();
 }
 
+void UHeartGraphNode::NotifyPinConnectionsChanged(UHeartGraphPin* Pin)
+{
+	OnPinConnectionsChanged.Broadcast(Pin);
+}
+
 UHeartGraph* UHeartGraphNode::GetGraph() const
 {
 	return GetOwningGraph<UHeartGraph>();

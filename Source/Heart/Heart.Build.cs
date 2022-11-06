@@ -9,11 +9,20 @@ public class Heart : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bUseUnity = false;
 
+        // Engine dependencies
 		PublicDependencyModuleNames.AddRange(
 			new []
 			{
 				"Core",
-				"UMG"
+				"UMG",
+				"InputCore"
+			});
+
+        // Plugin dependencies
+		PublicDependencyModuleNames.AddRange(
+			new []
+			{
+				"HeartCore"
 			});
 
 		PrivateDependencyModuleNames.AddRange(

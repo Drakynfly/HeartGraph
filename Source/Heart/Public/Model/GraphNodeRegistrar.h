@@ -20,7 +20,7 @@ class HEART_API UGraphNodeRegistrar : public UPrimaryDataAsset
 	friend class UHeartNodeRegistrySubsystem;
 
 protected:
-	// Behavior classes to register these nodes for
+	// Graph classes to register these nodes for
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<TSubclassOf<UHeartGraph>> RegisterWith;
 
@@ -29,4 +29,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false))
 	TArray<TSubclassOf<UHeartGraphNode>> GraphNodeClasses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false, MustImplement = "GraphNodeVisualizerInterface"))
+	TArray<TObjectPtr<UClass>> NodeVisualizerClasses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false, MustImplement = "GraphPinVisualizerInterface"))
+	TArray<TObjectPtr<UClass>> PinVisualizerClasses;
 };

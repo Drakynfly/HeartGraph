@@ -1,33 +1,35 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraph.h"
-#include "ModelView//HeartGraphBehavior.h"
+#include "ModelView/HeartGraphSchema.h"
 #include "ModelView/HeartGraphNode.h"
 
-TSubclassOf<UHeartGraphBehavior> UHeartGraph::GetBehaviorClass_Implementation() const
+DEFINE_LOG_CATEGORY(LogHeartGraph)
+
+TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
 {
-	return UHeartGraphBehavior::StaticClass();
+	return UHeartGraphSchema::StaticClass();
 }
 
-const UHeartGraphBehavior* UHeartGraph::GetBehavior() const
+const UHeartGraphSchema* UHeartGraph::GetSchemaStatic(const TSubclassOf<UHeartGraph> HeartGraphClass)
 {
-	return GetDefault<UHeartGraphBehavior>(GetBehaviorClass());
+	return GetDefault<UHeartGraph>(HeartGraphClass)->GetSchema();
 }
 
-const UHeartGraphBehavior* UHeartGraph::GetBehaviorTyped_K2(TSubclassOf<UHeartGraphBehavior>) const
+const UHeartGraphSchema* UHeartGraph::GetSchema() const
 {
-	return GetBehavior();
+	return GetDefault<UHeartGraphSchema>(GetSchemaClass());
 }
 
-UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid)
+const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const
 {
-	auto Result = Nodes.Find(NodeGuid);
+	return GetSchema();
+}
+
+UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
+{
+	auto&& Result = Nodes.Find(NodeGuid);
 	return Result ? *Result : nullptr;
-}
-
-const UHeartGraphBehavior* UHeartGraph::GetBehaviorStatic(const TSubclassOf<UHeartGraph> HeartGraphClass)
-{
-	return GetDefault<UHeartGraph>(HeartGraphClass)->GetBehavior();
 }
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
@@ -37,7 +39,16 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 		return;
 	}
 
-	Nodes.Add(Node->GetGuid(), Node);
+	const FHeartNodeGuid NodeGuid = Node->GetGuid();
+
+	if (Nodes.Contains(NodeGuid))
+	{
+		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
+		return;
+	}
+
+	Nodes.Add(NodeGuid, Node);
+	OnNodeAdded.Broadcast(Node);
 }
 
 bool UHeartGraph::RemoveNode(UHeartGraphNode* Node)
@@ -48,6 +59,11 @@ bool UHeartGraph::RemoveNode(UHeartGraphNode* Node)
 	}
 
 	const auto Removed = Nodes.Remove(Node->GetGuid());
+
+	if (Removed > 0)
+	{
+		OnNodeRemoved.Broadcast(Node);
+	}
 
 	return Removed > 0;
 }

@@ -6,16 +6,19 @@ public class HeartCore : ModuleRules
     {
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
+        // Engine dependencies
         PublicDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "Core",
-                "UMG"
-            }
-        );
+                "UMG",
+                "CommonUI",
+                "InputCore",
+                "StructUtils"
+            });
 
         PrivateDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "CoreUObject",
                 "Engine",
