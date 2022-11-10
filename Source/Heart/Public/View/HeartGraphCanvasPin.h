@@ -36,13 +36,13 @@ public:
 
 protected:
 	// Called by DragDropOperation when connection pins. Useful to display a highlight on pins as if they are hovered.
-	UFUNCTION(BlueprintImplementableEvent, Category = "HeartGraphCanvasPin")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphCanvasPin")
 	void DisplayPreviewConnectionTarget(bool IsTarget, bool CanConnect);
 
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "HeartGraphCanvasPin")
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvasPin")
 	TWeakObjectPtr<UHeartGraphPin> GraphPin;
 
-	UPROPERTY(BlueprintReadOnly, Category = "HeartGraphCanvasPin")
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvasPin")
 	TWeakObjectPtr<UHeartGraphCanvasNode> GraphCanvasNode;
 };

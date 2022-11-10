@@ -16,6 +16,11 @@ struct FHeartGraphPinReference
 	UPROPERTY(BlueprintReadOnly)
 	FHeartPinGuid PinGuid;
 
+	bool IsValid() const
+	{
+		return NodeGuid.IsValid() && PinGuid.IsValid();
+	}
+
 	friend bool operator==(const FHeartGraphPinReference& Lhs, const FHeartGraphPinReference& Rhs)
 	{
 		return Lhs.NodeGuid == Rhs.NodeGuid
@@ -27,3 +32,11 @@ struct FHeartGraphPinReference
 		return !(Lhs == Rhs);
 	}
 };
+
+FORCEINLINE uint32 GetTypeHash(const FHeartGraphPinReference& PinReference)
+{
+	uint32 KeyHash = 0;
+	KeyHash = HashCombine(KeyHash, GetTypeHash(PinReference.NodeGuid));
+	KeyHash = HashCombine(KeyHash, GetTypeHash(PinReference.PinGuid));
+	return KeyHash;
+}

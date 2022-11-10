@@ -34,6 +34,21 @@ FReply UHeartGraphWidgetBase::NativeOnMouseButtonDown(const FGeometry& InGeometr
 	return Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 }
 
+FReply UHeartGraphWidgetBase::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (auto&& Linker = GetInputLinker())
+	{
+		FReply BindingReply = Linker->HandleOnMouseButtonUp(this, InMouseEvent);
+
+		if (BindingReply.IsEventHandled())
+		{
+			return BindingReply;
+		}
+	}
+
+	return Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
+}
+
 FReply UHeartGraphWidgetBase::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 {
 	if (auto&& Linker = GetInputLinker())
@@ -49,8 +64,23 @@ FReply UHeartGraphWidgetBase::NativeOnKeyDown(const FGeometry& InGeometry, const
 	return Super::NativeOnKeyDown(InGeometry, InKeyEvent);
 }
 
+FReply UHeartGraphWidgetBase::NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	if (auto&& Linker = GetInputLinker())
+	{
+		FReply BindingReply = Linker->HandleOnKeyUp(this, InKeyEvent);
+
+		if (BindingReply.IsEventHandled())
+		{
+			return BindingReply;
+		}
+	}
+
+	return Super::NativeOnKeyUp(InGeometry, InKeyEvent);
+}
+
 void UHeartGraphWidgetBase::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
-	UDragDropOperation*& OutOperation)
+                                                 UDragDropOperation*& OutOperation)
 {
 	if (auto&& Linker = GetInputLinker())
 	{
@@ -69,10 +99,13 @@ bool UHeartGraphWidgetBase::NativeOnDrop(const FGeometry& InGeometry, const FDra
 {
 	if (auto&& Linker = GetInputLinker())
 	{
-		return Linker->HandleNativeOnDrop(this, InDragDropEvent, InOperation);
+		if (Linker->HandleNativeOnDrop(this, InDragDropEvent, InOperation))
+		{
+			return true;
+		}
 	}
 
-	return Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);
+	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 }
 
 bool UHeartGraphWidgetBase::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
@@ -80,7 +113,10 @@ bool UHeartGraphWidgetBase::NativeOnDragOver(const FGeometry& InGeometry, const 
 {
 	if (auto&& Linker = GetInputLinker())
 	{
-		return Linker->HandleNativeOnDragOver(this, InDragDropEvent, InOperation);
+		if (Linker->HandleNativeOnDragOver(this, InDragDropEvent, InOperation))
+		{
+			return true;
+		}
 	}
 
 	return Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);

@@ -32,7 +32,7 @@
   ],
   "Plugins": [
     {
-      "Name": "CommonUI",
+      "Name": "StructUtils",
       "Enabled": true
     }
   ]

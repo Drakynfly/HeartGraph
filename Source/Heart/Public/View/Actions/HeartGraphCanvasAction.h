@@ -20,13 +20,13 @@ class HEART_API UHeartGraphCanvasAction : public UHeartGraphActionBase
 public:
 	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation) override;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphAction")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual void ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation) {}
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphAction")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual void ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation) {}
 
-	UFUNCTION(BlueprintCallable, Category = "HeartPinAction")
+	UFUNCTION(BlueprintCallable, Category = "Heart|PinAction")
 	virtual void ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation) {}
 };
 

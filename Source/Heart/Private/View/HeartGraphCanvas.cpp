@@ -12,6 +12,9 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Model/HeartNodeRegistrySubsystem.h"
 #include "ModelView/HeartGraphSchema.h"
+#include "UI/HeartWidgetUtilsLibrary.h"
+#include "View/HeartCanvasConnectionVisualizer.h"
+#include "View/HeartGraphCanvasPin.h"
 
 UHeartGraphCanvas::UHeartGraphCanvas(const FObjectInitializer& ObjectInitializer)
   : Super(ObjectInitializer)
@@ -23,13 +26,11 @@ UHeartGraphCanvas::UHeartGraphCanvas(const FObjectInitializer& ObjectInitializer
 	ViewBounds.Max = { 10000, 10000, 10 };
 }
 
-bool UHeartGraphCanvas::Initialize()
+void UHeartGraphCanvas::PostInitProperties()
 {
-	const bool SuperInitialized = Super::Initialize();
+	Super::PostInitProperties();
 
-	BindingContainer.SetLinker(NewObject<UHeartWidgetInputLinker>(this));
-
-	return SuperInitialized;
+	BindingContainer.SetupLinker(this);
 }
 
 void UHeartGraphCanvas::NativeConstruct()
@@ -42,19 +43,6 @@ void UHeartGraphCanvas::NativeConstruct()
 void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-
-	if (DraggingWithMouse)
-	{
-		const FVector2D MousePos = FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : FVector2D();
-		const FVector2D ScreenOffset = MousePos - DeltaMousePosition;
-
-		FVector2D ViewportOffset;
-		USlateBlueprintLibrary::ScreenToViewport(this, ScreenOffset, ViewportOffset);
-
-		AddToViewCorner(ViewportOffset / View.Z, true);
-
-		DeltaMousePosition = MousePos;
-	}
 
 	if (TargetView.Z != View.Z)
 	{
@@ -78,15 +66,100 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
                                      const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, const int32 LayerId,
                                      const FWidgetStyle& InWidgetStyle, const bool bParentEnabled) const
 {
-	return Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
+	auto SuperLayerID = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
 	                          bParentEnabled);
 
+	// Draw connections between pins
+	if (!DisplayedNodes.IsEmpty())
+	{
+		auto&& ConnectionVisualizer = GetGraph()->GetSchema()->GetConnectionVisualizer();
 
+		// Get the set of pins for all children and synthesize geometry for culled out pins so lines can be drawn to them.
+		TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
+		TSet<UHeartGraphCanvasPin*> VisiblePins;
+
+		for (auto&& DisplayedNode : DisplayedNodes)
+		{
+			UHeartGraphCanvasNode* GraphNode = DisplayedNode.Value;
+
+			// If this is a culled node, approximate the pin geometry to the corner of the node it is within
+			if (IsNodeCulled(GraphNode, AllottedGeometry))
+			{
+				auto&& PinWidgets = GraphNode->GetPinWidgets();
+
+				const FVector2D NodeLoc = GraphNode->GetNode()->GetLocation();
+
+				for (auto&& PinWidget : PinWidgets)
+				{
+					if (PinWidget->GetPin())
+					{
+						FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
+
+						const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom(PinLoc) * AllottedGeometry.Scale, FVector2D(AllottedGeometry.AbsolutePosition), FVector2D::ZeroVector, 1.f);
+						PinGeometries.Add(PinWidget->GetPin(), {PinWidget, SynthesizedPinGeometry});
+					}
+				}
+			}
+			else
+			{
+				VisiblePins.Append(GraphNode->GetPinWidgets());
+			}
+		}
+
+		for (auto&& VisiblePin : VisiblePins)
+		{
+			PinGeometries.Add(VisiblePin->GetPin(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
+		}
+
+		/*
+		// Now get the pin geometry for all visible children and append it to the PinGeometries map
+		TMap<UHeartGraphCanvasPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> VisiblePinGeometries;
+		FindChildGeometries(AllottedGeometry, VisiblePins, VisiblePinGeometries);
+		PinGeometries.Append(VisiblePinGeometries);
+		*/
+
+		FPaintContext Context(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
+
+		// Draw preview connections (only connected on one end)
+		if (PreviewConnectionPin.IsValid())
+		{
+			auto&& PreviewPin = ResolvePinReference(PreviewConnectionPin);
+
+			if (IsValid(PreviewPin) && PreviewPin->GetPin())
+			{
+				FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPin())->Value;
+
+				FVector2D StartPoint;
+				FVector2D EndPoint;
+
+				const FVector2D PinPoint = GetTickSpaceGeometry().AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+
+				//if (PreviewPin->GetPin()->GetDirection() == EHeartPinDirection::Input)
+				{
+					//StartPoint = AllottedGeometry.LocalToAbsolute(PreviewConnectorEndpoint);
+					//EndPoint = PinPoint;
+				}
+				//else
+				{
+					StartPoint = PinPoint;
+					EndPoint = GetTickSpaceGeometry().AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
+				}
+
+				ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
+			}
+		}
+
+		// Draw all regular connections
+		ConnectionVisualizer->PaintTimeDrawPinConnections(Context, GetTickSpaceGeometry(), PinGeometries);
+		SuperLayerID = FMath::Max(SuperLayerID, Context.MaxLayer);
+	}
+
+	return SuperLayerID;
 }
 
 UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker() const
 {
-	return BindingContainer.Linker;
+	return BindingContainer.GetLinker();
 }
 
 void UHeartGraphCanvas::Reset()
@@ -215,11 +288,11 @@ void UHeartGraphCanvas::SetZoom(const double& Value)
 			break;
 		case EHeartGraphZoomAlgorithm::MouseRelative:
 			{
-				const FVector2D PreZoomUnscaledDelta = UnscalePositionToCanvasZoom(DeltaMousePosition);
+				const FVector2D PreZoomUnscaledDelta = UnscalePositionToCanvasZoom(FSlateApplication::Get().GetCursorPos());
 
 				View.Z = Value;
 
-				auto Adjustment = UnscalePositionToCanvasZoom(DeltaMousePosition) - PreZoomUnscaledDelta;
+				auto Adjustment = UnscalePositionToCanvasZoom(FSlateApplication::Get().GetCursorPos()) - PreZoomUnscaledDelta;
 				TargetView += Adjustment;
 
 				NeedsToUpdatePositions = true;
@@ -249,6 +322,30 @@ void UHeartGraphCanvas::AddToZoom(const double& Value)
 void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Reference)
 {
 	PreviewConnectionPin = Reference;
+}
+
+bool UHeartGraphCanvas::IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const
+{
+	static const float GuardBandArea = 0.25f;
+
+	//if (GraphNode->ShouldAllowCulling())
+	{
+		const FVector2D Location = GraphNode->GetNode()->GetLocation();
+		const FVector2D MinClipArea = Geometry.GetLocalSize() * -GuardBandArea;
+		const FVector2D MaxClipArea = Geometry.GetLocalSize() * ( 1.f + GuardBandArea);
+		const FVector2D NodeTopLeft = ScalePositionToCanvasZoom(Location);
+		const FVector2D NodeBottomRight = ScalePositionToCanvasZoom(Location + GraphNode->GetDesiredSize());
+
+		return
+			NodeBottomRight.X < MinClipArea.X ||
+			NodeBottomRight.Y < MinClipArea.Y ||
+			NodeTopLeft.X > MaxClipArea.X ||
+			NodeTopLeft.Y > MaxClipArea.Y;
+	}
+	//else
+	//{
+	//	return false;
+	//}
 }
 
 void UHeartGraphCanvas::OnNodeAddedToGraph(UHeartGraphNode* Node)
@@ -338,15 +435,18 @@ void UHeartGraphCanvas::AddToZoom(double NewZoom, bool Interp)
 	}
 }
 
-void UHeartGraphCanvas::SetDragActive(bool Enabled)
+UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPinReference& PinReference) const
 {
-	if (Enabled)
+	if (auto&& GraphNode = DisplayedNodes.Find(PinReference.NodeGuid))
 	{
-		DraggingWithMouse = true;
-		DeltaMousePosition = FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : FVector2D();
+		if (*GraphNode)
+		{
+			if (auto&& Pin = (*GraphNode)->GetPinWidget(PinReference.PinGuid))
+			{
+				return Pin;
+			}
+		}
 	}
-	else
-	{
-		DraggingWithMouse = false;
-	}
+
+	return nullptr;
 }

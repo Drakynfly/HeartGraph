@@ -5,6 +5,7 @@
 #include "UObject/Object.h"
 #include "HeartGraphSchema.generated.h"
 
+class UHeartCanvasConnectionVisualizer;
 class UHeartGraphPin;
 class UHeartGraphNode;
 
@@ -41,10 +42,10 @@ struct FHeartConnectPinsResponse
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartConnectPinsResponse")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ConnectPinsResponse")
 	EHeartCanConnectPinsResponse Response;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartConnectPinsResponse")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ConnectPinsResponse")
 	FText Message;
 };
 
@@ -54,6 +55,12 @@ class HEART_API UHeartGraphSchema : public UObject // UEdGraphSchema
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Heart|Schema")
+	UHeartCanvasConnectionVisualizer* GetConnectionVisualizer() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
+	TSubclassOf<UHeartCanvasConnectionVisualizer> GetConnectionVisualizerClass() const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryConnectPins(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
 

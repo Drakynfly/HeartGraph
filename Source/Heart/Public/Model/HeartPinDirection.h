@@ -16,3 +16,5 @@ enum class EHeartPinDirection : uint8
 
 	Bidirectional = Input | Output
 };
+
+ENUM_CLASS_FLAGS(EHeartPinDirection)

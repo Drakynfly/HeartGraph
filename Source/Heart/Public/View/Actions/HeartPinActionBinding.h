@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "UI/HeartWidgetInputBindingContainer.h"
+#include "UI/HeartWidgetInputEvent.h"
 #include "HeartPinActionBinding.generated.h"
 
 class UHeartGraphActionBase;

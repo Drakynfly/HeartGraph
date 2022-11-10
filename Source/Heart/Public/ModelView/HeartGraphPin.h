@@ -40,42 +40,42 @@ public:
 	void DisconnectFromAll(bool NotifyNodes);
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	UHeartGraphNode* GetNode() const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin", meta = (DeterminesOutputType = "Class"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class"))
 	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GetNode(); }
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FHeartPinGuid GetGuid() const { return Guid; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FHeartGraphPinReference GetReference() const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	EHeartPinDirection GetDirection() const { return PinDirection; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	const TArray<FHeartGraphPinReference>& GetLinks() const { return Links; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	bool IsConnected() const { return !Links.IsEmpty(); }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	int32 GetNumLinks() const { return Links.Num(); }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	TArray<UHeartGraphPin*> GetAllConnections();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnectionByReference(const FHeartGraphPinReference Reference) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "HeartGraphPin")
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "HeartGraphPin|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Heart|GraphPin|Events")
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
 
 private:

@@ -17,6 +17,6 @@ public:
 	virtual TSubclassOf<UUserWidget> FindWidgetClassForData_Implementation(const UObject* Data) const override;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "HeartWidgetFactoryClass", meta = (AllowAbstract))
+	UPROPERTY(EditAnywhere, Category = "Heart|WidgetFactoryClass", meta = (AllowAbstract))
 	TMap<TSoftClassPtr<UObject>, TSubclassOf<UUserWidget>> EntryWidgetForClass;
 };

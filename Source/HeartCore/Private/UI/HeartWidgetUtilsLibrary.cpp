@@ -2,8 +2,13 @@
 
 #include "UI/HeartWidgetUtilsLibrary.h"
 
+FVector2D UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
+{
+	return Geometry.GetLocalSize() * 0.5;
+}
+
 void UHeartWidgetUtilsLibrary::DrawSpline(FPaintContext& Context, const FVector2D& From, const FVector2D& FromTangent,
-		const FVector2D& To, const FVector2D& ToTangent, const float Thickness, const FLinearColor& Tint)
+                                          const FVector2D& To, const FVector2D& ToTangent, const float Thickness, const FLinearColor& Tint)
 {
 	Context.MaxLayer++;
 
@@ -35,24 +40,23 @@ void UHeartWidgetUtilsLibrary::DrawCubicBezierSpline(FPaintContext& Context, con
 		Tint);
 }
 
-FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterLocal(UWidget* Widget)
+FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterLocal(const UWidget* Widget)
 {
 	if (!ensure(IsValid(Widget)))
 	{
 		return FVector2D::ZeroVector;
 	}
 
-	auto&& Geometry = Widget->GetCachedGeometry();
-	return Geometry.GetLocalSize() * 0.5;
+	return GetGeometryCenter(Widget->GetTickSpaceGeometry());
 }
 
-FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(UWidget* Widget)
+FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(const UWidget* Widget)
 {
 	if (!ensure(IsValid(Widget)))
 	{
 		return FVector2D::ZeroVector;
 	}
 
-	auto&& Geometry = Widget->GetCachedGeometry();
-	return Geometry.LocalToAbsolute(Geometry.GetLocalSize() * 0.5);
+	auto&& Geometry = Widget->GetTickSpaceGeometry();
+	return Geometry.LocalToAbsolute(GetGeometryCenter(Geometry));
 }

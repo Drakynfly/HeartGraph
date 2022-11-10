@@ -5,6 +5,7 @@ public class HeartCore : ModuleRules
     public HeartCore(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        bUseUnity = false;
 
         // Engine dependencies
         PublicDependencyModuleNames.AddRange(
@@ -12,7 +13,6 @@ public class HeartCore : ModuleRules
             {
                 "Core",
                 "UMG",
-                "CommonUI",
                 "InputCore",
                 "StructUtils"
             });

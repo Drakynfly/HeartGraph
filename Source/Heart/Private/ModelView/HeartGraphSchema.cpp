@@ -3,6 +3,7 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "ModelView/HeartGraphNode.h"
 #include "ModelView/HeartGraphPin.h"
+#include "View/HeartCanvasConnectionVisualizer.h"
 
 bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const
 {
@@ -64,3 +65,12 @@ FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(UHear
 	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow};
 }
 
+UHeartCanvasConnectionVisualizer* UHeartGraphSchema::GetConnectionVisualizer() const
+{
+	return GetConnectionVisualizerClass()->GetDefaultObject<UHeartCanvasConnectionVisualizer>();
+}
+
+TSubclassOf<UHeartCanvasConnectionVisualizer> UHeartGraphSchema::GetConnectionVisualizerClass_Implementation() const
+{
+	return UHeartCanvasConnectionVisualizer::StaticClass();
+}

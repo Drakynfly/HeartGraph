@@ -27,7 +27,7 @@ class HEART_API UHeartGraph : public UObject
 	/**		GUID				*/
 	/****************************/
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
 
 
@@ -36,7 +36,7 @@ public:
 	/****************************/
 public:
 	/** Override to specify the behavior class for this graph class */
-	UFUNCTION(BlueprintNativeEvent, Category = "HeartGraph")
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Graph")
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
 	template <typename THeartGraphSchemaClass>
@@ -47,18 +47,18 @@ public:
 
 	static const UHeartGraphSchema* GetSchemaStatic(TSubclassOf<UHeartGraph> HeartGraphClass);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	const UHeartGraphSchema* GetSchema() const;
 
 	UE_DEPRECATED(5.0, TEXT("Use GetSchema instead"))
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	const UHeartGraphSchema* GetBehavior() const { return GetSchema(); }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
 	UE_DEPRECATED(5.0, TEXT("Use GetSchemaTyped_K2 instead"))
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph", meta = (DeterminesOutputType = Class), DisplayName = "Get Behavior Typed")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Behavior Typed")
 	const UHeartGraphSchema* GetBehaviorTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const { return GetSchemaTyped_K2(Class); }
 
 
@@ -66,10 +66,10 @@ public:
 	/**		NODE EDITING		*/
 	/****************************/
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	UHeartGraphNode* GetNode(const FHeartNodeGuid& NodeGuid) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
 	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
 	{
 		// *le sign* epic templates mess this up . . .
@@ -78,18 +78,18 @@ public:
 		OutNodes = NodeArray;
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void AddNode(UHeartGraphNode* Node);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	bool RemoveNode(UHeartGraphNode* Node);
 
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "HeartGraph|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Heart|Graph|Events")
 	FHeartGraphNodeEvent OnNodeAdded;
 
-	UPROPERTY(BlueprintAssignable, Category = "HeartGraph|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Heart|Graph|Events")
 	FHeartGraphNodeEvent OnNodeRemoved;
 
 private:

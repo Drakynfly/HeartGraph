@@ -34,35 +34,35 @@ public:
 	virtual void NotifyPinConnectionsChanged(UHeartGraphPin* Pin);
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraph* GetGraph() const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode", meta = (DeterminesOutputType = "Class"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class"))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return GetGraph(); }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartNodeGuid GetGuid() const { return Guid; }
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	UClass* GetSupportedClass() const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
-	FVector2D GetLocation() const { return FVector2D(Location); }
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	FVector2D GetLocation() const { return Location; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void SetLocation(const FVector2D& NewLocation);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphPin* GetPin(const FHeartPinGuid& PinGuid);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void AddPin(UHeartGraphPin* Pin);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool RemovePin(UHeartGraphPin* Pin);
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "HeartGraphNode|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Heart|GraphNode|Events")
 	FOnPinConnectionsChanged OnPinConnectionsChanged;
 
 protected:

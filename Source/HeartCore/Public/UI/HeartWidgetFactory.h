@@ -13,7 +13,7 @@ class HEARTCORE_API UHeartWidgetFactory : public UObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, Category = "HeartWidgetFactory")
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|WidgetFactory")
 	TSubclassOf<UUserWidget> FindWidgetClassForData(const UObject* Data) const;
 };
 
@@ -25,7 +25,7 @@ struct FHeartWidgetFactoryRules
 	TSubclassOf<UUserWidget> GetWidgetClass(const UObject* Data) const;
 
 protected:
-	UPROPERTY(EditAnywhere, Instanced, Category = "HeartWidgetFactoryRules")
+	UPROPERTY(EditAnywhere, Instanced, Category = "Heart|WidgetFactoryRules")
 	TArray<TObjectPtr<UHeartWidgetFactory>> FactoryRules;
 };
 
@@ -35,6 +35,6 @@ class UHeartWidgetFactoryLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartWidgetFactoryLibrary")
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetFactoryLibrary")
 	static TSubclassOf<UUserWidget> GetWidgetClass(const FHeartWidgetFactoryRules& Rules, const UObject* Data);
 };

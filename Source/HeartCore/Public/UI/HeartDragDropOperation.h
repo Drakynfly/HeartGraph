@@ -8,7 +8,7 @@
 class UHeartGraphCanvas;
 
 /**
- *
+ * A tickable drag drop operation
  */
 UCLASS(Abstract)
 class HEARTCORE_API UHeartDragDropOperation : public UDragDropOperation
@@ -16,9 +16,9 @@ class HEARTCORE_API UHeartDragDropOperation : public UDragDropOperation
 	GENERATED_BODY()
 
 public:
-	virtual bool SetupDragDropOperation() { return false; }
+	virtual bool SetupDragDropOperation() PURE_VIRTUAL(UHeartDragDropOperation::SetupDragDropOperation, return false; )
 
-	virtual bool CanDropOnWidget(UWidget* Widget) { return false; }
+	virtual bool CanDropOnWidget(UWidget* Widget) { return true; }
 
 	virtual bool OnHoverWidget(UWidget* Widget) { return false; }
 };

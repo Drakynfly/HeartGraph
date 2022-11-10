@@ -12,6 +12,7 @@
 class UCanvasPanel;
 class UHeartGraph;
 class UHeartGraphCanvasNode;
+class UHeartGraphCanvasPin;
 
 UENUM()
 enum class EHeartGraphZoomAlgorithm : uint8
@@ -36,7 +37,7 @@ public:
 
 protected:
 	/** UUserWidget */
-	virtual bool Initialize() override;
+	virtual void PostInitProperties() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual int32 NativePaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
@@ -51,6 +52,8 @@ public:
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);
 
 protected:
+	bool IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
+
 	void Reset();
 
 	void Refresh();
@@ -76,46 +79,42 @@ protected:
 	void OnNodeRemovedFromGraph(UHeartGraphNode* Node);
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	UHeartGraph* GetGraph() const { return DisplayedGraph; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D GetViewOffset() const { return {View.X, View.Y}; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	double GetZoom() const { return View.Z; }
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
-	bool IsDraggingWithMouse() const { return DraggingWithMouse; }
-
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D ScalePositionToCanvasZoom(const FVector2D& Position) const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D UnscalePositionToCanvasZoom(const FVector2D& Position) const;
 
 	/** Set the displayed graph */
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void SetGraph(UHeartGraph* Graph);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void SetViewCorner(const FVector2D& NewViewCorner, bool Interp);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void AddToViewCorner(const FVector2D& NewViewCorner, bool Interp);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void SetZoom(double NewZoom, bool Interp);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void AddToZoom(double NewZoom, bool Interp);
 
-	/** Enable the graph listening to movement of the mouse to drag the canvas */
-	UFUNCTION(BlueprintCallable, Category = "HeartGraphCanvas")
-	void SetDragActive(bool Enabled);
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
+	UHeartGraphCanvasPin* ResolvePinReference(const FHeartGraphPinReference& PinReference) const;
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "HeartGraphCanvas|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Heart|GraphCanvas|Events")
 	FOnGraphViewChanged OnGraphViewChanged;
 
 protected:
@@ -123,42 +122,37 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Nodes"), Category = "Widgets")
 	TObjectPtr<UCanvasPanel> NodeCanvas;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvas")
 	TObjectPtr<UHeartGraph> DisplayedGraph;
 
-	UPROPERTY(BlueprintReadOnly, Category = "HeartGraphCanvas")
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvas")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphCanvasNode>> DisplayedNodes;
 
-	UPROPERTY(BlueprintReadOnly, Category = "HeartGraphCanvas")
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvas")
 	FHeartGraphPinReference PreviewConnectionPin;
 
-	UPROPERTY(EditAnywhere, Category = "HeartGraphWidget")
+	UPROPERTY(EditAnywhere, Category = "Heart|GraphCanvas")
 	FHeartWidgetInputBindingContainer BindingContainer;
 
 	// Multiplies movement to the view of the graph.
-	UPROPERTY(EditAnywhere, Category = "HeartGraphCanvas|Config")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|GraphCanvas|Config")
 	FVector ViewMovementScalar;
 
-	UPROPERTY(EditAnywhere, Category = "HeartGraphCanvas|Config")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|GraphCanvas|Config")
 	FVectorBounds ViewBounds;
 
-	UPROPERTY(EditAnywhere, Category = "HeartGraphCanvas|Config")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|GraphCanvas|Config")
 	float DraggingInterpSpeed = 0;
 
-	UPROPERTY(EditAnywhere, Category = "HeartGraphCanvas|Config")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|GraphCanvas|Config")
 	float ZoomInterpSpeed = 0;
 
-	UPROPERTY(EditAnywhere, Category = "HeartGraphCanvas|Config")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|GraphCanvas|Config")
 	EHeartGraphZoomAlgorithm ZoomBehavior;
 
 private:
 	FVector View;
 	FVector TargetView;
-
-	bool DraggingWithMouse = false;
-
-	// Mouse position last frame. Only used when dragging the panel
-	FVector2D DeltaMousePosition = FVector2D::ZeroVector;
 
 	bool NeedsToUpdatePositions = false;
 };
