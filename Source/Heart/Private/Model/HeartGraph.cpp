@@ -32,6 +32,14 @@ UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 	return Result ? *Result : nullptr;
 }
 
+UHeartGraphNode* UHeartGraph::CreateNode(const TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location)
+{
+	auto&& NewNode = NewObject<UHeartGraphNode>(this, Class);
+	NewNode->Guid = FHeartNodeGuid::NewGuid();
+	NewNode->Location = Location;
+	return NewNode;
+}
+
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
 	if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
@@ -58,7 +66,7 @@ bool UHeartGraph::RemoveNode(UHeartGraphNode* Node)
 		return false;
 	}
 
-	const auto Removed = Nodes.Remove(Node->GetGuid());
+	auto&& Removed = Nodes.Remove(Node->GetGuid());
 
 	if (Removed > 0)
 	{

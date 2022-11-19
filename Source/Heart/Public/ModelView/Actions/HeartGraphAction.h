@@ -30,6 +30,7 @@ public:
 	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation) {}
 };
 
+// @todo blueprintbase should be hyphenated
 UCLASS(Abstract, Blueprintable)
 class HEART_API UHeartGraphActionBlueprintBase : public UHeartGraphAction
 {

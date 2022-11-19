@@ -51,3 +51,14 @@ FVector2D UHeartGeneralUtils::BP_ClampVector2D(const FVector2D& Value, const FVe
 	return FVector2D(FMath::Clamp(Value.X, Bounds.Min.X, Bounds.Max.X),
 					 FMath::Clamp(Value.Y, Bounds.Min.Y, Bounds.Max.Y));
 }
+
+FVector2D UHeartGeneralUtils::ComputeSplineTangent(const FVector2D& Start, const FVector2D& End, const float Direction,
+                                                   const float TensionMultiplier)
+{
+	auto&& RotatedStartAngle = Start.GetRotated(Direction).Y;
+	auto&& RotatedEndAngle = End.GetRotated(Direction).Y;
+	auto&& ReversedSpline = (RotatedStartAngle - RotatedEndAngle) < 0.f;
+	auto&& TensionScalar = RotatedStartAngle - RotatedEndAngle;
+	auto&& TensionVector = FVector2D(0, ReversedSpline ? -TensionMultiplier : TensionMultiplier);
+	return FVector2D(TensionScalar) * TensionVector.GetRotated(Direction);
+}

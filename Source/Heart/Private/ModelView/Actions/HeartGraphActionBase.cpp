@@ -12,3 +12,14 @@ UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassO
 {
 	return NewObject<UHeartGraphActionBase>(GetTransientPackage(), Class);
 }
+
+bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target,
+	const FHeartInputActivation& Activation)
+{
+	if (ensure(Action))
+	{
+		return Action->Execute(Target, Activation);
+	}
+
+	return false;
+}

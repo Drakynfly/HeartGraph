@@ -2,9 +2,9 @@
 
 #include "UI/NamedFunctionEvent.h"
 
-FHeartWidgetLinkedInput UNamedFunctionEvent::CreateDelegate() const
+FHeartWidgetLinkedEvent UNamedFunctionEvent::CreateEvent() const
 {
-	return FHeartWidgetLinkedInput::CreateLambda([this](UWidget* Widget, const FHeartInputActivation& Activation)
+	return { FHeartWidgetLinkedEventCallback::CreateLambda([this](UWidget* Widget, const FHeartInputActivation& Activation)
 	{
 		if (Widget)
 		{
@@ -26,5 +26,5 @@ FHeartWidgetLinkedInput UNamedFunctionEvent::CreateDelegate() const
 		}
 
 		return FReply::Unhandled();
-	});
+	}), Heart::Input::Event };
 }

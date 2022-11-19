@@ -43,7 +43,7 @@ struct FHeartConnectPinsResponse
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ConnectPinsResponse")
-	EHeartCanConnectPinsResponse Response;
+	EHeartCanConnectPinsResponse Response = EHeartCanConnectPinsResponse::Allow;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ConnectPinsResponse")
 	FText Message;
@@ -55,11 +55,19 @@ class HEART_API UHeartGraphSchema : public UObject // UEdGraphSchema
 	GENERATED_BODY()
 
 public:
+	// @todo maybe make a interface, or base class for visualizers?
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|Schema")
-	UHeartCanvasConnectionVisualizer* GetConnectionVisualizer() const;
+	UObject* GetConnectionVisualizer() const;
+
+	template <typename TConnectionVisualizer>
+	TConnectionVisualizer* GetConnectionVisualizer() const
+	{
+		return Cast<TConnectionVisualizer>(GetConnectionVisualizer());
+	}
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
-	TSubclassOf<UHeartCanvasConnectionVisualizer> GetConnectionVisualizerClass() const;
+	UClass* GetConnectionVisualizerClass() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryConnectPins(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;

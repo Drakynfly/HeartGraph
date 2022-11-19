@@ -10,7 +10,7 @@ class UHeartGraphPin;
 
 // This class does not need to be modified.
 UINTERFACE()
-class UGraphNodeVisualizerInterface : public UInterface
+class HEART_API UGraphNodeVisualizerInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -29,7 +29,7 @@ public:
 
 // This class does not need to be modified.
 UINTERFACE()
-class UGraphPinVisualizerInterface : public UInterface
+class HEART_API UGraphPinVisualizerInterface : public UInterface
 {
 	GENERATED_BODY()
 };

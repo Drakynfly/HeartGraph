@@ -11,7 +11,7 @@ class UHeartWidgetInputBindingAsset;
 /**
  *
  */
-USTRUCT()
+USTRUCT(BlueprintType)
 struct HEARTCORE_API FHeartWidgetInputBindingContainer
 {
 	GENERATED_BODY()
@@ -29,7 +29,7 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UHeartWidgetInputLinker> DefaultLinkerClass = UHeartWidgetInputLinker::StaticClass();
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, meta = (NoResetToDefault))
 	TObjectPtr<UHeartWidgetInputLinker> Linker = nullptr;
 
 	UPROPERTY()

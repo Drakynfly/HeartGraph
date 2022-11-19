@@ -30,9 +30,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false))
 	TArray<TSubclassOf<UHeartGraphNode>> GraphNodeClasses;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false, MustImplement = "GraphNodeVisualizerInterface"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false, MustImplement = "/Script/Heart.GraphNodeVisualizerInterface"))
 	TArray<TObjectPtr<UClass>> NodeVisualizerClasses;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false, MustImplement = "GraphPinVisualizerInterface"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowAbstract = false, MustImplement = "/Script/Heart.GraphPinVisualizerInterface"))
 	TArray<TObjectPtr<UClass>> PinVisualizerClasses;
 };

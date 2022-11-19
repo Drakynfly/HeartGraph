@@ -21,5 +21,6 @@ class HEARTCORE_API IHeartWidgetInputLinkerRedirector
 	GENERATED_BODY()
 
 public:
-	virtual class UHeartWidgetInputLinker* ResolveLinker() const = 0;
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|WidgetInputLinkerRedirector")
+	class UHeartWidgetInputLinker* ResolveLinker() const;
 };

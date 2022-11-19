@@ -40,9 +40,12 @@ public:
 	/*		MATH UTILS		*/
 	/************************/
 
-	UFUNCTION(BlueprintCallable, Category = "Rose|Utils|Math", meta = (DisplayName = "Clamp Vector"))
+	UFUNCTION(BlueprintPure, Category = "Rose|Utils|Math", meta = (DisplayName = "Clamp Vector"))
 	static FVector BP_ClampVector(const FVector& Value, const FVectorBounds& Bounds);
 
-	UFUNCTION(BlueprintCallable, Category = "Rose|Utils|Math", meta = (DisplayName = "Clamp Vector (2D)"))
+	UFUNCTION(BlueprintPure, Category = "Rose|Utils|Math", meta = (DisplayName = "Clamp Vector (2D)"))
 	static FVector2D BP_ClampVector2D(const FVector2D& Value, const FVector2DBounds& Bounds);
+
+	UFUNCTION(BlueprintPure, Category = "Rose|Utils|Math")
+	static FVector2D ComputeSplineTangent(const FVector2D& Start, const FVector2D& End, float Direction, float TensionMultiplier = 1.0);
 };

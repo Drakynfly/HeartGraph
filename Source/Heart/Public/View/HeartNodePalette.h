@@ -41,7 +41,7 @@ public:
 	void BP_Display(const TArray<UClass*>& Classes);
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Node Palette")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Heart|NodePalette")
 	TSubclassOf<UHeartGraph> DisplayedRegistryGraph;
 
 	UPROPERTY()

@@ -9,8 +9,8 @@
 #include "HeartGraphPin.generated.h"
 
 class UHeartGraphNode;
-
 class UHeartGraphPin;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartPinConnectionsChanged, UHeartGraphPin*, Pin);
 
 /**
@@ -21,16 +21,16 @@ class HEART_API UHeartGraphPin : public UObject
 {
 	GENERATED_BODY()
 
+	friend UHeartGraphNode;
+
 public:
 	virtual UWorld* GetWorld() const override;
 
-	void NewGuid();
-	void SetDirection(EHeartPinDirection Direction);
-
-	template <typename THeartNodeClass>
-	THeartNodeClass* GetOwningNode() const
+	template <typename THeartGraphNode>
+	THeartGraphNode* GetOwningNode() const
 	{
-		return Cast<THeartNodeClass>(GetOuter());
+		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(GetOuter());
 	}
 
 	void ConnectTo(UHeartGraphPin* Other);
@@ -75,7 +75,7 @@ public:
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Heart|GraphPin|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
 
 private:

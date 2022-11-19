@@ -6,25 +6,31 @@
 
 bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker)
 {
-	auto&& Delegate = Event->CreateDelegate();
-
-	for (auto&& Trigger : Triggers)
+	if (IsValid(Event))
 	{
-		if (Trigger.IsValid())
+		auto&& NewEvent = Event->CreateEvent();
+
+		for (auto&& Trigger : Triggers)
 		{
-			UHeartWidgetInputLinker::FConditionalInputCallback InputCallback;
-			InputCallback.Callback = Delegate;
-
-			if (Condition)
+			if (Trigger.IsValid())
 			{
-				InputCallback.Condition = Condition->CreateCondition();
-			}
+				Heart::Input::FConditionalInputCallback InputCallback;
+				InputCallback.Callback = NewEvent.Callback;
+				InputCallback.Layer = NewEvent.Layer;
 
-			Linker->BindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip(), InputCallback);
+				if (Condition)
+				{
+					InputCallback.Condition = Condition->CreateCondition();
+				}
+
+				Linker->BindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip(), InputCallback);
+			}
 		}
+
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linker)

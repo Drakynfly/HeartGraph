@@ -23,6 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere, Instanced)
 	TObjectPtr<UHeartWidgetInputEvent> Event;
 
-	UPROPERTY(EditAnywhere, meta = (BaseStruct = "Heart|WidgetInputTrigger", ExcludeBaseStruct))
+	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))
 	TArray<FInstancedStruct> Triggers;
 };

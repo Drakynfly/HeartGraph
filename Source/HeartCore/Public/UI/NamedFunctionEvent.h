@@ -11,7 +11,7 @@ class HEARTCORE_API UNamedFunctionEvent : public UHeartWidgetInputEvent
 	GENERATED_BODY()
 
 public:
-	virtual FHeartWidgetLinkedInput CreateDelegate() const override;
+	virtual FHeartWidgetLinkedEvent CreateEvent() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FString FunctionName;

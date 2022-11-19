@@ -14,8 +14,8 @@ public class Heart : ModuleRules
 			new []
 			{
 				"Core",
-				"UMG",
-				"InputCore"
+				"InputCore",
+				"UMG" // For the node palette widget
 			});
 
         // Plugin dependencies
@@ -29,9 +29,7 @@ public class Heart : ModuleRules
 			new []
 			{
 				"CoreUObject",
-				"Engine",
-				"Slate",
-				"SlateCore"
+				"Engine"
 			});
 	}
 }

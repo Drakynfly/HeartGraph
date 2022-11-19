@@ -32,6 +32,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FVector2D Offset;
 
-	UPROPERTY(EditAnywhere, meta = (BaseStruct = "Heart|WidgetInputTrigger", ExcludeBaseStruct))
+	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))
 	TArray<FInstancedStruct> Triggers;
 };

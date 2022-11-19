@@ -12,9 +12,15 @@ struct HEARTCORE_API FVectorBounds
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector2DBounds")
-	FVector Min;
+	FVectorBounds() {}
+
+	FVectorBounds(const FVector& Min, const FVector& Max)
+	  : Min(Min),
+		Max(Max) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector2DBounds")
-	FVector Max;
+	FVector Min = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector2DBounds")
+	FVector Max = FVector::ZeroVector;
 };

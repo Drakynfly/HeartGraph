@@ -13,16 +13,6 @@ UWorld* UHeartGraphPin::GetWorld() const
 	return nullptr;
 }
 
-void UHeartGraphPin::NewGuid()
-{
-	Guid = FHeartPinGuid::NewGuid();
-}
-
-void UHeartGraphPin::SetDirection(EHeartPinDirection Direction)
-{
-	PinDirection = Direction;
-}
-
 void UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 {
 	if (Other)

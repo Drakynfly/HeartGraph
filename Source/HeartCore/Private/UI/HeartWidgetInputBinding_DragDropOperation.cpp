@@ -1,7 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetInputBinding_DragDropOperation.h"
-
+#include "UI/HeartWidgetInputCondition.h"
 #include "UI/HeartWidgetInputLinker.h"
 #include "UI/HeartWidgetInputTrigger.h"
 
@@ -11,11 +11,12 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 	{
 		if (Trigger.IsValid())
 		{
-			UHeartWidgetInputLinker::FConditionalDragDropTrigger DragDropTrigger;
+			Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
 			DragDropTrigger.Class = OperationClass;
 			DragDropTrigger.VisualClass = VisualClass;
 			DragDropTrigger.Pivot = Pivot;
 			DragDropTrigger.Offset = Offset;
+			DragDropTrigger.Layer = Heart::Input::Event;
 
 			if (Condition)
 			{

@@ -13,5 +13,5 @@ struct HEARTCORE_API FHeartInputActivation
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|InputActivation")
-	double ActivationValue;
+	double ActivationValue = 0.0;
 };

@@ -15,7 +15,7 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 	{
 		for (auto&& BindingAsset : BindingAssets)
         {
-        	if (ensure(IsValid(BindingAsset)))
+        	if (IsValid(BindingAsset))
         	{
 	            for (auto&& Binding : BindingAsset->Bindings)
 	            {
@@ -34,7 +34,7 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 		// Rebind everything to the new linker
 		for (auto&& BindingAsset : BindingAssets)
 		{
-			if (ensure(IsValid(BindingAsset)))
+			if (IsValid(BindingAsset))
 			{
 				for (auto&& Binding : BindingAsset->Bindings)
 				{

@@ -28,6 +28,11 @@
       "Name": "HeartCore",
       "Type": "Runtime",
       "LoadingPhase": "Default"
+    },
+    {
+      "Name": "HeartCanvas",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
     }
   ],
   "Plugins": [
