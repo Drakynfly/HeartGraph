@@ -14,19 +14,45 @@ DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHeartGraphEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*, Node);
 
+USTRUCT()
+struct FHeartGraphSparseClassData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, Category = "Display")
+	FText GraphTypeName;
+
+#if WITH_EDITORONLY_DATA
+	// Can the editor create instances of this graph as an asset.
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	bool CanCreateAssetFromFactory;
+#endif
+};
+
 /**
  *
  */
-UCLASS(Abstract, BlueprintType, Blueprintable)
+UCLASS(Abstract, BlueprintType, Blueprintable, SparseClassDataTypes = "HeartGraphSparseClassData")
 class HEART_API UHeartGraph : public UObject
 {
 	GENERATED_BODY()
 
+	friend class UHeartEdGraph;
+
+public:
+#if WITH_EDITOR
+	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
+#endif
 
 	/****************************/
 	/**		GETTERS				*/
 	/****************************/
 public:
+
+#if WITH_EDITOR
+	UEdGraph* GetEdGraph() const { return HeartEdGraph; }
+#endif
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
 
@@ -87,13 +113,13 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	UHeartGraphNode* CreateNode(TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location);
+	UHeartGraphNode* CreateNode(const TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void AddNode(UHeartGraphNode* Node);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
-	bool RemoveNode(UHeartGraphNode* Node);
+	bool RemoveNode(const FHeartNodeGuid& NodeGuid);
 
 
 public:
@@ -103,11 +129,17 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartGraphNodeEvent OnNodeRemoved;
 
+#if WITH_EDITORONLY_DATA
+private:
+	// Always castable to UHeartEdGraph
+	UPROPERTY()
+	UEdGraph* HeartEdGraph;
+#endif
+
 private:
 	UPROPERTY()
 	FHeartGraphGuid Guid;
 
-	// @todo probably dont need to store as MAP? nothing accesses it like one? an array would probably be fine
 	UPROPERTY()
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 };

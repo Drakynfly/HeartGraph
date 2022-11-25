@@ -89,6 +89,27 @@ void UHeartGraphPin::DisconnectFromAll(const bool NotifyNodes)
 	}
 }
 
+FName UHeartGraphPin::GetPinName_Implementation() const
+{
+	return GetFName();
+}
+
+FText UHeartGraphPin::GetFriendlyName_Implementation() const
+{
+	return FText::FromName(GetPinName());
+}
+
+FText UHeartGraphPin::GetToolTip_Implementation() const
+{
+	return FText();
+}
+
+FEdGraphPinType UHeartGraphPin::GetPinType() const
+{
+	static FEdGraphPinType DefaultEdGraphPinType = FEdGraphPinType("exec", NAME_None, nullptr, EPinContainerType::None, false, FEdGraphTerminalType());
+	return DefaultEdGraphPinType;
+}
+
 UHeartGraphNode* UHeartGraphPin::GetNode() const
 {
 	return GetOwningNode<UHeartGraphNode>();

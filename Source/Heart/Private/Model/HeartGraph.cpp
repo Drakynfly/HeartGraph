@@ -6,6 +6,23 @@
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)
 
+#if WITH_EDITOR
+void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
+{
+	// Save the EdGraph with us in the editor
+	UHeartGraph* This = CastChecked<UHeartGraph>(InThis);
+	Collector.AddReferencedObject(This->HeartEdGraph, This);
+
+	Super::AddReferencedObjects(InThis, Collector);
+}
+#endif
+
+UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
+{
+	auto&& Result = Nodes.Find(NodeGuid);
+	return Result ? *Result : nullptr;
+}
+
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
 {
 	return UHeartGraphSchema::StaticClass();
@@ -24,12 +41,6 @@ const UHeartGraphSchema* UHeartGraph::GetSchema() const
 const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const
 {
 	return GetSchema();
-}
-
-UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
-{
-	auto&& Result = Nodes.Find(NodeGuid);
-	return Result ? *Result : nullptr;
 }
 
 UHeartGraphNode* UHeartGraph::CreateNode(const TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location)
@@ -56,21 +67,30 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 	}
 
 	Nodes.Add(NodeGuid, Node);
+
+#if WITH_EDITOR
+	if (HeartEdGraph)
+	{
+		HeartEdGraph->AddNode(Node->GetEdGraphNode());
+	}
+#endif
+
 	OnNodeAdded.Broadcast(Node);
 }
 
-bool UHeartGraph::RemoveNode(UHeartGraphNode* Node)
+bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 {
-	if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
+	if (!ensure(NodeGuid.IsValid()))
 	{
 		return false;
 	}
 
-	auto&& Removed = Nodes.Remove(Node->GetGuid());
+	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
+	auto&& Removed = Nodes.Remove(NodeGuid);
 
-	if (Removed > 0)
+	if (NodeBeingRemoved)
 	{
-		OnNodeRemoved.Broadcast(Node);
+		OnNodeRemoved.Broadcast(*NodeBeingRemoved);
 	}
 
 	return Removed > 0;

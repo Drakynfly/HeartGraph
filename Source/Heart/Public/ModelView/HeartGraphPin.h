@@ -22,16 +22,10 @@ class HEART_API UHeartGraphPin : public UObject
 	GENERATED_BODY()
 
 	friend UHeartGraphNode;
+	friend class UHeartEdGraphNode;
 
 public:
 	virtual UWorld* GetWorld() const override;
-
-	template <typename THeartGraphNode>
-	THeartGraphNode* GetOwningNode() const
-	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(GetOuter());
-	}
 
 	void ConnectTo(UHeartGraphPin* Other);
 
@@ -39,14 +33,44 @@ public:
 
 	void DisconnectFromAll(bool NotifyNodes);
 
+
+	/****************************/
+	/**		REFLECTION			*/
+	/****************************/
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphPin")
+	FName GetPinName() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphPin")
+	FText GetFriendlyName() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphPin")
+	FText GetToolTip() const;
+
+
+	/****************************/
+	/**		GETTERS				*/
+	/****************************/
+protected:
+#if WITH_EDITOR
+	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType
+	FEdGraphPinType GetPinType() const;
+#endif
+
 public:
+	template <typename THeartGraphNode>
+	THeartGraphNode* GetOwningNode() const
+	{
+		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(GetOuter());
+	}
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	UHeartGraphNode* GetNode() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class"))
 	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GetNode(); }
 
-public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FHeartPinGuid GetGuid() const { return Guid; }
 
@@ -81,6 +105,9 @@ public:
 private:
 	UPROPERTY()
 	FHeartPinGuid Guid;
+
+	UPROPERTY()
+	FName PinName;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EHeartPinDirection PinDirection;

@@ -2,11 +2,47 @@
 
 #pragma once
 
-#include "Modules/ModuleManager.h"
+#include "AssetTypeCategories.h"
+#include "IAssetTypeActions.h"
+#include "Modules/ModuleInterface.h"
+#include "PropertyEditorDelegates.h"
+#include "Toolkits/IToolkit.h"
 
-class FHeartEditorModule : public IModuleInterface
+class FSlateStyleSet;
+struct FGraphPanelPinConnectionFactory;
+
+class FHeartGraphAssetEditor;
+class UHeartGraph;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
+
+class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface
 {
+public:
+    static EAssetTypeCategories::Type HeartAssetCategory;
+
+private:
+    TArray<TSharedRef<IAssetTypeActions>> RegisteredAssetActions;
+    TSet<FName> CustomClassLayouts;
+
 public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
+
+private:
+    void RegisterAssets();
+    void UnregisterAssets();
+
+    void RegisterPropertyCustomizations() const;
+    void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance DetailLayout);
+
+public:
+    FDelegateHandle ModulesChangedHandle;
+
+private:
+    void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
+    void RegisterAssetIndexers() const;
+
+public:
+    static TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
 };

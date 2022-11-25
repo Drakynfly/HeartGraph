@@ -241,7 +241,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 {
 	check(Node);
 
-	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GetGameInstance()->GetSubsystem<UHeartNodeRegistrySubsystem>();
+	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 
 	auto&& VisualizerClass =
 		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass());

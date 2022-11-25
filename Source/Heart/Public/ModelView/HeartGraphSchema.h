@@ -9,7 +9,10 @@ class UHeartCanvasConnectionVisualizer;
 class UHeartGraphPin;
 class UHeartGraphNode;
 
-/** This is the type of response the graph editor should take when making a connection */
+/**
+ * This is the type of response the graph editor should take when making a connection
+ * WARNING: Must have same order as ECanCreateConnectionResponse!!!
+ */
 UENUM(BlueprintType)
 enum class EHeartCanConnectPinsResponse : uint8
 {
@@ -74,4 +77,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	FHeartConnectPinsResponse CanPinsConnect(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
+
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	bool RunCanPinsConnectInEdGraph;
+#endif
 };

@@ -17,7 +17,7 @@ void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
 
-	auto&& NodeRegistrySubsystem = GetGameInstance()->GetSubsystem<UHeartNodeRegistrySubsystem>();
+	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 
 	if (auto&& Registry = NodeRegistrySubsystem->GetRegistry(DisplayedRegistryGraph))
 	{

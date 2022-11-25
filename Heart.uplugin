@@ -39,6 +39,10 @@
     {
       "Name": "StructUtils",
       "Enabled": true
+    },
+    {
+      "Name": "AssetSearch",
+      "Enabled": true
     }
   ]
 }

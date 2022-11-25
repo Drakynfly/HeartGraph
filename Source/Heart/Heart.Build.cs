@@ -14,6 +14,7 @@ public class Heart : ModuleRules
 			new []
 			{
 				"Core",
+				"DeveloperSettings",
 				"InputCore",
 				"UMG" // For the node palette widget
 			});
@@ -29,7 +30,17 @@ public class Heart : ModuleRules
 			new []
 			{
 				"CoreUObject",
-				"Engine"
+				"Engine",
+				"AssetRegistry"
 			});
+
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.AddRange(
+				new []
+				{
+					"UnrealEd",
+				});
+		}
 	}
 }

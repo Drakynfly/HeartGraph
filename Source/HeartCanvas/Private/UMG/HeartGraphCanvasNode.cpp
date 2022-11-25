@@ -37,7 +37,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 {
 	check(Pin);
 
-	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GetGameInstance()->GetSubsystem<UHeartNodeRegistrySubsystem>();
+	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 
 	auto&& VisualizerClass =
 		NodeRegistrySubsystem->GetRegistry(GetCanvas()->GetGraph()->GetClass())->GetVisualizerClassForGraphPin(Pin->GetClass());

@@ -14,9 +14,42 @@ UWorld* UHeartGraphNode::GetWorld() const
 	return nullptr;
 }
 
+#if WITH_EDITOR
+void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	UObject::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (PropertyChangedEvent.MemberProperty &&
+		PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct"))
+	{
+		OnReconstructionRequested.Broadcast(this);
+	}
+}
+#endif
+
+FText UHeartGraphNode::GetNodeTitle_Implementation() const
+{
+	return FText::FromString(GetName());
+}
+
 UClass* UHeartGraphNode::GetSupportedClass_Implementation() const
 {
 	return nullptr;
+}
+
+FText UHeartGraphNode::GetNodeCategory_Implementation() const
+{
+	return FText();
+}
+
+FText UHeartGraphNode::GetNodeToolTip_Implementation() const
+{
+	return FText();
+}
+
+bool UHeartGraphNode::GetDynamicTitleColor_Implementation(FLinearColor& LinearColor)
+{
+	return false;
 }
 
 UHeartGraph* UHeartGraphNode::GetGraph() const
@@ -43,7 +76,7 @@ TArray<UHeartGraphPin*> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirec
 
 		if (PinPair.Value.IsA(Class))
 		{
-			if (PinPair.Value->GetDirection() == Direction)
+			if (EnumHasAnyFlags(PinPair.Value->GetDirection(), Direction))
 			{
 				ReturnPins.Add(PinPair.Value);
 			}
@@ -63,15 +96,91 @@ TArray<UHeartGraphPin*> UHeartGraphNode::GetOutputPins(const TSubclassOf<UHeartG
 	return GetPinsOfDirection(EHeartPinDirection::Output, Class);
 }
 
-void UHeartGraphNode::NotifyPinConnectionsChanged(UHeartGraphPin* Pin)
+uint8 UHeartGraphNode::GetUserInputNum() const
 {
-	OnPinConnectionsChanged.Broadcast(Pin);
+	uint8 Result = 0;
+
+	auto&& Inputs = GetInputPins();
+	for (auto&& Pin : Inputs)
+	{
+		if (Pin->GetPinName().ToString().IsNumeric())
+		{
+			Result++;
+		}
+	}
+	return Result;
 }
+
+uint8 UHeartGraphNode::GetUserOutputNum() const
+{
+	uint8 Result = 0;
+
+	auto&& Inputs = GetOutputPins();
+	for (auto&& Pin : Inputs)
+	{
+		if (Pin->GetPinName().ToString().IsNumeric())
+		{
+			Result++;
+		}
+	}
+	return Result;
+}
+
+TArray<UHeartGraphPin*> UHeartGraphNode::GetDynamicInputs_Implementation() const
+{
+	return TArray<UHeartGraphPin*>();
+}
+
+TArray<UHeartGraphPin*> UHeartGraphNode::GetDynamicOutputs_Implementation() const
+{
+	return TArray<UHeartGraphPin*>();
+}
+
+UHeartGraphPin* UHeartGraphNode::GetInstancedPin_Implementation()
+{
+	return nullptr;
+}
+
+#if WITH_EDITOR
+
+void UHeartGraphNode::SetEdGraphNode(UEdGraphNode* GraphNode)
+{
+	if (HeartEdGraphNode != GraphNode)
+	{
+		HeartEdGraphNode = GraphNode;
+	}
+}
+#endif
 
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
 {
 	Location = NewLocation;
 	OnNodeLocationChanged.Broadcast(this, Location);
+}
+
+bool UHeartGraphNode::SupportsDynamicPins_Implementation()
+{
+	return false;
+}
+
+bool UHeartGraphNode::CanUserAddInput_Implementation()
+{
+	return false;
+}
+
+bool UHeartGraphNode::CanUserAddOutput_Implementation()
+{
+	return false;
+}
+
+bool UHeartGraphNode::CanDelete_Implementation() const
+{
+	return true;
+}
+
+bool UHeartGraphNode::CanDuplicate_Implementation() const
+{
+	return true;
 }
 
 UHeartGraphPin* UHeartGraphNode::CreatePin(const TSubclassOf<UHeartGraphPin> Class, const EHeartPinDirection Direction)
@@ -107,4 +216,37 @@ bool UHeartGraphNode::RemovePin(UHeartGraphPin* Pin)
 	}
 
 	return Removed > 0;
+}
+
+void UHeartGraphNode::RemoveUserInput(const FName& PinName)
+{
+	Modify();
+
+	for (int32 i = 0; i < GetInputPins().Num(); i++)
+	{
+		if (GetInputPins()[i]->GetPinName() == PinName)
+		{
+			Pins.Remove(GetInputPins()[i]->GetGuid());
+			break;
+		}
+	}
+}
+
+void UHeartGraphNode::RemoveUserOutput(const FName& PinName)
+{
+	Modify();
+
+	for (int32 i = 0; i < GetOutputPins().Num(); i++)
+	{
+		if (GetOutputPins()[i]->GetPinName() == PinName)
+		{
+			Pins.Remove(GetOutputPins()[i]->GetGuid());
+			break;
+		}
+	}
+}
+
+void UHeartGraphNode::NotifyPinConnectionsChanged(UHeartGraphPin* Pin)
+{
+	OnPinConnectionsChanged.Broadcast(Pin);
 }

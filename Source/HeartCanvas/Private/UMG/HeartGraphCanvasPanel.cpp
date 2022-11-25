@@ -6,7 +6,7 @@
 UHeartGraphCanvasPanel::UHeartGraphCanvasPanel()
 {
 	// Canvas graph panels should always intercept input
-	Visibility = ESlateVisibility::Visible;
+	SetVisibilityInternal(ESlateVisibility::Visible);
 }
 
 #if WITH_EDITOR
