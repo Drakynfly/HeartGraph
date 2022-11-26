@@ -1,7 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "View/HeartNodePalette.h"
-#include "Model/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 
 void UHeartNodePalette::Reset()
 {

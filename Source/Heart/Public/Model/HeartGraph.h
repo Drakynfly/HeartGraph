@@ -25,7 +25,7 @@ struct FHeartGraphSparseClassData
 #if WITH_EDITORONLY_DATA
 	// Can the editor create instances of this graph as an asset.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	bool CanCreateAssetFromFactory;
+	bool CanCreateAssetFromFactory = false;
 #endif
 };
 
@@ -97,23 +97,24 @@ public:
 	/**		NODE EDITING		*/
 	/****************************/
 public:
-	template <typename THeartGraphNode>
+	template <typename THeartGraphNode, typename THeartNode>
 	THeartGraphNode* CreateNode(const FVector2D& Location)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The node class must derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(CreateNode(THeartGraphNode::StaticClass(), Location));
+		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
+		static_assert(!TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The node class must not derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(CreateNode(THeartNode::StaticClass(), Location));
 	}
 
 	template <typename THeartGraphNode>
-	THeartGraphNode* CreateNode(const TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location)
+	THeartGraphNode* CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The node class must derive from UHeartGraphNode");
-		check(Class->IsChildOf<THeartGraphNode>());
-		return Cast<THeartGraphNode>(CreateNode(Class, Location));
+		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
+		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of a 'OBJECT' node class"));
+		return Cast<THeartGraphNode>(CreateNode(NodeClass, Location));
 	}
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	UHeartGraphNode* CreateNode(const TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location);
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UHeartGraphNode* CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void AddNode(UHeartGraphNode* Node);

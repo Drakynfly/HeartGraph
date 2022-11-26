@@ -5,7 +5,7 @@
 #include "HeartGraphWidgetBase.h"
 #include "General/VectorBounds.h"
 #include "Model/HeartGraphPinReference.h"
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 #include "HeartGraphCanvas.generated.h"
 
 class UHeartGraphCanvasPanel;

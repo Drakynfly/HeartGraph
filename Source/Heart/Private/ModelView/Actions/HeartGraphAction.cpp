@@ -2,8 +2,8 @@
 
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartGraphNode.h"
-#include "ModelView/HeartGraphPin.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphPin.h"
 
 bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation)
 {

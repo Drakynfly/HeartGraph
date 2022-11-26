@@ -9,8 +9,8 @@
 #include "Graph/Widgets/SHeartGraphNode.h"
 
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartGraphNode.h"
-#include "ModelView/HeartGraphPin.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphPin.h"
 
 #include "Developer/ToolMenus/Public/ToolMenus.h"
 #include "EdGraph/EdGraphSchema.h"

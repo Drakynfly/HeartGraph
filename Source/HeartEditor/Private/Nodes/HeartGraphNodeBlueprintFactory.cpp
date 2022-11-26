@@ -2,8 +2,8 @@
 
 #include "Nodes/HeartGraphNodeBlueprintFactory.h"
 
-#include "ModelView/HeartGraphNode.h"
-#include "ModelView/HeartGraphNodeBlueprint.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphNodeBlueprint.h"
 
 //#include "BlueprintEditorSettings.h"
 #include "ClassViewerFilter.h"

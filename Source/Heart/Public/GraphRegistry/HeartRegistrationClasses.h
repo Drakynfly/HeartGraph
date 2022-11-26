@@ -18,8 +18,8 @@ struct FHeartRegistrationClasses
 	TArray<TSubclassOf<UHeartGraphNode>> GraphNodeClasses;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = false, MustImplement = "/Script/Heart.GraphNodeVisualizerInterface"))
-	TArray<TSoftClassPtr<UObject>> NodeVisualizerClasses;
+	TArray<TObjectPtr<UClass>> NodeVisualizerClasses;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = false, MustImplement = "/Script/Heart.GraphPinVisualizerInterface"))
-	TArray<TSoftClassPtr<UObject>> PinVisualizerClasses;
+	TArray<TObjectPtr<UClass>> PinVisualizerClasses;
 };

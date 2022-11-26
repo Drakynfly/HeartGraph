@@ -1,24 +1,73 @@
-// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #pragma once
 
-#include "Subsystems/EngineSubsystem.h"
-#include "HeartGraph.h"
+#include "UObject/Object.h"
 #include "HeartRegistrationClasses.h"
-#include "HeartNodeRegistrySubsystem.generated.h"
+
+#include "HeartGraphNodeRegistry.generated.h"
+
+DECLARE_DELEGATE_RetVal_OneParam(bool, FNativeNodeClassFilter, UClass* /* Class*/);
+
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, Class);
 
 class UHeartGraphNode;
 class UHeartGraphPin;
 class UGraphNodeRegistrar;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
+USTRUCT()
+struct FRefCountedBase
+{
+	GENERATED_BODY()
 
-DECLARE_DELEGATE_RetVal_OneParam(bool, FNativeNodeClassFilter, UClass* /* Class*/);
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, Class);
+	void operator++() { RefCount++; }
+
+	void operator--() { RefCount--; }
+
+	uint32 GetRefCount() const { return RefCount; }
+
+private:
+	UPROPERTY()
+	uint32 RefCount = 0;
+};
+
+USTRUCT()
+struct FRefCountedClass : public FRefCountedBase
+{
+	GENERATED_BODY()
+
+	FRefCountedClass() {}
+
+	FRefCountedClass(UClass* Class)
+	  : Class(Class) {}
+
+	UPROPERTY()
+	TObjectPtr<UClass> Class;
+
+	friend bool operator==(const FRefCountedClass& Lhs, const FRefCountedClass& RHS)
+	{
+		return Lhs.Class == RHS.Class;
+	}
+
+	friend bool operator!=(const FRefCountedClass& Lhs, const FRefCountedClass& RHS)
+	{
+		return !(Lhs == RHS);
+	}
+};
+
+FORCEINLINE uint32 GetTypeHash(const FRefCountedClass& RefCountedClass)
+{
+	uint32 KeyHash = 0;
+	KeyHash = HashCombine(KeyHash, GetTypeHash(RefCountedClass.GetRefCount()));
+	KeyHash = HashCombine(KeyHash, GetTypeHash(RefCountedClass.Class));
+	return KeyHash;
+}
 
 /**
  * Stores a list of nodes, graph nodes, usable by a Graph, along with their internal graph representations and
  * visual representations.
+ * The registry counts how many times each class is registered so that multiple registrars can safely register the same
+ * classes and they can be deregistered without removing classes that other registrars have also added.
  */
 UCLASS()
 class HEART_API UHeartGraphNodeRegistry : public UObject
@@ -41,7 +90,7 @@ public:
 	TArray<FString> GetNodeCategories() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
-	void GetNodeClasses(TArray<UClass*>& OutClasses) const { OutClasses = NodeClasses.Array(); }
+	void GetNodeClasses(TArray<UClass*>& OutClasses) const;
 
 	void GetFilteredNodeClasses(const FNativeNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
 
@@ -72,9 +121,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	void RemoveRegistrar(UGraphNodeRegistrar* Registrar);
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
+	void DeregisterAll();
+
 private:
 	UPROPERTY()
-	TSet<TObjectPtr<UClass>> NodeClasses;
+	TSet<FRefCountedClass> NodeClasses;
 
 	// Maps classes to the Graph Node class that can represent them in a graph.
 	UPROPERTY()
@@ -90,52 +142,4 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UGraphNodeRegistrar>> ContainedRegistrars;
-};
-
-/**
- * Global singleton that stores which graphs can use which registries.
- */
-UCLASS()
-class HEART_API UHeartNodeRegistrySubsystem : public UEngineSubsystem
-{
-	GENERATED_BODY()
-
-public:
-	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-
-#if WITH_EDITOR
-	void OnFilesLoaded();
-	void OnAssetAdded(const FAssetData& AssetData);
-	void OnAssetRemoved(const FAssetData& AssetData);
-	void OnHotReload(EReloadCompleteReason ReloadCompleteReason);
-	void OnBlueprintPreCompile(UBlueprint* Blueprint);
-	void OnBlueprintCompiled();
-#endif
-
-protected:
-	UBlueprint* GetNodeBlueprint(const FAssetData& AssetData);
-
-	void FetchNativeClasses();
-	void FetchAssetRegistryAssets();
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
-	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
-	void AddRegistrar(UGraphNodeRegistrar* Registrar);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
-	void RemoveRegistrar(UGraphNodeRegistrar* Registrar);
-
-private:
-	UPROPERTY()
-	TMap<TSubclassOf<UHeartGraph>, TObjectPtr<UHeartGraphNodeRegistry>> NodeRegistries;
-
-#if WITH_EDITOR
-	int32 WaitingForBlueprintToCompile;
-	FHeartRegistrationClasses KnownNativeClasses;
-	TMap<FName, FAssetData> KnownBlueprintHeartGraphNodes;
-#endif
 };

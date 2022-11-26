@@ -9,7 +9,7 @@
 #include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
 
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 
 #include "AssetToolsModule.h"
 #include "EdGraphUtilities.h"

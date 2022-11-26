@@ -8,14 +8,15 @@
 #include "Nodes/HeartEdGraphNode.h"
 
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartGraphNode.h"
-#include "ModelView/HeartGraphNodeBlueprint.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphNodeBlueprint.h"
+#include "ModelView/HeartGraphSchema.h"
+
+#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EdGraph/EdGraph.h"
 #include "ScopedTransaction.h"
-#include "Model/HeartNodeRegistrySubsystem.h"
-#include "ModelView/HeartGraphSchema.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphSchema"
 
@@ -209,7 +210,7 @@ TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(TSu
 	return Result;
 }
 
-UClass* UHeartEdGraphSchema::GetAssignedGraphNodeClass(const UClass* HeartGraphNodeClass)
+UClass* UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(const UClass* HeartGraphNodeClass)
 {
 	/*
 	if (UClass* AssignedGraphNode = AssignedGraphNodeClasses.FindRef(HeartGraphNodeClass))

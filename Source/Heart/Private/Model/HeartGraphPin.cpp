@@ -1,7 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "ModelView/HeartGraphPin.h"
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphPin.h"
+#include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
 
 UWorld* UHeartGraphPin::GetWorld() const

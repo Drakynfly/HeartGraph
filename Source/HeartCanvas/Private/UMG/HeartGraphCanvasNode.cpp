@@ -1,10 +1,13 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UMG/HeartGraphCanvasNode.h"
+
 #include "UMG/HeartGraphCanvasPin.h"
 #include "UMG/HeartGraphCanvas.h"
-#include "Model/HeartNodeRegistrySubsystem.h"
 
+#include "Model/HeartGraph.h"
+
+#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 
 UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() const
 {

@@ -5,7 +5,7 @@
 #include "HeartEditorStyle.h"
 #include "Graph/HeartEdGraphSchema_Actions.h"
 
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 
 #include "Misc/ConfigCacheIni.h"
 

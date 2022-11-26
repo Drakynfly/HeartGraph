@@ -4,17 +4,18 @@
 #include "UMG/HeartGraphCanvasPanel.h"
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
+
 #include "HeartCanvasConnectionVisualizer.h"
 #include "ModelView/HeartGraphSchema.h"
-#include "Model/HeartNodeRegistrySubsystem.h"
 #include "Model/HeartGraph.h"
+
+#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 
 #include "General/HeartMath.h"
 #include "UI/HeartWidgetUtilsLibrary.h"
 
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-
 
 UHeartGraphCanvas::UHeartGraphCanvas(const FObjectInitializer& ObjectInitializer)
   : Super(ObjectInitializer)
@@ -246,7 +247,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 	auto&& VisualizerClass =
 		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass());
 
-	if (VisualizerClass->IsChildOf<UHeartGraphCanvasNode>())
+	if (VisualizerClass && VisualizerClass->IsChildOf<UHeartGraphCanvasNode>())
 	{
 		if (auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass))
 		{

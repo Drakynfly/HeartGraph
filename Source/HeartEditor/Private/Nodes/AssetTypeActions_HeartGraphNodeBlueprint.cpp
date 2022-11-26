@@ -1,11 +1,12 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
-#include "Nodes/HeartGraphNodeBlueprintFactory.h"
-#include "HeartEditorModule.h"
-#include "ModelView/HeartGraphNode.h"
 
-#include "ModelView/HeartGraphNodeBlueprint.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphNodeBlueprint.h"
+#include "Nodes/HeartGraphNodeBlueprintFactory.h"
+
+#include "HeartEditorModule.h"
 
 #define LOCTEXT_NAMESPACE "AssetTypeActions_HeartGraphNodeBlueprint"
 

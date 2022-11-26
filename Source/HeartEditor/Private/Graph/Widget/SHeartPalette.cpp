@@ -7,7 +7,7 @@
 #include "Graph/HeartEdGraphSchema_Actions.h"
 
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 
 #include "Fonts/SlateFontInfo.h"
 #include "Styling/CoreStyle.h"

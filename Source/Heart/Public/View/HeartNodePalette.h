@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Blueprint/UserWidget.h"
-#include "Model/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "HeartNodePalette.generated.h"
 
 class UHeartGraph;

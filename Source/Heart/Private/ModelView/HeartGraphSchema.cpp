@@ -1,8 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartGraphSchema.h"
-#include "ModelView/HeartGraphNode.h"
-#include "ModelView/HeartGraphPin.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphPin.h"
 
 bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const
 {

@@ -1,9 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "ModelView/HeartGraphNode.h"
-
+#include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartGraphPin.h"
+#include "Model/HeartGraphPin.h"
 
 UWorld* UHeartGraphNode::GetWorld() const
 {
@@ -183,10 +182,11 @@ bool UHeartGraphNode::CanDuplicate_Implementation() const
 	return true;
 }
 
-UHeartGraphPin* UHeartGraphNode::CreatePin(const TSubclassOf<UHeartGraphPin> Class, const EHeartPinDirection Direction)
+UHeartGraphPin* UHeartGraphNode::CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction)
 {
 	auto&& NewPin = NewObject<UHeartGraphPin>(this, Class);
 	NewPin->Guid = FHeartPinGuid::NewGuid();
+	NewPin->PinName = Name;
 	NewPin->PinDirection = Direction;
 	return NewPin;
 }

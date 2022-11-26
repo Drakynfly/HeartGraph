@@ -3,7 +3,7 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
-#include "ModelView/HeartGraphPin.h"
+#include "Model/HeartGraphPin.h"
 #include "View/HeartVisualizerInterfaces.h"
 #include "HeartGraphCanvasPin.generated.h"
 

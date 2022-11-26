@@ -1,8 +1,11 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraph.h"
+
+#include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
-#include "ModelView/HeartGraphNode.h"
+
+#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)
 
@@ -43,12 +46,39 @@ const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphS
 	return GetSchema();
 }
 
-UHeartGraphNode* UHeartGraph::CreateNode(const TSubclassOf<UHeartGraphNode> Class, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 {
-	auto&& NewNode = NewObject<UHeartGraphNode>(this, Class);
-	NewNode->Guid = FHeartNodeGuid::NewGuid();
-	NewNode->Location = Location;
-	return NewNode;
+	if (!ensure(IsValid(NodeClass)))
+	{
+		return nullptr;
+	}
+
+	auto&& Schema = GetSchema();
+
+	if (!ensure(IsValid(Schema)))
+	{
+		return nullptr;
+	}
+
+	TSubclassOf<UHeartGraphNode> GraphNodeClass;
+
+	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	{
+		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeClass);
+	}
+
+	if (!IsValid(GraphNodeClass))
+	{
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class: %s!"), *NodeClass->GetName())
+		return nullptr;
+	}
+
+	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
+	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
+	NewGraphNode->Location = Location;
+	NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeClass);
+
+	return NewGraphNode;
 }
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)

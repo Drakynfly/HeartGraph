@@ -4,7 +4,7 @@
 
 #include "EdGraph/EdGraphSchema.h"
 
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 #include "Nodes/HeartEdGraphNode.h"
 #include "HeartEdGraphSchema_Actions.generated.h"
 

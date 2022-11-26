@@ -43,7 +43,7 @@ public:
 	// --
 
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
-	static UClass* GetAssignedGraphNodeClass(const UClass* HeartGraphNodeClass);
+	static UClass* GetAssignedEdGraphNodeClass(const UClass* HeartGraphNodeClass);
 
 
 private:

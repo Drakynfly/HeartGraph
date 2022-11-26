@@ -77,6 +77,18 @@ public:
 	UEdGraphNode* GetEdGraphNode() const { return HeartEdGraphNode; }
 #endif
 
+	template <typename TNodeClass>
+	TNodeClass* GetNodeObject() const
+	{
+		return Cast<TNodeClass>(NodeObject);
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "Node|GraphNode")
+	UObject* GetNodeObject() const { return NodeObject; }
+
+	UFUNCTION(BlueprintCallable, Category = "Node|GraphNode", meta = (DeterminesOutputType = Class))
+	UObject* GetNodeObjectTyped(TSubclassOf<UObject> Class) const { return NodeObject; }
+
 	template <typename THeartGraph>
 	THeartGraph* GetOwningGraph() const
 	{
@@ -178,15 +190,15 @@ public:
 	}
 
 	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const EHeartPinDirection Direction)
+	THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, FName Name, const EHeartPinDirection Direction)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
 		check(Class->IsChildOf<THeartGraphPin>());
-		return Cast<THeartGraphPin>(CreatePin(Class, Direction));
+		return Cast<THeartGraphPin>(CreatePin(Class, Name, Direction));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	UHeartGraphPin* CreatePin(TSubclassOf<UHeartGraphPin> Class, EHeartPinDirection Direction);
+	UHeartGraphPin* CreatePin(TSubclassOf<UHeartGraphPin> Class, FName Name, EHeartPinDirection Direction);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void AddPin(UHeartGraphPin* Pin);
@@ -215,6 +227,10 @@ public:
 	FOnNodeRefreshRequested OnReconstructionRequested;
 
 protected:
+	// The object that this graph node represents. Contains the data and functionality of a spawned instance.
+	UPROPERTY()
+	TObjectPtr<UObject> NodeObject;
+
 	UPROPERTY()
 	FHeartNodeGuid Guid;
 

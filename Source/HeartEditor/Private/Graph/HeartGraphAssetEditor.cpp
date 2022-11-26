@@ -11,6 +11,7 @@
 #include "Graph/Widgets/SHeartPalette.h"
 
 #include "Model/HeartGraph.h"
+#include "Model/HeartGraphNode.h"
 
 #include "EdGraphUtilities.h"
 #include "EdGraph/EdGraphNode.h"
@@ -28,7 +29,6 @@
 #include "ScopedTransaction.h"
 #include "SNodePanel.h"
 #include "ToolMenus.h"
-#include "ModelView/HeartGraphNode.h"
 #include "Widgets/Docking/SDockTab.h"
 
 #define LOCTEXT_NAMESPACE "HeartAssetEditor"

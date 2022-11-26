@@ -2,7 +2,7 @@
 
 #include "Actions/HeartCanvasNodeMoveDragDropOperation.h"
 
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasNode.h"

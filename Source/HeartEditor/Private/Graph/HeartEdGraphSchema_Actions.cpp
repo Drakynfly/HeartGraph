@@ -51,8 +51,8 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	auto&& HeartGraph = CastChecked<UHeartEdGraph>(ParentGraph)->GetHeartGraph();
 	HeartGraph->Modify();
 
-	const UClass* GraphNodeClass = UHeartEdGraphSchema::GetAssignedGraphNodeClass(NodeClass);
-	auto&& NewGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, GraphNodeClass, NAME_None, RF_Transactional);
+	const UClass* EdGraphNodeClass = UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(NodeClass);
+	auto&& NewGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, EdGraphNodeClass, NAME_None, RF_Transactional);
 	NewGraphNode->CreateNewGuid();
 
 	NewGraphNode->NodePosX = Location.X;

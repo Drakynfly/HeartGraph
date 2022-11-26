@@ -3,7 +3,7 @@
 #include "Graph/Widgets/SHeartGraphNode.h"
 #include "HeartEditorStyle.h"
 
-#include "ModelView/HeartGraphNode.h"
+#include "Model/HeartGraphNode.h"
 
 #include "EdGraph/EdGraphPin.h"
 #include "Editor.h"
