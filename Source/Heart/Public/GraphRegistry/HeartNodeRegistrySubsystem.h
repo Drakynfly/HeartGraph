@@ -65,9 +65,10 @@ private:
 	UPROPERTY()
 	TMap<FSoftClassPath, TObjectPtr<UHeartGraphNodeRegistry>> NodeRegistries;
 
+	FHeartRegistrationClasses KnownNativeClasses;
+
 #if WITH_EDITOR
 	int32 WaitingForBlueprintToCompile;
-	FHeartRegistrationClasses KnownNativeClasses;
 	TMap<FName, FAssetData> KnownBlueprintHeartGraphNodes;
 	bool HasSetupBlueprintCaching = false;
 #endif

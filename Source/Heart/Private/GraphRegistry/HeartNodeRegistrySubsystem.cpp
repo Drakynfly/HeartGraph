@@ -146,24 +146,20 @@ void UHeartNodeRegistrySubsystem::FetchNativeClasses()
 	}
 
 	// @todo PLEASE FIND A BETTER WAY TO DO THIS
-
-	TArray<UClass*> NodeVisualizerClasses;
-	GetDerivedClasses(UObject::StaticClass(), NodeVisualizerClasses);
-	for (UClass* Class : NodeVisualizerClasses)
+	TArray<UClass*> VisualizerClasses;
+	GetDerivedClasses(UObject::StaticClass(), VisualizerClasses);
+	for (UClass* Class : VisualizerClasses)
 	{
-		if (Class->IsNative() && Class->ImplementsInterface(UGraphNodeVisualizerInterface::StaticClass()))
+		if (Class->IsNative())
 		{
-			KnownNativeClasses.NodeVisualizerClasses.Emplace(Class);
-		}
-	}
-
-	TArray<UClass*> PinVisualizerClasses;
-	GetDerivedClasses(UObject::StaticClass(), PinVisualizerClasses);
-	for (UClass* Class : PinVisualizerClasses)
-	{
-		if (Class->IsNative() && Class->ImplementsInterface(UGraphPinVisualizerInterface::StaticClass()))
-		{
-			KnownNativeClasses.PinVisualizerClasses.Emplace(Class);
+			if (Class->ImplementsInterface(UGraphNodeVisualizerInterface::StaticClass()))
+			{
+				KnownNativeClasses.NodeVisualizerClasses.Emplace(Class);
+			}
+			else if (Class->ImplementsInterface(UGraphPinVisualizerInterface::StaticClass()))
+			{
+				KnownNativeClasses.PinVisualizerClasses.Emplace(Class);
+			}
 		}
 	}
 
@@ -184,7 +180,6 @@ void UHeartNodeRegistrySubsystem::FetchNativeClasses()
 		}
 	}
 	*/
-
 }
 
 void UHeartNodeRegistrySubsystem::FetchAssetRegistryAssets()
