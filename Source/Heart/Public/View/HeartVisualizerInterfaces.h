@@ -44,4 +44,10 @@ class HEART_API IGraphPinVisualizerInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
 	TSubclassOf<UHeartGraphPin> GetSupportedGraphPinClass();
+
+	// Get a custom attachment position for the connection. By default it will be wherever the owning node/graph decides:
+	// The default behavior for widgets is to use the center of the widget geometry.
+	// The default behavior for actors is to use sockets matching the pin name. // @todo implement this
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
+	bool GetCustomAttachmentPosition(FVector& Position) const;
 };

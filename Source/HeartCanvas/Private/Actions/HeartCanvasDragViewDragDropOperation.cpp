@@ -7,9 +7,9 @@
 
 bool UHeartCanvasDragViewDragDropOperation::SetupDragDropOperation()
 {
-	if (UHeartGraphCanvas* PayloadAsCanvas = Cast<UHeartGraphCanvas>(Payload))
+	if (UHeartGraphCanvas* SummonedByAsCanvas = Cast<UHeartGraphCanvas>(SummonedBy))
 	{
-		Canvas = PayloadAsCanvas;
+		Canvas = SummonedByAsCanvas;
 		DeltaMousePosition = FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : FVector2D();
 		return true;
 	}

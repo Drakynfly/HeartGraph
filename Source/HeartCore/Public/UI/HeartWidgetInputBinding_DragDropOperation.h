@@ -4,7 +4,6 @@
 
 #include "HeartWidgetInputBindingBase.h"
 #include "HeartDragDropOperation.h"
-#include "InstancedStruct.h"
 #include "HeartWidgetInputBinding_DragDropOperation.generated.h"
 
 /**
@@ -31,7 +30,4 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FVector2D Offset;
-
-	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))
-	TArray<FInstancedStruct> Triggers;
 };

@@ -14,5 +14,5 @@ class HEART_API UHeartPinAction_Disconnect : public UHeartGraphAction
 	GENERATED_BODY()
 
 public:
-	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation) override;
+	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 };

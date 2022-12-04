@@ -1,7 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
+#include "HeartGraphSettings.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
+#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPin.h"
 #include "View/HeartVisualizerInterfaces.h"
@@ -45,7 +47,14 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			if (UClass* SupportedClass =
 					IGraphNodeVisualizerInterface::Execute_GetSupportedGraphNodeClass(ClassObj->GetDefaultObject()))
 			{
-				NodeVisualizerMap.Add(SupportedClass, ClassObj);
+				if (auto&& Ref = NodeVisualizerMap.Find(SupportedClass))
+				{
+					Ref++;
+				}
+				else
+				{
+					NodeVisualizerMap.Add(SupportedClass, ClassObj.Get());
+				}
 			}
 		}
 	}
@@ -57,7 +66,14 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			if (UClass* SupportedClass =
 				   IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinClass(ClassObj->GetDefaultObject()))
 			{
-				PinVisualizerMap.Add(SupportedClass, ClassObj);
+				if (auto&& Ref = PinVisualizerMap.Find(SupportedClass))
+				{
+					Ref++;
+				}
+				else
+				{
+					PinVisualizerMap.Add(SupportedClass, ClassObj.Get());
+				}
 			}
 		}
 	}
@@ -153,6 +169,27 @@ void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNativeNodeClassFilte
 	}
 }
 
+void UHeartGraphNodeRegistry::GetFilteredNodeClassesWithGraphClass(const FNativeNodeClassFilter& Filter,
+	TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const
+{
+	if (!ensure(Filter.IsBound()))
+	{
+		return;
+	}
+
+	for (auto&& NodeClass : NodeClasses)
+	{
+		if (ensure(IsValid(NodeClass.Class)))
+		{
+			if (Filter.Execute(NodeClass.Class))
+			{
+				auto&& GraphNodeClass = GetGraphNodeClassForNode(NodeClass.Class);
+				OutClasses.Add(NodeClass.Class, GraphNodeClass);
+			}
+		}
+	}
+}
+
 void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const
 {
 	if (!ensure(Filter.IsBound()))
@@ -189,11 +226,26 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 {
 	for (UClass* Class = GraphNodeClass; Class; Class = Class->GetSuperClass())
 	{
-		if (auto&& FoundClass = NodeVisualizerMap.Find(Class))
+		if (auto&& FoundRef = NodeVisualizerMap.Find(Class))
 		{
-			return *FoundClass;
+			return FoundRef->Class;
 		}
 	}
+
+	// Try and retrieve a fallback visualizer
+	// @todo this might return a widget class in cases where that is not expected. maybe allow a filter on this function
+	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	{
+		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
+		{
+			if (ensure(Fallback->Registration.NodeVisualizerClasses.IsValidIndex(0)))
+			{
+				return Fallback->Registration.NodeVisualizerClasses[0];
+			}
+		}
+	}
+
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a visualizer for class: %s"), *GraphNodeClass->GetName())
 
 	return nullptr;
 }
@@ -202,11 +254,26 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf
 {
 	for (UClass* Class = GraphPinClass; Class; Class = Class->GetSuperClass())
 	{
-		if (auto&& FoundClass = PinVisualizerMap.Find(Class))
+		if (auto&& FoundRef = PinVisualizerMap.Find(Class))
 		{
-			return *FoundClass;
+			return FoundRef->Class;
 		}
 	}
+
+	// Try and retrieve a fallback visualizer
+	// @todo this might return a widget class in cases where that is not expected. maybe allow a filter on this function
+	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	{
+		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
+		{
+			if (ensure(Fallback->Registration.PinVisualizerClasses.IsValidIndex(0)))
+			{
+				return Fallback->Registration.PinVisualizerClasses[0];
+			}
+		}
+	}
+
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a visualizer for class: %s"), *GraphPinClass->GetName())
 
 	return nullptr;
 }

@@ -18,16 +18,16 @@ class HEART_API UHeartGraphAction : public UHeartGraphActionBase
 	GENERATED_BODY()
 
 public:
-	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation) override;
+	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
-	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation) {}
+	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
-	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation) {}
+	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|PinAction")
-	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation) {}
+	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 };
 
 // @todo blueprintbase should be hyphenated
@@ -37,16 +37,16 @@ class HEART_API UHeartGraphActionBlueprintBase : public UHeartGraphAction
 	GENERATED_BODY()
 
 public:
-	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation) override final;
-	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation) override final;
-	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation) override final;
+	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
+	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
+	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Graph"))
-	void BP_ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation);
+	void BP_ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Node"))
-	void BP_ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation);
+	void BP_ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Pin"))
-	void BP_ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation);
+	void BP_ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject);
 };

@@ -51,9 +51,16 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 		{
 			Widget->GraphCanvasNode = this;
 			Widget->GraphPin = Pin;
+			PinWidgets.Add(Widget);
 			return Widget;
 		}
 	}
 
 	return nullptr;
+}
+
+void UHeartGraphCanvasNode::DestroyPinWidget(UHeartGraphCanvasPin* PinWidget)
+{
+	PinWidget->RemoveFromParent();
+	PinWidgets.Remove(PinWidget);
 }

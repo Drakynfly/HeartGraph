@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UI/HeartDragDropOperation.h"
+#include "Components/Widget.h"
 #include "HeartCanvasDragDropOperation.generated.h"
 
 class UHeartGraphCanvas;
@@ -29,7 +30,7 @@ protected:
 	virtual void OnHoverCleared() {}
 
 	// Is the OnHoverWidget function allowed to cache the result when called on repeat widget.
-	UPROPERTY(EditAnywhere, Category = "Heart|DragDropOperation")
+	UPROPERTY(EditAnywhere, Category = "DragDropOperation")
 	bool CacheOnHoverWidgetResult = true;
 
 private:

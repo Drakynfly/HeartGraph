@@ -16,12 +16,12 @@ public class Heart : ModuleRules
 				"Core",
 				"DeveloperSettings",
 				"InputCore",
-				"UMG" // For the node palette widget
+				"StructUtils"
 			});
 
         // Plugin dependencies
 		PublicDependencyModuleNames.AddRange(
-			new []
+			new string[]
 			{
 				"HeartCore"
 			});

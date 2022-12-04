@@ -45,10 +45,10 @@ struct FHeartConnectPinsResponse
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ConnectPinsResponse")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ConnectPinsResponse")
 	EHeartCanConnectPinsResponse Response = EHeartCanConnectPinsResponse::Allow;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ConnectPinsResponse")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ConnectPinsResponse")
 	FText Message;
 };
 

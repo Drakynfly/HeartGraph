@@ -26,7 +26,7 @@ public:
 	static void SubscribeToAssetChanges();
 	static void GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const FString& CategoryName);
 
-	// EdGraphSchema
+	//~ EdGraphSchema
 	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
 	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const override;
 	virtual bool TryCreateConnection(UEdGraphPin* A, UEdGraphPin* B) const override;
@@ -41,6 +41,8 @@ public:
 	virtual void OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2D& GraphPosition) const override final;
 	virtual void OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2D& GraphPosition) const {}
 	// --
+
+	//~ EdGraphSchema
 
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
 	static UClass* GetAssignedEdGraphNodeClass(const UClass* HeartGraphNodeClass);

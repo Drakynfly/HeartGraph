@@ -26,7 +26,8 @@ public:
 #endif
 	/** UWidget */
 
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override PURE_VIRTUAL(UHeartGraphWidgetBase::ResolveLinker, return nullptr; )
+	// Unless overriden with custom behavior, this will walk up the widget tree looking for something that implements this
+	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 
-	void GetWidgetActions();
+	void GetWidgetActions() const;
 };

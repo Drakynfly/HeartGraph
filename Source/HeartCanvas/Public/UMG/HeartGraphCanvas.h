@@ -13,6 +13,8 @@ class UHeartGraph;
 class UHeartGraphCanvasNode;
 class UHeartGraphCanvasPin;
 
+DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraphCanvas, Log, All)
+
 UENUM()
 enum class EHeartGraphZoomAlgorithm : uint8
 {

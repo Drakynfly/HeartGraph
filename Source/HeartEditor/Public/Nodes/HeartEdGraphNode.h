@@ -54,6 +54,9 @@ class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode
 public:
 	UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
+
+
 //////////////////////////////////////////////////////////////////////////
 // Heart Graph Node
 
@@ -65,11 +68,6 @@ private:
 	bool bNeedsFullReconstruction;
 
 public:
-	// It would be intuitive to assign a custom Graph Node class in Heart Graph Node class
-	// However, we shouldn't assign class from editor module to runtime module class
-	UPROPERTY()
-	TArray<TSubclassOf<UHeartGraphNode>> AssignedNodeClasses;
-
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
 	UHeartGraphNode* GetHeartGraphNode() const;
 
@@ -148,6 +146,12 @@ public:
 	virtual bool CanJumpToDefinition() const override;
 	virtual void JumpToDefinition() const override;
 	// --
+
+	void JumpToNodeDefinition() const;
+
+private:
+	// @todo move out of this class
+	void JumpToClassDefinition(const UClass* Class) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Pins

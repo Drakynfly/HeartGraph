@@ -8,6 +8,9 @@
 DECLARE_DELEGATE_RetVal_TwoParams(
 	FReply, FHeartWidgetLinkedEventCallback, UWidget* /** Widget */, const struct FHeartInputActivation& /** Activation */);
 
+DECLARE_DELEGATE_RetVal_OneParam(
+	UHeartDragDropOperation*, FHeartWidgetLinkedDragDropTriggerCreate, UWidget* /** Widget */);
+
 namespace Heart::Input
 {
 	enum EHeartInputLayer
@@ -36,9 +39,6 @@ namespace Heart::Input
 
 	struct FConditionalDragDropTrigger : FConditionalInputBase
 	{
-		TSubclassOf<UHeartDragDropOperation> Class;
-		TSubclassOf<UUserWidget> VisualClass;
-		EDragPivot Pivot;
-		FVector2D Offset;
+		FHeartWidgetLinkedDragDropTriggerCreate Callback;
 	};
 }

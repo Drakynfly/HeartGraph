@@ -21,4 +21,8 @@ public:
 	virtual bool CanDropOnWidget(UWidget* Widget) { return true; }
 
 	virtual bool OnHoverWidget(UWidget* Widget) { return false; }
+
+	// The widget that created this drag drop operation
+	UPROPERTY()
+	TObjectPtr<UWidget> SummonedBy;
 };

@@ -5,50 +5,50 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPin.h"
 
-bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation)
+bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (auto&& Graph = Cast<UHeartGraph>(Object))
 	{
-		ExecuteOnGraph(Graph, Activation);
+		ExecuteOnGraph(Graph, Activation, ContextObject);
 		return true;
 	}
 
 	if (auto&& Node = Cast<UHeartGraphNode>(Object))
 	{
-		ExecuteOnNode(Node, Activation);
+		ExecuteOnNode(Node, Activation, ContextObject);
 		return true;
 	}
 
 	if (auto&& Pin = Cast<UHeartGraphPin>(Object))
 	{
-		ExecuteOnPin(Pin, Activation);
+		ExecuteOnPin(Pin, Activation, ContextObject);
 		return true;
 	}
 
 	return false;
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation)
+void UHeartGraphActionBlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Graph)))
 	{
-		BP_ExecuteOnGraph(Graph, Activation);
+		BP_ExecuteOnGraph(Graph, Activation, ContextObject);
 	}
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation)
+void UHeartGraphActionBlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Node)))
 	{
-		BP_ExecuteOnNode(Node, Activation);
+		BP_ExecuteOnNode(Node, Activation, ContextObject);
 	}
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation)
+void UHeartGraphActionBlueprintBase::ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Pin)))
 	{
-		BP_ExecuteOnPin(Pin, Activation);
+		BP_ExecuteOnPin(Pin, Activation, ContextObject);
 	}
 }
 

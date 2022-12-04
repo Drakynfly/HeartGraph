@@ -201,6 +201,9 @@ private:
 	bool CanToggleBreakpoint() const;
 	bool CanTogglePinBreakpoint() const;
 
-	void JumpToNodeDefinition() const;
-	bool CanJumpToNodeDefinition() const;
+	void JumpToGraphNodeDefinition() const;
+	bool CanJumpToGraphNodeDefinition() const;
+
+	void JumpToNodeObjectDefinition() const;
+	bool CanJumpToNodeObjectDefinition() const;
 };

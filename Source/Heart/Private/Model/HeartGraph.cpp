@@ -9,7 +9,21 @@
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)
 
+void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
+{
+	Super::PostDuplicate(DuplicateMode);
+
 #if WITH_EDITOR
+	// The HeartEdGraph doesn't need to persist for graphs duplicated during gameplay
+	if (GetWorld()->IsGameWorld())
+	{
+		HeartEdGraph = nullptr;
+	}
+#endif
+}
+
+#if WITH_EDITOR
+
 void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
 {
 	// Save the EdGraph with us in the editor

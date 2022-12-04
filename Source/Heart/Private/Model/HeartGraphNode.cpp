@@ -4,16 +4,37 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphPin.h"
 
+#define LOCTEXT_NAMESPACE "HeartGraphNode"
+
 UWorld* UHeartGraphNode::GetWorld() const
 {
-	if (GetGraph())
+	if (!IsTemplate())
 	{
-		return GetGraph()->GetWorld();
+		if (GetGraph())
+		{
+			return GetGraph()->GetWorld();
+		}
 	}
+
 	return nullptr;
 }
 
+void UHeartGraphNode::PostDuplicate(EDuplicateMode::Type DuplicateMode)
+{
+	UObject::PostDuplicate(DuplicateMode);
+}
+
 #if WITH_EDITOR
+
+void UHeartGraphNode::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
+{
+	// Save the NodeObject with us in the editor
+	UHeartGraphNode* This = CastChecked<UHeartGraphNode>(InThis);
+	Collector.AddReferencedObject(This->NodeObject, This);
+
+	Super::AddReferencedObjects(InThis, Collector);
+}
+
 void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	UObject::PostEditChangeProperty(PropertyChangedEvent);
@@ -26,23 +47,53 @@ void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 }
 #endif
 
-FText UHeartGraphNode::GetNodeTitle_Implementation() const
-{
-	return FText::FromString(GetName());
-}
-
 UClass* UHeartGraphNode::GetSupportedClass_Implementation() const
 {
 	return nullptr;
 }
 
+FText UHeartGraphNode::GetDefaultNodeTitle_Implementation(const UObject* Node) const
+{
+	return FText::FromString(Node->GetName());
+}
+
+FText UHeartGraphNode::GetDefaultNodeCategory_Implementation(const UObject* Node) const
+{
+	return FText();
+}
+
+FText UHeartGraphNode::GetDefaultNodeToolTip_Implementation(const UObject* Node) const
+{
+	return FText();
+}
+
+FText UHeartGraphNode::GetNodeTitle_Implementation() const
+{
+	if (NodeObject)
+	{
+		return GetDefaultNodeTitle(NodeObject);
+	}
+
+	return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
+}
+
 FText UHeartGraphNode::GetNodeCategory_Implementation() const
 {
+	if (NodeObject)
+	{
+		return GetDefaultNodeCategory(NodeObject);
+	}
+
 	return FText();
 }
 
 FText UHeartGraphNode::GetNodeToolTip_Implementation() const
 {
+	if (NodeObject)
+	{
+		return GetDefaultNodeToolTip(NodeObject);
+	}
+
 	return FText();
 }
 
@@ -125,19 +176,19 @@ uint8 UHeartGraphNode::GetUserOutputNum() const
 	return Result;
 }
 
-TArray<UHeartGraphPin*> UHeartGraphNode::GetDynamicInputs_Implementation() const
+TMap<FName, FHeartGraphPinType> UHeartGraphNode::GetDynamicInputs_Implementation() const
 {
-	return TArray<UHeartGraphPin*>();
+	return TMap<FName, FHeartGraphPinType>();
 }
 
-TArray<UHeartGraphPin*> UHeartGraphNode::GetDynamicOutputs_Implementation() const
+TMap<FName, FHeartGraphPinType> UHeartGraphNode::GetDynamicOutputs_Implementation() const
 {
-	return TArray<UHeartGraphPin*>();
+	return TMap<FName, FHeartGraphPinType>();
 }
 
-UHeartGraphPin* UHeartGraphNode::GetInstancedPin_Implementation()
+FHeartGraphPinType UHeartGraphNode::GetInstancedPinType_Implementation()
 {
-	return nullptr;
+	return FHeartGraphPinType();
 }
 
 #if WITH_EDITOR
@@ -149,6 +200,13 @@ void UHeartGraphNode::SetEdGraphNode(UEdGraphNode* GraphNode)
 		HeartEdGraphNode = GraphNode;
 	}
 }
+
+bool UHeartGraphNode::SupportsDynamicPins_Editor() const
+{
+	// Get editor sparse class member
+	return GetSupportsDynamicPinsInEditor();
+}
+
 #endif
 
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
@@ -157,17 +215,17 @@ void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
 	OnNodeLocationChanged.Broadcast(this, Location);
 }
 
-bool UHeartGraphNode::SupportsDynamicPins_Implementation()
+bool UHeartGraphNode::SupportsDynamicPins_Runtime_Implementation() const
 {
 	return false;
 }
 
-bool UHeartGraphNode::CanUserAddInput_Implementation()
+bool UHeartGraphNode::CanUserAddInput_Implementation() const
 {
 	return false;
 }
 
-bool UHeartGraphNode::CanUserAddOutput_Implementation()
+bool UHeartGraphNode::CanUserAddOutput_Implementation() const
 {
 	return false;
 }
@@ -182,7 +240,12 @@ bool UHeartGraphNode::CanDuplicate_Implementation() const
 	return true;
 }
 
-UHeartGraphPin* UHeartGraphNode::CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction)
+UHeartGraphPin* UHeartGraphNode::CreatePin(const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType Type)
+{
+	return CreatePinOfClass(UHeartGraphPin::StaticClass(), Name, Direction, Type);
+}
+
+UHeartGraphPin* UHeartGraphNode::CreatePinOfClass(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType Type)
 {
 	auto&& NewPin = NewObject<UHeartGraphPin>(this, Class);
 	NewPin->Guid = FHeartPinGuid::NewGuid();
@@ -224,9 +287,10 @@ void UHeartGraphNode::RemoveUserInput(const FName& PinName)
 
 	for (int32 i = 0; i < GetInputPins().Num(); i++)
 	{
-		if (GetInputPins()[i]->GetPinName() == PinName)
+		auto&& Pin = GetInputPins()[i];
+		if (Pin->GetPinName() == PinName)
 		{
-			Pins.Remove(GetInputPins()[i]->GetGuid());
+			Pins.Remove(Pin->GetGuid());
 			break;
 		}
 	}
@@ -238,9 +302,10 @@ void UHeartGraphNode::RemoveUserOutput(const FName& PinName)
 
 	for (int32 i = 0; i < GetOutputPins().Num(); i++)
 	{
-		if (GetOutputPins()[i]->GetPinName() == PinName)
+		auto&& Pin = GetInputPins()[i];
+		if (Pin->GetPinName() == PinName)
 		{
-			Pins.Remove(GetOutputPins()[i]->GetGuid());
+			Pins.Remove(Pin->GetGuid());
 			break;
 		}
 	}
@@ -250,3 +315,5 @@ void UHeartGraphNode::NotifyPinConnectionsChanged(UHeartGraphPin* Pin)
 {
 	OnPinConnectionsChanged.Broadcast(Pin);
 }
+
+#undef LOCTEXT_NAMESPACE

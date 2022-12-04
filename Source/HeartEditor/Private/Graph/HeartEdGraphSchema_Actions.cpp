@@ -52,34 +52,40 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	HeartGraph->Modify();
 
 	const UClass* EdGraphNodeClass = UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(NodeClass);
-	auto&& NewGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, EdGraphNodeClass, NAME_None, RF_Transactional);
-	NewGraphNode->CreateNewGuid();
+	auto&& NewEdGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, EdGraphNodeClass, NAME_None, RF_Transactional);
+	NewEdGraphNode->CreateNewGuid();
 
-	NewGraphNode->NodePosX = Location.X;
-	NewGraphNode->NodePosY = Location.Y;
-	ParentGraph->AddNode(NewGraphNode, false, bSelectNewNode);
+	NewEdGraphNode->NodePosX = Location.X;
+	NewEdGraphNode->NodePosY = Location.Y;
+	//ParentGraph->AddNode(NewEdGraphNode, false, bSelectNewNode);
 
-	FVector2D NodeLocation = FVector2D(NewGraphNode->NodePosX, NewGraphNode->NodePosY);
-	auto&& NewNode = HeartGraph->CreateNode(NodeClass, NodeLocation);
-	NewGraphNode->SetHeartGraphNode(NewNode);
+	const FVector2D NodeLocation = FVector2D(NewEdGraphNode->NodePosX, NewEdGraphNode->NodePosY);
+	auto&& NewGraphNode = HeartGraph->CreateNode(NodeClass, NodeLocation);
 
-	NewGraphNode->PostPlacedNewNode();
-	NewGraphNode->AllocateDefaultPins();
+	// Assign nodes to each other
+	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime
+	NewEdGraphNode->SetHeartGraphNode(NewGraphNode);
+	NewGraphNode->SetEdGraphNode(NewEdGraphNode);
 
-	NewGraphNode->AutowireNewNode(FromPin);
+	HeartGraph->AddNode(NewGraphNode);
+
+	NewEdGraphNode->PostPlacedNewNode();
+	NewEdGraphNode->AllocateDefaultPins();
+
+	NewEdGraphNode->AutowireNewNode(FromPin);
 
 	ParentGraph->NotifyGraphChanged();
 
 	auto&& HeartGraphAssetEditor = FHeartGraphUtils::GetHeartGraphAssetEditor(ParentGraph);
 	if (HeartGraphAssetEditor.IsValid())
 	{
-		HeartGraphAssetEditor->SelectSingleNode(NewGraphNode);
+		HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);
 	}
 
 	HeartGraph->PostEditChange();
 	HeartGraph->MarkPackageDirty();
 
-	return NewGraphNode;
+	return NewEdGraphNode;
 }
 
 /////////////////////////////////////////////////////

@@ -1,6 +1,8 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+
+#include "HeartGraphSettings.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 
@@ -35,6 +37,11 @@ void UHeartNodeRegistrySubsystem::Initialize(FSubsystemCollectionBase& Collectio
 	// We can't cache blueprints in the editor during Initialize because they might not be loaded yet.
 	FetchAssetRegistryAssets();
 #endif
+
+	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
+	{
+		FallbackRegistrar = Cast<UGraphNodeRegistrar>(Settings->FallbackVisualizerRegistrar.TryLoad());
+	}
 }
 
 #if WITH_EDITOR
@@ -186,12 +193,6 @@ void UHeartNodeRegistrySubsystem::FetchAssetRegistryAssets()
 {
 	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
-	// We can't try to load assets while they are still loading in. Try again later.
-	if (AssetRegistryModule.Get().IsLoadingAssets())
-	{
-		return;
-	}
-
 	FARFilter RegistrarFilter;
 	RegistrarFilter.ClassPaths.Add(UGraphNodeRegistrar::StaticClass()->GetClassPathName());
 	RegistrarFilter.bRecursiveClasses = true;
@@ -200,6 +201,12 @@ void UHeartNodeRegistrySubsystem::FetchAssetRegistryAssets()
 	AssetRegistryModule.Get().GetAssets(RegistrarFilter, FoundRegistrarAssets);
 	for (const FAssetData& RegistrarAsset : FoundRegistrarAssets)
 	{
+		// We can't try to load assets while they are still loading in. Try again later.
+		if (AssetRegistryModule.Get().IsLoadingAssets())
+		{
+			return;
+		}
+
 		if (auto&& Registrar = Cast<UGraphNodeRegistrar>(RegistrarAsset.GetAsset()))
 		{
 			AutoAddRegistrar(Registrar);

@@ -2,6 +2,7 @@
 
 #include "UMG/HeartGraphWidgetBase.h"
 #include "HeartCanvasPaletteCategory.h"
+#include "Components/PanelWidget.h"
 
 UHeartGraphWidgetBase::UHeartGraphWidgetBase(const FObjectInitializer& ObjectInitializer)
   : Super(ObjectInitializer)
@@ -20,6 +21,23 @@ const FText UHeartGraphWidgetBase::GetPaletteCategory()
 
 #endif
 
-void UHeartGraphWidgetBase::GetWidgetActions()
+UHeartWidgetInputLinker* UHeartGraphWidgetBase::ResolveLinker_Implementation() const
 {
+	for (auto&& Parent = GetOuter(); Parent; Parent = Parent->GetOuter())
+	{
+		if (Parent->Implements<UHeartWidgetInputLinkerRedirector>())
+		{
+			return Execute_ResolveLinker(Parent);
+		}
+	}
+
+	return nullptr;
+}
+
+void UHeartGraphWidgetBase::GetWidgetActions() const
+{
+	if (auto&& Linker = ResolveLinker())
+	{
+
+	}
 }

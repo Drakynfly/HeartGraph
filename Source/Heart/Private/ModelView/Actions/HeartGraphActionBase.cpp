@@ -2,10 +2,18 @@
 
 #include "ModelView/Actions/HeartGraphActionBase.h"
 
-bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGraphActionBase> Class, UObject* Target, const FHeartInputActivation& Activation)
+bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGraphActionBase> Class,
+	UObject* Target, const FHeartInputActivation& Activation)
 {
 	auto&& Action = CreateGraphAction(Class);
 	return Action->Execute(Target, Activation);
+}
+
+bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(TSubclassOf<UHeartGraphActionBase> Class,
+	UObject* Target, const FHeartInputActivation& Activation, UObject* Payload)
+{
+	auto&& Action = CreateGraphAction(Class);
+	return Action->Execute(Target, Activation, Payload);
 }
 
 UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
@@ -22,4 +30,9 @@ bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UO
 	}
 
 	return false;
+}
+
+bool UHeartGraphActionBase::Execute(UObject* Object, const FHeartInputActivation& Activation)
+{
+	return Execute(Object, Activation, nullptr);
 }

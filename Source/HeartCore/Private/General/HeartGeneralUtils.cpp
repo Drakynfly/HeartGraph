@@ -4,14 +4,19 @@
 #include "General/VectorBounds.h"
 #include "General/Vector2DBounds.h"
 
-TSubclassOf<UObject> UHeartGeneralUtils::GetParentClass(const TSubclassOf<UObject> Class)
+UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
+{
+	return DuplicateObject(Source, Outer);
+}
+
+UClass* UHeartGeneralUtils::GetParentClass(const UClass* Class)
 {
 	return IsValid(Class) ? Class->GetSuperClass() : nullptr;
 }
 
-TArray<TSubclassOf<UObject>> UHeartGeneralUtils::GetChildClasses(const TSubclassOf<UObject> Class, const bool AllowAbstract)
+TArray<UClass*> UHeartGeneralUtils::GetChildClasses(const UClass* Class, const bool AllowAbstract)
 {
-	TArray<TSubclassOf<UObject>> OutClasses;
+	TArray<UClass*> OutClasses;
 
 	for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
 	{
@@ -26,17 +31,22 @@ TArray<TSubclassOf<UObject>> UHeartGeneralUtils::GetChildClasses(const TSubclass
 	return OutClasses;
 }
 
-const UObject* UHeartGeneralUtils::GetClassDefaultObject(const TSubclassOf<UObject> Class)
+UObject* UHeartGeneralUtils::ClassAsObject(UClass* Class)
+{
+	return Class;
+}
+
+const UObject* UHeartGeneralUtils::GetClassDefaultObject(UClass* Class)
 {
 	return IsValid(Class) ? Class->GetDefaultObject() : nullptr;
 }
 
-FText UHeartGeneralUtils::GetClassDisplayNameText(const TSubclassOf<UObject> Class)
+FText UHeartGeneralUtils::GetClassDisplayNameText(const UClass* Class)
 {
 	return IsValid(Class) ? Class->GetDisplayNameText() : FText();
 }
 
-FText UHeartGeneralUtils::GetClassTooltip(const TSubclassOf<UObject> Class)
+FText UHeartGeneralUtils::GetClassTooltip(const UClass* Class)
 {
 	return IsValid(Class) ? Class->GetToolTipText() : FText();
 }

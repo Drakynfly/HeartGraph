@@ -17,6 +17,8 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 
+DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
+
 UHeartGraphCanvas::UHeartGraphCanvas(const FObjectInitializer& ObjectInitializer)
   : Super(ObjectInitializer)
 {
@@ -79,6 +81,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 		if (!ensure(IsValid(ConnectionVisualizer)))
 		{
+			UE_LOG(LogHeartGraphCanvas, Error, TEXT("ConnectionVisualizer is invalid: cannot display pin connections!"))
 			return SuperLayerID;
 		}
 
@@ -140,7 +143,18 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 				FVector2D StartPoint;
 				FVector2D EndPoint;
 
-				const FVector2D PinPoint = GetTickSpaceGeometry().AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+				FVector2D PinPoint = GetTickSpaceGeometry().AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+
+				FVector CustomPosition;
+				if (IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(PreviewPin, CustomPosition))
+				{
+					PinPoint = FVector2D(CustomPosition);
+				}
+				else
+				{
+					// @todo kinda awful that this is the only way ive found to do this...
+					PinPoint = GetTickSpaceGeometry().AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+				}
 
 				//if (PreviewPin->GetPin()->GetDirection() == EHeartPinDirection::Input)
 				{
@@ -184,7 +198,7 @@ void UHeartGraphCanvas::Refresh()
 {
 	if (!ensure(DisplayedNodes.IsEmpty()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HeartGraphCanvas cannot refresh, as it has not been reset."))
+		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("HeartGraphCanvas cannot refresh, as it has not been reset."))
 		return;
 	}
 
@@ -192,7 +206,10 @@ void UHeartGraphCanvas::Refresh()
 	DisplayedGraph->GetNodeArray(GraphNodes);
 	for (auto&& GraphNode : GraphNodes)
 	{
-		AddNodeToDisplay(GraphNode);
+		if (IsValid(GraphNode))
+		{
+			AddNodeToDisplay(GraphNode);
+		}
 	}
 }
 
@@ -220,7 +237,7 @@ void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* 
 
 	if (!ensure(IsValid(CanvasSlot)))
 	{
-		UE_LOG(LogTemp, Error, TEXT("HeartGraphCanvasNodes must be added to a canvas"))
+		UE_LOG(LogHeartGraphCanvas, Error, TEXT("HeartGraphCanvasNodes must be added to a canvas"))
 		return;
 	}
 
@@ -368,7 +385,10 @@ bool UHeartGraphCanvas::IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGe
 
 void UHeartGraphCanvas::OnNodeAddedToGraph(UHeartGraphNode* Node)
 {
-	AddNodeToDisplay(Node);
+	if (IsValid(Node))
+	{
+		AddNodeToDisplay(Node);
+	}
 }
 
 void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)

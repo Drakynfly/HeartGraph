@@ -1,4 +1,4 @@
-// Copyright https://github.com/MothCocoon/FlowGraph/graphs/contributors
+// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #pragma once
 
@@ -17,10 +17,9 @@ public:
 	UHeartGraphNodeBlueprint(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 #if WITH_EDITOR
-	// UBlueprint
+	//~ UBlueprint
 	virtual bool SupportedByDefaultBlueprintFactory() const override { return false; }
-
 	virtual bool SupportsDelegates() const override { return false; }
-	// --
+	//~ UBlueprint
 #endif
 };

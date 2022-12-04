@@ -4,11 +4,11 @@ public class HeartCanvas : ModuleRules
 {
     public HeartCanvas(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         bUseUnity = false;
 
         PublicDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "Core",
                 "InputCore",
@@ -17,20 +17,21 @@ public class HeartCanvas : ModuleRules
         );
 
         PublicDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "HeartCore",
-                "Heart",
+                "Heart"
             }
         );
 
         PrivateDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "StructUtils"
             }
         );
     }

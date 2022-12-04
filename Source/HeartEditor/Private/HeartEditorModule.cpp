@@ -6,6 +6,7 @@
 #include "Graph/AssetTypeActions_HeartGraph.h"
 #include "Graph/HeartGraphAssetEditor.h"
 //#include "Asset/HeartAssetIndexer.h"
+#include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
 #include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
 
 #include "Model/HeartGraph.h"
@@ -88,9 +89,13 @@ void FHeartEditorModule::RegisterAssets()
 	RegisteredAssetActions.Add(HeartGraphActions);
 	AssetTools.RegisterAssetTypeActions(HeartGraphActions);
 
-	const TSharedRef<IAssetTypeActions> HeartNodeActions = MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint());
-	RegisteredAssetActions.Add(HeartNodeActions);
-	AssetTools.RegisterAssetTypeActions(HeartNodeActions);
+	const TSharedRef<IAssetTypeActions> HeartGraphBlueprintActions = MakeShareable(new FAssetTypeActions_HeartGraphBlueprint());
+	RegisteredAssetActions.Add(HeartGraphBlueprintActions);
+	AssetTools.RegisterAssetTypeActions(HeartGraphBlueprintActions);
+
+	const TSharedRef<IAssetTypeActions> HeartNodeBlueprintActions = MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint());
+	RegisteredAssetActions.Add(HeartNodeBlueprintActions);
+	AssetTools.RegisterAssetTypeActions(HeartNodeBlueprintActions);
 }
 
 void FHeartEditorModule::UnregisterAssets()

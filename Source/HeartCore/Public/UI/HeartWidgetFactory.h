@@ -7,7 +7,7 @@
 
 #include "HeartWidgetFactory.generated.h"
 
-UCLASS(Abstract, Blueprintable, BlueprintType, EditInlineNew)
+UCLASS(Abstract, Blueprintable, BlueprintType, EditInlineNew, CollapseCategories)
 class HEARTCORE_API UHeartWidgetFactory : public UObject
 {
 	GENERATED_BODY()
@@ -18,14 +18,14 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FHeartWidgetFactoryRules
+struct HEARTCORE_API FHeartWidgetFactoryRules
 {
 	GENERATED_BODY()
 
 	TSubclassOf<UUserWidget> GetWidgetClass(const UObject* Data) const;
 
 protected:
-	UPROPERTY(EditAnywhere, Instanced, Category = "Heart|WidgetFactoryRules")
+	UPROPERTY(EditAnywhere, Instanced, Category = "WidgetFactoryRules")
 	TArray<TObjectPtr<UHeartWidgetFactory>> FactoryRules;
 };
 

@@ -10,7 +10,7 @@
 
 bool UHeartPinConnectionDragDropOperation::SetupDragDropOperation()
 {
-	if (UHeartGraphCanvasPin* CanvasPin = Cast<UHeartGraphCanvasPin>(Payload))
+	if (UHeartGraphCanvasPin* CanvasPin = Cast<UHeartGraphCanvasPin>(SummonedBy))
 	{
 		DraggedPin = CanvasPin;
 		Canvas = CanvasPin->GetCanvas();

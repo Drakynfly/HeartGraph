@@ -40,6 +40,9 @@ class HEART_API UHeartGraph : public UObject
 	friend class UHeartEdGraph;
 
 public:
+
+	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
+
 #if WITH_EDITOR
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 #endif

@@ -41,9 +41,9 @@ protected:
 	void DisplayPreviewConnectionTarget(bool IsTarget, bool CanConnect);
 
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvasPin")
+	UPROPERTY(BlueprintReadOnly, Category = "GraphCanvasPin")
 	TWeakObjectPtr<UHeartGraphPin> GraphPin;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphCanvasPin")
+	UPROPERTY(BlueprintReadOnly, Category = "GraphCanvasPin")
 	TWeakObjectPtr<UHeartGraphCanvasNode> GraphCanvasNode;
 };

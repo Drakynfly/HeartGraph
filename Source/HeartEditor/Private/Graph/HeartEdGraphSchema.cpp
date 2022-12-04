@@ -224,21 +224,29 @@ UClass* UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(const UClass* HeartGrap
 
 void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName)
 {
-	TArray<UClass*> FilteredNodes;
+	TMap<UClass*, TSubclassOf<UHeartGraphNode>> FilteredNodes;
 
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
-	Registry->GetFilteredNodeClasses(FNativeNodeClassFilter::CreateLambda([](UClass* NodeClass)
+	Registry->GetFilteredNodeClassesWithGraphClass(FNativeNodeClassFilter::CreateLambda([](UClass* NodeClass)
 		{
 			return true;
 		}), FilteredNodes);
 
-	for (auto&& HeartGraphNode : FilteredNodes)
+	for (auto&& NodeClass : FilteredNodes)
 	{
-		// @todo figure out how to filter by category
-		// if ((CategoryName.IsEmpty() || CategoryName.Equals(HeartGraphNode->GetNodeCategory().ToString())))
+		if (NodeClass.Key && NodeClass.Value)
 		{
-			TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(HeartGraphNode));
-			ActionMenuBuilder.AddAction(NewNodeAction);
+			auto&& NodeDefault = GetDefault<UObject>(NodeClass.Key);
+			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(NodeClass.Value);
+
+			if (NodeDefault && GraphNodeDefault)
+			{
+				if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetNodeCategory().ToString())))
+				{
+					TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeDefault, GraphNodeDefault));
+					ActionMenuBuilder.AddAction(NewNodeAction);
+				}
+			}
 		}
 	}
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "InstancedStruct.h"
 #include "HeartWidgetInputBindingBase.generated.h"
 
 class UHeartWidgetInputLinker;
@@ -23,4 +24,8 @@ public:
 	// Optionally set condition
 	UPROPERTY(EditAnywhere, Instanced, meta = (DisplayPriority = 100))
 	TObjectPtr<UHeartWidgetInputCondition> Condition;
+
+protected:
+	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))
+	TArray<FInstancedStruct> Triggers;
 };

@@ -39,6 +39,7 @@ public:
 	TSharedPtr<FUICommandInfo> TogglePinBreakpoint;
 
 	/** Jumps */
+	TSharedPtr<FUICommandInfo> JumpToGraphNodeDefinition;
 	TSharedPtr<FUICommandInfo> JumpToNodeDefinition;
 
 	virtual void RegisterCommands() override;

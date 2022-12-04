@@ -14,9 +14,10 @@ class HEARTCORE_API UHeartWidgetFactory_Class : public UHeartWidgetFactory
 	GENERATED_BODY()
 
 public:
+	UClass* GetActualSuperClass(const UClass* Class) const;
 	virtual TSubclassOf<UUserWidget> FindWidgetClassForData_Implementation(const UObject* Data) const override;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Heart|WidgetFactoryClass", meta = (AllowAbstract))
+	UPROPERTY(EditAnywhere, Category = "WidgetFactoryClass", meta = (AllowAbstract))
 	TMap<TSoftClassPtr<UObject>, TSubclassOf<UUserWidget>> EntryWidgetForClass;
 };

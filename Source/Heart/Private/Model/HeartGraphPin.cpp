@@ -89,19 +89,19 @@ void UHeartGraphPin::DisconnectFromAll(const bool NotifyNodes)
 	}
 }
 
-FName UHeartGraphPin::GetPinName_Implementation() const
+FName UHeartGraphPin::GetPinName() const
 {
-	return GetFName();
+	return PinName;
 }
 
-FText UHeartGraphPin::GetFriendlyName_Implementation() const
+FText UHeartGraphPin::GetFriendlyName() const
 {
-	return FText::FromName(GetPinName());
+	return PinFriendlyName;
 }
 
-FText UHeartGraphPin::GetToolTip_Implementation() const
+FText UHeartGraphPin::GetToolTip() const
 {
-	return FText();
+	return PinTooltip;
 }
 
 FEdGraphPinType UHeartGraphPin::GetPinType() const
@@ -184,4 +184,9 @@ UHeartGraphPin* UHeartGraphPin::ResolveConnection(const int32 Index) const
 	}
 
 	return nullptr;
+}
+
+FInstancedStruct UHeartGraphPin::TEST_STATIC_MAKE_DOUBLE(FHeartGraphPinDouble Value)
+{
+	return FInstancedStruct::Make<FHeartGraphPinDouble>(Value);
 }

@@ -94,6 +94,8 @@ public:
 
 	void GetFilteredNodeClasses(const FNativeNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
 
+	void GetFilteredNodeClassesWithGraphClass(const FNativeNodeClassFilter& Filter, TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	void GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
 
@@ -134,11 +136,11 @@ private:
 
 	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.
 	UPROPERTY()
-	TMap<TSubclassOf<UHeartGraphNode>, TObjectPtr<UClass>> NodeVisualizerMap;
+	TMap<TSubclassOf<UHeartGraphNode>, FRefCountedClass> NodeVisualizerMap;
 
 	// Maps Graph Pin classes to the visualizer class that can represent them in an interactive graph.
 	UPROPERTY()
-	TMap<TSubclassOf<UHeartGraphPin>, TObjectPtr<UClass>> PinVisualizerMap;
+	TMap<TSubclassOf<UHeartGraphPin>, FRefCountedClass> PinVisualizerMap;
 
 	UPROPERTY()
 	TArray<TObjectPtr<UGraphNodeRegistrar>> ContainedRegistrars;

@@ -40,7 +40,8 @@ void FHeartGraphCommands::RegisterCommands()
 	UI_COMMAND(DisablePinBreakpoint, "Disable Pin Breakpoint", "Disables a breakpoint on the pin", EUserInterfaceActionType::Button, FInputChord());
 	UI_COMMAND(TogglePinBreakpoint, "Toggle Pin Breakpoint", "Toggles a breakpoint on the pin", EUserInterfaceActionType::Button, FInputChord());
 
-	UI_COMMAND(JumpToNodeDefinition, "Jump to Node Definition", "Jump to the node definition", EUserInterfaceActionType::Button, FInputChord());
+	UI_COMMAND(JumpToGraphNodeDefinition, "Jump to Graph Node Definition", "Jumps to the graph node definition", EUserInterfaceActionType::Button, FInputChord());
+	UI_COMMAND(JumpToNodeDefinition, "Jump to Node Object Definition", "Jumps to the node object definition", EUserInterfaceActionType::Button, FInputChord());
 }
 
 FHeartSpawnNodeCommands::FHeartSpawnNodeCommands()

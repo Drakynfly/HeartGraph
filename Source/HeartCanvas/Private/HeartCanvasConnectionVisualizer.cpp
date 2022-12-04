@@ -120,14 +120,36 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 			{
 				auto&& StartGeom = PinPair.Value.Value;
 
+				// @todo kinda awful that this is the only way ive found to do this...
+				FVector2D StartPoint;
+
+				FVector CustomPosition;
+				if (IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(PinPair.Value.Key, CustomPosition))
+				{
+					StartPoint = FVector2D(CustomPosition);
+				}
+				else
+				{
+					// @todo kinda awful that this is the only way ive found to do this...
+					StartPoint = GraphDesktopGeometry.AbsoluteToLocal(StartGeom.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(StartGeom)));
+				}
+
 				auto&& ConnectedPins = Pin->GetAllConnections();
 				for (auto&& ConnectedPin : ConnectedPins)
 				{
 					auto&& EndGeom = Pins.Find(ConnectedPin)->Value;
 
-					// @todo kinda awful that this is the only way ive found to do this...
-					const FVector2D StartPoint = GraphDesktopGeometry.AbsoluteToLocal(StartGeom.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(StartGeom)));
-					const FVector2D EndPoint = GraphDesktopGeometry.AbsoluteToLocal(EndGeom.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(EndGeom)));
+					FVector2D EndPoint;
+
+					if (IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(Pins.Find(ConnectedPin)->Key, CustomPosition))
+					{
+						EndPoint = FVector2D(CustomPosition);
+					}
+					else
+					{
+						// @todo kinda awful that this is the only way ive found to do this...
+						EndPoint = GraphDesktopGeometry.AbsoluteToLocal(EndGeom.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(EndGeom)));
+					}
 
 					//const FVector2D StartPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(StartGeom);
 					//const FVector2D EndPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(EndGeom);

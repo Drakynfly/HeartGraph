@@ -451,9 +451,14 @@ void FHeartGraphAssetEditor::BindGraphCommands()
 	);
 
 	// Jump commands
+	ToolkitCommands->MapAction(HeartGraphCommands.JumpToGraphNodeDefinition,
+        FExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::JumpToGraphNodeDefinition),
+        FCanExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::CanJumpToGraphNodeDefinition));
+
+	// Jump commands
 	ToolkitCommands->MapAction(HeartGraphCommands.JumpToNodeDefinition,
-        FExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::JumpToNodeDefinition),
-        FCanExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::CanJumpToNodeDefinition));
+		FExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::JumpToNodeObjectDefinition),
+		FCanExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::CanJumpToNodeObjectDefinition));
 }
 
 void FHeartGraphAssetEditor::UndoGraphAction()
@@ -1165,7 +1170,7 @@ bool FHeartGraphAssetEditor::CanTogglePinBreakpoint() const
 	return FocusedGraphEditor->GetGraphPinForMenu() != nullptr;
 }
 
-void FHeartGraphAssetEditor::JumpToNodeDefinition() const
+void FHeartGraphAssetEditor::JumpToGraphNodeDefinition() const
 {
 	// Iterator used but should only contain one node
 	for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
@@ -1175,9 +1180,47 @@ void FHeartGraphAssetEditor::JumpToNodeDefinition() const
 	}
 }
 
-bool FHeartGraphAssetEditor::CanJumpToNodeDefinition() const
+bool FHeartGraphAssetEditor::CanJumpToGraphNodeDefinition() const
 {
-	return GetSelectedHeartGraphNodes().Num() == 1;
+	if (!GetSelectedHeartGraphNodes().Num() == 1)
+	{
+		return false;
+	}
+
+	// Iterator used but should only contain one node
+	for (auto&& EdGraphNode : GetSelectedHeartGraphNodes())
+	{
+		return EdGraphNode && IsValid(EdGraphNode->GetHeartGraphNode());
+	}
+
+	return false;
+}
+
+void FHeartGraphAssetEditor::JumpToNodeObjectDefinition() const
+{
+	// Iterator used but should only contain one node
+	for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+	{
+		SelectedNode->JumpToNodeDefinition();
+		return;
+	}
+}
+
+bool FHeartGraphAssetEditor::CanJumpToNodeObjectDefinition() const
+{
+	if (!GetSelectedHeartGraphNodes().Num() == 1)
+    {
+    	return false;
+    }
+
+	// Iterator used but should only contain one node
+	for (auto&& EdGraphNode : GetSelectedHeartGraphNodes())
+	{
+		return EdGraphNode && IsValid(EdGraphNode->GetHeartGraphNode())
+			&& IsValid(EdGraphNode->GetHeartGraphNode()->GetNodeObject());
+	}
+
+    return false;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -4,6 +4,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
+#include "UI/HeartUMGContextObject.h"
 
 using namespace Heart::Input;
 
@@ -84,7 +85,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 			PassedCondition = ConditionalDropDropTrigger.Condition.Execute(Widget);
 		}
 
-		if (PassedCondition && IsValid(ConditionalDropDropTrigger.Class))
+		if (PassedCondition && ConditionalDropDropTrigger.Callback.IsBound())
 		{
 			const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget->GetCachedWidget();
 			if (SlateWidgetDetectingDrag.IsValid())
@@ -214,16 +215,14 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 	DropDropTriggerArray.Sort();
 	for (auto&& DragDropTrigger : DropDropTriggerArray)
 	{
-		if (IsValid(DragDropTrigger.Class))
+		if (DragDropTrigger.Callback.IsBound())
 		{
-			UHeartDragDropOperation* DragDropOperation = NewObject<UHeartDragDropOperation>(GetTransientPackage(), DragDropTrigger.Class);
-			DragDropOperation->Payload = Widget;
+			UHeartDragDropOperation* DragDropOperation = DragDropTrigger.Callback.Execute(Widget);
+			DragDropOperation->SummonedBy = Widget;
 
-			if (IsValid(DragDropTrigger.VisualClass))
+			if (Widget->Implements<UHeartUMGContextObject>())
 			{
-				DragDropOperation->DefaultDragVisual = CreateWidget(Widget, DragDropTrigger.VisualClass);
-				DragDropOperation->Pivot = DragDropTrigger.Pivot;
-				DragDropOperation->Offset = DragDropTrigger.Offset;
+				DragDropOperation->Payload = IHeartUMGContextObject::Execute_GetContextObject(Widget);
 			}
 
 			// @todo its a little bogus to create the ddo then call this every time to see if it will be handled :/
@@ -233,7 +232,7 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Created DDO unnecessarily, figure out why"))
+				UE_LOG(LogTemp, Warning, TEXT("Created DDO (%s) unnecessarily, figure out why"), *DragDropOperation->GetClass()->GetName())
 			}
 		}
 	}

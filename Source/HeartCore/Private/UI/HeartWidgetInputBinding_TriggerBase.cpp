@@ -10,19 +10,19 @@ bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker)
 	{
 		auto&& NewEvent = Event->CreateEvent();
 
+		Heart::Input::FConditionalInputCallback InputCallback;
+		InputCallback.Callback = NewEvent.Callback;
+		InputCallback.Layer = NewEvent.Layer;
+
+		if (Condition)
+		{
+			InputCallback.Condition = Condition->CreateCondition();
+		}
+
 		for (auto&& Trigger : Triggers)
 		{
 			if (Trigger.IsValid())
 			{
-				Heart::Input::FConditionalInputCallback InputCallback;
-				InputCallback.Callback = NewEvent.Callback;
-				InputCallback.Layer = NewEvent.Layer;
-
-				if (Condition)
-				{
-					InputCallback.Condition = Condition->CreateCondition();
-				}
-
 				Linker->BindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip(), InputCallback);
 			}
 		}

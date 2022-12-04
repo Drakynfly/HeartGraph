@@ -12,14 +12,14 @@ TSharedPtr<FHeartGraphAssetEditor> FHeartGraphUtils::GetHeartGraphAssetEditor(co
 {
 	check(ObjectToFocusOn);
 
-	TSharedPtr<FHeartGraphAssetEditor> FlowAssetEditor;
-	if (UHeartGraph* FlowAsset = Cast<const UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph())
+	TSharedPtr<FHeartGraphAssetEditor> HeartGraphAssetEditor;
+	if (UHeartGraph* HeartGraph = Cast<const UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph())
 	{
-		const TSharedPtr<IToolkit> FoundAssetEditor = FToolkitManager::Get().FindEditorForAsset(FlowAsset);
+		const TSharedPtr<IToolkit> FoundAssetEditor = FToolkitManager::Get().FindEditorForAsset(HeartGraph);
 		if (FoundAssetEditor.IsValid())
 		{
-			FlowAssetEditor = StaticCastSharedPtr<FHeartGraphAssetEditor>(FoundAssetEditor);
+			HeartGraphAssetEditor = StaticCastSharedPtr<FHeartGraphAssetEditor>(FoundAssetEditor);
 		}
 	}
-	return FlowAssetEditor;
+	return HeartGraphAssetEditor;
 }

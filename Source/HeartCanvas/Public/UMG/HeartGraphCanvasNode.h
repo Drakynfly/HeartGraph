@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
 	UHeartGraphCanvasPin* CreatePinWidget(UHeartGraphPin* Pin);
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
+	void DestroyPinWidget(UHeartGraphCanvasPin* PinWidget);
+
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnZoomSet(double Zoom);
 
@@ -59,7 +62,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TWeakObjectPtr<UHeartGraphCanvas> GraphCanvas;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Widgets")
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TArray<TObjectPtr<UHeartGraphCanvasPin>> PinWidgets;
 
 	UPROPERTY(BlueprintReadOnly, Category = "State")

@@ -60,10 +60,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
 	void RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From);
 
+	UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
+
 private:
 	// Maps Classes to the Registry instance we keep for them
 	UPROPERTY()
 	TMap<FSoftClassPath, TObjectPtr<UHeartGraphNodeRegistry>> NodeRegistries;
+
+	UPROPERTY()
+	TObjectPtr<UGraphNodeRegistrar> FallbackRegistrar;
 
 	FHeartRegistrationClasses KnownNativeClasses;
 

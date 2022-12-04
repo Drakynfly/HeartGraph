@@ -5,50 +5,50 @@
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
 
-bool UHeartGraphCanvasAction::Execute(UObject* Object, const FHeartInputActivation& Activation)
+bool UHeartGraphCanvasAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (auto&& Graph = Cast<UHeartGraphCanvas>(Object))
 	{
-		ExecuteOnGraph(Graph, Activation);
+		ExecuteOnGraph(Graph, Activation, ContextObject);
 		return true;
 	}
 
 	if (auto&& Node = Cast<UHeartGraphCanvasNode>(Object))
 	{
-		ExecuteOnNode(Node, Activation);
+		ExecuteOnNode(Node, Activation, ContextObject);
 		return true;
 	}
 
 	if (auto&& Pin = Cast<UHeartGraphCanvasPin>(Object))
 	{
-		ExecuteOnPin(Pin, Activation);
+		ExecuteOnPin(Pin, Activation, ContextObject);
 		return true;
 	}
 
 	return false;
 }
 
-void UHeartGraphCanvasActionBlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation)
+void UHeartGraphCanvasActionBlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Graph)))
 	{
-		BP_ExecuteOnGraph(Graph, Activation);
+		BP_ExecuteOnGraph(Graph, Activation, ContextObject);
 	}
 }
 
-void UHeartGraphCanvasActionBlueprintBase::ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation)
+void UHeartGraphCanvasActionBlueprintBase::ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Node)))
 	{
-		BP_ExecuteOnNode(Node, Activation);
+		BP_ExecuteOnNode(Node, Activation, ContextObject);
 	}
 }
 
-void UHeartGraphCanvasActionBlueprintBase::ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation)
+void UHeartGraphCanvasActionBlueprintBase::ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Pin)))
 	{
-		BP_ExecuteOnPin(Pin, Activation);
+		BP_ExecuteOnPin(Pin, Activation, ContextObject);
 	}
 }
 

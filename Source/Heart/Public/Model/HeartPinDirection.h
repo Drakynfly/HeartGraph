@@ -7,7 +7,7 @@
 /**
  *
  */
-UENUM()
+UENUM(BlueprintType)
 enum class EHeartPinDirection : uint8
 {
 	None = 0 UMETA(Hidden),

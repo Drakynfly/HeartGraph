@@ -20,6 +20,9 @@ public:
 
 	// Enables use of the Node Registry Subsystem at runtime. Imposes a small performance hit during startup, and a
 	// small memory footprint.
-	UPROPERTY(Config, EditAnywhere, Category = "Runtime")
+	UPROPERTY(config, EditAnywhere, Category = "Runtime")
 	bool CreateRuntimeNodeRegistry = false;
+
+	UPROPERTY(config, EditAnywhere, Category = "Fallback", meta = (AllowedClasses = "/Script/Heart.GraphNodeRegistrar"))
+	FSoftObjectPath FallbackVisualizerRegistrar;
 };

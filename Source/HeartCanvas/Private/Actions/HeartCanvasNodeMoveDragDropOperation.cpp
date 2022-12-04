@@ -8,13 +8,12 @@
 #include "UMG/HeartGraphCanvasNode.h"
 
 #include "Components/CanvasPanelSlot.h"
-#include "General/HeartGeneralUtils.h"
 
 bool UHeartCanvasNodeMoveDragDropOperation::SetupDragDropOperation()
 {
-	if (UHeartGraphCanvasNode* PayloadAsNode = Cast<UHeartGraphCanvasNode>(Payload))
+	if (UHeartGraphCanvasNode* CreatedByNode = Cast<UHeartGraphCanvasNode>(SummonedBy))
 	{
-		Node = PayloadAsNode;
+		Node = CreatedByNode;
 
 		if (FSlateApplication::IsInitialized())
 		{
@@ -66,5 +65,6 @@ FVector2D UHeartCanvasNodeMoveDragDropOperation::ClampToBorder(const FVector2D& 
 {
 	const FVector2D PanelSize = Node->GetCanvas()->GetTickSpaceGeometry().GetLocalSize();
 	const FVector2D NodeSize = Node->GetDesiredSize();
-	return UHeartGeneralUtils::BP_ClampVector2D(Value, FVector2DBounds(FVector2D(0.f), PanelSize - NodeSize));
+	return FVector2D(FMath::Clamp(Value.X, 0.0, (PanelSize - NodeSize).X),
+					 FMath::Clamp(Value.Y, 0.0, (PanelSize - NodeSize).Y));
 }

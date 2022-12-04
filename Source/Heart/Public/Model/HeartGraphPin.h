@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "HeartGraphPinType.h"
 #include "UObject/Object.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartGraphPinReference.h"
@@ -17,7 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartPinConnectionsChanged, UHeartG
  *
  */
 UCLASS(BlueprintType)
-class HEART_API UHeartGraphPin : public UObject
+class HEART_API UHeartGraphPin : public UObject // Based on UEdGraphPin
 {
 	GENERATED_BODY()
 
@@ -38,13 +39,13 @@ public:
 	/**		REFLECTION			*/
 	/****************************/
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FName GetPinName() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FText GetFriendlyName() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FText GetToolTip() const;
 
 
@@ -78,6 +79,9 @@ public:
 	FHeartGraphPinReference GetReference() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
+	FHeartGraphPinType GetType() const { return Type; }
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	EHeartPinDirection GetDirection() const { return PinDirection; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
@@ -98,6 +102,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
 
+	UFUNCTION(BlueprintPure, Category = "Heart|TEST")
+	static FInstancedStruct TEST_STATIC_MAKE_DOUBLE(FHeartGraphPinDouble Value);
+
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
@@ -108,6 +115,15 @@ private:
 
 	UPROPERTY()
 	FName PinName;
+
+	UPROPERTY()
+	FText PinFriendlyName;
+
+	UPROPERTY()
+	FText PinTooltip;
+
+	UPROPERTY()
+	FHeartGraphPinType Type;
 
 	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	EHeartPinDirection PinDirection;

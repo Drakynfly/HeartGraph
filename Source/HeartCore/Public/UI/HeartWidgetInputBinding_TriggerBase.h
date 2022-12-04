@@ -4,7 +4,6 @@
 
 #include "HeartWidgetInputBindingBase.h"
 #include "HeartWidgetInputEvent.h"
-#include "InstancedStruct.h"
 #include "HeartWidgetInputBinding_TriggerBase.generated.h"
 
 /**
@@ -22,7 +21,4 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Instanced)
 	TObjectPtr<UHeartWidgetInputEvent> Event;
-
-	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))
-	TArray<FInstancedStruct> Triggers;
 };
