@@ -19,18 +19,13 @@ UWorld* UHeartGraphNode::GetWorld() const
 	return nullptr;
 }
 
-void UHeartGraphNode::PostDuplicate(EDuplicateMode::Type DuplicateMode)
-{
-	UObject::PostDuplicate(DuplicateMode);
-}
-
 #if WITH_EDITOR
 
 void UHeartGraphNode::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
 {
 	// Save the NodeObject with us in the editor
 	UHeartGraphNode* This = CastChecked<UHeartGraphNode>(InThis);
-	Collector.AddReferencedObject(This->NodeObject, This);
+	//Collector.AddReferencedObject(This->NodeObject, This);
 
 	Super::AddReferencedObjects(InThis, Collector);
 }
@@ -111,6 +106,22 @@ UHeartGraphPin* UHeartGraphNode::GetPin(const FHeartPinGuid& PinGuid)
 {
 	auto&& Result = Pins.Find(PinGuid);
 	return Result ? *Result : nullptr;
+}
+
+UHeartGraphPin* UHeartGraphNode::GetPinByName(const FName& Name)
+{
+	for (auto&& Pin : Pins)
+	{
+		if (IsValid(Pin.Value))
+		{
+			if (Pin.Value->PinName == Name)
+			{
+				return Pin.Value;
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 TArray<UHeartGraphPin*> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirection Direction, const TSubclassOf<UHeartGraphPin> Class) const
@@ -267,12 +278,22 @@ void UHeartGraphNode::AddPin(UHeartGraphPin* Pin)
 
 bool UHeartGraphNode::RemovePin(UHeartGraphPin* Pin)
 {
-	if (!ensure(IsValid(Pin) && Pin->GetGuid().IsValid()))
+	if (!ensure(IsValid(Pin)))
 	{
 		return false;
 	}
 
-	auto&& Removed = Pins.Remove(Pin->GetGuid());
+	return RemovePinByGuid(Pin->GetGuid());
+}
+
+bool UHeartGraphNode::RemovePinByGuid(const FHeartPinGuid Pin)
+{
+	if (!ensure(Pin.IsValid()))
+	{
+		return false;
+	}
+
+	auto&& Removed = Pins.Remove(Pin);
 	if (Removed > 0)
 	{
 		OnNodePinsChanged.Broadcast(this);
@@ -309,6 +330,35 @@ void UHeartGraphNode::RemoveUserOutput(const FName& PinName)
 			break;
 		}
 	}
+}
+
+void UHeartGraphNode::OnCreate()
+{
+	auto&& TemplateInputs = GetDefaultInputs();
+	TemplateInputs.Append(GetDynamicInputs());
+
+	auto&& TemplateOutputs = GetDefaultOutputs();
+	TemplateOutputs.Append(GetDynamicOutputs());
+
+	// recreate inputs
+	for (auto&& TemplateInput : TemplateInputs)
+	{
+		if (auto&& NewPin = CreatePin(TemplateInput.Key, EHeartPinDirection::Input, TemplateInput.Value))
+		{
+			AddPin(NewPin);
+		}
+	}
+
+	// recreate outputs
+	for (auto&& TemplateOutput : TemplateOutputs)
+	{
+		if (auto&& NewPin = CreatePin(TemplateOutput.Key, EHeartPinDirection::Output, TemplateOutput.Value))
+		{
+			AddPin(NewPin);
+		}
+	}
+
+	BP_OnCreate();
 }
 
 void UHeartGraphNode::NotifyPinConnectionsChanged(UHeartGraphPin* Pin)

@@ -187,8 +187,13 @@ TSharedPtr<FEdGraphSchemaAction> UHeartEdGraphSchema::GetCreateCommentAction() c
 void UHeartEdGraphSchema::OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB,
 	const FVector2D& GraphPosition) const
 {
-	Super::OnPinConnectionDoubleCicked(PinA, PinB, GraphPosition);
 	OnPinConnectionDoubleClicked(PinA, PinB, GraphPosition);
+}
+
+void UHeartEdGraphSchema::OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGraphPin* PinB,
+	const FVector2D& GraphPosition) const
+{
+	Super::OnPinConnectionDoubleCicked(PinA, PinB, GraphPosition);
 }
 
 TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass)

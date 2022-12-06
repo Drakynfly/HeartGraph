@@ -60,20 +60,33 @@ const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphS
 	return GetSchema();
 }
 
-UHeartGraphNode* UHeartGraph::CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location)
 {
-	if (!ensure(IsValid(NodeClass)))
+	TSubclassOf<UHeartGraphNode> GraphNodeClass;
+
+	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
 	{
+		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeObject->GetClass());
+	}
+
+	if (!IsValid(GraphNodeClass))
+	{
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class: %s!"), *NodeObject->GetClass()->GetName())
 		return nullptr;
 	}
 
-	auto&& Schema = GetSchema();
+	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
+	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
+	NewGraphNode->Location = Location;
+	NewGraphNode->NodeObject = NodeObject;
 
-	if (!ensure(IsValid(Schema)))
-	{
-		return nullptr;
-	}
+	NewGraphNode->OnCreate();
 
+	return NewGraphNode;
+}
+
+UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+{
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
 	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
@@ -87,18 +100,52 @@ UHeartGraphNode* UHeartGraph::CreateNode(const TSubclassOf<UObject> NodeClass, c
 		return nullptr;
 	}
 
+	// The graph has to be the outer for the NodeObjects or Unreal will kill them when recompiling the heart graph blueprint
+	// This is probably just a issue with the current version of unreal (5.1.0), but even if it's fixed, it's probably fine
+	// to leave it like this.
+	auto&& NewNodeObject = NewObject<UObject>(this, NodeClass);
+
 	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
 	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
 	NewGraphNode->Location = Location;
-	NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeClass);
+	NewGraphNode->NodeObject = NewNodeObject;
+
+	NewGraphNode->OnCreate();
 
 	return NewGraphNode;
+}
+
+UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+{
+	if (!ensure(IsValid(NodeClass)))
+	{
+		return nullptr;
+	}
+
+	return CreateNodeForNodeClass(NodeClass, Location);
+}
+
+UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
+{
+	if (!ensure(IsValid(NodeObject)))
+	{
+		return nullptr;
+	}
+
+	return CreateNodeForNodeObject(NodeObject, Location);
 }
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
 	if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
 	{
+		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
+		return;
+	}
+
+	if (!ensure(IsValid(Node->GetNodeObject())))
+	{
+		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node with invalid object!"))
 		return;
 	}
 

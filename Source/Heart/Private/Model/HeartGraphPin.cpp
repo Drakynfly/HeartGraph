@@ -13,9 +13,9 @@ UWorld* UHeartGraphPin::GetWorld() const
 	return nullptr;
 }
 
-void UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
+bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 {
-	if (Other)
+	if (ensure(IsValid(Other)))
 	{
 		// Make sure we don't already link to it
 		if (!Links.Contains(Other->GetReference()))
@@ -24,12 +24,12 @@ void UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 
 			if (!ensureMsgf(!Other->Links.Contains(GetReference()), TEXT("")))
 			{
-				return;
+				return false;
 			}
 
 			if (!ensureMsgf(MyNode->GetGraph() == Other->GetNode()->GetGraph(), TEXT("")))
 			{
-				return;
+				return false;
 			}
 
 			// Check that the other pin does not link to us
@@ -42,8 +42,11 @@ void UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 
 			OnPinConnectionsChanged.Broadcast(this);
 			Other->OnPinConnectionsChanged.Broadcast(Other);
+			return true;
 		}
 	}
+
+	return false;
 }
 
 void UHeartGraphPin::DisconnectFrom(const FHeartGraphPinReference Other, const bool NotifyNode)
@@ -94,12 +97,12 @@ FName UHeartGraphPin::GetPinName() const
 	return PinName;
 }
 
-FText UHeartGraphPin::GetFriendlyName() const
+const FText& UHeartGraphPin::GetFriendlyName() const
 {
 	return PinFriendlyName;
 }
 
-FText UHeartGraphPin::GetToolTip() const
+const FText& UHeartGraphPin::GetToolTip() const
 {
 	return PinTooltip;
 }

@@ -21,6 +21,7 @@
 #include "Editor/EditorEngine.h"
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditorActions.h"
+#include "HeartEditorModule.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "ScopedTransaction.h"
 #include "SourceCodeNavigation.h"
@@ -108,20 +109,6 @@ UHeartEdGraphNode::UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer
 	OrphanedPinSaveMode = ESaveOrphanPinMode::SaveAll;
 }
 
-void UHeartEdGraphNode::PreSave(FObjectPreSaveContext SaveContext)
-{
-	Super::PreSave(SaveContext);
-
-	// Sync runtime location with position in edgraph
-	if (IsValid(HeartGraphNode))
-	{
-		FVector2D NewLocation;
-		NewLocation.X = NodePosX;
-		NewLocation.Y = NodePosY;
-		HeartGraphNode->SetLocation(NewLocation);
-	}
-}
-
 void UHeartEdGraphNode::SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode)
 {
 	HeartGraphNode = InHeartGraphNode;
@@ -158,11 +145,11 @@ void UHeartEdGraphNode::PostDuplicate(bool bDuplicateForPIE)
 	{
 		CreateNewGuid();
 
-		if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
-		{
-			auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
-			HeartGraphNode->GetGraph()->AddNode(DuplicatedNode);
-		}
+		//if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
+		//{
+		//	auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
+		//	HeartGraphNode->GetGraph()->AddNode(DuplicatedNode);
+		//}
 	}
 }
 
@@ -172,6 +159,20 @@ void UHeartEdGraphNode::PostEditImport()
 
 	PostCopyNode();
 	SubscribeToExternalChanges();
+}
+
+void UHeartEdGraphNode::PreSave(FObjectPreSaveContext SaveContext)
+{
+	Super::PreSave(SaveContext);
+
+	// Sync runtime location with position in edgraph
+	if (IsValid(HeartGraphNode))
+	{
+		FVector2D NewLocation;
+		NewLocation.X = NodePosX;
+		NewLocation.Y = NodePosY;
+		HeartGraphNode->SetLocation(NewLocation);
+	}
 }
 
 void UHeartEdGraphNode::PostPlacedNewNode()
@@ -189,6 +190,86 @@ void UHeartEdGraphNode::PrepareForCopying()
 	{
 		// Temporarily take ownership of the HeartGraphNode, so that it is not deleted when cutting
 		HeartGraphNode->Rename(nullptr, this, REN_DontCreateRedirectors);
+	}
+}
+
+void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
+{
+	Super::PinConnectionListChanged(Pin);
+
+	// Get the matching HeartPin for the EdGraphPin that was changed
+	auto&& HeartPin = HeartGraphNode->GetPinByName(Pin->PinName);
+
+	if (!ensure(IsValid(HeartPin)))
+	{
+		UE_LOG(LogHeartEditor, Error, TEXT("Changed HeartEdGraphNode does not have a HeartGraphPin equivilant!"))
+		return;
+	}
+
+	TSet<FName> LinksToDisconnect;
+
+	// Resolve all linked pins
+	auto&& HeartLinks = HeartPin->GetLinks();
+	TArray<UHeartGraphPin*> LinkedPins;
+	for (auto&& HeartLink : HeartLinks)
+	{
+		if (auto&& LinkedPin = HeartPin->ResolveConnectionByReference(HeartLink))
+		{
+			LinkedPins.Add(LinkedPin);
+
+			bool FoundConnection = false;
+
+			for (auto&& EdGraphPin : Pin->LinkedTo)
+			{
+				// Find the one that matches the EdGraphPin
+				if (LinkedPin->PinName == EdGraphPin->PinName)
+				{
+					FoundConnection = true;
+					break;
+				}
+			}
+
+			// If we failed to find a connection, then we need to disconnect the runtime pins
+			if (!FoundConnection)
+			{
+				LinkedPin->DisconnectFrom(HeartPin->GetReference(), true);
+				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
+			}
+		}
+	}
+
+	// Ensure EdGraph Links are synced with HeartGraph links
+	for (auto&& EdGraphPin : Pin->LinkedTo)
+	{
+		bool FoundConnection = false;
+
+		for (auto&& LinkedPin : LinkedPins)
+		{
+			// Find the one that matches the EdGraphPin
+			if (LinkedPin->PinName == EdGraphPin->PinName)
+			{
+				FoundConnection = true;
+				break;
+			}
+		}
+
+		// If we failed to find a connection, then we need to connect the runtime pins
+		if (!FoundConnection)
+		{
+			auto&& HeartNodeConnectedInEditor = Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetHeartGraphNode();
+			auto&& ConnectedHeartPin = HeartNodeConnectedInEditor->GetPinByName(EdGraphPin->PinName);
+
+			if (!ensure(IsValid(ConnectedHeartPin)))
+			{
+				UE_LOG(LogHeartEditor, Error, TEXT("Changed HeartEdGraphNode does not have a HeartGraphPin equivilant!"))
+				break;
+			}
+
+			if (HeartPin->ConnectTo(ConnectedHeartPin))
+			{
+				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
+			}
+		}
 	}
 }
 
@@ -933,9 +1014,9 @@ void UHeartEdGraphNode::RefreshDynamicPins(const bool bReconstructNode)
 		}
 
 		// recreate outputs
-		for (auto&& TemplateInput : TemplateInputs)
+		for (auto&& TemplateOutput : TemplateOutputs)
 		{
-			if (auto&& NewPin = HeartGraphNode->CreatePin(TemplateInput.Key, EHeartPinDirection::Output, TemplateInput.Value))
+			if (auto&& NewPin = HeartGraphNode->CreatePin(TemplateOutput.Key, EHeartPinDirection::Output, TemplateOutput.Value))
 			{
 				HeartGraphNode->AddPin(NewPin);
 			}

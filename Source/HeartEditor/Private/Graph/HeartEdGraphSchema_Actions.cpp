@@ -60,7 +60,7 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	//ParentGraph->AddNode(NewEdGraphNode, false, bSelectNewNode);
 
 	const FVector2D NodeLocation = FVector2D(NewEdGraphNode->NodePosX, NewEdGraphNode->NodePosY);
-	auto&& NewGraphNode = HeartGraph->CreateNode(NodeClass, NodeLocation);
+	auto&& NewGraphNode = HeartGraph->CreateNodeFromClass(NodeClass, NodeLocation);
 
 	// Assign nodes to each other
 	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime

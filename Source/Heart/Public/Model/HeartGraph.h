@@ -99,25 +99,50 @@ public:
 	/****************************/
 	/**		NODE EDITING		*/
 	/****************************/
+private:
+	UHeartGraphNode* CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location);
+
+	UHeartGraphNode* CreateNodeForNodeClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location);
+
 public:
+	// Create from template graph class and template node class
 	template <typename THeartGraphNode, typename THeartNode>
 	THeartGraphNode* CreateNode(const FVector2D& Location)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
-		static_assert(!TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The node class must not derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(CreateNode(THeartNode::StaticClass(), Location));
+		static_assert(!TIsDerivedFrom<THeartNode, UHeartGraphNode>::IsDerived, "The node class must not derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(CreateNodeForNodeClass(THeartNode::StaticClass(), Location));
 	}
 
+	// Create from template graph class and node class
 	template <typename THeartGraphNode>
 	THeartGraphNode* CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
 		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of a 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNode(NodeClass, Location));
+		return Cast<THeartGraphNode>(CreateNodeForNodeClass(NodeClass, Location));
 	}
 
+	// Create from template graph class and node object
+	template <typename THeartGraphNode>
+	THeartGraphNode* CreateNode(UObject* NodeObject, const FVector2D& Location)
+	{
+		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
+		static_assert(!TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The node class must not derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(CreateNodeForNodeObject(NodeObject, Location));
+	}
+
+	/**
+	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphNode* CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location);
+	UHeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location);
+
+	/**
+	 * Create a new node, using the provided NodeObject
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void AddNode(UHeartGraphNode* Node);

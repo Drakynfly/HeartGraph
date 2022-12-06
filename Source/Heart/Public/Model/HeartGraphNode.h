@@ -46,11 +46,10 @@ class HEART_API UHeartGraphNode : public UObject
 
 	friend class UHeartGraph;
 	friend class UHeartGraphSchema;
+	friend class UHeartEdGraphNode;
 
 public:
 	virtual UWorld* GetWorld() const override;
-
-	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
 #if WITH_EDITOR
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
@@ -129,6 +128,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphPin* GetPin(const FHeartPinGuid& PinGuid);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UHeartGraphPin* GetPinByName(const FName& Name);
 
 	template <typename THeartGraphPin = UHeartGraphPin>
 	TArray<THeartGraphPin*> GetPinsOfDirection(EHeartPinDirection Direction) const
@@ -231,12 +233,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool RemovePin(UHeartGraphPin* Pin);
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	bool RemovePinByGuid(FHeartPinGuid Pin);
+
 	// @todo refactor to not use FName. either use UHeartGraphPin* or FHeartPinGuid
 	void RemoveUserInput(const FName& PinName);
 	void RemoveUserOutput(const FName& PinName);
 
-public:
 	virtual void NotifyPinConnectionsChanged(UHeartGraphPin* Pin);
+
+protected:
+	// Called by the owning graph when we are created.
+	virtual void OnCreate();
+
+	// Called by the owning graph when we are created.
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "OnCreate")
+	void BP_OnCreate();
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")

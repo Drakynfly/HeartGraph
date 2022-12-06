@@ -28,7 +28,7 @@ class HEART_API UHeartGraphPin : public UObject // Based on UEdGraphPin
 public:
 	virtual UWorld* GetWorld() const override;
 
-	void ConnectTo(UHeartGraphPin* Other);
+	bool ConnectTo(UHeartGraphPin* Other);
 
 	void DisconnectFrom(const FHeartGraphPinReference Other, bool NotifyNode);
 
@@ -43,10 +43,10 @@ public:
 	FName GetPinName() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	FText GetFriendlyName() const;
+	const FText& GetFriendlyName() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	FText GetToolTip() const;
+	const FText& GetToolTip() const;
 
 
 	/****************************/

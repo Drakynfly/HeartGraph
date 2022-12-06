@@ -54,18 +54,8 @@ class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode
 public:
 	UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
-
-
 //////////////////////////////////////////////////////////////////////////
 // Heart Graph Node
-
-private:
-	UPROPERTY(Instanced)
-	UHeartGraphNode* HeartGraphNode;
-
-	bool bBlueprintCompilationPending;
-	bool bNeedsFullReconstruction;
 
 public:
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
@@ -75,11 +65,13 @@ public:
 	virtual void PostLoad() override;
 	virtual void PostDuplicate(bool bDuplicateForPIE) override;
 	virtual void PostEditImport() override;
+	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
 	// --
 
 	// UEdGraphNode
 	virtual void PostPlacedNewNode() override;
 	virtual void PrepareForCopying() override;
+	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
     // --
 
 	void PostCopyNode();
@@ -97,9 +89,6 @@ private:
 // Graph node
 
 public:
-	UPROPERTY()
-	FHeartBreakpoint NodeBreakpoint;
-
 	// UEdGraphNode
 	virtual bool CanCreateUnderSpecifiedSchema(const UEdGraphSchema* Schema) const override;
 	virtual void AutowireNewNode(UEdGraphPin* FromPin) override;
@@ -157,12 +146,6 @@ private:
 // Pins
 
 public:
-	TArray<UEdGraphPin*> InputPins;
-	TArray<UEdGraphPin*> OutputPins;
-
-	UPROPERTY()
-	TMap<FEdGraphPinReference, FHeartBreakpoint> PinBreakpoints;
-
 	void CreateInputPin(const UHeartGraphPin* HeartPin, const int32 Index = INDEX_NONE);
 	void CreateOutputPin(const UHeartGraphPin* HeartPin, const int32 Index = INDEX_NONE);
 
@@ -205,4 +188,21 @@ private:
 	void OnResumePIE(const bool bIsSimulating);
 	void OnEndPIE(const bool bIsSimulating);
 	void ResetBreakpoints();
+
+public:
+	TArray<UEdGraphPin*> InputPins;
+	TArray<UEdGraphPin*> OutputPins;
+
+	UPROPERTY()
+	FHeartBreakpoint NodeBreakpoint;
+
+	UPROPERTY()
+	TMap<FEdGraphPinReference, FHeartBreakpoint> PinBreakpoints;
+
+private:
+	UPROPERTY(Instanced)
+	UHeartGraphNode* HeartGraphNode;
+
+	bool bBlueprintCompilationPending;
+	bool bNeedsFullReconstruction;
 };
