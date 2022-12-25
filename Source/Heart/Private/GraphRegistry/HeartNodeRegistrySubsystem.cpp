@@ -31,6 +31,8 @@ void UHeartNodeRegistrySubsystem::Initialize(FSubsystemCollectionBase& Collectio
 {
 	Super::Initialize(Collection);
 
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartNodeRegistrySubsystem Initialized"))
+
 	FetchNativeClasses();
 
 #if !WITH_EDITOR
@@ -82,7 +84,7 @@ void UHeartNodeRegistrySubsystem::OnAssetAdded(const FAssetData& AssetData)
 	{
 		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 		{
-			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()) )
+			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
 			{
 				AutoAddRegistrar(NewRegistrar);
 			}
@@ -94,11 +96,11 @@ void UHeartNodeRegistrySubsystem::OnAssetRemoved(const FAssetData& AssetData)
 {
 	if (AssetData.GetClass()->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 	{
-		auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset());
+		auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset());
 
-		if (NewRegistrar)
+		if (IsValid(RemovedRegistrar))
 		{
-			AutoRemoveRegistrar(NewRegistrar);
+			AutoRemoveRegistrar(RemovedRegistrar);
 		}
 	}
 }
@@ -193,6 +195,8 @@ void UHeartNodeRegistrySubsystem::FetchAssetRegistryAssets()
 {
 	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets begin"))
+
 	FARFilter RegistrarFilter;
 	RegistrarFilter.ClassPaths.Add(UGraphNodeRegistrar::StaticClass()->GetClassPathName());
 	RegistrarFilter.bRecursiveClasses = true;
@@ -207,36 +211,58 @@ void UHeartNodeRegistrySubsystem::FetchAssetRegistryAssets()
 			return;
 		}
 
+		UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets adding registrar: %s"), *RegistrarAsset.GetFullName())
+
 		if (auto&& Registrar = Cast<UGraphNodeRegistrar>(RegistrarAsset.GetAsset()))
 		{
 			AutoAddRegistrar(Registrar);
 		}
 	}
 
-	FARFilter NodeClassFilter;
-	NodeClassFilter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
-	NodeClassFilter.ClassPaths.Add(UBlueprintGeneratedClass::StaticClass()->GetClassPathName());
-	NodeClassFilter.bRecursiveClasses = true;
+	for (auto&& RegistryTuple : Registries)
+	{
+		FindRecursiveClassesForRegistry(RegistryTuple.Value);
+	}
+}
+
+void UHeartNodeRegistrySubsystem::FindRecursiveClassesForRegistry(UHeartGraphNodeRegistry* Registry)
+{
+	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+
+	FHeartRegistrationClasses Classes = Registry->GetClassesRegisteredRecursively();
+
+	FARFilter GraphNodeClassFilter;
+
+	for (auto&& Class : Classes.GraphNodeClasses)
+	{
+		if (!IsValid(Class)) continue;
+
+		if (auto&& Blueprint = Cast<UBlueprint>(Class->ClassGeneratedBy))
+		{
+			GraphNodeClassFilter.ClassPaths.Add(Blueprint->StaticClass()->GetClassPathName());
+		}
+	}
+
+	GraphNodeClassFilter.bRecursiveClasses = true;
+
+	bool FoundAnyAssets = false;
+	FHeartRegistrationClasses FoundClasses;
 
 	TArray<FAssetData> FoundAssets;
-	AssetRegistryModule.Get().GetAssets(RegistrarFilter, FoundAssets);
+	AssetRegistryModule.Get().GetAssets(GraphNodeClassFilter, FoundAssets);
+	if (!FoundAssets.IsEmpty())
+	{
+		FoundAnyAssets = true;
+	}
+
 	for (const FAssetData& AssetData : FoundAssets)
 	{
-		if (AssetData.GetClass()->IsChildOf(UHeartGraphNodeBlueprint::StaticClass()))
-		{
-			if (!KnownBlueprintHeartGraphNodes.Contains(AssetData.PackageName))
-			{
-				KnownBlueprintHeartGraphNodes.Add(AssetData.PackageName, AssetData);
+		FoundClasses.GraphNodeClasses.Add(AssetData.GetClass());
+	}
 
-				for (auto&& NodeRegistry : NodeRegistries)
-				{
-					if (auto&& Blueprint = GetNodeBlueprint(AssetData))
-					{
-						//NodeRegistry.Value->NotifyNodeBlueprintNodeClassAdded({Blueprint->GeneratedClass});
-					}
-				}
-			}
-		}
+	if (FoundAnyAssets)
+	{
+		Registry->SetRecursivelyDiscoveredClasses(FoundClasses);
 	}
 }
 
@@ -250,13 +276,13 @@ UHeartGraphNodeRegistry* UHeartNodeRegistrySubsystem::GetRegistry_Internal(const
 	}
 #endif
 
-	if (auto&& FoundRegistry = NodeRegistries.Find(ClassPath))
+	if (auto&& FoundRegistry = Registries.Find(ClassPath))
 	{
 		return *FoundRegistry;
 	}
 
 	auto&& NewRegistry = NewObject<UHeartGraphNodeRegistry>(this);
-	return NodeRegistries.Add(ClassPath, NewRegistry);
+	return Registries.Add(ClassPath, NewRegistry);
 }
 
 void UHeartNodeRegistrySubsystem::AutoAddRegistrar(UGraphNodeRegistrar* Registrar)

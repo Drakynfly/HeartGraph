@@ -22,8 +22,21 @@ void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
 #endif
 }
 
-#if WITH_EDITOR
+void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<UHeartGraphPin*>& AffectedPins)
+{
+	FHeartGraphConnectionEvent Event;
+	Event.AffectedNodes = AffectedNodes;
+	Event.AffectedPins = AffectedPins;
+	NotifyNodeConnectionsChanged(Event);
+}
 
+void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event)
+{
+	BP_OnNodeConnectionsChanged(Event);
+	OnNodeConnectionsChanged.Broadcast(Event);
+}
+
+#if WITH_EDITOR
 void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
 {
 	// Save the EdGraph with us in the editor
@@ -38,6 +51,72 @@ UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 {
 	auto&& Result = Nodes.Find(NodeGuid);
 	return Result ? *Result : nullptr;
+}
+
+UHeartGraphNode* UHeartGraph::FindNodeOfClass(const TSubclassOf<UHeartGraphNode> Class)
+{
+	if (!IsValid(Class))
+	{
+		return nullptr;
+	}
+
+	for (auto&& Node : Nodes)
+	{
+		if (IsValid(Node.Value) && Node.Value.IsA(Class))
+		{
+			return Node.Value;
+		}
+	}
+
+	return nullptr;
+}
+
+UHeartGraphNode* UHeartGraph::FindNodeByPredicate(const FHeartGraphNodePredicate& Predicate)
+{
+	for (auto&& Node : Nodes)
+	{
+		if (IsValid(Node.Value) && Predicate.Execute(Node.Value))
+		{
+			return Node.Value;
+		}
+	}
+
+	return nullptr;
+}
+
+TArray<UHeartGraphNode*> UHeartGraph::FindAllNodesOfClass(const TSubclassOf<UHeartGraphNode> Class)
+{
+	if (!IsValid(Class))
+	{
+		return TArray<UHeartGraphNode*>();
+	}
+
+	TArray<UHeartGraphNode*> OutNodes;
+
+	for (auto&& Node : Nodes)
+	{
+		if (IsValid(Node.Value) && Node.Value.IsA(Class))
+		{
+			OutNodes.Add(Node.Value);
+		}
+	}
+
+	return OutNodes;
+}
+
+TArray<UHeartGraphNode*> UHeartGraph::FindAllNodesByPredicate(const FHeartGraphNodePredicate& Predicate)
+{
+	TArray<UHeartGraphNode*> OutNodes;
+
+	for (auto&& Node : Nodes)
+	{
+		if (IsValid(Node.Value) && Predicate.Execute(Node.Value))
+		{
+			OutNodes.Add(Node.Value);
+		}
+	}
+
+	return OutNodes;
 }
 
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
@@ -162,7 +241,14 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 #if WITH_EDITOR
 	if (HeartEdGraph)
 	{
-		HeartEdGraph->AddNode(Node->GetEdGraphNode());
+		if (Node->GetEdGraphNode())
+		{
+			HeartEdGraph->AddNode(Node->GetEdGraphNode());
+		}
+		else
+		{
+			OnNodeCreatedInEditorExternally.ExecuteIfBound(Node);
+		}
 	}
 #endif
 

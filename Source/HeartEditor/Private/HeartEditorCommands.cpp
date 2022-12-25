@@ -28,8 +28,6 @@ FHeartGraphCommands::FHeartGraphCommands()
 
 void FHeartGraphCommands::RegisterCommands()
 {
-	UI_COMMAND(RefreshContextPins, "Refresh context pins", "Refresh pins generated from the context asset", EUserInterfaceActionType::Button, FInputChord());
-
 	UI_COMMAND(AddInput, "Add Input", "Adds an input to the node", EUserInterfaceActionType::Button, FInputChord());
 	UI_COMMAND(AddOutput, "Add Output", "Adds an output to the node", EUserInterfaceActionType::Button, FInputChord());
 	UI_COMMAND(RemovePin, "Remove Pin", "Removes a pin from the node", EUserInterfaceActionType::Button, FInputChord());

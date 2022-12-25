@@ -76,14 +76,15 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 
 	friend class UHeartNodeRegistrySubsystem;
 
-public:
-#if WITH_EDITOR
-	void NotifyNodeBlueprintNodeClassAdded(TSubclassOf<UHeartGraphNode> GraphNodeClass);
-#endif
-
 protected:
+	bool FilterClassForRegistration(const TObjectPtr<UClass>& Class) const;
+
 	void AddRegistrationList(const FHeartRegistrationClasses& Registration);
 	void RemoveRegistrationList(const FHeartRegistrationClasses& Registration);
+
+	void SetRecursivelyDiscoveredClasses(const FHeartRegistrationClasses& Classes);
+
+	FHeartRegistrationClasses GetClassesRegisteredRecursively();
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
@@ -103,7 +104,7 @@ public:
 	 * Get the graph node class that we use to represent the given arbitrary class.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	UClass* GetGraphNodeClassForNode(UClass* NodeClass) const;
+	TSubclassOf<UHeartGraphNode> GetGraphNodeClassForNode(UClass* NodeClass) const;
 
 	/**
 	 * Get the visualizer class that we use to represent the given node class.
@@ -127,6 +128,8 @@ public:
 	void DeregisterAll();
 
 private:
+	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, int32>> GraphClasses;
+
 	UPROPERTY()
 	TSet<FRefCountedClass> NodeClasses;
 
@@ -142,6 +145,10 @@ private:
 	UPROPERTY()
 	TMap<TSubclassOf<UHeartGraphPin>, FRefCountedClass> PinVisualizerMap;
 
+	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMultiMaps
 	UPROPERTY()
 	TArray<TObjectPtr<UGraphNodeRegistrar>> ContainedRegistrars;
+
+	UPROPERTY()
+	FHeartRegistrationClasses RecursivelyDiscoveredClasses;
 };

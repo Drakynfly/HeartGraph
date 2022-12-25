@@ -37,13 +37,13 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	{
 	}
 
-	FHeartGraphSchemaAction_NewNode(const UObject* Node, const UHeartGraphNode* GraphNode)
+	FHeartGraphSchemaAction_NewNode(const UObject* NodeCDO, const UHeartGraphNode* GraphNode)
 		: FEdGraphSchemaAction(
-			GraphNode->GetDefaultNodeCategory(Node),
-			GraphNode->GetDefaultNodeTitle(Node),
-			GraphNode->GetDefaultNodeToolTip(Node),
-			0, FText::FromString(Node->GetClass()->GetMetaData("Keywords")))
-		, NodeClass(Node->GetClass())
+			GraphNode->GetDefaultNodeCategory(NodeCDO),
+			GraphNode->GetDefaultNodeTitle(NodeCDO),
+			GraphNode->GetDefaultNodeToolTip(NodeCDO),
+			0, FText::FromString(NodeCDO->GetClass()->GetMetaData("Keywords")))
+		, NodeClass(NodeCDO->GetClass())
 	{
 	}
 

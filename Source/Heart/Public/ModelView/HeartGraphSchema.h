@@ -5,6 +5,7 @@
 #include "UObject/Object.h"
 #include "HeartGraphSchema.generated.h"
 
+class UHeartGraph;
 class UHeartCanvasConnectionVisualizer;
 class UHeartGraphPin;
 class UHeartGraphNode;
@@ -77,6 +78,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	FHeartConnectPinsResponse CanPinsConnect(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
+
+	// AKA, setup function called on all graphs when they are created.
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
+	void CreateDefaultNodesForGraph(UHeartGraph* Graph) const;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, Category = "Editor")

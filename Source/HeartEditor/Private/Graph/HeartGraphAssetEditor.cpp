@@ -19,6 +19,7 @@
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditor.h"
 #include "GraphEditorActions.h"
+#include "HeartEditorModule.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
 #include "Kismet2/BlueprintEditorUtils.h"
@@ -248,6 +249,7 @@ void FHeartGraphAssetEditor::BindToolbarCommands()
 
 void FHeartGraphAssetEditor::RefreshAsset()
 {
+	/*
 	TArray<UHeartGraphNode*> HeartGraphNodes;
 	HeartGraph->GetNodeArray(HeartGraphNodes);
 
@@ -255,11 +257,19 @@ void FHeartGraphAssetEditor::RefreshAsset()
 	{
 		Cast<UHeartEdGraphNode>(GraphNode->GetEdGraphNode())->RefreshDynamicPins(true);
 	}
+	*/
 }
 
 void FHeartGraphAssetEditor::CreateWidgets()
 {
-	FocusedGraphEditor = CreateGraphWidget();
+	if (IsValid(HeartGraph->GetEdGraph()))
+	{
+		FocusedGraphEditor = CreateGraphWidget();
+	}
+	else
+	{
+		UE_LOG(LogHeartEditor, Error, TEXT("HeartEdGraph is invalid for HeartGraph '%s'!"), *HeartGraph->GetName())
+	}
 
 	FDetailsViewArgs Args;
 	Args.bHideSelectionTip = true;
@@ -281,7 +291,7 @@ TSharedRef<SGraphEditor> FHeartGraphAssetEditor::CreateGraphWidget()
 	InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FHeartGraphAssetEditor::OnSelectedNodesChanged);
 	InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FHeartGraphAssetEditor::OnNodeDoubleClicked);
 	InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FHeartGraphAssetEditor::OnNodeTitleCommitted);
-	InEvents.OnSpawnNodeByShortcut = SGraphEditor::FOnSpawnNodeByShortcut::CreateStatic(&FHeartGraphAssetEditor::OnSpawnGraphNodeByShortcut, static_cast<UEdGraph*>(HeartGraph->GetEdGraph()));
+	InEvents.OnSpawnNodeByShortcut = SGraphEditor::FOnSpawnNodeByShortcut::CreateStatic(&FHeartGraphAssetEditor::OnSpawnGraphNodeByShortcut, HeartGraph->GetEdGraph());
 
 	return SNew(SGraphEditor)
 		.AdditionalCommands(ToolkitCommands)
@@ -362,10 +372,6 @@ void FHeartGraphAssetEditor::BindGraphCommands()
 		FCanExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::CanDuplicateNodes));
 
 	// Pin commands
-	ToolkitCommands->MapAction(HeartGraphCommands.RefreshContextPins,
-		FExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::RefreshContextPins),
-		FCanExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::CanRefreshContextPins));
-
 	ToolkitCommands->MapAction(HeartGraphCommands.AddInput,
 		FExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::AddInput),
 		FCanExecuteAction::CreateSP(this, &FHeartGraphAssetEditor::CanAddInput));
@@ -864,27 +870,6 @@ void FHeartGraphAssetEditor::OnNodeTitleCommitted(const FText& NewText, ETextCom
 		NodeBeingChanged->Modify();
 		NodeBeingChanged->OnRenameNode(NewText.ToString());
 	}
-}
-
-void FHeartGraphAssetEditor::RefreshContextPins() const
-{
-	for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
-	{
-		SelectedNode->RefreshDynamicPins(true);
-	}
-}
-
-bool FHeartGraphAssetEditor::CanRefreshContextPins() const
-{
-	if (CanEdit() && GetSelectedHeartGraphNodes().Num() == 1)
-	{
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
-		{
-			return SelectedNode->SupportsDynamicPins();
-		}
-	}
-
-	return false;
 }
 
 void FHeartGraphAssetEditor::AddInput() const

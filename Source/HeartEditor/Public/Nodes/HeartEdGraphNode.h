@@ -151,8 +151,6 @@ public:
 
 	void RemoveOrphanedPin(UEdGraphPin* Pin);
 
-	bool SupportsDynamicPins() const;
-
 	bool CanUserAddInput() const;
 	bool CanUserAddOutput() const;
 
@@ -167,9 +165,6 @@ public:
 
 	// Call node and graph updates manually, if using bBatchRemoval
 	void RemoveInstancePin(UEdGraphPin* Pin);
-
-	// Create pins from the context asset, i.e. Sequencer events
-	void RefreshDynamicPins(const bool bReconstructNode);
 
 	// UEdGraphNode
 	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;

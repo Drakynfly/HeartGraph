@@ -16,7 +16,6 @@
 
 #include "Developer/ToolMenus/Public/ToolMenus.h"
 #include "EdGraph/EdGraphSchema.h"
-#include "EdGraphSchema_K2.h"
 #include "Editor.h"
 #include "Editor/EditorEngine.h"
 #include "Framework/Commands/GenericCommands.h"
@@ -209,7 +208,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	TSet<FName> LinksToDisconnect;
 
 	// Resolve all linked pins
-	auto&& HeartLinks = HeartPin->GetLinks();
+	auto HeartLinks = HeartPin->GetLinks();
 	TArray<UHeartGraphPin*> LinkedPins;
 	for (auto&& HeartLink : HeartLinks)
 	{
@@ -268,6 +267,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			if (HeartPin->ConnectTo(ConnectedHeartPin))
 			{
 				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
+				HeartGraphNode->GetGraph()->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});
 			}
 		}
 	}
@@ -418,10 +418,6 @@ void UHeartEdGraphNode::ReconstructNode()
 	OutputPins.Reset();
 
 	// Recreate pins
-	if (SupportsDynamicPins() && (/**HeartGraphNode->CanRefreshDynamicPinsOnLoad() ||*/ bNeedsFullReconstruction))
-	{
-		RefreshDynamicPins(false);
-	}
 	AllocateDefaultPins();
 	RewireOldPinsToNewPins(OldPins);
 
@@ -440,65 +436,91 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 {
 	check(Pins.Num() == 0);
 
-	if (HeartGraphNode)
+	if (!IsValid(HeartGraphNode))
 	{
-		auto&& ExistingInputPins = HeartGraphNode->GetInputPins();
-		auto&& ExistingOutputPins = HeartGraphNode->GetOutputPins();
+		return;
+	}
 
-		for (auto&& InputPinType : HeartGraphNode->GetDefaultInputs())
+	auto&& ExistingInputPins = HeartGraphNode->GetInputPins();
+	auto&& ExistingOutputPins = HeartGraphNode->GetOutputPins();
+	//auto&& DefaultInputs = HeartGraphNode->GetDefaultInputs();
+	//auto&& DefaultOutputs = HeartGraphNode->GetDefaultOutputs();
+
+	for (auto&& InputPin : ExistingInputPins)
+	{
+		if (!ensure(IsValid(InputPin)))
 		{
-			UHeartGraphPin* InputPin = nullptr;
+			continue;
+		}
 
-			for (auto&& ExistingInput : ExistingInputPins)
-			{
-				if (IsValid(ExistingInput) && ExistingInput->PinName == InputPinType.Key)
-				{
-					InputPin = ExistingInput;
-				}
-			}
+		CreateInputPin(InputPin);
+	}
 
-			if (!IsValid(InputPin))
-			{
-				if (auto&& NewPin = HeartGraphNode->CreatePin(InputPinType.Key, EHeartPinDirection::Input, InputPinType.Value))
-				{
-					HeartGraphNode->AddPin(NewPin);
-					InputPin = NewPin;
-				}
-			}
+	for (auto&& OutputPin : ExistingOutputPins)
+	{
+		if (!ensure(IsValid(OutputPin)))
+		{
+			continue;
+		}
 
-			if (IsValid(InputPin))
+		CreateOutputPin(OutputPin);
+	}
+
+	/*
+	for (auto&& InputPinType : DefaultInputs)
+	{
+		UHeartGraphPin* InputPin = nullptr;
+
+		for (auto&& ExistingInput : ExistingInputPins)
+		{
+			if (IsValid(ExistingInput) && ExistingInput->PinName == InputPinType.Key)
 			{
-				CreateInputPin(InputPin);
+				InputPin = ExistingInput;
 			}
 		}
 
-		for (auto&& OutputPinType : HeartGraphNode->GetDefaultOutputs())
+		if (!IsValid(InputPin))
 		{
-			UHeartGraphPin* OutputPin = nullptr;
-
-			for (auto&& ExistingOutput : ExistingOutputPins)
+			if (auto&& NewPin = HeartGraphNode->CreatePin(InputPinType.Key, EHeartPinDirection::Input, InputPinType.Value))
 			{
-				if (IsValid(ExistingOutput) && ExistingOutput->PinName == OutputPinType.Key)
-				{
-					OutputPin = ExistingOutput;
-				}
+				HeartGraphNode->AddPin(NewPin);
+				InputPin = NewPin;
 			}
+		}
 
-			if (!IsValid(OutputPin))
-			{
-				if (auto&& NewPin = HeartGraphNode->CreatePin(OutputPinType.Key, EHeartPinDirection::Output, OutputPinType.Value))
-				{
-					HeartGraphNode->AddPin(NewPin);
-					OutputPin = NewPin;
-				}
-			}
-
-			if (IsValid(OutputPin))
-			{
-				CreateOutputPin(OutputPin);
-			}
+		if (IsValid(InputPin))
+		{
+			CreateInputPin(InputPin);
 		}
 	}
+
+	for (auto&& OutputPinType : DefaultOutputs)
+	{
+		UHeartGraphPin* OutputPin = nullptr;
+
+		for (auto&& ExistingOutput : ExistingOutputPins)
+		{
+			if (IsValid(ExistingOutput) && ExistingOutput->PinName == OutputPinType.Key)
+			{
+				OutputPin = ExistingOutput;
+			}
+		}
+
+		if (!IsValid(OutputPin))
+		{
+			if (auto&& NewPin = HeartGraphNode->CreatePin(OutputPinType.Key, EHeartPinDirection::Output, OutputPinType.Value))
+			{
+				HeartGraphNode->AddPin(NewPin);
+				OutputPin = NewPin;
+			}
+		}
+
+		if (IsValid(OutputPin))
+		{
+			CreateOutputPin(OutputPin);
+		}
+	}
+	*/
 }
 
 void UHeartEdGraphNode::RewireOldPinsToNewPins(TArray<UEdGraphPin*>& InOldPins)
@@ -633,11 +655,6 @@ void UHeartEdGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class U
 			Section.AddMenuEntry(GenericCommands.Duplicate);
 
 			Section.AddMenuEntry(GraphCommands.BreakNodeLinks);
-
-			if (SupportsDynamicPins())
-			{
-				Section.AddMenuEntry(HeartGraphCommands.RefreshContextPins);
-			}
 
 			if (CanUserAddInput())
 			{
@@ -855,11 +872,6 @@ void UHeartEdGraphNode::RemoveOrphanedPin(UEdGraphPin* Pin)
 	GetGraph()->NotifyGraphChanged();
 }
 
-bool UHeartEdGraphNode::SupportsDynamicPins() const
-{
-	return HeartGraphNode && HeartGraphNode->SupportsDynamicPins_Editor();
-}
-
 bool UHeartEdGraphNode::CanUserAddInput() const
 {
 	return HeartGraphNode && HeartGraphNode->CanUserAddInput() && InputPins.Num() < 256;
@@ -926,31 +938,20 @@ void UHeartEdGraphNode::AddInstancePin(const EEdGraphPinDirection Direction, con
 	const FScopedTransaction Transaction(LOCTEXT("AddInstancePin", "Add Instance Pin"));
 	Modify();
 
-	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-	auto&& InstancedPin = HeartGraphNode->GetInstancedPinType();
-
-	if (!InstancedPin.IsValidType())
-	{
-		UE_LOG(LogTemp, Error, TEXT("AddInstancePin failed: InstancedPin is invalid"))
-		return;
-	}
-
-	const FName PinName = *FString::FromInt(NumberedPinsAmount);
-
 	if (Direction == EGPD_Input)
 	{
-		if (auto&& NewPin = HeartGraphNode->CreatePin(PinName, EHeartPinDirection::Input, InstancedPin))
+		if (auto&& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Input))
 		{
-			CreateInputPin(NewPin, NumberedPinsAmount);
-			HeartGraphNode->AddPin(NewPin);
+			CreateInputPin(NewInstancePin, NumberedPinsAmount);
+			HeartGraphNode->AddPin(NewInstancePin);
 		}
 	}
 	else
 	{
-		if (auto&& NewPin = HeartGraphNode->CreatePin(PinName, EHeartPinDirection::Output, InstancedPin))
+		if (auto&& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Output))
 		{
-			CreateOutputPin(NewPin, NumberedPinsAmount);
-			HeartGraphNode->AddPin(NewPin);
+			CreateOutputPin(NewInstancePin, NumberedPinsAmount);
+			HeartGraphNode->AddPin(NewInstancePin);
 		}
 	}
 
@@ -969,7 +970,11 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 		if (InputPins.Contains(Pin))
 		{
 			InputPins.Remove(Pin);
-			HeartGraphNode->RemoveUserInput(Pin->PinName);
+
+			HeartGraphNode->RemovePinsByPredicate(EHeartPinDirection::Input, [Pin](UHeartGraphPin* HeartPin)
+			{
+				return Pin->PinName == HeartPin->GetPinName();
+			});
 
 			Pin->MarkAsGarbage();
 			Pins.Remove(Pin);
@@ -980,7 +985,11 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 		if (OutputPins.Contains(Pin))
 		{
 			OutputPins.Remove(Pin);
-			HeartGraphNode->RemoveUserOutput(Pin->PinName);
+
+			HeartGraphNode->RemovePinsByPredicate(EHeartPinDirection::Output, [Pin](UHeartGraphPin* HeartPin)
+			{
+				return Pin->PinName == HeartPin->GetPinName();
+			});
 
 			Pin->MarkAsGarbage();
 			Pins.Remove(Pin);
@@ -989,45 +998,6 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 
 	ReconstructNode();
 	GetGraph()->NotifyGraphChanged();
-}
-
-void UHeartEdGraphNode::RefreshDynamicPins(const bool bReconstructNode)
-{
-	if (SupportsDynamicPins())
-	{
-		const FScopedTransaction Transaction(LOCTEXT("RefreshDynamicPins", "Refresh Context Pins"));
-		Modify();
-
-		auto&& TemplateInputs = HeartGraphNode->GetDefaultInputs();
-		TemplateInputs.Append(HeartGraphNode->GetDynamicInputs());
-
-		auto&& TemplateOutputs = HeartGraphNode->GetDefaultOutputs();
-		TemplateOutputs.Append(HeartGraphNode->GetDynamicOutputs());
-
-		// recreate inputs
-		for (auto&& TemplateInput : TemplateInputs)
-		{
-			if (auto&& NewPin = HeartGraphNode->CreatePin(TemplateInput.Key, EHeartPinDirection::Input, TemplateInput.Value))
-			{
-				HeartGraphNode->AddPin(NewPin);
-			}
-		}
-
-		// recreate outputs
-		for (auto&& TemplateOutput : TemplateOutputs)
-		{
-			if (auto&& NewPin = HeartGraphNode->CreatePin(TemplateOutput.Key, EHeartPinDirection::Output, TemplateOutput.Value))
-			{
-				HeartGraphNode->AddPin(NewPin);
-			}
-		}
-
-		if (bReconstructNode)
-		{
-			ReconstructNode();
-			GetGraph()->NotifyGraphChanged();
-		}
-	}
 }
 
 void UHeartEdGraphNode::GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const

@@ -55,6 +55,8 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHea
 	{
 		PinA->GetNode()->NotifyPinConnectionsChanged(PinA);
 		PinB->GetNode()->NotifyPinConnectionsChanged(PinB);
+		auto&& Graph = PinA->GetNode()->GetGraph();
+		Graph->NotifyNodeConnectionsChanged({PinA->GetNode(), PinB->GetNode()}, {PinA, PinB});
 	}
 
 	return bModified;
@@ -72,6 +74,11 @@ UObject* UHeartGraphSchema::GetConnectionVisualizer() const
 	}
 
 	return nullptr;
+}
+
+void UHeartGraphSchema::CreateDefaultNodesForGraph_Implementation(UHeartGraph* Graph) const
+{
+	// Does nothing by default
 }
 
 UClass* UHeartGraphSchema::GetConnectionVisualizerClass_Implementation() const

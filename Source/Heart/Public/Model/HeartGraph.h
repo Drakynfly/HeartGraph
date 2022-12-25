@@ -4,15 +4,20 @@
 
 #include "UObject/Object.h"
 #include "HeartGuids.h"
+#include "HeartGraphTypes.h"
 #include "HeartGraph.generated.h"
 
-class UHeartGraphNode;
 class UHeartGraphSchema;
+class UHeartGraphNode;
+class UHeartGraphPin;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHeartGraphEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*, Node);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&, Event);
+
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, UHeartGraphNode*, Node);
 
 USTRUCT()
 struct FHeartGraphSparseClassData
@@ -43,6 +48,12 @@ public:
 
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
+	// Called after a pin connection change has been made.
+	void NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<UHeartGraphPin*>& AffectedPins);
+
+	// Called after a pin connection change has been made.
+	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
+
 #if WITH_EDITOR
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 #endif
@@ -70,6 +81,18 @@ public:
 		Nodes.GenerateValueArray(NodeArray);
 		OutNodes = NodeArray;
 	}
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
+	UHeartGraphNode* FindNodeOfClass(TSubclassOf<UHeartGraphNode> Class);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	UHeartGraphNode* FindNodeByPredicate(const FHeartGraphNodePredicate& Predicate);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
+	TArray<UHeartGraphNode*> FindAllNodesOfClass(TSubclassOf<UHeartGraphNode> Class);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	TArray<UHeartGraphNode*> FindAllNodesByPredicate(const FHeartGraphNodePredicate& Predicate);
 
 
 	/****************************/
@@ -150,6 +173,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	bool RemoveNode(const FHeartNodeGuid& NodeGuid);
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
+	void BP_OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& ConnectionEvent);
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -158,11 +183,20 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartGraphNodeEvent OnNodeRemoved;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
+
 #if WITH_EDITORONLY_DATA
 private:
 	// Always castable to UHeartEdGraph
 	UPROPERTY()
 	UEdGraph* HeartEdGraph;
+
+	// Delegate that is broadcast whenever a node is added to the graph while in the editor, from a source other than
+	// the HeartEdGraph, such as a BP schema, or action. This allows the EdGraph to assign an EdGraphNode anyway, which
+	// is needed to visualize the node in the editor.
+	DECLARE_DELEGATE_OneParam(FNodeCreatedInEditorExternally, UHeartGraphNode* /* Node */)
+	FNodeCreatedInEditorExternally OnNodeCreatedInEditorExternally;
 #endif
 
 private:

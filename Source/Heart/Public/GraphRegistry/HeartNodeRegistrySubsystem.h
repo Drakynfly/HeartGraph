@@ -45,6 +45,8 @@ protected:
 	void FetchNativeClasses();
 	void FetchAssetRegistryAssets();
 
+	void FindRecursiveClassesForRegistry(UHeartGraphNodeRegistry* Registry);
+
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const FSoftClassPath ClassPath);
 
 public:
@@ -65,7 +67,7 @@ public:
 private:
 	// Maps Classes to the Registry instance we keep for them
 	UPROPERTY()
-	TMap<FSoftClassPath, TObjectPtr<UHeartGraphNodeRegistry>> NodeRegistries;
+	TMap<FSoftClassPath, TObjectPtr<UHeartGraphNodeRegistry>> Registries;
 
 	UPROPERTY()
 	TObjectPtr<UGraphNodeRegistrar> FallbackRegistrar;
@@ -74,7 +76,6 @@ private:
 
 #if WITH_EDITOR
 	int32 WaitingForBlueprintToCompile;
-	TMap<FName, FAssetData> KnownBlueprintHeartGraphNodes;
 	bool HasSetupBlueprintCaching = false;
 #endif
 };

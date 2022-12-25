@@ -75,106 +75,109 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	                          bParentEnabled);
 
 	// Draw connections between pins
-	if (!DisplayedNodes.IsEmpty())
+	if (DisplayedNodes.IsEmpty())
 	{
-		auto&& ConnectionVisualizer = GetGraph()->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+		return SuperLayerID;
+	}
 
-		if (!ensure(IsValid(ConnectionVisualizer)))
+	auto&& ConnectionVisualizer = GetGraph()->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+
+	if (!ensure(IsValid(ConnectionVisualizer)))
+	{
+		UE_LOG(LogHeartGraphCanvas, Error, TEXT("ConnectionVisualizer is invalid: cannot display pin connections!"))
+		return SuperLayerID;
+	}
+
+	// Get the set of pins for all children and synthesize geometry for culled out pins so lines can be drawn to them.
+	TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
+	TSet<UHeartGraphCanvasPin*> VisiblePins;
+
+	for (auto&& DisplayedNode : DisplayedNodes)
+	{
+		UHeartGraphCanvasNode* GraphNode = DisplayedNode.Value;
+
+		// If this is a culled node, approximate the pin geometry to the corner of the node it is within
+		if (IsNodeCulled(GraphNode, AllottedGeometry))
 		{
-			UE_LOG(LogHeartGraphCanvas, Error, TEXT("ConnectionVisualizer is invalid: cannot display pin connections!"))
-			return SuperLayerID;
-		}
+			auto&& PinWidgets = GraphNode->GetPinWidgets();
 
-		// Get the set of pins for all children and synthesize geometry for culled out pins so lines can be drawn to them.
-		TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
-		TSet<UHeartGraphCanvasPin*> VisiblePins;
+			const FVector2D NodeLoc = GraphNode->GetNode()->GetLocation();
 
-		for (auto&& DisplayedNode : DisplayedNodes)
-		{
-			UHeartGraphCanvasNode* GraphNode = DisplayedNode.Value;
-
-			// If this is a culled node, approximate the pin geometry to the corner of the node it is within
-			if (IsNodeCulled(GraphNode, AllottedGeometry))
+			for (auto&& PinWidget : PinWidgets)
 			{
-				auto&& PinWidgets = GraphNode->GetPinWidgets();
-
-				const FVector2D NodeLoc = GraphNode->GetNode()->GetLocation();
-
-				for (auto&& PinWidget : PinWidgets)
+				if (PinWidget->GetPin())
 				{
-					if (PinWidget->GetPin())
-					{
-						FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
+					FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
 
-						const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom(PinLoc) * AllottedGeometry.Scale, FVector2D(AllottedGeometry.AbsolutePosition), FVector2D::ZeroVector, 1.f);
-						PinGeometries.Add(PinWidget->GetPin(), {PinWidget, SynthesizedPinGeometry});
-					}
+					const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom(PinLoc) * AllottedGeometry.Scale, FVector2D(AllottedGeometry.AbsolutePosition), FVector2D::ZeroVector, 1.f);
+					PinGeometries.Add(PinWidget->GetPin(), {PinWidget, SynthesizedPinGeometry});
 				}
+			}
+		}
+		else
+		{
+			VisiblePins.Append(GraphNode->GetPinWidgets());
+		}
+	}
+
+	for (auto&& VisiblePin : VisiblePins)
+	{
+		PinGeometries.Add(VisiblePin->GetPin(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
+	}
+
+	/*
+	// Now get the pin geometry for all visible children and append it to the PinGeometries map
+	TMap<UHeartGraphCanvasPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> VisiblePinGeometries;
+	FindChildGeometries(AllottedGeometry, VisiblePins, VisiblePinGeometries);
+	PinGeometries.Append(VisiblePinGeometries);
+	*/
+
+	FPaintContext Context(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId-2, InWidgetStyle, bParentEnabled);
+
+	// Draw preview connections (only connected on one end)
+	if (PreviewConnectionPin.IsValid())
+	{
+		auto&& PreviewPin = ResolvePinReference(PreviewConnectionPin);
+
+		if (IsValid(PreviewPin) && PreviewPin->GetPin())
+		{
+			auto&& GraphGeo = GetTickSpaceGeometry();
+			FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPin())->Value;
+
+			FVector2D StartPoint;
+			FVector2D EndPoint;
+
+			FVector2D PinPoint = GraphGeo.AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+
+			FVector CustomPosition;
+			if (IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(PreviewPin, CustomPosition))
+			{
+				PinPoint = FVector2D(CustomPosition);
 			}
 			else
 			{
-				VisiblePins.Append(GraphNode->GetPinWidgets());
+				// @todo kinda awful that this is the only way ive found to do this...
+				PinPoint = GraphGeo.AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
 			}
-		}
 
-		for (auto&& VisiblePin : VisiblePins)
-		{
-			PinGeometries.Add(VisiblePin->GetPin(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
-		}
-
-		/*
-		// Now get the pin geometry for all visible children and append it to the PinGeometries map
-		TMap<UHeartGraphCanvasPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> VisiblePinGeometries;
-		FindChildGeometries(AllottedGeometry, VisiblePins, VisiblePinGeometries);
-		PinGeometries.Append(VisiblePinGeometries);
-		*/
-
-		FPaintContext Context(AllottedGeometry, MyCullingRect, OutDrawElements, LayerId-2, InWidgetStyle, bParentEnabled);
-
-		// Draw preview connections (only connected on one end)
-		if (PreviewConnectionPin.IsValid())
-		{
-			auto&& PreviewPin = ResolvePinReference(PreviewConnectionPin);
-
-			if (IsValid(PreviewPin) && PreviewPin->GetPin())
+			//if (PreviewPin->GetPin()->GetDirection() == EHeartPinDirection::Input)
 			{
-				FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPin())->Value;
-
-				FVector2D StartPoint;
-				FVector2D EndPoint;
-
-				FVector2D PinPoint = GetTickSpaceGeometry().AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
-
-				FVector CustomPosition;
-				if (IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(PreviewPin, CustomPosition))
-				{
-					PinPoint = FVector2D(CustomPosition);
-				}
-				else
-				{
-					// @todo kinda awful that this is the only way ive found to do this...
-					PinPoint = GetTickSpaceGeometry().AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
-				}
-
-				//if (PreviewPin->GetPin()->GetDirection() == EHeartPinDirection::Input)
-				{
-					//StartPoint = AllottedGeometry.LocalToAbsolute(PreviewConnectorEndpoint);
-					//EndPoint = PinPoint;
-				}
-				//else
-				{
-					StartPoint = PinPoint;
-					EndPoint = GetTickSpaceGeometry().AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
-				}
-
-				ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
+				//StartPoint = AllottedGeometry.LocalToAbsolute(PreviewConnectorEndpoint);
+				//EndPoint = PinPoint;
 			}
-		}
+			//else
+			{
+				StartPoint = PinPoint;
+				EndPoint = GraphGeo.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
+			}
 
-		// Draw all regular connections
-		ConnectionVisualizer->PaintTimeDrawPinConnections(Context, GetTickSpaceGeometry(), PinGeometries);
-		SuperLayerID = FMath::Max(SuperLayerID, Context.MaxLayer);
+			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
+		}
 	}
+
+	// Draw all regular connections
+	ConnectionVisualizer->PaintTimeDrawPinConnections(Context, GetTickSpaceGeometry(), PinGeometries);
+	SuperLayerID = FMath::Max(SuperLayerID, Context.MaxLayer);
 
 	return SuperLayerID;
 }
@@ -276,7 +279,10 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 			UpdateNodePositionOnCanvas(Widget);
 		}
 
-		Node->OnNodeLocationChanged.AddDynamic(this, &ThisClass::OnNodeLocationChanged);
+		if (!IsDesignTime())
+		{
+			Node->OnNodeLocationChanged.AddDynamic(this, &ThisClass::OnNodeLocationChanged);
+		}
 	}
 }
 
@@ -393,6 +399,11 @@ void UHeartGraphCanvas::OnNodeAddedToGraph(UHeartGraphNode* Node)
 
 void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 {
+	if (!ensure(IsValid(Node)))
+	{
+		return;
+	}
+
 	if (DisplayedNodes.Contains(Node->GetGuid()))
 	{
 		if (Node->IsSelected())
@@ -402,6 +413,8 @@ void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 
 		DisplayedNodes.FindAndRemoveChecked(Node->GetGuid())->RemoveFromParent();
 	}
+
+	Node->OnNodeLocationChanged.RemoveAll(this);
 }
 
 void UHeartGraphCanvas::OnNodeLocationChanged(UHeartGraphNode* Node, const FVector2D& Location)

@@ -17,6 +17,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EdGraph/EdGraph.h"
 #include "ScopedTransaction.h"
+#include "Graph/HeartEdGraph.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphSchema"
 
@@ -85,7 +86,9 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Cannot make new connections to orphaned pin"));
 	}
 
-	if (auto&& RuntimeSchema = OwningNodeA->GetHeartGraphNode()->GetGraph()->GetSchema())
+	auto&& RuntimeSchema = OwningNodeA->GetHeartGraphNode()->GetGraph()->GetSchema();
+
+	if (ensure(IsValid(RuntimeSchema)))
 	{
 		if (RuntimeSchema->RunCanPinsConnectInEdGraph)
 		{
@@ -107,7 +110,7 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 		}
 	}
 
-	/// vvv Default Pin Connection Logic if DeferCanCreateConnectionToRuntimeSchema is disabled vvv
+	/// vvv Default Pin Connection Logic if RunCanPinsConnectInEdGraph is disabled vvv
 
 	// Compare the directions
 	const UEdGraphPin* InputPin = nullptr;
@@ -196,6 +199,22 @@ void UHeartEdGraphSchema::OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGra
 	Super::OnPinConnectionDoubleCicked(PinA, PinB, GraphPosition);
 }
 
+void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
+{
+	Super::CreateDefaultNodesForGraph(Graph);
+
+	auto&& HeartEdGraph = Cast<UHeartEdGraph>(&Graph);
+	check(HeartEdGraph);
+
+	auto&& HeartGraph = HeartEdGraph->GetHeartGraph();
+	check(HeartGraph);
+
+	auto&& HeartSchema = HeartGraph->GetSchema();
+	check(HeartSchema);
+
+	HeartSchema->CreateDefaultNodesForGraph(HeartGraph);
+}
+
 TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass)
 {
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>()->GetRegistry(HeartGraphClass);
@@ -244,12 +263,15 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 			auto&& NodeDefault = GetDefault<UObject>(NodeClass.Key);
 			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(NodeClass.Value);
 
-			if (NodeDefault && GraphNodeDefault)
+			if (IsValid(NodeDefault) && IsValid(GraphNodeDefault))
 			{
-				if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetNodeCategory().ToString())))
+				if (GraphNodeDefault->CanCreate())
 				{
-					TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeDefault, GraphNodeDefault));
-					ActionMenuBuilder.AddAction(NewNodeAction);
+					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetNodeCategory().ToString())))
+					{
+						TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeDefault, GraphNodeDefault));
+						ActionMenuBuilder.AddAction(NewNodeAction);
+					}
 				}
 			}
 		}

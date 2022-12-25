@@ -23,9 +23,6 @@ class FHeartGraphCommands final : public TCommands<FHeartGraphCommands>
 public:
 	FHeartGraphCommands();
 
-	/** Context Pins */
-	TSharedPtr<FUICommandInfo> RefreshContextPins;
-
 	/** Pins */
 	TSharedPtr<FUICommandInfo> AddInput;
 	TSharedPtr<FUICommandInfo> AddOutput;

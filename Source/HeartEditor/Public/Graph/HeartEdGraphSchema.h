@@ -42,6 +42,8 @@ public:
 	virtual void OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2D& GraphPosition) const;
 	// --
 
+	virtual void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
+
 	//~ EdGraphSchema
 
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);

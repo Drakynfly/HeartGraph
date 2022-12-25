@@ -99,6 +99,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnectionByReference(const FHeartGraphPinReference Reference) const;
 
+	/*
+	 * Gets a connection pin for the given index. Treat this like an array, only access indices you know to be valid.
+	 * Use GetNumLinks or IsConnected to determine this first.
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
 
