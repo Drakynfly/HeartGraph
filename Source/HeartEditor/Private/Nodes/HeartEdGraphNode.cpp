@@ -705,7 +705,18 @@ FText UHeartEdGraphNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
 	if (ensure(HeartGraphNode))
 	{
-		return HeartGraphNode->GetNodeTitle();
+		switch (TitleType) {
+		case ENodeTitleType::FullTitle:
+			// @todo is full FullTitle only used for in-graph instances? i *think* so
+			return HeartGraphNode->GetNodeTitle(HeartGraphNode, EHeartNodeNameContext::NodeInstance);
+		case ENodeTitleType::MenuTitle:
+			return HeartGraphNode->GetNodeTitle(HeartGraphNode, EHeartNodeNameContext::Palette);
+		case ENodeTitleType::EditableTitle:
+			// @todo support for EditableTitles when? :)
+		case ENodeTitleType::ListView:
+		default: ;
+			return HeartGraphNode->GetNodeTitle(HeartGraphNode, EHeartNodeNameContext::Default);
+		}
 	}
 
 	auto&& SuperTitle = Super::GetNodeTitle(TitleType);

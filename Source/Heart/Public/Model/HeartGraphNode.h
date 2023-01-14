@@ -20,6 +20,19 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphN
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNodeRefreshRequested, UHeartGraphNode*, Node);
 
+UENUM()
+enum class EHeartNodeNameContext : uint8
+{
+	// Fallback when no special case needs to be considered
+	Default,
+
+	// Name shown on Graph Node instances. It is only valid to use NodeObject to determine the name under this context.
+	NodeInstance,
+
+	// Name shown in palettes or other lists
+	Palette,
+};
+
 USTRUCT()
 struct FHeartGraphNodeSparseClassData
 {
@@ -63,22 +76,13 @@ public:
 	/****************************/
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetDefaultNodeTitle(const UObject* Node) const;
+	FText GetNodeTitle(const UObject* Node, EHeartNodeNameContext Context) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetDefaultNodeCategory(const UObject* Node) const;
+	FText GetNodeCategory(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetDefaultNodeToolTip(const UObject* Node) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetNodeTitle() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetNodeCategory() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetNodeToolTip() const;
+	FText GetNodeToolTip(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool GetDynamicTitleColor(FLinearColor& LinearColor);

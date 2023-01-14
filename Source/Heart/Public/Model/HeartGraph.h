@@ -190,7 +190,7 @@ public:
 private:
 	// Always castable to UHeartEdGraph
 	UPROPERTY()
-	UEdGraph* HeartEdGraph;
+	TObjectPtr<UEdGraph> HeartEdGraph;
 
 	// Delegate that is broadcast whenever a node is added to the graph while in the editor, from a source other than
 	// the HeartEdGraph, such as a BP schema, or action. This allows the EdGraph to assign an EdGraphNode anyway, which

@@ -38,14 +38,14 @@ void UHeartGraphNode::PostLoad()
 			if (!Pin.Key.IsValid())
 			{
 				UE_LOG(LogHeartGraph, Error,
-					TEXT("[%s]'s had an invalid guid. It and the pin will be removed. Maybe check if this node is disconnected from something now!"), *GetName())
+					TEXT("[%s]'s has an invalid guid. It and the pin will be removed. Maybe check if this node is disconnected from something now!"), *GetName())
 				InvalidPins.Add(Pin.Key);
 			}
 
 			if (!IsValid(Pin.Value))
 			{
 				UE_LOG(LogHeartGraph, Error,
-					TEXT("[%s]'s had an invalid pin. It will be removed. Maybe check if this node is disconnected from something now!"), *GetName())
+					TEXT("[%s]'s has an invalid pin. It will be removed. Maybe check if this node is disconnected from something now!"), *GetName())
 				InvalidPins.Add(Pin.Key);
 			}
 		}
@@ -91,49 +91,35 @@ UClass* UHeartGraphNode::GetSupportedClass_Implementation() const
 	return nullptr;
 }
 
-FText UHeartGraphNode::GetDefaultNodeTitle_Implementation(const UObject* Node) const
+FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, EHeartNodeNameContext Context) const
 {
-	return FText::FromString(Node->GetName());
-}
-
-FText UHeartGraphNode::GetDefaultNodeCategory_Implementation(const UObject* Node) const
-{
-	return FText();
-}
-
-FText UHeartGraphNode::GetDefaultNodeToolTip_Implementation(const UObject* Node) const
-{
-	return FText();
-}
-
-FText UHeartGraphNode::GetNodeTitle_Implementation() const
-{
-	if (NodeObject)
+	switch (Context)
 	{
-		return GetDefaultNodeTitle(NodeObject);
-	}
+	case EHeartNodeNameContext::NodeInstance:
+		if (Node)
+		{
+			return Node->GetClass()->GetDisplayNameText();
+		}
 
-	return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
+		return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
+		break;
+	case EHeartNodeNameContext::Default:
+	case EHeartNodeNameContext::Palette:
+	default:
+		return GetClass()->GetDisplayNameText();
+	}
 }
 
-FText UHeartGraphNode::GetNodeCategory_Implementation() const
+FText UHeartGraphNode::GetNodeCategory_Implementation(const UObject* Node) const
 {
-	if (NodeObject)
-	{
-		return GetDefaultNodeCategory(NodeObject);
-	}
-
+	// There is no default category, return an empty text. It's up to the implementation of a graph to determine if the
+	// graph node class or the node object class sets the category.
 	return FText();
 }
 
-FText UHeartGraphNode::GetNodeToolTip_Implementation() const
+FText UHeartGraphNode::GetNodeToolTip_Implementation(const UObject* Node) const
 {
-	if (NodeObject)
-	{
-		return GetDefaultNodeToolTip(NodeObject);
-	}
-
-	return FText();
+	return Node->GetClass()->GetToolTipText();
 }
 
 bool UHeartGraphNode::GetDynamicTitleColor_Implementation(FLinearColor& LinearColor)

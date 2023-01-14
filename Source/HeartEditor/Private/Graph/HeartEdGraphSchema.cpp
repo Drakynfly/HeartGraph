@@ -267,7 +267,7 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 			{
 				if (GraphNodeDefault->CanCreate())
 				{
-					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetNodeCategory().ToString())))
+					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetNodeCategory(NodeDefault).ToString())))
 					{
 						TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeDefault, GraphNodeDefault));
 						ActionMenuBuilder.AddAction(NewNodeAction);
