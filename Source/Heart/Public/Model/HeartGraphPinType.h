@@ -1,10 +1,12 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #pragma once
+
 #include "InstancedStruct.h"
-#include "InstancedStructArray.h"
 
 #include "HeartGraphPinType.generated.h"
+
+// @todo this entire method of generating pin types is kinda wonky, and deserves a rethink at some point
 
 /**
  *
@@ -20,20 +22,12 @@ struct HEART_API FHeartGraphPinValueBase
 /**
  *
  */
-USTRUCT()
-struct HEART_API FHeartGraphPinValue_POD : public FHeartGraphPinValueBase
-{
-	GENERATED_BODY()
-};
-
-/**
- *
- */
 USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinBool : public FHeartGraphPinValue_POD
+struct HEART_API FHeartGraphPinBool : public FHeartGraphPinValueBase
 {
 	GENERATED_BODY()
 
+	// @todo this isn't actually used anywhere . . .
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Value = false;
 };
@@ -42,10 +36,11 @@ struct HEART_API FHeartGraphPinBool : public FHeartGraphPinValue_POD
  *
  */
 USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinDouble : public FHeartGraphPinValue_POD
+struct HEART_API FHeartGraphPinDouble : public FHeartGraphPinValueBase
 {
 	GENERATED_BODY()
 
+	// @todo this isn't actually used anywhere . . .
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	double Value = 0.0;
 };
@@ -74,6 +69,8 @@ USTRUCT(BlueprintType)
 struct HEART_API FHeartGraphPinArray : public FHeartGraphPinContainerBase
 {
 	GENERATED_BODY()
+
+	// This is just a flag type. Is marks the pin as using Array-style behavior.
 };
 
 /**
@@ -83,6 +80,8 @@ USTRUCT(BlueprintType)
 struct HEART_API FHeartGraphPinSet : public FHeartGraphPinContainerBase
 {
 	GENERATED_BODY()
+
+	// This is just a flag type. Is marks the pin as using Set-style behavior.
 };
 
 /**
@@ -130,4 +129,14 @@ struct HEART_API FHeartGraphPinType // Based on FEdGraphPinType
 	}
 };
 
+/*
+ @todo something like this should be made at some point. An easier way for blueprint to generate pin types
+UCLASS()
+class UHeartPinTypeLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
 
+public:
+	FHeartGraphPinType MakePinType(UScriptStruct* Type);
+};
+*/

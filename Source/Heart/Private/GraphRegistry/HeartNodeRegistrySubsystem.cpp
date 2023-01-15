@@ -23,7 +23,7 @@ bool UHeartNodeRegistrySubsystem::ShouldCreateSubsystem(UObject* Outer) const
 #if WITH_EDITOR
 	return Super::ShouldCreateSubsystem(Outer);
 #else
-	return GetDefault<UHeartGraphSettings>()->CreateRuntimeNodeRegistry;
+	return Super::ShouldCreateSubsystem(Outer) && GetDefault<UHeartGraphSettings>()->CreateRuntimeNodeRegistry;
 #endif
 }
 

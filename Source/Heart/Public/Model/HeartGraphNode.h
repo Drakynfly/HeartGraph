@@ -174,7 +174,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	uint8 GetUserOutputNum() const;
 
-	// Declare the pin typed used for instanced pins
+	// Declare the pin typed used for instanced pins. Overriding this is required for User Input/Output to work.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
 	FHeartGraphPinType GetInstancedPinType();
 
