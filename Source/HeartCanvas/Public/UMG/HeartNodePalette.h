@@ -3,10 +3,34 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
-#include "Blueprint/UserWidget.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "UI/HeartWidgetFactory.h"
 #include "HeartNodePalette.generated.h"
+
+UCLASS(Abstract)
+class UHeartNodePaletteCategory : public UHeartGraphWidgetBase
+{
+	GENERATED_BODY()
+
+	friend class UHeartNodePalette;
+
+protected:
+	UFUNCTION(BlueprintImplementableEvent, Category = "NodePaletteCategory")
+	void SetLabel(const FText& Text);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "NodePaletteCategory")
+	void ClearChildren();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "NodePaletteCategory")
+	void AddNode(UClass* NodeClass);
+
+	UFUNCTION(BlueprintCallable, Category = "NodePaletteCategory")
+	UHeartNodePalette* GetPalette() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "NodePaletteCategory")
+	UWidget* MakeWidgetForNode(UClass* NodeClass);
+};
+
 
 class UHeartGraph;
 
@@ -21,10 +45,14 @@ class HEARTCANVAS_API UHeartNodePalette : public UHeartGraphWidgetBase
 protected:
 	virtual bool Initialize() override;
 
-	virtual void Reset();
-	virtual void Display(const TArray<UClass*>& Classes);
-
+	//~ IHeartWidgetInputLinkerRedirector
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
+	//~
+
+	virtual void Reset();
+	virtual void Display(const TMap<UClass*, TSubclassOf<UHeartGraphNode>>& Classes);
+
+	UHeartNodePaletteCategory* FindOrCreateCategory(const FText& Category);
 
 public:
 	/** Regenerate the list of nodes in the palette, triggering the filter for each node again. */
@@ -37,6 +65,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
 	void ClearFilter(bool bRefreshPalette);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
+	const FHeartWidgetFactoryRules& GetWidgetFactory() const { return WidgetFactory; }
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Node Palette")
+	bool ShouldDisplayNode(const UClass* NodeClass, TSubclassOf<UHeartGraphNode> GraphNodeClass);
 
 	/** */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Node Palette")
@@ -54,13 +88,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NodePalette")
 	TSubclassOf<UHeartGraph> DisplayedRegistryGraph;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NodePalette")
+	TSubclassOf<UHeartNodePaletteCategory> CategoryClass;
+
 	//
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NodePalette")
-	FHeartWidgetFactoryRules Rules;
+	FHeartWidgetFactoryRules WidgetFactory;
 
 	UPROPERTY(EditAnywhere, Category = "Input")
 	FHeartWidgetInputBindingContainer BindingContainer;
 
 	UPROPERTY(EditAnywhere, Category = "Events", meta = (IsBindableEvent = "True"))
 	FNodeClassFilter Filter;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FString, TObjectPtr<UHeartNodePaletteCategory>> Categories;
 };

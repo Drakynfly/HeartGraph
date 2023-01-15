@@ -164,7 +164,7 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const
 	return NewGraphNode;
 }
 
-UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, const FVector2D& Location)
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
@@ -194,7 +194,7 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const TSubclassOf<UObject> 
 	return NewGraphNode;
 }
 
-UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location)
 {
 	if (!ensure(IsValid(NodeClass)))
 	{

@@ -18,7 +18,6 @@ const FText UHeartGraphWidgetBase::GetPaletteCategory()
 {
 	return Heart::Canvas::PaletteCategory::Default;
 }
-
 #endif
 
 UHeartWidgetInputLinker* UHeartGraphWidgetBase::ResolveLinker_Implementation() const

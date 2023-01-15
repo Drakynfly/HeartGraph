@@ -93,6 +93,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	void GetNodeClasses(TArray<UClass*>& OutClasses) const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
+	void GetNodeClassesWithGraphClass(TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
+
 	void GetFilteredNodeClasses(const FNativeNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
 
 	void GetFilteredNodeClassesWithGraphClass(const FNativeNodeClassFilter& Filter, TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
@@ -100,11 +103,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	void GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
+	void GetFilteredNodeClassesWithGraphClass(const FNodeClassFilter& Filter, TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
+
+
 	/**
 	 * Get the graph node class that we use to represent the given arbitrary class.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	TSubclassOf<UHeartGraphNode> GetGraphNodeClassForNode(UClass* NodeClass) const;
+	TSubclassOf<UHeartGraphNode> GetGraphNodeClassForNode(const UClass* NodeClass) const;
 
 	/**
 	 * Get the visualizer class that we use to represent the given node class.
@@ -129,13 +136,6 @@ public:
 
 private:
 	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, int32>> GraphClasses;
-
-	UPROPERTY()
-	TSet<FRefCountedClass> NodeClasses;
-
-	// Maps classes to the Graph Node class that can represent them in a graph.
-	UPROPERTY()
-	TMap<TObjectPtr<UClass>, TSubclassOf<UHeartGraphNode>> GraphNodeMap;
 
 	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.
 	UPROPERTY()

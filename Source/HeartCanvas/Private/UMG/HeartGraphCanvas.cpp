@@ -19,8 +19,7 @@
 
 DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
 
-UHeartGraphCanvas::UHeartGraphCanvas(const FObjectInitializer& ObjectInitializer)
-  : Super(ObjectInitializer)
+UHeartGraphCanvas::UHeartGraphCanvas()
 {
 	View = {0, 0, 1};
 	TargetView = {0, 0, 1};

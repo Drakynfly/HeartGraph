@@ -35,28 +35,6 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 		}
 	}
 
-	for (auto&& NodeClass : Registration.NodeClasses)
-	{
-		if (!FilterClassForRegistration(NodeClass))
-		{
-			continue;
-		}
-		++NodeClasses.FindOrAdd(NodeClass.Get());
-	}
-
-	for (auto&& GraphNodeClass : Registration.GraphNodeClasses)
-	{
-		if (!FilterClassForRegistration(GraphNodeClass))
-		{
-			continue;
-		}
-
-		if (UClass* SupportedClass = GetDefault<UHeartGraphNode>(GraphNodeClass)->GetSupportedClass())
-		{
-			GraphNodeMap.Add(SupportedClass, GraphNodeClass);
-		}
-	}
-
 	for (auto&& NodeVisualizerClass : Registration.NodeVisualizerClasses)
 	{
 		if (!FilterClassForRegistration(NodeVisualizerClass))
@@ -121,31 +99,6 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 					GraphClasses.Remove(GraphNodeList.Key);
 				}
 			}
-		}
-	}
-
-	for (auto&& NodeClass : Registration.NodeClasses)
-	{
-		if (auto* ClassRef = NodeClasses.Find(NodeClass.Get()))
-		{
-			--*ClassRef;
-			if (ClassRef->GetRefCount() == 0)
-			{
-				NodeClasses.Remove(*ClassRef);
-			}
-		}
-	}
-
-	for (auto&& GraphNodeClass : Registration.GraphNodeClasses)
-	{
-		if (!IsValid(GraphNodeClass))
-		{
-			continue;
-		}
-
-		if (UClass* SupportedClass = GetDefault<UHeartGraphNode>(GraphNodeClass)->GetSupportedClass())
-		{
-			GraphNodeMap.Remove(SupportedClass);
 		}
 	}
 
@@ -277,17 +230,15 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 
 	for (auto&& GraphClassList : GraphClasses)
 	{
-		if (auto&& DefaultObject = GraphClassList.Key->GetDefaultObject<UHeartGraphNode>())
+		if (auto&& GraphNodeCDO = GraphClassList.Key->GetDefaultObject<UHeartGraphNode>())
 		{
-			UnsortedCategories.Emplace(DefaultObject->GetNodeCategory().ToString());
-		}
-	}
-
-	for (auto&& HeartGraphNodeClass : GraphNodeMap)
-	{
-		if (auto&& DefaultObject = HeartGraphNodeClass.Value->GetDefaultObject<UHeartGraphNode>())
-		{
-			UnsortedCategories.Emplace(DefaultObject->GetNodeCategory().ToString());
+			for (auto&& NodeClass : GraphClassList.Value)
+			{
+				if (auto&& NodeClassCDO = NodeClass.Key->GetDefaultObject())
+				{
+					UnsortedCategories.Emplace(GraphNodeCDO->GetNodeCategory(NodeClassCDO).ToString());
+				}
+			}
 		}
 	}
 
@@ -305,10 +256,17 @@ void UHeartGraphNodeRegistry::GetNodeClasses(TArray<UClass*>& OutClasses) const
 		GraphClassList.Value.GetKeys(ClassObjectPtrArray);
 		OutClasses.Append(ClassObjectPtrArray);
 	}
+}
 
-	for (auto&& NodeClass : NodeClasses)
+void UHeartGraphNodeRegistry::GetNodeClassesWithGraphClass(
+	TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const
+{
+	for (auto&& GraphClassList : GraphClasses)
 	{
-		OutClasses.Add(NodeClass.Class);
+		for (auto&& GraphNode : GraphClassList.Value)
+		{
+			OutClasses.Add(GraphNode.Key, GraphClassList.Key);
+		}
 	}
 }
 
@@ -330,18 +288,6 @@ void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNativeNodeClassFilte
 			if (Filter.Execute(Class))
 			{
 				OutClasses.Add(Class);
-			}
-		}
-	}
-
-
-	for (auto&& NodeClass : NodeClasses)
-	{
-		if (ensure(IsValid(NodeClass.Class)))
-		{
-			if (Filter.Execute(NodeClass.Class))
-			{
-				OutClasses.Add(NodeClass.Class);
 			}
 		}
 	}
@@ -368,20 +314,6 @@ void UHeartGraphNodeRegistry::GetFilteredNodeClassesWithGraphClass(const FNative
 			}
 		}
 	}
-
-	for (auto&& NodeClass : NodeClasses)
-	{
-		if (!ensure(IsValid(NodeClass.Class)))
-		{
-			continue;
-		}
-
-		if (Filter.Execute(NodeClass.Class))
-		{
-			auto&& GraphNodeClass = GetGraphNodeClassForNode(NodeClass.Class);
-			OutClasses.Add(NodeClass.Class, GraphNodeClass);
-		}
-	}
 }
 
 void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const
@@ -404,22 +336,34 @@ void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNodeClassFilter& Fil
 			}
 		}
 	}
+}
 
-	for (auto&& NodeClass : NodeClasses)
+void UHeartGraphNodeRegistry::GetFilteredNodeClassesWithGraphClass(const FNodeClassFilter& Filter,
+	TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const
+{
+	if (!ensure(Filter.IsBound()))
 	{
-		if (ensure(IsValid(NodeClass.Class)))
+		return;
+	}
+
+	for (auto&& GraphClassList : GraphClasses)
+	{
+		for (auto&& CountedClass : GraphClassList.Value)
 		{
-			if (Filter.Execute(NodeClass.Class))
+			UClass* Class = CountedClass.Key;
+			if (!ensure(IsValid(Class))) continue;
+
+			if (Filter.Execute(Class))
 			{
-				OutClasses.Add(NodeClass.Class);
+				OutClasses.Add(Class, GraphClassList.Key);
 			}
 		}
 	}
 }
 
-TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(UClass* NodeClass) const
+TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(const UClass* NodeClass) const
 {
-	for (UClass* Class = NodeClass; Class; Class = Class->GetSuperClass())
+	for (const UClass* Class = NodeClass; Class; Class = Class->GetSuperClass())
 	{
 		for (auto&& ClassList : GraphClasses)
 		{
@@ -427,11 +371,6 @@ TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(U
 			{
 				return ClassList.Key;
 			}
-		}
-
-		if (auto&& FoundClass = GraphNodeMap.Find(Class))
-		{
-			return *FoundClass;
 		}
 	}
 
@@ -536,8 +475,6 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(UGraphNodeRegistrar* Registrar)
 void UHeartGraphNodeRegistry::DeregisterAll()
 {
 	GraphClasses.Empty();
-	NodeClasses.Empty();
-	GraphNodeMap.Empty();
 	NodeVisualizerMap.Empty();
 	PinVisualizerMap.Empty();
 	ContainedRegistrars.Empty();

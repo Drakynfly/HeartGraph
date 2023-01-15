@@ -5,6 +5,6 @@
 #if WITH_EDITOR
 namespace Heart::Canvas::PaletteCategory
 {
-	const FText Default = NSLOCTEXT("HeartCanvas", "WidgetPaletteCategory", "Heart Canvas");
+	const FText Default = NSLOCTEXT("HeartCanvas", "HeartCanvasPaletteCategory", "Heart Canvas");
 }
 #endif

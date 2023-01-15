@@ -260,16 +260,15 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 	{
 		if (NodeClass.Key && NodeClass.Value)
 		{
-			auto&& NodeDefault = GetDefault<UObject>(NodeClass.Key);
 			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(NodeClass.Value);
 
-			if (IsValid(NodeDefault) && IsValid(GraphNodeDefault))
+			if (IsValid(GraphNodeDefault))
 			{
 				if (GraphNodeDefault->CanCreate())
 				{
-					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetNodeCategory(NodeDefault).ToString())))
+					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeClass.Key).ToString())))
 					{
-						TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeDefault, GraphNodeDefault));
+						TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeClass.Key, GraphNodeDefault));
 						ActionMenuBuilder.AddAction(NewNodeAction);
 					}
 				}

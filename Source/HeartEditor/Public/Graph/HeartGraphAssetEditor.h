@@ -29,7 +29,8 @@ protected:
 	TSharedPtr<class FHeartGraphAssetToolbar> AssetToolbar;
 
 	TSharedPtr<SGraphEditor> FocusedGraphEditor;
-	TSharedPtr<class IDetailsView> DetailsView;
+	TSharedPtr<class IDetailsView> DetailsView_Graph;
+	TSharedPtr<class IDetailsView> DetailsView_Object;
 	TSharedPtr<class SHeartPalette> Palette;
 
 public:

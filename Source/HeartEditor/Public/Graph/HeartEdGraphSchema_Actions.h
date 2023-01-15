@@ -37,13 +37,13 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	{
 	}
 
-	FHeartGraphSchemaAction_NewNode(const UObject* NodeCDO, const UHeartGraphNode* GraphNode)
-		: FEdGraphSchemaAction(
-			GraphNode->GetNodeCategory(NodeCDO),
-			GraphNode->GetNodeTitle(NodeCDO, EHeartNodeNameContext::Palette),
-			GraphNode->GetNodeToolTip(NodeCDO),
-			0, FText::FromString(NodeCDO->GetClass()->GetMetaData("Keywords")))
-		, NodeClass(NodeCDO->GetClass())
+	FHeartGraphSchemaAction_NewNode(UClass* NodeClass, const UHeartGraphNode* GraphNode)
+	: FEdGraphSchemaAction(
+		GraphNode->GetDefaultNodeCategory(NodeClass),
+		GraphNode->GetDefaultNodeTitle<EHeartNodeNameContext::Palette>(NodeClass),
+		GraphNode->GetDefaultNodeTooltip(NodeClass),
+		0, FText::FromString(NodeClass->GetMetaData("Keywords")))
+	, NodeClass(NodeClass)
 	{
 	}
 
@@ -51,7 +51,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	// --
 
-	static UHeartEdGraphNode* CreateNode(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode = true);
+	static UHeartEdGraphNode* CreateNode(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode = true);
 };
 
 /** Action to paste clipboard contents into the graph */

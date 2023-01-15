@@ -67,13 +67,21 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	UClass* GetSupportedClass() const;
-
 
 	/****************************/
 	/**		REFLECTION			*/
 	/****************************/
+
+	template<EHeartNodeNameContext Context>
+	FText GetDefaultNodeTitle(const UClass* NodeClass) const
+	{
+		static_assert(Context != EHeartNodeNameContext::NodeInstance, TEXT("NodeInstance is not allowed in GetDefaultNodeTitle"));
+		if (!IsValid(NodeClass)) return FText();
+		return GetNodeTitle(NodeClass->GetDefaultObject(), Context);
+	}
+
+	FText GetDefaultNodeCategory(const UClass* NodeClass) const;
+	FText GetDefaultNodeTooltip(const UClass* NodeClass) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetNodeTitle(const UObject* Node, EHeartNodeNameContext Context) const;

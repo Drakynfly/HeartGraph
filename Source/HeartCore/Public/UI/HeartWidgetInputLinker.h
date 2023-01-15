@@ -19,16 +19,16 @@ class HEARTCORE_API UHeartWidgetInputLinker : public UObject
 	GENERATED_BODY()
 
 public:
-	FReply HandleOnMouseWheel(UWidget* Widget, const FPointerEvent& PointerEvent);
-	FReply HandleOnMouseButtonDown(UWidget* Widget, const FPointerEvent& PointerEvent);
-	FReply HandleOnMouseButtonUp(UWidget* Widget, const FPointerEvent& PointerEvent);
-	FReply HandleOnKeyDown(UWidget* Widget, const FKeyEvent& KeyEvent);
-	FReply HandleOnKeyUp(UWidget* Widget, const FKeyEvent& KeyEvent);
+	FReply HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	FReply HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	FReply HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	FReply HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
+	FReply HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
 
-	UHeartDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FPointerEvent& PointerEvent);
-	bool HandleNativeOnDrop(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	bool HandleNativeOnDragOver(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	void HandleNativeOnDragEnter(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	UHeartDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	bool HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	bool HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	void HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 
@@ -48,7 +48,7 @@ private:
 
 namespace Heart::Input
 {
-	static UHeartWidgetInputLinker* GetWidgetLinker(UWidget* Widget)
+	static UHeartWidgetInputLinker* GetWidgetLinker(const UWidget* Widget)
 	{
 		if (Widget && Widget->Implements<UHeartWidgetInputLinkerRedirector>())
 		{
@@ -65,7 +65,7 @@ namespace Heart::Input
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			FReply BindingReply = Linker->HandleOnMouseWheel(Widget, InMouseEvent);
+			FReply BindingReply = Linker->HandleOnMouseWheel(Widget, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -82,7 +82,7 @@ namespace Heart::Input
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			FReply BindingReply = Linker->HandleOnMouseButtonDown(Widget, InMouseEvent);
+			FReply BindingReply = Linker->HandleOnMouseButtonDown(Widget, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -99,7 +99,7 @@ namespace Heart::Input
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			FReply BindingReply = Linker->HandleOnMouseButtonUp(Widget, InMouseEvent);
+			FReply BindingReply = Linker->HandleOnMouseButtonUp(Widget, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -116,7 +116,7 @@ namespace Heart::Input
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			FReply BindingReply = Linker->HandleOnKeyDown(Widget, InKeyEvent);
+			FReply BindingReply = Linker->HandleOnKeyDown(Widget, InGeometry, InKeyEvent);
 
 			if (BindingReply.IsEventHandled())
 	        {
@@ -133,7 +133,7 @@ namespace Heart::Input
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			FReply BindingReply = Linker->HandleOnKeyUp(Widget, InKeyEvent);
+			FReply BindingReply = Linker->HandleOnKeyUp(Widget, InGeometry, InKeyEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -147,11 +147,11 @@ namespace Heart::Input
 	template <typename TWidget,
 		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
 	static bool LinkOnDragDetected(TWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
-	                                                 UDragDropOperation*& OutOperation)
+	                               UDragDropOperation*& OutOperation)
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Widget, InMouseEvent))
+			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Widget, InGeometry, InMouseEvent))
 			{
 				OutOperation = LinkerOperation;
 				return true;
@@ -164,11 +164,11 @@ namespace Heart::Input
 	template <typename TWidget,
 		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
 	static bool LinkOnDrop(TWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-		UDragDropOperation* InOperation)
+						   UDragDropOperation* InOperation)
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			if (Linker->HandleNativeOnDrop(Widget, InDragDropEvent, InOperation))
+			if (Linker->HandleNativeOnDrop(Widget, InGeometry, InDragDropEvent, InOperation))
 			{
 				return true;
 			}
@@ -180,11 +180,11 @@ namespace Heart::Input
 	template <typename TWidget,
 		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
 	static bool LinkOnDragOver(TWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-		UDragDropOperation* InOperation)
+							   UDragDropOperation* InOperation)
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			if (Linker->HandleNativeOnDragOver(Widget, InDragDropEvent, InOperation))
+			if (Linker->HandleNativeOnDragOver(Widget, InGeometry, InDragDropEvent, InOperation))
 			{
 				return true;
 			}
@@ -196,18 +196,18 @@ namespace Heart::Input
 	template <typename TWidget,
 		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
 	static void LinkOnDragEnter(TWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-	UDragDropOperation* InOperation)
+								UDragDropOperation* InOperation)
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
-			Linker->HandleNativeOnDragEnter(Widget, InDragDropEvent, InOperation);
+			Linker->HandleNativeOnDragEnter(Widget, InGeometry, InDragDropEvent, InOperation);
 		}
 	}
 
 	template <typename TWidget,
 		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
 	static void LinkOnDragLeave(TWidget* Widget, const FDragDropEvent& InDragDropEvent,
-	UDragDropOperation* InOperation)
+								UDragDropOperation* InOperation)
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
@@ -218,7 +218,7 @@ namespace Heart::Input
 	template <typename TWidget,
 		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
 	static void LinkOnDragCancelled(TWidget* Widget, const FDragDropEvent& InDragDropEvent,
-	UDragDropOperation* InOperation)
+									UDragDropOperation* InOperation)
 	{
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
@@ -228,6 +228,7 @@ namespace Heart::Input
 }
 
 #define HEART_WIDGET_INPUT_LINKER_HEADER()\
+protected:\
 virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;\
 virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;\
 virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;\
@@ -239,6 +240,7 @@ virtual bool NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent&
 virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;\
 virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;\
 virtual void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;\
+public:\
 
 
 #define HEART_WIDGET_INPUT_LINKER_BODY(type)\

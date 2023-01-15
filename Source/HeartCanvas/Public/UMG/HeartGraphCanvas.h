@@ -55,7 +55,7 @@ class HEARTCANVAS_API UHeartGraphCanvas : public UHeartGraphWidgetBase
 	GENERATED_BODY()
 
 public:
-	UHeartGraphCanvas(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UHeartGraphCanvas();
 
 protected:
 	/** UUserWidget */

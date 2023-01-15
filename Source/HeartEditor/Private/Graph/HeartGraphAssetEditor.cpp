@@ -137,7 +137,16 @@ TSharedRef<SDockTab> FHeartGraphAssetEditor::SpawnTab_Details(const FSpawnTabArg
 	return SNew(SDockTab)
 		.Label(LOCTEXT("HeartDetailsTitle", "Details"))
 		[
-			DetailsView.ToSharedRef()
+			SNew(SSplitter)
+			.Orientation(Orient_Vertical)
+				+ SSplitter::Slot()
+				[
+					DetailsView_Graph.ToSharedRef()
+				]
+				+ SSplitter::Slot()
+				[
+					DetailsView_Object.ToSharedRef()
+				]
 		];
 }
 
@@ -278,9 +287,13 @@ void FHeartGraphAssetEditor::CreateWidgets()
 	Args.NotifyHook = this;
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-	DetailsView = PropertyModule.CreateDetailView(Args);
-	DetailsView->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateStatic(&FHeartGraphAssetEditor::CanEdit));
-	DetailsView->SetObject(HeartGraph);
+	DetailsView_Graph = PropertyModule.CreateDetailView(Args);
+	DetailsView_Graph->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateStatic(&FHeartGraphAssetEditor::CanEdit));
+	DetailsView_Graph->SetObject(HeartGraph);
+
+	DetailsView_Object = PropertyModule.CreateDetailView(Args);
+	DetailsView_Object->SetIsPropertyEditingEnabledDelegate(FIsPropertyEditingEnabled::CreateStatic(&FHeartGraphAssetEditor::CanEdit));
+	DetailsView_Object->SetObject(nullptr);
 
 	Palette = SNew(SHeartPalette, SharedThis(this));
 }
@@ -566,6 +579,7 @@ bool FHeartGraphAssetEditor::GetBoundsForSelectedNodes(class FSlateRect& Rect, f
 
 void FHeartGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Nodes)
 {
+	TArray<UObject*> SelectedGraphObjects;
 	TArray<UObject*> SelectedObjects;
 
 	if (Nodes.Num() > 0)
@@ -576,23 +590,29 @@ void FHeartGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Nodes)
 		{
 			if (auto&& GraphNode = Cast<UHeartEdGraphNode>(*SetIt))
 			{
-				SelectedObjects.Add(Cast<UObject>(GraphNode->GetHeartGraphNode()));
+				SelectedGraphObjects.Add(GraphNode->GetHeartGraphNode());
+				SelectedObjects.Add(GraphNode->GetHeartGraphNode()->GetNodeObject());
 			}
 			else
 			{
-				SelectedObjects.Add(*SetIt);
+				SelectedGraphObjects.Add(*SetIt);
 			}
 		}
 	}
 	else
 	{
 		SetUISelectionState(NAME_None);
-		SelectedObjects.Add(GetHeartGraph());
+		SelectedGraphObjects.Add(GetHeartGraph());
 	}
 
-	if (DetailsView.IsValid())
+	if (DetailsView_Graph.IsValid())
 	{
-		DetailsView->SetObjects(SelectedObjects);
+		DetailsView_Graph->SetObjects(SelectedGraphObjects);
+	}
+
+	if (DetailsView_Object.IsValid())
+	{
+		DetailsView_Object->SetObjects(SelectedObjects);
 	}
 }
 

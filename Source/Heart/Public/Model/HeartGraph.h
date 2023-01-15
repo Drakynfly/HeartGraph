@@ -125,7 +125,7 @@ public:
 private:
 	UHeartGraphNode* CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location);
 
-	UHeartGraphNode* CreateNodeForNodeClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location);
+	UHeartGraphNode* CreateNodeForNodeClass(const UClass* NodeClass, const FVector2D& Location);
 
 public:
 	// Create from template graph class and template node class
@@ -159,7 +159,7 @@ public:
 	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location);
+	UHeartGraphNode* CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location);
 
 	/**
 	 * Create a new node, using the provided NodeObject

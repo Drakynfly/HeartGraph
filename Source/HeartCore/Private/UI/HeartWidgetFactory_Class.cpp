@@ -2,11 +2,6 @@
 
 #include "UI/HeartWidgetFactory_Class.h"
 
-UClass* UHeartWidgetFactory_Class::GetActualSuperClass(const UClass* Class) const
-{
-	return Class->ClassGeneratedBy ? Cast<UBlueprint>(Class->ClassGeneratedBy)->ParentClass : Class->GetSuperClass();
-}
-
 TSubclassOf<UUserWidget> UHeartWidgetFactory_Class::FindWidgetClassForData_Implementation(const UObject* Data) const
 {
 	if (auto&& StartingClass = Cast<UClass>(Data))
@@ -23,4 +18,9 @@ TSubclassOf<UUserWidget> UHeartWidgetFactory_Class::FindWidgetClassForData_Imple
 	}
 
 	return TSubclassOf<UUserWidget>();
+}
+
+UClass* UHeartWidgetFactory_Class::GetActualSuperClass(const UClass* Class) const
+{
+	return Class->ClassGeneratedBy ? Cast<UBlueprint>(Class->ClassGeneratedBy)->ParentClass : Class->GetSuperClass();
 }

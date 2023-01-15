@@ -84,11 +84,19 @@ void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		OnReconstructionRequested.Broadcast(this);
 	}
 }
+
 #endif
 
-UClass* UHeartGraphNode::GetSupportedClass_Implementation() const
+FText UHeartGraphNode::GetDefaultNodeCategory(const UClass* NodeClass) const
 {
-	return nullptr;
+	if (!IsValid(NodeClass)) return FText();
+	return GetNodeCategory(NodeClass->GetDefaultObject());
+}
+
+FText UHeartGraphNode::GetDefaultNodeTooltip(const UClass* NodeClass) const
+{
+	if (!IsValid(NodeClass)) return FText();
+	return GetNodeToolTip(NodeClass->GetDefaultObject());
 }
 
 FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, EHeartNodeNameContext Context) const

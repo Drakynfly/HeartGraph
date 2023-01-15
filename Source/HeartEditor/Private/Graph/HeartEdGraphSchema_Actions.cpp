@@ -36,7 +36,7 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 	return nullptr;
 }
 
-UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode /*= true*/)
+UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode /*= true*/)
 {
 	check(NodeClass);
 

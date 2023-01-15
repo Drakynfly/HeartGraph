@@ -7,6 +7,9 @@
 
 #include "HeartWidgetFactory.generated.h"
 
+// Shamelessly adapted from Lyra. Its just so useful :)
+
+
 UCLASS(Abstract, Blueprintable, BlueprintType, EditInlineNew, CollapseCategories)
 class HEARTCORE_API UHeartWidgetFactory : public UObject
 {

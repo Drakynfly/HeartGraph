@@ -8,7 +8,7 @@
 
 using namespace Heart::Input;
 
-FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FPointerEvent& PointerEvent)
+FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	FHeartWidgetInputTrip MouseWheelAxisTrip;
 	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis; // Heart::Input::MakeKeyEventFromKey(EKeys::MouseWheelAxis);
@@ -42,7 +42,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FPoint
 	return FReply::Unhandled();
 }
 
-FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const FPointerEvent& PointerEvent)
+FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
@@ -103,7 +103,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 	return FReply::Unhandled();
 }
 
-FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FPointerEvent& PointerEvent)
+FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
@@ -137,7 +137,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FPo
 	return FReply::Unhandled();
 }
 
-FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FKeyEvent& KeyEvent)
+FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
@@ -171,7 +171,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FKeyEvent
 	return FReply::Unhandled();
 }
 
-FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FKeyEvent& KeyEvent)
+FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
@@ -205,7 +205,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FKeyEvent& 
 	return FReply::Unhandled();
 }
 
-UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FPointerEvent& PointerEvent)
+UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
@@ -240,7 +240,7 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 	return nullptr;
 }
 
-bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)
+bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)
 {
 	if (auto&& HeartDDO = Cast<UHeartDragDropOperation>(InOperation))
 	{
@@ -250,7 +250,7 @@ bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FDra
 	return false;
 }
 
-bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FDragDropEvent& DragDropEvent,
+bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 												 UDragDropOperation* InOperation)
 {
 	if (auto&& HeartDDO = Cast<UHeartDragDropOperation>(InOperation))
@@ -261,7 +261,7 @@ bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FDragDro
 	return false;
 }
 
-void UHeartWidgetInputLinker::HandleNativeOnDragEnter(UWidget* Widget, const FDragDropEvent& DragDropEvent,
+void UHeartWidgetInputLinker::HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
 }
