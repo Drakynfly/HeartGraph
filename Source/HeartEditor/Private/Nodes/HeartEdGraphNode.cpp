@@ -703,22 +703,21 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 
 FText UHeartEdGraphNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
-
-	if (ensure(HeartGraphNode))
+	if (ensure(HeartGraphNode) && HeartGraphNode->GetNodeObject())
 	{
 		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
 		{
 			switch (TitleType) {
 			case ENodeTitleType::FullTitle:
 				// @todo is full FullTitle only used for in-graph instances? i *think* so
-				return HeartGraphNode->GetNodeTitle(HeartGraphNode, EHeartNodeNameContext::NodeInstance);
+				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::NodeInstance);
 			case ENodeTitleType::MenuTitle:
-				return HeartGraphNode->GetNodeTitle(HeartGraphNode, EHeartNodeNameContext::Palette);
+				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::Palette);
 			case ENodeTitleType::EditableTitle:
 				// @todo support for EditableTitles when? :)
 			case ENodeTitleType::ListView:
 			default: ;
-				return HeartGraphNode->GetNodeTitle(HeartGraphNode, EHeartNodeNameContext::Default);
+				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::Default);
 			}
 		}
 	}

@@ -12,11 +12,14 @@ UWorld* UHeartGraphNode::GetWorld() const
 	{
 		if (GetGraph())
 		{
-			return GetGraph()->GetWorld();
+			if (GetGraph()->GetWorld())
+			{
+				return GetGraph()->GetWorld();
+			}
 		}
 	}
 
-	return nullptr;
+	return Super::GetWorld();
 }
 
 void UHeartGraphNode::PostLoad()
