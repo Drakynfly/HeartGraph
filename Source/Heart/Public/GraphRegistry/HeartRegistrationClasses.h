@@ -11,7 +11,7 @@ struct FClassList
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = false, BlueprintBaseOnly))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = false))
 	TArray<TObjectPtr<UClass>> NodeClasses;
 };
 

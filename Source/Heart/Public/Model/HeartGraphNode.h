@@ -13,8 +13,8 @@
 class UHeartGraph;
 class UHeartGraphPin;
 class UHeartGraphCanvas;
-
 class UHeartGraphNode;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, UHeartGraphPin*, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
@@ -43,6 +43,14 @@ struct FHeartGraphNodeSparseClassData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	TMap<FName, FHeartGraphPinType> DefaultOutputs;
+
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
+	bool OverrideCanCreateInEditor = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
+	bool CanCreateInEditor;
+#endif
 };
 
 /**
@@ -185,6 +193,8 @@ public:
 public:
 #if WITH_EDITOR
 	void SetEdGraphNode(UEdGraphNode* GraphNode);
+
+	virtual bool CanCreate_Editor() const;
 #endif
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
@@ -300,7 +310,7 @@ protected:
 	UPROPERTY()
 	FVector2D Location;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly)
 	TMap<FHeartPinGuid, TObjectPtr<UHeartGraphPin>> Pins;
 
 private:

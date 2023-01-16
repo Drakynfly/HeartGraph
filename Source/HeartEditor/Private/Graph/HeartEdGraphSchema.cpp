@@ -93,7 +93,7 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 		if (RuntimeSchema->RunCanPinsConnectInEdGraph)
 		{
 			auto&& HeartPinA = OwningNodeA->GetPinByName(PinA->GetFName());
-			auto&& HeartPinB = OwningNodeB->GetPinByName(PinA->GetFName());
+			auto&& HeartPinB = OwningNodeB->GetPinByName(PinB->GetFName());
 
 			FHeartConnectPinsResponse RuntimeResult;
 
@@ -264,7 +264,7 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 
 			if (IsValid(GraphNodeDefault))
 			{
-				if (GraphNodeDefault->CanCreate())
+				if (GraphNodeDefault->CanCreate_Editor())
 				{
 					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeClass.Key).ToString())))
 					{

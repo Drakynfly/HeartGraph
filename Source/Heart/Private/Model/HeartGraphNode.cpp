@@ -274,6 +274,16 @@ void UHeartGraphNode::SetEdGraphNode(UEdGraphNode* GraphNode)
 		HeartEdGraphNode = GraphNode;
 	}
 }
+
+bool UHeartGraphNode::CanCreate_Editor() const
+{
+	if (GetOverrideCanCreateInEditor())
+	{
+		return GetCanCreateInEditor();
+	}
+
+	return CanCreate();
+}
 #endif
 
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
