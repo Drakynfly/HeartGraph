@@ -35,4 +35,7 @@ struct FHeartRegistrationClasses
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (MustImplement = "/Script/Heart.GraphPinVisualizerInterface"))
 	TArray<TObjectPtr<UClass>> PinVisualizerClasses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (MustImplement = "/Script/Heart.GraphConnectionVisualizerInterface"))
+	TArray<TObjectPtr<UClass>> ConnectionVisualizerClasses;
 };

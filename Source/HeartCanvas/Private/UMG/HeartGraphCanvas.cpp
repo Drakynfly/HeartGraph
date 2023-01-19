@@ -146,17 +146,19 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 			FVector2D StartPoint;
 			FVector2D EndPoint;
 
-			FVector2D PinPoint = GraphGeo.AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
-
 			FVector CustomPosition;
-			if (IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(PreviewPin, CustomPosition))
-			{
-				PinPoint = FVector2D(CustomPosition);
-			}
-			else
+			bool RelativeStart;
+			const bool HandledStart = IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(PreviewPin, CustomPosition, RelativeStart);
+
+			if (!HandledStart || RelativeStart)
 			{
 				// @todo kinda awful that this is the only way ive found to do this...
-				PinPoint = GraphGeo.AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+				StartPoint = GraphGeo.AbsoluteToLocal(PinGeo.LocalToAbsolute(UHeartWidgetUtilsLibrary::GetGeometryCenter(PinGeo)));
+			}
+
+			if (HandledStart)
+			{
+				StartPoint += FVector2D(CustomPosition);
 			}
 
 			//if (PreviewPin->GetPin()->GetDirection() == EHeartPinDirection::Input)
@@ -166,12 +168,16 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 			}
 			//else
 			{
-				StartPoint = PinPoint;
 				EndPoint = GraphGeo.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
 			}
 
 			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
 		}
+	}
+
+	if (!UseDeprecatedPaintMethodToDrawConnections)
+	{
+		return SuperLayerID;
 	}
 
 	// Draw all regular connections
@@ -212,6 +218,11 @@ void UHeartGraphCanvas::Refresh()
 		{
 			AddNodeToDisplay(GraphNode);
 		}
+	}
+
+	for (auto&& DisplayedNode : DisplayedNodes)
+	{
+		DisplayedNode.Value->RebuildAllPinConnections();
 	}
 }
 
@@ -364,6 +375,11 @@ void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Refe
 	PreviewConnectionPin = Reference;
 }
 
+void UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget)
+{
+	ConnectionCanvas->AddChild(ConnectionWidget);
+}
+
 bool UHeartGraphCanvas::IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const
 {
 	static const float GuardBandArea = 0.25f;
@@ -447,6 +463,15 @@ UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPi
 		}
 	}
 
+	return nullptr;
+}
+
+UHeartGraphCanvasNode* UHeartGraphCanvas::GetCanvasNode(const FHeartNodeGuid NodeGuid)
+{
+	if (auto&& Node = DisplayedNodes.Find(NodeGuid))
+	{
+		return *Node;
+	}
 	return nullptr;
 }
 

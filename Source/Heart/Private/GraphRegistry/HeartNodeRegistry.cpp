@@ -400,7 +400,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a visualizer for class: %s"), *GraphNodeClass->GetName())
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a node visualizer for class: %s"), *GraphNodeClass->GetName())
 
 	return nullptr;
 }
@@ -428,7 +428,31 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a visualizer for class: %s"), *GraphPinClass->GetName())
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a pin visualizer for class: %s"), *GraphPinClass->GetName())
+
+	return nullptr;
+}
+
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass) const
+{
+	// @todo add ability to override the connection class to anything other than the default
+
+
+
+	// Try and retrieve a fallback visualizer
+	// @todo this might return a widget class in cases where that is not expected. maybe allow a filter on this function
+	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	{
+		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
+		{
+			if (ensure(Fallback->Registration.ConnectionVisualizerClasses.IsValidIndex(0)))
+			{
+				return Fallback->Registration.ConnectionVisualizerClasses[0];
+			}
+		}
+	}
+
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a connection visualizer for class: %s"), *FromPinClass->GetName())
 
 	return nullptr;
 }

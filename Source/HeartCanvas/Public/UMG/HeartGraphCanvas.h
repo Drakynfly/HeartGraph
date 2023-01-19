@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "HeartGraphCanvasConnection.h"
 #include "HeartGraphWidgetBase.h"
 #include "General/VectorBounds.h"
 #include "Model/HeartGraphPinReference.h"
@@ -73,6 +74,8 @@ public:
 	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing so we can draw the preview link
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);
 
+	void AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
+
 protected:
 	bool IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
 
@@ -143,6 +146,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	UHeartGraphCanvasPin* ResolvePinReference(const FHeartGraphPinReference& PinReference) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
+	UHeartGraphCanvasNode* GetCanvasNode(FHeartNodeGuid NodeGuid);
+
 
 	/****************************/
 	/**		GRAPH VIEWING		*/
@@ -191,6 +197,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Nodes"), Category = "Widgets")
 	TObjectPtr<UHeartGraphCanvasPanel> NodeCanvas;
 
+	/** The canvas to draw all nodes on. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Connections"), Category = "Widgets")
+	TObjectPtr<UHeartGraphCanvasPanel> ConnectionCanvas;
+
 	UPROPERTY()
 	TWeakObjectPtr<UHeartGraph> DisplayedGraph;
 
@@ -224,6 +234,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FHeartDragIntoViewSettings DragIntoViewSettings;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
+	bool UseDeprecatedPaintMethodToDrawConnections = false;
 
 private:
 	FVector View;

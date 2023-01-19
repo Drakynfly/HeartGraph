@@ -10,6 +10,7 @@
 class UHeartGraphNode;
 class UHeartGraphCanvas;
 class UHeartGraphCanvasPin;
+class UHeartGraphCanvasConnection;
 
 /**
  *
@@ -31,6 +32,11 @@ public:
 	bool IsNodeSelected() const { return NodeSelected; }
 
 	void SetNodeSelected(bool Selected);
+
+	void RebuildAllPinConnections();
+
+	UFUNCTION()
+	void RebuildPinConnections(UHeartGraphPin* Pin);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode", meta = (DeterminesOutputType = Class))
 	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GraphNode.Get(); }
@@ -62,8 +68,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TWeakObjectPtr<UHeartGraphCanvas> GraphCanvas;
 
+	// All pins widgets contained by this node
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TArray<TObjectPtr<UHeartGraphCanvasPin>> PinWidgets;
+
+	// All connection widgets leading *from* this node to others.
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
+	TArray<TObjectPtr<UHeartGraphCanvasConnection>> ConnectionWidgets;
 
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool NodeSelected;

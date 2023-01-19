@@ -126,6 +126,9 @@ public:
 	UClass* GetVisualizerClassForGraphPin(TSubclassOf<UHeartGraphPin> GraphPinClass) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
+	UClass* GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
