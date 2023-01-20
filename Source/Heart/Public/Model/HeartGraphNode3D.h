@@ -27,5 +27,5 @@ public:
 
 private:
 	UPROPERTY()
-	float Height;
+	double Height;
 };

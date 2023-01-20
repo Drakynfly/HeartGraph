@@ -33,6 +33,9 @@ enum class EHeartNodeNameContext : uint8
 	Palette,
 };
 
+/**
+ * Class data for UHeartGraph
+ */
 USTRUCT()
 struct FHeartGraphNodeSparseClassData
 {
@@ -48,6 +51,7 @@ struct FHeartGraphNodeSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
 	bool OverrideCanCreateInEditor = false;
 
+	// Can this node be created by the editor even if it cannot be created otherwise.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
 	bool CanCreateInEditor;
 #endif
@@ -206,13 +210,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanUserAddOutput() const;
 
-	// Is this node exposed to palettes for selection
+	// Can the user create instances of this node. Only necessary to override for use in graphs with the ability to spawn nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanCreate() const;
 
+	// Can the user delete this node. Only necessary to override for use in graphs with the ability to delete nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanDelete() const;
 
+	// Can the user duplicate this node. Only necessary to override for use in graphs with the ability to duplicate nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanDuplicate() const;
 

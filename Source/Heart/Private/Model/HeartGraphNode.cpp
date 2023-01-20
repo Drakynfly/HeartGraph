@@ -12,9 +12,10 @@ UWorld* UHeartGraphNode::GetWorld() const
 	{
 		if (GetGraph())
 		{
-			if (GetGraph()->GetWorld())
+			UWorld* GraphWorld = GetGraph()->GetWorld();
+			if (IsValid(GraphWorld))
 			{
-				return GetGraph()->GetWorld();
+				return GraphWorld;
 			}
 		}
 	}

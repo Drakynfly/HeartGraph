@@ -19,6 +19,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, cons
 
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, UHeartGraphNode*, Node);
 
+/**
+ * Class data for UHeartGraph
+ */
 USTRUCT()
 struct FHeartGraphSparseClassData
 {

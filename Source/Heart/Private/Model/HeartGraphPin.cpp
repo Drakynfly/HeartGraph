@@ -6,11 +6,19 @@
 
 UWorld* UHeartGraphPin::GetWorld() const
 {
-	if (GetNode())
+	if (!IsTemplate())
 	{
-		return GetNode()->GetWorld();
+		if (GetNode())
+		{
+			UWorld* NodeWorld = GetNode()->GetWorld();
+			if (IsValid(NodeWorld))
+			{
+				return NodeWorld;
+			}
+		}
 	}
-	return nullptr;
+
+	return Super::GetWorld();
 }
 
 bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)

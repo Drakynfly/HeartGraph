@@ -25,7 +25,7 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 	/** IHeartWidgetInputLinkerRedirector */
 
-	// Is this pin the target of a connection, and may be connected if confirmed.
+	// Called by UHeartPinConnectionDragDropOperation when connecting pins.
 	void SetIsPreviewConnectionTarget(bool IsTarget, bool CanConnect);
 
 	UHeartGraphPin* GetPin() const { return GraphPin.Get(); }
@@ -36,7 +36,7 @@ public:
 	UHeartGraphPin* GetPinTyped(TSubclassOf<UHeartGraphPin> Class) const { return GraphPin.Get(); }
 
 protected:
-	// Called by DragDropOperation when connection pins. Useful to display a highlight on pins as if they are hovered.
+	// Is this pin the target of a connection, and may be connected if confirmed. Useful to display a highlight on pins as if they are hovered.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphCanvasPin")
 	void DisplayPreviewConnectionTarget(bool IsTarget, bool CanConnect);
 
