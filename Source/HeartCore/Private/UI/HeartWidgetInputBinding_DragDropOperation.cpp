@@ -5,24 +5,24 @@
 #include "UI/HeartWidgetInputLinker.h"
 #include "UI/HeartWidgetInputTrigger.h"
 
-bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
 {
-	for (auto&& Trigger : Triggers)
+	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
+	DragDropTrigger.Class = OperationClass;
+	DragDropTrigger.VisualClass = VisualClass;
+	DragDropTrigger.Pivot = Pivot;
+	DragDropTrigger.Offset = Offset;
+	DragDropTrigger.Layer = Heart::Input::Event;
+
+	if (Condition)
+	{
+		DragDropTrigger.Condition = Condition->CreateCondition();
+	}
+
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{
-			Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
-			DragDropTrigger.Class = OperationClass;
-			DragDropTrigger.VisualClass = VisualClass;
-			DragDropTrigger.Pivot = Pivot;
-			DragDropTrigger.Offset = Offset;
-			DragDropTrigger.Layer = Heart::Input::Event;
-
-			if (Condition)
-			{
-				DragDropTrigger.Condition = Condition->CreateCondition();
-			}
-
 			Linker->BindToOnDragDetected(Trigger.Get<FHeartWidgetInputTrigger>().CreateTrip(), DragDropTrigger);
 		}
 	}
@@ -30,9 +30,9 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 	return true;
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
 {
-	for (auto&& Trigger : Triggers)
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{

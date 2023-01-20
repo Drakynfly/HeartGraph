@@ -16,8 +16,8 @@ class HEARTCORE_API UHeartWidgetInputBinding_TriggerBase : public UHeartWidgetIn
 	GENERATED_BODY()
 
 public:
-	virtual bool Bind(UHeartWidgetInputLinker* Linker) override;
-	virtual bool Unbind(UHeartWidgetInputLinker* Linker) override;
+	virtual bool Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) override;
+	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) override;
 
 protected:
 	UPROPERTY(EditAnywhere, Instanced)
