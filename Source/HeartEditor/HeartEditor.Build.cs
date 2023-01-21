@@ -39,7 +39,7 @@ public class HeartEditor : ModuleRules
             "Kismet",
             "KismetWidgets", // For SLevelOfDetailBranchNode
             "Projects", // For IPluginManager
-            //"PropertyEditor",
+            "PropertyEditor",
             //"RenderCore",
             "Slate",
             "SlateCore",

@@ -33,7 +33,7 @@ private:
     void RegisterAssets();
     void UnregisterAssets();
 
-    void RegisterPropertyCustomizations() const;
+    void RegisterPropertyCustomizations();
     void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance DetailLayout);
 
 public:
@@ -42,6 +42,9 @@ public:
 private:
     void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
     void RegisterAssetIndexers() const;
+
+    /** Property Customizations; Cached so they can be unregistered */
+    TMap<FName, FOnGetPropertyTypeCustomizationInstance> PropertyCustomizations;
 
 public:
     static TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
