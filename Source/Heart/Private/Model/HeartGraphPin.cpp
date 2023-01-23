@@ -54,6 +54,19 @@ bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 	Links.Add(Other->GetReference());
 	Other->Links.Add(GetReference());
 
+#if WITH_EDITOR
+	if (MyNode->GetEdGraphNode() && Other->GetNode()->GetEdGraphNode())
+	{
+		auto&& ThisEdGraphPin = MyNode->GetEdGraphNode()->FindPin(PinName);
+		auto&& OtherEdGraphPin = Other->GetNode()->GetEdGraphNode()->FindPin(Other->PinName);
+
+		if (ThisEdGraphPin && OtherEdGraphPin)
+		{
+			ThisEdGraphPin->MakeLinkTo(OtherEdGraphPin);
+		}
+	}
+#endif
+
 	OnPinConnectionsChanged.Broadcast(this);
 	Other->OnPinConnectionsChanged.Broadcast(Other);
 	return true;
@@ -75,6 +88,19 @@ void UHeartGraphPin::DisconnectFrom(const FHeartGraphPinReference Other, const b
 		//ensureAlwaysMsgf(ToPin->Links.Contains(this), TEXT("%s"), *GetLinkInfoString(LOCTEXT("BreakLinkTo", "BreakLinkTo").ToString(), LOCTEXT("NotLinked", "not reciprocally linked with pin").ToString(), ToPin));
 		ToPin->Links.Remove(GetReference());
 		Links.Remove(Other);
+
+#if WITH_EDITOR
+		if (GetNode()->GetEdGraphNode() && ToPin->GetNode()->GetEdGraphNode())
+		{
+			auto&& ThisEdGraphPin = GetNode()->GetEdGraphNode()->FindPin(PinName);
+			auto&& OtherEdGraphPin = ToPin->GetNode()->GetEdGraphNode()->FindPin(ToPin->PinName);
+
+			if (ThisEdGraphPin && OtherEdGraphPin)
+			{
+				ThisEdGraphPin->BreakLinkTo(OtherEdGraphPin);
+			}
+		}
+#endif
 
 		OnPinConnectionsChanged.Broadcast(this);
 		ToPin->OnPinConnectionsChanged.Broadcast(ToPin);

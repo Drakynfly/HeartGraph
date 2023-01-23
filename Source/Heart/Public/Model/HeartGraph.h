@@ -127,13 +127,21 @@ public:
 	/****************************/
 private:
 	UHeartGraphNode* CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location);
-
 	UHeartGraphNode* CreateNodeForNodeClass(const UClass* NodeClass, const FVector2D& Location);
 
 public:
+	// Create from template graph class and node object
+	template <typename THeartGraphNode>
+	THeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
+	{
+		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
+		checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
+		return Cast<THeartGraphNode>(CreateNodeForNodeObject(NodeObject, Location));
+	}
+
 	// Create from template graph class and template node class
 	template <typename THeartGraphNode, typename THeartNode>
-	THeartGraphNode* CreateNode(const FVector2D& Location)
+	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
 		static_assert(!TIsDerivedFrom<THeartNode, UHeartGraphNode>::IsDerived, "The node class must not derive from UHeartGraphNode");
@@ -142,20 +150,11 @@ public:
 
 	// Create from template graph class and node class
 	template <typename THeartGraphNode>
-	THeartGraphNode* CreateNode(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
-		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of a 'OBJECT' node class"));
+		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
 		return Cast<THeartGraphNode>(CreateNodeForNodeClass(NodeClass, Location));
-	}
-
-	// Create from template graph class and node object
-	template <typename THeartGraphNode>
-	THeartGraphNode* CreateNode(UObject* NodeObject, const FVector2D& Location)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The graph node class must derive from UHeartGraphNode");
-		static_assert(!TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "The node class must not derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(CreateNodeForNodeObject(NodeObject, Location));
 	}
 
 	/**

@@ -15,7 +15,10 @@
 #include "AssetToolsModule.h"
 #include "EdGraphUtilities.h"
 #include "IAssetSearchModule.h"
+#include "GraphRegistry/HeartRegistrationClasses.h"
 #include "Modules/ModuleManager.h"
+
+#include "Customizations/ItemsArrayCustomization.h"
 
 static FName AssetSearchModuleName = TEXT("AssetSearch");
 
@@ -112,9 +115,18 @@ void FHeartEditorModule::UnregisterAssets()
 	RegisteredAssetActions.Empty();
 }
 
-void FHeartEditorModule::RegisterPropertyCustomizations() const
+void FHeartEditorModule::RegisterPropertyCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+
+	PropertyCustomizations.Add(FClassList::StaticStruct()->GetFName(),
+	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FItemsArrayCustomization::MakeInstance));
+
+	// Register property customizations
+	for (auto&& Customization : PropertyCustomizations)
+	{
+		PropertyModule.RegisterCustomPropertyTypeLayout(Customization.Key, Customization.Value);
+	}
 
 	// notify on customization change
 	PropertyModule.NotifyCustomizationModuleChanged();

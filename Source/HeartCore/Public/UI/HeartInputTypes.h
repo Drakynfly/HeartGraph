@@ -22,6 +22,8 @@ namespace Heart::Input
 
 	struct FConditionalInputBase
 	{
+		// @todo conditions are a hack. they don't need to be used 95% of the time, and when they are used, its to fix weird behavior in other stuff
+		// Track down and fix the general weirdness with input binding and eventually deprecate them, probably, unless they become useful in some permanent way
 		FHeartWidgetInputCondition Condition;
 		EHeartInputLayer Layer = None;
 

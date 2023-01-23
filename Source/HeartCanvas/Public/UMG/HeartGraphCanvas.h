@@ -214,7 +214,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphCanvasNode>> DisplayedNodes;
 
-	UPROPERTY(EditAnywhere, Category = "Input")
+	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input")
