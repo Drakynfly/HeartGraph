@@ -2,17 +2,19 @@
 
 #pragma once
 
-#include "HeartGraphCanvasConnection.h"
 #include "HeartGraphWidgetBase.h"
+#include "ModelView/HeartNodeLocationAccessor.h"
+
 #include "General/VectorBounds.h"
 #include "Model/HeartGraphPinReference.h"
 #include "Model/HeartGraphNode.h"
 #include "HeartGraphCanvas.generated.h"
 
-class UHeartGraphCanvasPanel;
 class UHeartGraph;
+class UHeartGraphCanvasPanel;
 class UHeartGraphCanvasNode;
 class UHeartGraphCanvasPin;
+class UHeartGraphCanvasConnection;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraphCanvas, Log, All)
 
@@ -51,7 +53,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGraphViewChanged);
  * Base class for displaying a graph using UMG widgets on a canvas panel.
  */
 UCLASS()
-class HEARTCANVAS_API UHeartGraphCanvas : public UHeartGraphWidgetBase
+class HEARTCANVAS_API UHeartGraphCanvas : public UHeartGraphWidgetBase, public IHeartNodeLocationAccessor
 {
 	GENERATED_BODY()
 
@@ -70,6 +72,11 @@ public:
 	/** IHeartWidgetInputLinkerRedirector */
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 	/** IHeartWidgetInputLinkerRedirector */
+
+	/** IHeartNodeLocationAccessor */
+	virtual const UHeartGraph* GetHeartGraph() const override;
+	/** IHeartNodeLocationAccessor */
+
 
 	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing so we can draw the preview link
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);

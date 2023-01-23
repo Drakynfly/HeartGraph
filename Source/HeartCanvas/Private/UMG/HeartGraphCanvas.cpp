@@ -4,6 +4,7 @@
 #include "UMG/HeartGraphCanvasPanel.h"
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
+#include "UMG/HeartGraphCanvasConnection.h"
 
 #include "HeartCanvasConnectionVisualizer.h"
 #include "ModelView/HeartGraphSchema.h"
@@ -190,6 +191,11 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
 {
 	return BindingContainer.GetLinker();
+}
+
+const UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
+{
+	return DisplayedGraph.Get();
 }
 
 void UHeartGraphCanvas::Reset()
