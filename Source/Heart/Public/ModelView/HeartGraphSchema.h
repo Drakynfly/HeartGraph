@@ -59,7 +59,8 @@ class HEART_API UHeartGraphSchema : public UObject // UEdGraphSchema
 	GENERATED_BODY()
 
 public:
-	// @todo maybe make a interface, or base class for visualizers?
+	// @todo this visualizer stuff should absolutely not be part of UHeartGraphSchema. what if we wanted to visualize the same graph in multiple ways?
+	// @todo maybe make a interface, or base class for visualizers, so this isn't just a UObject pointer?
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Schema")
 	UObject* GetConnectionVisualizer() const;

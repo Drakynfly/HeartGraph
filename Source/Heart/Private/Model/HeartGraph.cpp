@@ -241,9 +241,9 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 #if WITH_EDITOR
 	if (HeartEdGraph)
 	{
-		if (Node->GetEdGraphNode())
+		if (auto&& EdGraphNode = Node->GetEdGraphNode())
 		{
-			HeartEdGraph->AddNode(Node->GetEdGraphNode());
+			HeartEdGraph->AddNode(EdGraphNode);
 		}
 		else
 		{
@@ -264,6 +264,16 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 
 	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
 	auto&& Removed = Nodes.Remove(NodeGuid);
+
+#if WITH_EDITOR
+	if (HeartEdGraph)
+	{
+		if (auto&& EdGraphNode = (*NodeBeingRemoved)->GetEdGraphNode())
+		{
+			HeartEdGraph->RemoveNode(EdGraphNode);
+		}
+	}
+#endif
 
 	if (NodeBeingRemoved)
 	{

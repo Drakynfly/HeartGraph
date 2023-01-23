@@ -22,7 +22,7 @@ class HEARTCANVAS_API UHeartGraphCanvasPin : public UHeartGraphWidgetBase, publi
 
 public:
 	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
+	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
 	/** IHeartWidgetInputLinkerRedirector */
 
 	// Called by UHeartPinConnectionDragDropOperation when connecting pins.
