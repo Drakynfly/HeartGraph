@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartNodeLocationAccessor.generated.h"
 
+struct FHeartNodeGuid;
 class UHeartGraphNode;
 class UHeartGraphNode3D;
 
@@ -29,17 +30,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor")
 	virtual const UHeartGraph* GetHeartGraph() const PURE_VIRTUAL(IHeartNodeLocationAccessor::GetHeartGraph, return nullptr; )
 
-	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor")
-	virtual FVector2D GetNodeLocation(UHeartGraphNode* Node) const;
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location (Guid)"))
+	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor")
-	virtual void SetNodeLocation(UHeartGraphNode* Node, const FVector2D& Location);
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location (Guid)"))
+	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location);
 
-	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor")
-	virtual FVector GetNodeLocation3D(UHeartGraphNode3D* Node) const;
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location 3D (Guid)"))
+	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const;
 
-	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor")
-	virtual void SetNodeLocation3D(UHeartGraphNode3D* Node, const FVector& Location);
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location 3D (Guid)"))
+	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location);
+};
+
+UCLASS()
+class UHeartNodeLocationAccessorLibrary : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location"))
+	static FVector2D GetNodeLocation_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode* Node);
+
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location"))
+	static void SetNodeLocation_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode* Node, const FVector2D& Location);
+
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location 3D"))
+	static FVector GetNodeLocation3D_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node);
+
+	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location 3D"))
+	static void SetNodeLocation3D_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node, const FVector& Location);
 };
 
 /*
@@ -53,10 +73,10 @@ class UHeartNodeLocationProxy : public UObject, public IHeartNodeLocationAccesso
 public:
 	/* IHeartNodeLocationAccessor */
 	virtual const UHeartGraph* GetHeartGraph() const override final;
-	virtual FVector2D GetNodeLocation(UHeartGraphNode* Node) const override final;
-	virtual void SetNodeLocation(UHeartGraphNode* Node, const FVector2D& Location) override final;
-	virtual FVector GetNodeLocation3D(UHeartGraphNode3D* Node) const override final;
-	virtual void SetNodeLocation3D(UHeartGraphNode3D* Node, const FVector& Location) override final;
+	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override final;
+	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override final;
+	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const override final;
+	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location) override final;
 	/* IHeartNodeLocationAccessor */
 
 protected:

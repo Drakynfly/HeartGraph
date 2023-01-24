@@ -11,16 +11,28 @@ class UHeartGraphNode;
 /**
  *
  */
-UCLASS(Abstract, const)
+UCLASS(Abstract, const, BlueprintType)
 class HEART_API UHeartLayoutHelper : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	// Required to override to implement logic.
-	virtual void Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes)
-		PURE_VIRTUAL(UHeartLayoutHelper::Layout, )
+	// Required to override to implement logic. Returns false if no node locations were changed.
+	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const
+		PURE_VIRTUAL(UHeartLayoutHelper::Layout, return false; )
 
 	// Overload that calls Layout on all Nodes in the Graph.
-	void Layout(IHeartNodeLocationAccessor* Accessor);
+	bool Layout(IHeartNodeLocationAccessor* Accessor) const;
+};
+
+UCLASS(Blueprintable)
+class HEART_API UHeartLayoutHelper_BlueprintBase : public UHeartLayoutHelper
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const override final;
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (ScriptName = "Layout"))
+	bool Layout_BP(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, const TArray<UHeartGraphNode*>& Nodes) const;
 };

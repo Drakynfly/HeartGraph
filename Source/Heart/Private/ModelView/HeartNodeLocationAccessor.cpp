@@ -5,24 +5,48 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 
-FVector2D IHeartNodeLocationAccessor::GetNodeLocation(UHeartGraphNode* Node) const
+FVector2D IHeartNodeLocationAccessor::GetNodeLocation(const FHeartNodeGuid Node) const
 {
-	return Node->GetLocation();
+	return GetHeartGraph()->GetNode(Node)->GetLocation();
 }
 
-void IHeartNodeLocationAccessor::SetNodeLocation(UHeartGraphNode* Node, const FVector2D& Location)
+void IHeartNodeLocationAccessor::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
 {
-	Node->SetLocation(Location);
+	GetHeartGraph()->GetNode(Node)->SetLocation(Location);
 }
 
-FVector IHeartNodeLocationAccessor::GetNodeLocation3D(UHeartGraphNode3D* Node) const
+FVector IHeartNodeLocationAccessor::GetNodeLocation3D(const FHeartNodeGuid Node) const
 {
-	return Node->GetLocation3D();
+	return GetHeartGraph()->GetNode<UHeartGraphNode3D>(Node)->GetLocation3D();
 }
 
-void IHeartNodeLocationAccessor::SetNodeLocation3D(UHeartGraphNode3D* Node, const FVector& Location)
+void IHeartNodeLocationAccessor::SetNodeLocation3D(const FHeartNodeGuid Node, const FVector& Location)
 {
-	Node->SetLocation3D(Location);
+	GetHeartGraph()->GetNode<UHeartGraphNode3D>(Node)->SetLocation3D(Location);
+}
+
+FVector2D UHeartNodeLocationAccessorLibrary::GetNodeLocation_Pointer(
+	const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode* Node)
+{
+	return Accessor->GetNodeLocation(Node->GetGuid());
+}
+
+void UHeartNodeLocationAccessorLibrary::SetNodeLocation_Pointer(
+	const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode* Node, const FVector2D& Location)
+{
+	Accessor->SetNodeLocation(Node->GetGuid(), Location);
+}
+
+FVector UHeartNodeLocationAccessorLibrary::GetNodeLocation3D_Pointer(
+	const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node)
+{
+	return Accessor->GetNodeLocation3D(Node->GetGuid());
+}
+
+void UHeartNodeLocationAccessorLibrary::SetNodeLocation3D_Pointer(
+	const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node, const FVector& Location)
+{
+	Accessor->SetNodeLocation3D(Node->GetGuid(), Location);
 }
 
 const UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph() const
@@ -30,22 +54,22 @@ const UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph() const
 	return ProxiedObject->GetHeartGraph();
 }
 
-FVector2D UHeartNodeLocationProxy::GetNodeLocation(UHeartGraphNode* Node) const
+FVector2D UHeartNodeLocationProxy::GetNodeLocation(const FHeartNodeGuid Node) const
 {
 	return ProxyToLocation(ProxiedObject->GetNodeLocation(Node));
 }
 
-void UHeartNodeLocationProxy::SetNodeLocation(UHeartGraphNode* Node, const FVector2D& Location)
+void UHeartNodeLocationProxy::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
 {
 	ProxiedObject->SetNodeLocation(Node, LocationToProxy(Location));
 }
 
-FVector UHeartNodeLocationProxy::GetNodeLocation3D(UHeartGraphNode3D* Node) const
+FVector UHeartNodeLocationProxy::GetNodeLocation3D(const FHeartNodeGuid Node) const
 {
 	return ProxyToLocation3D(ProxiedObject->GetNodeLocation3D(Node));
 }
 
-void UHeartNodeLocationProxy::SetNodeLocation3D(UHeartGraphNode3D* Node, const FVector& Location)
+void UHeartNodeLocationProxy::SetNodeLocation3D(const FHeartNodeGuid Node, const FVector& Location)
 {
 	ProxiedObject->SetNodeLocation3D(Node, LocationToProxy3D(Location));
 }
