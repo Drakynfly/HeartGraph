@@ -32,9 +32,6 @@ I want to implement an asset search feature similar to Flow Graph's implementati
 ### UMG Viewmodel
 https://github.com/Drakynfly/HeartGraph/issues/10
 
-### WaveFunctionCollapse
-https://github.com/Drakynfly/HeartGraph/issues/11
-
 ### ControlFlows
 https://github.com/Drakynfly/HeartGraph/issues/7#issuecomment-1399660883
 
