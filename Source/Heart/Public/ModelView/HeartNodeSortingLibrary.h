@@ -51,6 +51,9 @@ struct HEART_API FNodeLooseToTreeArgs
 	EHeartPinDirection Direction;
 };
 
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartNodeFilterPredicate, const UHeartGraphNode*, Node);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(bool, FHeartNodeComparePredicate, const UHeartGraphNode*, A, const UHeartGraphNode*, B);
+
 /**
  *
  */
@@ -60,9 +63,29 @@ class HEART_API UHeartNodeSortingLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
+	static TArray<UHeartGraphNode*> SortNodes(const TArray<UHeartGraphNode*>& Nodes, const FHeartNodeComparePredicate& Predicate);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
+	static void SortNodesInPlace(UPARAM(ref) TArray<UHeartGraphNode*>& Nodes, const FHeartNodeComparePredicate& Predicate);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary", meta = (DisplayName = "Filter Nodes (Predicate)"))
+	static TArray<UHeartGraphNode*> FilterNodesByPredicate(const TArray<UHeartGraphNode*>& Nodes, const FHeartNodeFilterPredicate& Predicate);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary", meta = (DisplayName = "Filter Nodes Exclusive (Predicate)"))
+	static TArray<UHeartGraphNode*> FilterNodesByPredicate_Exclusive(const TArray<UHeartGraphNode*>& Nodes, const FHeartNodeFilterPredicate& Predicate);
+
+	// Filters nodes to only return those of the given class set.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary", meta = (DisplayName = "Filter Nodes (Class)", DeterminesOutputType = "Classes"))
+	static TArray<UHeartGraphNode*> FilterNodesByClass(const TArray<UHeartGraphNode*>& Nodes, TSet<TSubclassOf<UHeartGraphNode>> Classes);
+
+	// Filters nodes to only return those *not* of the given class set.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary", meta = (DisplayName = "Filter Nodes Exclusive (Class)"))
+	static TArray<UHeartGraphNode*> FilterNodesByClass_Exclusive(const TArray<UHeartGraphNode*>& Nodes, TSet<TSubclassOf<UHeartGraphNode>> Classes);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
 	static void SortLooseNodesIntoTrees(const TArray<UHeartGraphNode*>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
 	static void ConvertNodeTreeToLayers(const FHeartTree& Tree, TArray<FHeartNodeLayer>& Layers);
 };
