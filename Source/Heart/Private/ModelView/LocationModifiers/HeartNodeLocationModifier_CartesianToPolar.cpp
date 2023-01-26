@@ -1,8 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "ModelView/NodeLocationProxies/HeartNodeLocationProxy_CartesianToPolar.h"
+#include "ModelView/LocationModifiers/HeartNodeLocationModifier_CartesianToPolar.h"
 
-FVector2D UHeartNodeLocationProxy_CartesianToPolar::LocationToProxy(const FVector2D& Location) const
+FVector2D UHeartNodeLocationModifier_CartesianToPolar::LocationToProxy(const FVector2D& Location) const
 {
 	double Radius;
 	double Angle;
@@ -10,7 +10,7 @@ FVector2D UHeartNodeLocationProxy_CartesianToPolar::LocationToProxy(const FVecto
 	return FVector2D(1.0, 0.0).GetRotated(Angle) * Radius;
 }
 
-FVector2D UHeartNodeLocationProxy_CartesianToPolar::ProxyToLocation(const FVector2D& Proxy) const
+FVector2D UHeartNodeLocationModifier_CartesianToPolar::ProxyToLocation(const FVector2D& Proxy) const
 {
 	const double Radius = Proxy.Length();
 	const double Angle = FMath::RadiansToDegrees(FMath::Atan2(Proxy.X, Proxy.Y));
@@ -19,7 +19,7 @@ FVector2D UHeartNodeLocationProxy_CartesianToPolar::ProxyToLocation(const FVecto
 	return OutCartesian;
 }
 
-FVector UHeartNodeLocationProxy_CartesianToPolar::LocationToProxy3D(const FVector& Location) const
+FVector UHeartNodeLocationModifier_CartesianToPolar::LocationToProxy3D(const FVector& Location) const
 {
 	double Radius;
 	double Angle;
@@ -27,7 +27,7 @@ FVector UHeartNodeLocationProxy_CartesianToPolar::LocationToProxy3D(const FVecto
 	return FVector::ForwardVector.RotateAngleAxis(Angle, FVector::UpVector) * Radius;
 }
 
-FVector UHeartNodeLocationProxy_CartesianToPolar::ProxyToLocation3D(const FVector& Proxy) const
+FVector UHeartNodeLocationModifier_CartesianToPolar::ProxyToLocation3D(const FVector& Proxy) const
 {
 	const double Radius = Proxy.Length();
 	const double Angle = FMath::RadiansToDegrees(FMath::Atan2(Proxy.X, Proxy.Y));

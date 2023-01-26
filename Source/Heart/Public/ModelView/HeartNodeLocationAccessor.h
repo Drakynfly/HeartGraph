@@ -44,7 +44,7 @@ public:
 };
 
 UCLASS()
-class UHeartNodeLocationAccessorLibrary : public UBlueprintFunctionLibrary
+class HEART_API UHeartNodeLocationAccessorLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
@@ -62,11 +62,44 @@ public:
 	static void SetNodeLocation3D_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node, const FVector& Location);
 };
 
+UCLASS(Abstract, const, EditInlineNew, CollapseCategories)
+class HEART_API UHeartNodeLocationModifier : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	virtual FVector2D LocationToProxy(const FVector2D& Location) const PURE_VIRTUAL(UHeartNodeLocationProxyLayer::LocationToProxy, return FVector2D(); )
+	virtual FVector2D ProxyToLocation(const FVector2D& Proxy) const PURE_VIRTUAL(UHeartNodeLocationProxyLayer::ProxyToLocation, return FVector2D(); )
+
+	virtual FVector LocationToProxy3D(const FVector& Location) const PURE_VIRTUAL(UHeartNodeLocationProxyLayer::LocationToProxy3D, return FVector(); )
+	virtual FVector ProxyToLocation3D(const FVector& Proxy) const PURE_VIRTUAL(UHeartNodeLocationProxyLayer::ProxyToLocation3D, return FVector(); )
+};
+
+/*
+ * A pass-through class for redirecting an accessor through proxy function to alter the location.
+ */
+UCLASS(NotEditInlineNew, CollapseCategories)
+class HEART_API UHeartNodeLocationModifierStack : public UHeartNodeLocationModifier
+{
+	GENERATED_BODY()
+
+public:
+	virtual FVector2D LocationToProxy(const FVector2D& Location) const override final;
+	virtual FVector2D ProxyToLocation(const FVector2D& Proxy) const override final;
+
+	virtual FVector LocationToProxy3D(const FVector& Location) const override final;
+	virtual FVector ProxyToLocation3D(const FVector& Proxy) const override final;
+
+protected:
+	UPROPERTY(Instanced, EditInstanceOnly, Category = "Config", NoClear)
+	TArray<TObjectPtr<UHeartNodeLocationModifier>> Modifiers;
+};
+
 /*
  * A pass-through class for redirecting an accessor through proxy function to alter the location.
  */
 UCLASS()
-class UHeartNodeLocationProxy : public UObject, public IHeartNodeLocationAccessor
+class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartNodeLocationAccessor
 {
 	GENERATED_BODY()
 
@@ -79,24 +112,19 @@ public:
 	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location) override final;
 	/* IHeartNodeLocationAccessor */
 
-protected:
-	virtual FVector2D LocationToProxy(const FVector2D& Location) const;
-	virtual FVector2D ProxyToLocation(const FVector2D& Proxy) const;
-
-	virtual FVector LocationToProxy3D(const FVector& Location) const;
-	virtual FVector ProxyToLocation3D(const FVector& Proxy) const;
-
 public:
 	static UHeartNodeLocationProxy* Create(UObject* ObjectToProxy, TSubclassOf<UHeartNodeLocationProxy> LocationProxyClass);
 
 protected:
 	UPROPERTY()
 	TScriptInterface<IHeartNodeLocationAccessor> ProxiedObject;
+
+	UPROPERTY()
+	TObjectPtr<UHeartNodeLocationModifier> ProxyLayer;
 };
 
-
 UCLASS()
-class UHeartNodeLocationProxyLibrary : public UBlueprintFunctionLibrary
+class HEART_API UHeartNodeLocationProxyLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

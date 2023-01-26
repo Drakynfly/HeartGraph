@@ -27,6 +27,8 @@ UHeartGraphCanvas::UHeartGraphCanvas()
 	ViewMovementScalar = {1, 1, 0.1};
 	ViewBounds.Min = { -10000, -10000, 0.1 };
 	ViewBounds.Max = { 10000, 10000, 10 };
+
+	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("ProxyLayerStack");
 }
 
 bool UHeartGraphCanvas::Initialize()
@@ -196,6 +198,24 @@ UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
 const UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
 {
 	return DisplayedGraph.Get();
+}
+
+FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid Node) const
+{
+	if (ensure(IsValid(LocationModifiers)))
+	{
+		return LocationModifiers->ProxyToLocation(DisplayedGraph->GetNode(Node)->GetLocation());
+	}
+
+	return FVector2D();
+}
+
+void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
+{
+	if (ensure(IsValid(LocationModifiers)))
+	{
+		DisplayedGraph->GetNode(Node)->SetLocation(LocationModifiers->LocationToProxy(Location));
+	}
 }
 
 void UHeartGraphCanvas::Reset()

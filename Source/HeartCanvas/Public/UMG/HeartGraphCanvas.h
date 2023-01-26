@@ -75,6 +75,8 @@ public:
 
 	/** IHeartNodeLocationAccessor */
 	virtual const UHeartGraph* GetHeartGraph() const override;
+	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override;
+	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override;
 	/** IHeartNodeLocationAccessor */
 
 
@@ -216,6 +218,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
+
+	UPROPERTY(VisibleAnywhere, Instanced, Category = "Input", NoClear, meta = (ShowInnerProperties))
+	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input")
 	TSet<FHeartNodeGuid> SelectedNodes;

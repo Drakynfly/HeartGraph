@@ -48,7 +48,6 @@ class HEART_API UHeartGraph : public UObject
 	friend class UHeartEdGraph;
 
 public:
-
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
 	// Called after a pin connection change has been made.

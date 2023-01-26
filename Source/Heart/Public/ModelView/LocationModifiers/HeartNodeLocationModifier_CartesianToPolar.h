@@ -3,13 +3,13 @@
 #pragma once
 
 #include "ModelView/HeartNodeLocationAccessor.h"
-#include "HeartNodeLocationProxy_CartesianToPolar.generated.h"
+#include "HeartNodeLocationModifier_CartesianToPolar.generated.h"
 
 /**
  * Convert cartesian locations to polar
  */
-UCLASS()
-class HEART_API UHeartNodeLocationProxy_CartesianToPolar : public UHeartNodeLocationProxy
+UCLASS(DisplayName = "Modifier - Cartesian to Polar")
+class HEART_API UHeartNodeLocationModifier_CartesianToPolar : public UHeartNodeLocationModifier
 {
 	GENERATED_BODY()
 

@@ -52,11 +52,11 @@ void UHeartCanvasNodeMoveDragDropOperation::Dragged_Implementation(const FPointe
 			Diff *= DIVSettings.DragMultiplier;
 
 			Canvas->AddToViewCorner(Diff, DIVSettings.InterpDragIntoView);
-			Node->GetNode()->SetLocation(Canvas->UnscalePositionToCanvasZoom(UnclampedPosition));
+			Canvas->SetNodeLocation(Node->GetNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(UnclampedPosition));
 		}
 		else
 		{
-			Node->GetNode()->SetLocation(Canvas->UnscalePositionToCanvasZoom(ClampedPosition));
+			Canvas->SetNodeLocation(Node->GetNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(ClampedPosition));
 		}
 	}
 }
