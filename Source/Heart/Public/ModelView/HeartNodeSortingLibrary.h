@@ -8,13 +8,33 @@
 #include "Model/HeartPinDirection.h"
 #include "HeartNodeSortingLibrary.generated.h"
 
+class UHeartGraph;
+
 USTRUCT(BlueprintType)
-struct HEART_API FHeartNodeLayer
+struct HEART_API FHeartNodeSet
 {
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite)
 	TSet<FHeartNodeGuid> Nodes;
+};
+
+/*
+ * A node layers is a group of nodes all coming from a certain "depth" in a tree.
+ */
+USTRUCT(BlueprintType)
+struct HEART_API FHeartNodeLayer : public FHeartNodeSet
+{
+	GENERATED_BODY()
+};
+
+/*
+ * A node path is a series of nodes known to be connection input to output.
+ */
+USTRUCT(BlueprintType)
+struct HEART_API FHeartNodePath : public FHeartNodeSet
+{
+	GENERATED_BODY()
 };
 
 USTRUCT(BlueprintType)
@@ -33,6 +53,9 @@ USTRUCT(BlueprintType)
 struct HEART_API FHeartTree
 {
 	GENERATED_BODY()
+
+	UPROPERTY()
+	TObjectPtr<UHeartGraph> Graph;
 
 	UPROPERTY()
 	FHeartTreeNode RootNode;

@@ -136,7 +136,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 
 	for (auto&& RootNode : RootNodes)
 	{
-		Trees.Add({BuildTreeNode(RootNode)});
+		Trees.Add({RootNode->GetGraph(), BuildTreeNode(RootNode)});
 	}
 }
 
