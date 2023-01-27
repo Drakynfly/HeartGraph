@@ -21,18 +21,21 @@ public:
 	virtual FVector ProxyToLocation3D(const FVector& Proxy) const override;
 
 protected:
-	template <typename T>
-	static T Snap(T Value, T Grid)
-	{
-		return Grid * FMath::RoundHalfToEven(Value / Grid);
-	}
+	UPROPERTY(EditAnywhere, Category = "SnapToGrid", meta = (InlineEditConditionToggle))
+	bool SnapOnX = false;
 
-	UPROPERTY(EditAnywhere, Category = "SnapToGrid")
+	UPROPERTY(EditAnywhere, Category = "SnapToGrid", meta = (InlineEditConditionToggle))
+	bool SnapOnY = false;
+
+	UPROPERTY(EditAnywhere, Category = "SnapToGrid", meta = (InlineEditConditionToggle))
+	bool SnapOnZ = false;
+
+	UPROPERTY(EditAnywhere, Category = "SnapToGrid", meta = (EditCondition = "SnapOnX", ClampMin = 0.01, UIMin = 1.0))
 	double GridX = 1.0;
 
-	UPROPERTY(EditAnywhere, Category = "SnapToGrid")
+	UPROPERTY(EditAnywhere, Category = "SnapToGrid", meta = (EditCondition = "SnapOnY", ClampMin = 0.01, UIMin = 1.0))
 	double GridY = 1.0;
 
-	UPROPERTY(EditAnywhere, Category = "SnapToGrid")
+	UPROPERTY(EditAnywhere, Category = "SnapToGrid", meta = (EditCondition = "SnapOnZ", ClampMin = 0.01, UIMin = 1.0))
 	double GridZ = 1.0;
 };
