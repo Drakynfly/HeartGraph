@@ -47,3 +47,8 @@ HeartCanvas specifically *doesn't* use CommonUI, as it's methods for defining UI
 Demo Project: https://github.com/Drakynfly/HeartGraphDemo
 
 Discord:      https://discord.gg/AAk9yNwKk8 (Drakynfly's Plugins)
+
+## Acknowledgments
+
+- [MothDocter's FlowGraph](https://github.com/MothCocoon/FlowGraph): Both literally and figuratively. Breaking apart and learning about the graphs in Flow is what started my interest in runtime graphs. But also, I stole a lot of the editor code to make Heart's Editor module.
+- [Red Blob Games - Hexagonal Grids](https://www.redblobgames.com/grids/hexagons/): I followed this guide for making the `Heart::Hex` namespace.
