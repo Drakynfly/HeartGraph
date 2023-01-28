@@ -103,7 +103,7 @@ FText UHeartGraphNode::GetDefaultNodeTooltip(const UClass* NodeClass) const
 	return GetNodeToolTip(NodeClass->GetDefaultObject());
 }
 
-FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, EHeartNodeNameContext Context) const
+FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, const EHeartNodeNameContext Context) const
 {
 	switch (Context)
 	{
@@ -137,6 +137,15 @@ FText UHeartGraphNode::GetNodeToolTip_Implementation(const UObject* Node) const
 bool UHeartGraphNode::GetDynamicTitleColor_Implementation(FLinearColor& LinearColor)
 {
 	return false;
+}
+
+FText UHeartGraphNode::GetInstanceTitle() const
+{
+	if (IsValid(NodeObject))
+	{
+		return GetNodeTitle(NodeObject, EHeartNodeNameContext::NodeInstance);
+	}
+	return FText::AsCultureInvariant(TEXT("<<INVALID_INSTANCE>>"));
 }
 
 UHeartGraph* UHeartGraphNode::GetGraph() const
