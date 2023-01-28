@@ -2,6 +2,7 @@
 
 #include "UMG/HeartNodePalette.h"
 
+#include "UMG/HeartGraphCanvas.h" // For log category
 #include "Components/PanelWidget.h"
 #include "GraphRegistry/HeartNodeRegistrySubsystem.h"
 #include "Model/HeartGraphNode.h"
@@ -16,22 +17,7 @@ UWidget* UHeartNodePaletteCategory::MakeWidgetForNode_Implementation(UClass* Nod
 {
 	auto&& Palette = GetPalette();
 	if (!IsValid(Palette)) return nullptr;
-
-	if (auto&& WidgetClass = Palette->GetWidgetFactory().GetWidgetClass(NodeClass))
-	{
-		auto&& NewPaletteEntry = CreateWidget(this, WidgetClass);
-
-		// Try to Give the node widget the node class as a Context object. This is optional, technically, but
-		// highly suggested.
-		if (NewPaletteEntry->Implements<UHeartUMGContextObject>())
-		{
-			IHeartUMGContextObject::Execute_SetContextObject(NewPaletteEntry, NodeClass);
-		}
-
-		return NewPaletteEntry;
-	}
-
-	return nullptr;
+	return Palette->CreateNodeWidgetFromFactory(NodeClass);
 }
 
 bool UHeartNodePalette::Initialize()
@@ -95,17 +81,8 @@ void UHeartNodePalette::Display(const TMap<UClass*, TSubclassOf<UHeartGraphNode>
 		}
 		else
 		{
-			if (auto&& WidgetClass = WidgetFactory.GetWidgetClass(NodeClass))
+			if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(NodeClass))
 			{
-				auto&& NewPaletteEntry = CreateWidget(this, WidgetClass);
-
-				// Try to Give the node widget the node class as a Context object. This is optional, technically, but
-				// highly suggested.
-				if (NewPaletteEntry->Implements<UHeartUMGContextObject>())
-				{
-					IHeartUMGContextObject::Execute_SetContextObject(NewPaletteEntry, NodeClass);
-				}
-
 				PalettePanel->AddChild(NewPaletteEntry);
 			}
 		}
@@ -142,6 +119,26 @@ UHeartNodePaletteCategory* UHeartNodePalette::FindOrCreateCategory(const FText& 
 		return NewCategory;
 	}
 
+	return nullptr;
+}
+
+UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(UClass* NodeClass)
+{
+	if (auto&& WidgetClass = WidgetFactory.GetWidgetClass(NodeClass))
+	{
+		auto&& NewNodeWidget = CreateWidget(this, WidgetClass);
+
+		// Try to give the node widget the node class as a Context object. This is optional, technically, but
+		// highly suggested.
+		if (NewNodeWidget->Implements<UHeartUMGContextObject>())
+		{
+			IHeartUMGContextObject::Execute_SetContextObject(NewNodeWidget, NodeClass);
+		}
+
+		return NewNodeWidget;
+	}
+
+	UE_LOG(LogHeartGraphCanvas, Warning, TEXT("WidgetClass not found in WidgetFactory for '%s'. It will not be displayed!"), *NodeClass->GetName())
 	return nullptr;
 }
 

@@ -42,6 +42,8 @@ class HEARTCANVAS_API UHeartNodePalette : public UHeartGraphWidgetBase
 {
 	GENERATED_BODY()
 
+	friend UHeartNodePaletteCategory;
+
 protected:
 	virtual bool Initialize() override;
 
@@ -53,6 +55,8 @@ protected:
 	virtual void Display(const TMap<UClass*, TSubclassOf<UHeartGraphNode>>& Classes);
 
 	UHeartNodePaletteCategory* FindOrCreateCategory(const FText& Category);
+
+	UUserWidget* CreateNodeWidgetFromFactory(UClass* NodeClass);
 
 public:
 	/** Regenerate the list of nodes in the palette, triggering the filter for each node again. */
