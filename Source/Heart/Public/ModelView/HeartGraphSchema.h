@@ -62,7 +62,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryGetWorldForGraph(const UHeartGraph* HeartGraph, UWorld*& World) const;
 
-	// @todo maybe make a interface, or base class for visualizers?
+	// @todo this visualizer stuff should absolutely not be part of UHeartGraphSchema. what if we wanted to visualize the same graph in multiple ways?
+	// @todo maybe make a interface, or base class for visualizers, so this isn't just a UObject pointer?
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Schema")
 	UObject* GetConnectionVisualizer() const;

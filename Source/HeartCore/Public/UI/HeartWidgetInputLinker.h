@@ -10,8 +10,11 @@
 #include "HeartWidgetInputTrip.h"
 #include "HeartWidgetInputLinker.generated.h"
 
+
 /**
- *
+ * Binds to UWidgets and externalizes input functions. This is used to set the DefaultLinkerClass in a
+ * FHeartWidgetInputBindingContainer property. It can be subclassed if necessary for additional custom features, but
+ * that is not usually needed.
  */
 UCLASS()
 class HEARTCORE_API UHeartWidgetInputLinker : public UObject
@@ -19,18 +22,20 @@ class HEARTCORE_API UHeartWidgetInputLinker : public UObject
 	GENERATED_BODY()
 
 public:
-	FReply HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
-	FReply HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
-	FReply HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
-	FReply HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
-	FReply HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
+	// Regular mouse / keyboard / game-pad events
+	virtual FReply HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	virtual FReply HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	virtual FReply HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	virtual FReply HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
+	virtual FReply HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
 
-	UHeartDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
-	bool HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	bool HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	void HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	// Drag drop events
+	virtual UHeartDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	virtual bool HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual bool HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual void HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 
 public:
 	void BindInputCallback(const FHeartWidgetInputTrip& Trip, const Heart::Input::FConditionalInputCallback& InputCallback);
@@ -40,9 +45,10 @@ public:
 	void UnbindToOnDragDetected(const FHeartWidgetInputTrip& Trip);
 
 private:
+	// Input trips that fire a delegate.
 	TMultiMap<FHeartWidgetInputTrip, Heart::Input::FConditionalInputCallback> InputCallbackMappings;
 
-	// Keys that trip a drag drop operation, paired the the class of DDO and the widget class to spawn as a visual
+	// Input trips that begin a drag drop operation
 	TMultiMap<FHeartWidgetInputTrip, Heart::Input::FConditionalDragDropTrigger> DragDropTriggers;
 };
 
@@ -59,10 +65,11 @@ namespace Heart::Input
 		return nullptr;
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static FReply LinkOnMouseWheel(TWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnMouseWheel(Widget, InGeometry, InMouseEvent);
@@ -76,10 +83,11 @@ namespace Heart::Input
 		return FReply::Unhandled();
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static FReply LinkOnMouseButtonDown(TWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnMouseButtonDown(Widget, InGeometry, InMouseEvent);
@@ -93,10 +101,11 @@ namespace Heart::Input
 		return FReply::Unhandled();
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static FReply LinkOnMouseButtonUp(TWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnMouseButtonUp(Widget, InGeometry, InMouseEvent);
@@ -110,10 +119,11 @@ namespace Heart::Input
 		return FReply::Unhandled();
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static FReply LinkOnKeyDown(TWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnKeyDown(Widget, InGeometry, InKeyEvent);
@@ -127,10 +137,11 @@ namespace Heart::Input
 		return FReply::Unhandled();
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static FReply LinkOnKeyUp(TWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnKeyUp(Widget, InGeometry, InKeyEvent);
@@ -144,11 +155,12 @@ namespace Heart::Input
 		return FReply::Unhandled();
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static bool LinkOnDragDetected(TWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
 	                               UDragDropOperation*& OutOperation)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Widget, InGeometry, InMouseEvent))
@@ -161,11 +173,12 @@ namespace Heart::Input
 		return false;
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static bool LinkOnDrop(TWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
 						   UDragDropOperation* InOperation)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			if (Linker->HandleNativeOnDrop(Widget, InGeometry, InDragDropEvent, InOperation))
@@ -177,11 +190,12 @@ namespace Heart::Input
 		return false;
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static bool LinkOnDragOver(TWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
 							   UDragDropOperation* InOperation)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			if (Linker->HandleNativeOnDragOver(Widget, InGeometry, InDragDropEvent, InOperation))
@@ -193,33 +207,36 @@ namespace Heart::Input
 		return false;
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static void LinkOnDragEnter(TWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
 								UDragDropOperation* InOperation)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			Linker->HandleNativeOnDragEnter(Widget, InGeometry, InDragDropEvent, InOperation);
 		}
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static void LinkOnDragLeave(TWidget* Widget, const FDragDropEvent& InDragDropEvent,
 								UDragDropOperation* InOperation)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			Linker->HandleNativeOnDragLeave(Widget, InDragDropEvent, InOperation);
 		}
 	}
 
-	template <typename TWidget,
-		typename = typename TEnableIf<TIsDerivedFrom<TWidget, UWidget>::IsDerived, TWidget>::Type>
+	template <typename TWidget>
 	static void LinkOnDragCancelled(TWidget* Widget, const FDragDropEvent& InDragDropEvent,
 									UDragDropOperation* InOperation)
 	{
+		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
+
 		if (auto&& Linker = GetWidgetLinker(Widget))
 		{
 			Linker->HandleNativeOnDragCancelled(Widget, InDragDropEvent, InOperation);
@@ -227,6 +244,9 @@ namespace Heart::Input
 	}
 }
 
+/**
+ * Place this macro after the GENERATED_BODY or constructor of a UWidget derived class you wish to implement an InputLinker for
+ */
 #define HEART_WIDGET_INPUT_LINKER_HEADER()\
 protected:\
 virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;\
@@ -242,7 +262,9 @@ virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropO
 virtual void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;\
 public:\
 
-
+/**
+ * Place this macro in the .cpp file for the class you put HEART_WIDGET_INPUT_LINKER_HEADER in.
+ */
 #define HEART_WIDGET_INPUT_LINKER_BODY(type)\
 FReply type::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)\
 {\

@@ -80,6 +80,7 @@ public:
 void UHeartCanvasConnectionVisualizer::DrawConnectionSpline_Implementation(FPaintContext& Context,
 	const FVector2D& Start, const FVector2D& End, const FHeartCanvasConnectionSplineParams& SplineParams) const
 {
+	UHeartWidgetUtilsLibrary::DrawSpline(Context, Start, {1.0, 0.0}, End, {1.0, 0.0}, SplineParams.Thickness, SplineParams.Color);
 }
 
 void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnection_Implementation(FPaintContext& Context,

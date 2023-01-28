@@ -99,7 +99,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NodePalette")
 	FHeartWidgetFactoryRules WidgetFactory;
 
-	UPROPERTY(EditAnywhere, Category = "Input")
+	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
 
 	UPROPERTY(EditAnywhere, Category = "Events", meta = (IsBindableEvent = "True"))

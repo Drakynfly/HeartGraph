@@ -18,7 +18,37 @@ A toolset for displaying and editing a `UHeartGraph` using entirely UMG widgets.
 A (currently WIP) asset authoring tool for Heart graphs using Unreal's native UEdGraph toolset. Such a workflow allows for creating a graph inside the Unreal Engine Editor, and viewing it using HeartCanvas at runtime (such as a perk tree).
 
 
+## Dependencies
+
+### StructUtils
+`FInstancedStruct` is currently used for defining Pin Types. This may not always be the case, pending a possible refactor of Pin Type declaration.
+
+### AssetSearch
+I want to implement an asset search feature similar to Flow Graph's implementation.
+
+
+## Planned Dependencies
+
+### UMG Viewmodel
+https://github.com/Drakynfly/HeartGraph/issues/10
+
+### ControlFlows
+https://github.com/Drakynfly/HeartGraph/issues/7#issuecomment-1399660883
+
+### GameplayTags
+I'm sure I'll need them at some point, I always do.
+
+## Compatibility
+
+### CommonUI
+HeartCanvas specifically *doesn't* use CommonUI, as it's methods for defining UI input are not to my liking. However, using most CommonUI components for building Canvas widgets still works.
+
 ## Links
 Demo Project: https://github.com/Drakynfly/HeartGraphDemo
 
 Discord:      https://discord.gg/AAk9yNwKk8 (Drakynfly's Plugins)
+
+## Acknowledgments
+
+- [MothDocter's FlowGraph](https://github.com/MothCocoon/FlowGraph): Both literally and figuratively. Breaking apart and learning about the graphs in Flow is what started my interest in runtime graphs. But also, I stole a lot of the editor code to make Heart's Editor module.
+- [Red Blob Games - Hexagonal Grids](https://www.redblobgames.com/grids/hexagons/): I followed this guide for making the `Heart::Hex` namespace.

@@ -1,8 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetInputLinker.h"
-
-#include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 #include "UI/HeartUMGContextObject.h"
 

@@ -363,7 +363,7 @@ void UHeartGraphNodeRegistry::GetFilteredNodeClassesWithGraphClass(const FNodeCl
 
 TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(const UClass* NodeClass) const
 {
-	for (const UClass* Class = NodeClass; Class; Class = Class->GetSuperClass())
+	for (auto&& Class = NodeClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 	{
 		for (auto&& ClassList : GraphClasses)
 		{
@@ -379,7 +379,7 @@ TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(c
 
 UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassOf<UHeartGraphNode> GraphNodeClass) const
 {
-	for (UClass* Class = GraphNodeClass; Class; Class = Class->GetSuperClass())
+	for (UClass* Class = GraphNodeClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 	{
 		if (auto&& FoundRef = NodeVisualizerMap.Find(Class))
 		{
@@ -407,7 +407,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 
 UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf<UHeartGraphPin> GraphPinClass) const
 {
-	for (UClass* Class = GraphPinClass; Class; Class = Class->GetSuperClass())
+	for (UClass* Class = GraphPinClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 	{
 		if (auto&& FoundRef = PinVisualizerMap.Find(Class))
 		{
