@@ -7,7 +7,6 @@ public class Heart : ModuleRules
 	public Heart(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		bUseUnity = false;
 
         // Engine dependencies
 		PublicDependencyModuleNames.AddRange(

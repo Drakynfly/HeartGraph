@@ -7,7 +7,6 @@ public class HeartEditor : ModuleRules
     public HeartEditor(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        bUseUnity = false;
 
         PublicDependencyModuleNames.AddRange(
             new []
