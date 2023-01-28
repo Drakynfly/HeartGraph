@@ -4,6 +4,21 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPin.h"
 
+bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
+{
+	return false;
+}
+
+UObject* UHeartGraphSchema::GetConnectionVisualizer() const
+{
+	if (auto&& Class = GetConnectionVisualizerClass())
+	{
+		return Class->GetDefaultObject();
+	}
+
+	return nullptr;
+}
+
 bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const
 {
 	const FHeartConnectPinsResponse Response = CanPinsConnect(PinA, PinB);
@@ -64,16 +79,6 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHea
 FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(UHeartGraphPin* A, UHeartGraphPin* B) const
 {
 	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow};
-}
-
-UObject* UHeartGraphSchema::GetConnectionVisualizer() const
-{
-	if (auto&& Class = GetConnectionVisualizerClass())
-	{
-		return Class->GetDefaultObject();
-	}
-
-	return nullptr;
 }
 
 void UHeartGraphSchema::CreateDefaultNodesForGraph_Implementation(UHeartGraph* Graph) const

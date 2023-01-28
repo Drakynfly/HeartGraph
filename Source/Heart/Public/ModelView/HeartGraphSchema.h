@@ -59,6 +59,9 @@ class HEART_API UHeartGraphSchema : public UObject // UEdGraphSchema
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
+	bool TryGetWorldForGraph(const UHeartGraph* HeartGraph, UWorld*& World) const;
+
 	// @todo maybe make a interface, or base class for visualizers?
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Schema")

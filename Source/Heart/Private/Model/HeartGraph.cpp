@@ -9,6 +9,20 @@
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)
 
+UWorld* UHeartGraph::GetWorld() const
+{
+	if (!IsTemplate())
+	{
+		UWorld* World;
+		if (GetSchema()->TryGetWorldForGraph(this, World))
+		{
+			return World;
+		}
+	}
+
+	return Super::GetWorld();
+}
+
 void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
 {
 	Super::PostDuplicate(DuplicateMode);

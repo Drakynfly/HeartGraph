@@ -48,6 +48,7 @@ class HEART_API UHeartGraph : public UObject
 	friend class UHeartEdGraph;
 
 public:
+	virtual UWorld* GetWorld() const override;
 
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
