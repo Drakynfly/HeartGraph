@@ -210,7 +210,7 @@ namespace Heart::Hex
 	{
 		FVector2D Pixel;
 		Pixel.X = Size * (1.5 * Hex.Q);
-		Pixel.Y = Size * (sqrt(3)/2 * Hex.Q + UE_SQRT_3 * Hex.R);
+		Pixel.Y = Size * (Statics<double>::Sqrt3Over2 * Hex.Q + UE_SQRT_3 * Hex.R);
 		return Pixel;
 	}
 
