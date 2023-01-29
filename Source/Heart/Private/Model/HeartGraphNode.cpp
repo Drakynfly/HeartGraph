@@ -83,7 +83,8 @@ void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	UObject::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.MemberProperty &&
-		PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct"))
+		(PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct") ||
+		GetPropertiesTriggeringNodeReconstruction().Contains(PropertyChangedEvent.GetPropertyName())))
 	{
 		OnReconstructionRequested.Broadcast(this);
 	}
