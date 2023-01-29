@@ -34,7 +34,7 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 		DragDropTrigger.Condition = Condition->CreateCondition();
 	}
 
-	for (auto&& Trigger : Triggers)
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{
@@ -45,9 +45,9 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 	return true;
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
 {
-	for (auto&& Trigger : Triggers)
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{

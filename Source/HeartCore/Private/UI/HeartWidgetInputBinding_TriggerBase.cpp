@@ -4,7 +4,7 @@
 #include "UI/HeartWidgetInputLinker.h"
 #include "UI/HeartWidgetInputTrigger.h"
 
-bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
 {
 	if (IsValid(Event))
 	{
@@ -19,7 +19,7 @@ bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker)
 			InputCallback.Condition = Condition->CreateCondition();
 		}
 
-		for (auto&& Trigger : Triggers)
+		for (auto&& Trigger : InTriggers)
 		{
 			if (Trigger.IsValid())
 			{
@@ -33,9 +33,9 @@ bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker)
 	return false;
 }
 
-bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
 {
-	for (auto&& Trigger : Triggers)
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{

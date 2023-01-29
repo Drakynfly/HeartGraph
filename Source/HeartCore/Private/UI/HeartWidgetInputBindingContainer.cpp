@@ -1,7 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetInputBindingContainer.h"
-#include "Blueprint/UserWidget.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
 #include "UI/HeartWidgetInputBindingBase.h"
 
@@ -17,9 +16,9 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
         {
         	if (IsValid(BindingAsset))
         	{
-	            for (auto&& Binding : BindingAsset->Bindings)
+	            for (auto&& Binding : BindingAsset->BindingData)
 	            {
-	            	Binding->Unbind(Linker);
+	            	Binding.BindingObject->Unbind(Linker, Binding.Triggers);
 	            }
         	}
         }
@@ -36,9 +35,9 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 		{
 			if (IsValid(BindingAsset))
 			{
-				for (auto&& Binding : BindingAsset->Bindings)
+				for (auto&& Binding : BindingAsset->BindingData)
 				{
-					Binding->Bind(Linker);
+					Binding.BindingObject->Bind(Linker, Binding.Triggers);
 				}
 			}
 		}

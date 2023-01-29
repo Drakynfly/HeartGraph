@@ -18,8 +18,8 @@ class HEARTCORE_API UHeartWidgetInputBindingBase : public UObject
 	GENERATED_BODY()
 
 public:
-	virtual bool Bind(UHeartWidgetInputLinker* Linker) { return false; }
-	virtual bool Unbind(UHeartWidgetInputLinker* Linker) { return false; }
+	virtual bool Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) { return false; }
+	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) { return false; }
 
 	// Optionally set condition
 	UPROPERTY(EditAnywhere, Instanced, meta = (DisplayPriority = 100))
