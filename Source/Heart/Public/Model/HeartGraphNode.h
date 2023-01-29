@@ -54,6 +54,10 @@ struct FHeartGraphNodeSparseClassData
 	// Can this node be created by the editor even if it cannot be created otherwise.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
 	bool CanCreateInEditor;
+
+	// BP properties that trigger reconstruction of SGraphNodes
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	TArray<FName> PropertiesTriggeringNodeReconstruction;
 #endif
 };
 
