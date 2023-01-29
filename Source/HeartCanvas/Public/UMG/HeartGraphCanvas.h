@@ -228,16 +228,24 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Input")
 	FHeartGraphPinReference PreviewConnectionPin;
 
+
+	/*----------------------------
+			 VISUAL CONFIG
+	----------------------------*/
+
 	// Multiplies movement to the view of the graph.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FVector ViewMovementScalar;
 
+	// X and Y bounds limit panning. Z bound limits zoom.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FVectorBounds ViewBounds;
 
+	// Interpolation applied while panning.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	float DraggingInterpSpeed = 0;
 
+	// Interpolation applied while changing zoom.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	float ZoomInterpSpeed = 0;
 
@@ -247,6 +255,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FHeartDragIntoViewSettings DragIntoViewSettings;
 
+	// @todo temp until everything is moved over to use connection widgets
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	bool UseDeprecatedPaintMethodToDrawConnections = false;
 

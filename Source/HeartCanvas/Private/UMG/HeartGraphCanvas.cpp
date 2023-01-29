@@ -226,6 +226,8 @@ void UHeartGraphCanvas::Reset()
 	}
 
 	DisplayedNodes.Empty();
+	SelectedNodes.Empty();
+	PreviewConnectionPin = FHeartGraphPinReference();
 }
 
 void UHeartGraphCanvas::Refresh()
@@ -505,6 +507,12 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 {
 	if (DisplayedGraph.IsValid())
 	{
+		if (DisplayedGraph == Graph)
+		{
+			UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Attempted to SetGraph to currently displayed graph. This will do nothing!"))
+			return;
+		}
+
 		DisplayedGraph->OnNodeAdded.RemoveAll(this);
 		DisplayedGraph->OnNodeRemoved.RemoveAll(this);
 		Reset();
