@@ -116,9 +116,9 @@ protected:
 	void OnNodeLocationChanged(UHeartGraphNode* Node, const FVector2D& Location);
 
 
-	/****************************/
-	/**		GETTERS				*/
-	/****************************/
+	/*----------------------
+			GETTERS
+	----------------------*/
 public:
 	template <typename THeartGraph>
 	THeartGraph* GetGraph() const
@@ -142,9 +142,9 @@ public:
 	const FHeartDragIntoViewSettings& GetDragIntoViewSettings() const { return DragIntoViewSettings; }
 
 
-	/****************************/
-	/**		UTILITIES			*/
-	/****************************/
+	/*----------------------
+			UTILITIES
+	----------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D ScalePositionToCanvasZoom(const FVector2D& Position) const;
@@ -159,9 +159,9 @@ public:
 	UHeartGraphCanvasNode* GetCanvasNode(FHeartNodeGuid NodeGuid);
 
 
-	/****************************/
-	/**		GRAPH VIEWING		*/
-	/****************************/
+	/*---------------------------
+			GRAPH VIEWING
+	---------------------------*/
 
 	/** Set the displayed graph */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
@@ -180,9 +180,9 @@ public:
 	void AddToZoom(double NewZoom, bool Interp);
 
 
-	/****************************/
-	/**		NODE SELECTION		*/
-	/****************************/
+	/*---------------------------
+			NODE SELECTION
+	---------------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void SelectNode(FHeartNodeGuid Node);

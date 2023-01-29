@@ -62,9 +62,9 @@ public:
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 #endif
 
-	/****************************/
-	/**		GETTERS				*/
-	/****************************/
+	/*-----------------------
+			GETTERS
+	------------------------*/
 public:
 
 #if WITH_EDITOR
@@ -106,9 +106,9 @@ public:
 	TArray<UHeartGraphNode*> FindAllNodesByPredicate(const FHeartGraphNodePredicate& Predicate);
 
 
-	/****************************/
-	/**		CLASS BEHAVIOR		*/
-	/****************************/
+	/*----------------------------
+			CLASS BEHAVIOR
+	----------------------------*/
 public:
 	/** Override to specify the behavior class for this graph class */
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Graph")
@@ -130,9 +130,9 @@ public:
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
 
-	/****************************/
-	/**		NODE EDITING		*/
-	/****************************/
+	/*----------------------------
+			NODE EDITING
+	----------------------------*/
 private:
 	UHeartGraphNode* CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location);
 	UHeartGraphNode* CreateNodeForNodeClass(const UClass* NodeClass, const FVector2D& Location);

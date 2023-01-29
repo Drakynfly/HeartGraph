@@ -80,9 +80,9 @@ public:
 #endif
 
 
-	/****************************/
-	/**		REFLECTION			*/
-	/****************************/
+	/*----------------------------
+			REFLECTION
+	----------------------------*/
 
 	template<EHeartNodeNameContext Context>
 	FText GetDefaultNodeTitle(const UClass* NodeClass) const
@@ -111,9 +111,9 @@ public:
 	FText GetInstanceTitle() const;
 
 
-	/****************************/
-	/**		GETTERS				*/
-	/****************************/
+	/*----------------------------
+				GETTERS
+	----------------------------*/
 
 #if WITH_EDITOR
 	UEdGraphNode* GetEdGraphNode() const { return HeartEdGraphNode; }
@@ -194,9 +194,9 @@ public:
 	FHeartGraphPinType GetInstancedPinType();
 
 
-	/****************************/
-	/**		NODE EDITING		*/
-	/****************************/
+	/*----------------------------
+			NODE EDITING
+	----------------------------*/
 public:
 #if WITH_EDITOR
 	void SetEdGraphNode(UEdGraphNode* GraphNode);
@@ -226,9 +226,9 @@ public:
 	bool CanDuplicate() const;
 
 
-	/****************************/
-	/**		PIN EDITING			*/
-	/****************************/
+	/*----------------------------
+			PIN EDITING
+	----------------------------*/
 
 	template <typename THeartGraphPin>
 	THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinType Type)
@@ -329,6 +329,11 @@ private:
 	TObjectPtr<UEdGraphNode> HeartEdGraphNode;
 #endif
 };
+
+
+/*----------------------------
+		TEMPLATE IMPL.
+----------------------------*/
 
 template <typename Predicate>
 TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const

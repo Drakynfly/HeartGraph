@@ -35,9 +35,9 @@ public:
 	void DisconnectFromAll(bool NotifyNodes);
 
 
-	/****************************/
-	/**		REFLECTION			*/
-	/****************************/
+	/*----------------------------
+			REFLECTION
+	----------------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FName GetPinName() const;
@@ -49,9 +49,9 @@ public:
 	const FText& GetToolTip() const;
 
 
-	/****************************/
-	/**		GETTERS				*/
-	/****************************/
+	/*----------------------------
+				GETTERS
+	----------------------------*/
 protected:
 #if WITH_EDITOR
 	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType

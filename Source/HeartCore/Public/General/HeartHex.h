@@ -21,12 +21,12 @@ namespace Heart::Hex
 	{
 		enum class EDirections : uint8
 		{
-			Northwest, // 330
-			Northeast, // 30
-			West, // 90
-			Southeast, // 150
-			Southwest, // 210
-			East // 270
+			Northwest,	// 330
+			Northeast,	// 30
+			West,		// 90
+			Southeast,	// 150
+			Southwest,	// 210
+			East		// 270
 		};
 	}
 }

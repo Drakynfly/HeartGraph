@@ -16,17 +16,17 @@ class HEARTCORE_API UHeartGeneralUtils : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	/************************/
-	/*		OBJECT UTILS	*/
-	/************************/
+	/*------------------------
+			OBJECT UTILS
+	------------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Class", DisplayName = "Duplicate Object", meta = (DeterminesOutputType = Source))
 	static UObject* K2_DuplicateObject(UObject* Outer, UObject* Source);
 
 
-	/************************/
-	/*		CLASS UTILS		*/
-	/************************/
+	/*------------------------
+			CLASS UTILS
+	------------------------*/
 
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class")
 	static UClass* GetParentClass(const UClass* Class);
@@ -50,9 +50,9 @@ public:
 	static FText GetClassTooltip(const UClass* Class);
 
 
-	/************************/
-	/*		MATH UTILS		*/
-	/************************/
+	/*------------------------
+			MATH UTILS
+	------------------------*/
 
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math", meta = (DisplayName = "Clamp Vector"))
 	static FVector BP_ClampVector(const FVector& Value, const FVectorBounds& Bounds);
