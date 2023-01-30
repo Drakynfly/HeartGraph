@@ -8,7 +8,7 @@
 
 #include "Blueprint/UserWidget.h"
 
-bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
 	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
 
@@ -45,7 +45,7 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 	return true;
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
+bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
 	for (auto&& Trigger : InTriggers)
 	{

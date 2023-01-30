@@ -25,7 +25,7 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 	}
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
 	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
 
@@ -63,7 +63,7 @@ bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLi
 		DragDropTrigger.Condition = Condition->CreateCondition();
 	}
 
-	for (auto&& Trigger : Triggers)
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{
@@ -74,9 +74,9 @@ bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLi
 	return true;
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation_Action::Unbind(UHeartWidgetInputLinker* Linker)
+bool UHeartWidgetInputBinding_DragDropOperation_Action::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
-	for (auto&& Trigger : Triggers)
+	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{

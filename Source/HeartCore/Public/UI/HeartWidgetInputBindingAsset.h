@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "HeartWidgetInputBindingBase.h"
 #include "InstancedStruct.h"
 #include "Engine/DataAsset.h"
 #include "HeartWidgetInputBindingAsset.generated.h"
@@ -23,16 +24,12 @@ struct FHeartWidgetInputBinding
 /**
  *
  */
-UCLASS(const, BlueprintType)
+UCLASS(const, BlueprintType, CollapseCategories)
 class HEARTCORE_API UHeartWidgetInputBindingAsset : public UDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	// DEPRECATED move data to BindingData
-	UPROPERTY(EditAnywhere, Instanced)
-	TArray<TObjectPtr<UHeartWidgetInputBindingBase>> Bindings;
-
 	UPROPERTY(EditAnywhere)
 	TArray<FHeartWidgetInputBinding> BindingData;
 };

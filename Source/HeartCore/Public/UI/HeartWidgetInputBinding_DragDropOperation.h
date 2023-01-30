@@ -15,8 +15,8 @@ class HEARTCORE_API UHeartWidgetInputBinding_DragDropOperation : public UHeartWi
 	GENERATED_BODY()
 
 public:
-	virtual bool Bind(UHeartWidgetInputLinker* Linker) override;
-	virtual bool Unbind(UHeartWidgetInputLinker* Linker) override;
+	virtual bool Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const override;
+	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const override;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))

@@ -4,7 +4,7 @@
 #include "UI/HeartWidgetInputLinker.h"
 #include "UI/HeartWidgetInputTrigger.h"
 
-bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
+bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
 	if (IsValid(Event))
 	{
@@ -33,7 +33,7 @@ bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker,
 	return false;
 }
 
-bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers)
+bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
 	for (auto&& Trigger : InTriggers)
 	{
