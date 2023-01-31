@@ -2,14 +2,14 @@
 
 #pragma once
 
+#include "HeartInputTypes.h"
 #include "HeartWidgetInputBindingBase.h"
-#include "HeartWidgetInputEvent.h"
 #include "HeartWidgetInputBinding_TriggerBase.generated.h"
 
 /**
  *
  */
-UCLASS(meta = (DisplayName = "Triggered Event"))
+UCLASS(Abstract)
 class HEARTCORE_API UHeartWidgetInputBinding_TriggerBase : public UHeartWidgetInputBindingBase
 {
 	GENERATED_BODY()
@@ -19,6 +19,9 @@ public:
 	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const override;
 
 protected:
-	UPROPERTY(EditAnywhere, Instanced)
-	TObjectPtr<UHeartWidgetInputEvent> Event;
+	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const;
+
+protected:
+	UPROPERTY(EditAnywhere)
+	bool HandleInput = true;
 };

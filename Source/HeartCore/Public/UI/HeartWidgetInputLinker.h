@@ -5,7 +5,6 @@
 #include "UObject/Object.h"
 #include "HeartDragDropOperation.h"
 #include "HeartInputTypes.h"
-#include "HeartWidgetInputEvent.h"
 #include "HeartWidgetInputLinkerRedirector.h"
 #include "HeartWidgetInputTrip.h"
 #include "HeartWidgetInputLinker.generated.h"

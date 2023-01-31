@@ -6,31 +6,25 @@
 
 bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
-	if (IsValid(Event))
+	Heart::Input::FConditionalInputCallback InputCallback;
+
+	if (Condition)
 	{
-		auto&& NewEvent = Event->CreateEvent();
-
-		Heart::Input::FConditionalInputCallback InputCallback;
-		InputCallback.Callback = NewEvent.Callback;
-		InputCallback.Layer = NewEvent.Layer;
-
-		if (Condition)
-		{
-			InputCallback.Condition = Condition->CreateCondition();
-		}
-
-		for (auto&& Trigger : InTriggers)
-		{
-			if (Trigger.IsValid())
-			{
-				Linker->BindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip(), InputCallback);
-			}
-		}
-
-		return true;
+		InputCallback.Condition = Condition->CreateCondition();
 	}
 
-	return false;
+	InputCallback.Callback = FHeartWidgetLinkedEventCallback::CreateUObject(this, &ThisClass::TriggerEvent);
+	InputCallback.Layer = HandleInput ? Heart::Input::Event : Heart::Input::Listener;
+
+	for (auto&& Trigger : InTriggers)
+	{
+		if (Trigger.IsValid())
+		{
+			Linker->BindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip(), InputCallback);
+		}
+	}
+
+	return true;
 }
 
 bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
@@ -44,4 +38,9 @@ bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linke
 	}
 
 	return true;
+}
+
+FReply UHeartWidgetInputBinding_TriggerBase::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
+{
+	return FReply::Unhandled();
 }

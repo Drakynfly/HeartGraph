@@ -2,33 +2,23 @@
 
 #pragma once
 
-#include "UI/HeartWidgetInputEvent.h"
+#include "UI/HeartWidgetInputBinding_TriggerBase.h"
 #include "HeartGraphCanvasActionBinding.generated.h"
 
 class UHeartGraphCanvasAction;
 
-UCLASS(meta = (DisplayName = "Canvas Graph Action Event"))
-class HEARTCANVAS_API UHeartGraphCanvasActionBinding : public UHeartWidgetInputEvent
+UCLASS(meta = (DisplayName = "Event - Canvas Action"))
+class HEARTCANVAS_API UHeartGraphCanvasActionBinding : public UHeartWidgetInputBinding_TriggerBase
 {
 	GENERATED_BODY()
 
 public:
-	virtual FHeartWidgetLinkedEvent CreateEvent() const override;
+	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const override;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
 	TSubclassOf<UHeartGraphCanvasAction> ActionClass;
-};
 
-UCLASS(meta = (DisplayName = "Canvas Graph Action Listener"))
-class HEARTCANVAS_API UHeartGraphCanvasActionListener : public UHeartWidgetInputListener
-{
-	GENERATED_BODY()
-
-public:
-	virtual FHeartWidgetLinkedListener CreateListener() const override;
-
-protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
-	TSubclassOf<UHeartGraphCanvasAction> ActionClass;
+	bool CaptureMouse;
 };

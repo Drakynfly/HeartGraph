@@ -6,33 +6,28 @@
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
 
-FHeartWidgetLinkedEvent UHeartGraphCanvasActionBinding::CreateEvent() const
+FReply UHeartGraphCanvasActionBinding::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
 {
-	return {FHeartWidgetLinkedEventCallback::CreateLambda([this](UWidget* Widget, const FHeartInputActivation& Activation)
-	{
-		if (Widget->IsA<UHeartGraphCanvas>() ||
+	if (Widget->IsA<UHeartGraphCanvas>() ||
 			Widget->IsA<UHeartGraphCanvasNode>() ||
 			Widget->IsA<UHeartGraphCanvasPin>())
+	{
+		if (UHeartGraphActionBase::QuickExecuteGraphAction(ActionClass, Widget, Trip))
 		{
-			if (UHeartGraphActionBase::QuickExecuteGraphAction(ActionClass, Widget, Activation))
+			FReply Reply = FReply::Handled();
+
+			if (CaptureMouse)
 			{
-				return FReply::Handled();
+				const TSharedPtr<SWidget> CapturingSlateWidget = Widget->GetCachedWidget();
+				if (CapturingSlateWidget.IsValid())
+				{
+					Reply.CaptureMouse(CapturingSlateWidget.ToSharedRef());
+				}
 			}
-		}
 
-		return FReply::Unhandled();
-	}), Heart::Input::Event };
-}
-
-FHeartWidgetLinkedListener UHeartGraphCanvasActionListener::CreateListener() const
-{
-	return {FHeartWidgetLinkedListenerCallback::CreateLambda([this](UWidget* Widget, const FHeartInputActivation& Activation)
-	{
-		if (Widget->IsA<UHeartGraphCanvas>() ||
-			Widget->IsA<UHeartGraphCanvasNode>() ||
-			Widget->IsA<UHeartGraphCanvasPin>())
-		{
-			UHeartGraphActionBase::QuickExecuteGraphAction(ActionClass, Widget, Activation);
+			return Reply;
 		}
-	})};
+	}
+
+	return FReply::Unhandled();
 }

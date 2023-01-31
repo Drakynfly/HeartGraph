@@ -12,27 +12,13 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 {
 	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
 
-	DragDropTrigger.Callback =
-		FHeartWidgetLinkedDragDropTriggerCreate::CreateWeakLambda(this, [this](UWidget* Widget)
-			{
-				auto&& NewDDO = NewObject<UHeartDragDropOperation>(GetTransientPackage(), OperationClass);
-
-				if (IsValid(VisualClass))
-				{
-					NewDDO->DefaultDragVisual = CreateWidget(Widget, VisualClass);
-					NewDDO->Pivot = Pivot;
-					NewDDO->Offset = Offset;
-				}
-
-				return NewDDO;
-			});
-
-	DragDropTrigger.Layer = Heart::Input::Event;
-
 	if (Condition)
 	{
 		DragDropTrigger.Condition = Condition->CreateCondition();
 	}
+
+	DragDropTrigger.Callback = FHeartWidgetLinkedDragDropTriggerCreate::CreateUObject(this, &ThisClass::BeginDDO);
+	DragDropTrigger.Layer = Heart::Input::Event;
 
 	for (auto&& Trigger : InTriggers)
 	{
@@ -56,4 +42,18 @@ bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker*
 	}
 
 	return true;
+}
+
+UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation::BeginDDO(UWidget* Widget) const
+{
+	auto&& NewDDO = NewObject<UHeartDragDropOperation>(GetTransientPackage(), OperationClass);
+
+	if (IsValid(VisualClass))
+	{
+		NewDDO->DefaultDragVisual = CreateWidget(Widget, VisualClass);
+		NewDDO->Pivot = Pivot;
+		NewDDO->Offset = Offset;
+	}
+
+	return NewDDO;
 }

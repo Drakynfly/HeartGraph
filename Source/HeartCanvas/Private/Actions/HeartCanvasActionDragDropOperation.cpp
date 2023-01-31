@@ -29,39 +29,13 @@ bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLi
 {
 	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
 
-	DragDropTrigger.Callback =
-		FHeartWidgetLinkedDragDropTriggerCreate::CreateWeakLambda(this, [this](UWidget* Widget)
-			{
-				auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
-
-				if (IsValid(VisualClass))
-				{
-					auto&& NewVisual = CreateWidget(Widget, VisualClass);
-
-					// If both the widget and the visual want a context object pass it between them
-					if (Widget->Implements<UHeartUMGContextObject>() &&
-						NewVisual->Implements<UHeartUMGContextObject>())
-					{
-						auto&& Context = IHeartUMGContextObject::Execute_GetContextObject(Widget);
-						IHeartUMGContextObject::Execute_SetContextObject(NewVisual, Context);
-					}
-
-					NewDDO->DefaultDragVisual = NewVisual;
-					NewDDO->Pivot = Pivot;
-					NewDDO->Offset = Offset;
-				}
-
-				NewDDO->Action = NewObject<UHeartGraphCanvasAction>(NewDDO, ActionClass);
-
-				return NewDDO;
-			});
-
-	DragDropTrigger.Layer = Heart::Input::Event;
-
 	if (Condition)
 	{
 		DragDropTrigger.Condition = Condition->CreateCondition();
 	}
+
+	DragDropTrigger.Callback = FHeartWidgetLinkedDragDropTriggerCreate::CreateUObject(this, &ThisClass::BeginDDO);
+	DragDropTrigger.Layer = Heart::Input::Event;
 
 	for (auto&& Trigger : InTriggers)
 	{
@@ -85,4 +59,30 @@ bool UHeartWidgetInputBinding_DragDropOperation_Action::Unbind(UHeartWidgetInput
 	}
 
 	return true;
+}
+
+UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const
+{
+	auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
+
+	if (IsValid(VisualClass))
+	{
+		auto&& NewVisual = CreateWidget(Widget, VisualClass);
+
+		// If both the widget and the visual want a context object pass it between them
+		if (Widget->Implements<UHeartUMGContextObject>() &&
+			NewVisual->Implements<UHeartUMGContextObject>())
+		{
+			auto&& Context = IHeartUMGContextObject::Execute_GetContextObject(Widget);
+			IHeartUMGContextObject::Execute_SetContextObject(NewVisual, Context);
+		}
+
+		NewDDO->DefaultDragVisual = NewVisual;
+		NewDDO->Pivot = Pivot;
+		NewDDO->Offset = Offset;
+	}
+
+	NewDDO->Action = NewObject<UHeartGraphCanvasAction>(NewDDO, ActionClass);
+
+	return NewDDO;
 }

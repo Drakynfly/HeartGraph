@@ -19,6 +19,9 @@ public:
 	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const override;
 
 protected:
+	UHeartDragDropOperation* BeginDDO(UWidget* Widget) const;
+
+protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
 	TSubclassOf<UHeartDragDropOperation> OperationClass;
 

@@ -30,9 +30,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 			Activation.ActivationValue = PointerEvent.GetWheelDelta();
 			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
 
-			if (Reply.IsEventHandled())
+			if (ConditionalInputCallback.Layer == Event)
 			{
-				return Reply;
+				if (Reply.IsEventHandled())
+				{
+					return Reply;
+				}
 			}
 		}
 	}
@@ -64,9 +67,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 			Activation.ActivationValue = 1;
 			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
 
-			if (Reply.IsEventHandled())
+			if (ConditionalInputCallback.Layer == Event)
 			{
-				return Reply;
+				if (Reply.IsEventHandled())
+				{
+					return Reply;
+				}
 			}
 		}
 	}
@@ -90,9 +96,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 			{
 				FReply Reply = FReply::Handled().DetectDrag(SlateWidgetDetectingDrag.ToSharedRef(), PointerEvent.GetEffectingButton());
 
-				if (Reply.IsEventHandled())
+				if (ConditionalDropDropTrigger.Layer == Event)
 				{
-					return Reply;
+					if (Reply.IsEventHandled())
+					{
+						return Reply;
+					}
 				}
 			}
 		}
@@ -125,9 +134,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 			Activation.ActivationValue = 0;
 			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
 
-			if (Reply.IsEventHandled())
+			if (ConditionalInputCallback.Layer == Event)
 			{
-				return Reply;
+				if (Reply.IsEventHandled())
+				{
+					return Reply;
+				}
 			}
 		}
 	}
@@ -159,9 +171,12 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 			Activation.ActivationValue = 1;
 			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
 
-			if (Reply.IsEventHandled())
+			if (ConditionalInputCallback.Layer == Event)
 			{
-				return Reply;
+				if (Reply.IsEventHandled())
+				{
+					return Reply;
+				}
 			}
 		}
 	}
@@ -193,9 +208,12 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 			Activation.ActivationValue = 0;
 			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
 
-			if (Reply.IsEventHandled())
+			if (ConditionalInputCallback.Layer == Event)
 			{
-				return Reply;
+				if (Reply.IsEventHandled())
+				{
+					return Reply;
+				}
 			}
 		}
 	}
