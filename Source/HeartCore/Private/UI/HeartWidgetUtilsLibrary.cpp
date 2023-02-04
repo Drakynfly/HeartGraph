@@ -1,6 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetUtilsLibrary.h"
+#include "UI/HeartInputActivation.h"
+#include "UI/HeartWidgetInputLinker.h"
 
 FVector2D UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
 {
@@ -59,4 +61,66 @@ FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(const UWidget* Widge
 
 	auto&& Geometry = Widget->GetTickSpaceGeometry();
 	return Geometry.LocalToAbsolute(GetGeometryCenter(Geometry));
+}
+
+UUserWidget* UHeartWidgetUtilsLibrary::CreateWidgetWithWidgetOuter(UWidget* Outer, const TSubclassOf<UUserWidget> Class)
+{
+	if (!ensure(IsValid(Outer)))
+	{
+		return nullptr;
+	}
+
+	if (!ensure(IsValid(Class)))
+	{
+		return nullptr;
+	}
+
+	return CreateWidget(Outer, Class);
+}
+
+UUserWidget* UHeartWidgetUtilsLibrary::CreateWidgetWithGameInstanceOuter(UGameInstance* Outer,
+                                                                         const TSubclassOf<UUserWidget> Class)
+{
+	if (!ensure(IsValid(Outer)))
+	{
+		return nullptr;
+	}
+
+	if (!ensure(IsValid(Class)))
+	{
+		return nullptr;
+	}
+
+	return CreateWidget(Outer, Class);
+}
+
+TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidget(const UWidget* Widget)
+{
+	TArray<FHeartManualInputQueryResult> ActionList;
+
+	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
+
+	if (IsValid(Linker))
+	{
+		ActionList = Linker->QueryManualTriggers(Widget);
+	}
+
+	return ActionList;
+}
+
+bool UHeartWidgetUtilsLibrary::TriggerManualInput(UWidget* Widget, const FName Key)
+{
+	if (!IsValid(Widget) || Key.IsNone())
+	{
+		return false;
+	}
+
+	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
+
+	if (IsValid(Linker))
+	{
+		return Linker->HandleManualInput(Widget, Key, FHeartInputActivation({1.f})).IsEventHandled();
+	}
+
+	return false;
 }

@@ -4,15 +4,18 @@
 #include "UMG/HeartGraphCanvas.h"
 #include "ModelView/HeartLayoutHelper.h"
 
-void UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
+FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
 	UObject* ContextObject)
 {
 	if (UClass* Class = Cast<UClass>(ContextObject))
 	{
-		TSubclassOf<UHeartLayoutHelper> LayoutClass = Class;
+		const TSubclassOf<UHeartLayoutHelper> LayoutClass = Class;
 		if (IsValid(LayoutClass))
 		{
 			GetDefault<UHeartLayoutHelper>(LayoutClass)->Layout(CanvasGraph);
+			return true;
 		}
 	}
+
+	return false;
 }

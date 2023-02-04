@@ -528,7 +528,7 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 	}
 }
 
-void UHeartGraphCanvas::SetViewCorner(const FVector2D& NewViewCorner, bool Interp)
+void UHeartGraphCanvas::SetViewCorner(const FVector2D& NewViewCorner, const bool Interp)
 {
 	TargetView.X = NewViewCorner.X;
 	TargetView.Y = NewViewCorner.Y;
@@ -539,7 +539,7 @@ void UHeartGraphCanvas::SetViewCorner(const FVector2D& NewViewCorner, bool Inter
 	}
 }
 
-void UHeartGraphCanvas::AddToViewCorner(const FVector2D& NewViewCorner, bool Interp)
+void UHeartGraphCanvas::AddToViewCorner(const FVector2D& NewViewCorner, const bool Interp)
 {
 	TargetView += NewViewCorner * FVector2D(ViewMovementScalar);
 
@@ -552,7 +552,7 @@ void UHeartGraphCanvas::AddToViewCorner(const FVector2D& NewViewCorner, bool Int
 	}
 }
 
-void UHeartGraphCanvas::SetZoom(double NewZoom, bool Interp)
+void UHeartGraphCanvas::SetZoom(const double NewZoom, const bool Interp)
 {
 	TargetView.Z = NewZoom;
 
@@ -562,7 +562,7 @@ void UHeartGraphCanvas::SetZoom(double NewZoom, bool Interp)
 	}
 }
 
-void UHeartGraphCanvas::AddToZoom(double NewZoom, bool Interp)
+void UHeartGraphCanvas::AddToZoom(const double NewZoom, const bool Interp)
 {
 	TargetView.Z += NewZoom * ViewMovementScalar.Z;
 	TargetView.Z = FMath::Clamp(TargetView.Z, ViewBounds.Min.Z, ViewBounds.Max.Y);
@@ -573,38 +573,43 @@ void UHeartGraphCanvas::AddToZoom(double NewZoom, bool Interp)
 	}
 }
 
-void UHeartGraphCanvas::SelectNode(FHeartNodeGuid NodeGuid)
+void UHeartGraphCanvas::SelectNode(const FHeartNodeGuid Node)
 {
-	if (ensure(NodeGuid.IsValid()))
+	if (ensure(Node.IsValid()))
 	{
-		if (auto&& Node = DisplayedNodes.Find(NodeGuid))
+		if (auto&& NodePtr = DisplayedNodes.Find(Node))
 		{
-			SelectedNodes.Add(NodeGuid);
-			(*Node)->SetNodeSelected(true);
+			SelectedNodes.Add(Node);
+			(*NodePtr)->SetNodeSelected(true);
 		}
 	}
 }
 
-void UHeartGraphCanvas::SelectNodes(const TArray<FHeartNodeGuid>& NodeGuids)
+void UHeartGraphCanvas::SelectNodes(const TArray<FHeartNodeGuid>& Nodes)
 {
-	for (auto&& NodeGuid : NodeGuids)
+	for (auto&& NodeGuid : Nodes)
 	{
 		SelectNode(NodeGuid);
 	}
 }
 
-void UHeartGraphCanvas::UnselectNode(FHeartNodeGuid NodeGuid)
+void UHeartGraphCanvas::UnselectNode(const FHeartNodeGuid Node)
 {
-	if (ensure(NodeGuid.IsValid()))
+	if (ensure(Node.IsValid()))
 	{
-		if (SelectedNodes.Remove(NodeGuid))
+		if (SelectedNodes.Remove(Node))
 		{
-			if (auto&& Node = DisplayedNodes.Find(NodeGuid))
+			if (auto&& NodePtr = DisplayedNodes.Find(Node))
 			{
-				(*Node)->SetNodeSelected(false);
+				(*NodePtr)->SetNodeSelected(false);
 			}
 		}
 	}
+}
+
+bool UHeartGraphCanvas::IsNodeSelected(const FHeartNodeGuid Node) const
+{
+	return SelectedNodes.Contains(Node);
 }
 
 void UHeartGraphCanvas::ClearNodeSelection()
@@ -618,4 +623,39 @@ void UHeartGraphCanvas::ClearNodeSelection()
 	}
 
 	SelectedNodes.Empty();
+}
+
+UCanvasPanelSlot* UHeartGraphCanvas::AddWidgetToPopups(UWidget* Widget, const FVector2D Location)
+{
+	if (!IsValid(Widget)) return nullptr;
+
+	if (IsValid(PopupsCanvas))
+	{
+		auto&& CanvasSlot = PopupsCanvas->AddChildToCanvas(Widget);
+		CanvasSlot->SetPosition(Location);
+		CanvasSlot->SetAutoSize(true);
+		return CanvasSlot;
+	}
+
+	return nullptr;
+}
+
+bool UHeartGraphCanvas::RemoveWidgetFromPopups(UWidget* Widget)
+{
+	if (!IsValid(Widget)) return false;
+
+	if (IsValid(PopupsCanvas))
+	{
+		return PopupsCanvas->RemoveChild(Widget);
+	}
+
+	return false;
+}
+
+void UHeartGraphCanvas::ClearPopups()
+{
+	if (IsValid(PopupsCanvas))
+	{
+		PopupsCanvas->ClearChildren();
+	}
 }

@@ -14,8 +14,9 @@ class UHeartWidgetInputCondition_WidgetClass : public UHeartWidgetInputCondition
 	GENERATED_BODY()
 
 public:
-	virtual FHeartWidgetInputCondition CreateCondition() const override;
+	virtual bool TryPassCondition(const UWidget* Widget) const override;
 
+protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = true))
 	TSubclassOf<UWidget> WidgetClass;
 };

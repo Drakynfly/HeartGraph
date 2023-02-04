@@ -13,12 +13,11 @@ class HEARTCANVAS_API UHeartGraphCanvasActionBinding : public UHeartWidgetInputB
 	GENERATED_BODY()
 
 public:
+	virtual FText GetDescription(const UWidget* TestWidget) const override;
+	virtual bool PassCondition(const UWidget* TestWidget) const override;
 	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const override;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
 	TSubclassOf<UHeartGraphCanvasAction> ActionClass;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
-	bool CaptureMouse;
 };

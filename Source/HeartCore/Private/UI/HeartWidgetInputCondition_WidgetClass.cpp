@@ -2,10 +2,7 @@
 
 #include "UI/HeartWidgetInputCondition_WidgetClass.h"
 
-FHeartWidgetInputCondition UHeartWidgetInputCondition_WidgetClass::CreateCondition() const
+bool UHeartWidgetInputCondition_WidgetClass::TryPassCondition(const UWidget* Widget) const
 {
-	return FHeartWidgetInputCondition::CreateLambda([=](UWidget* Widget)
-	{
-		return Widget && Widget->GetClass()->IsChildOf(WidgetClass);
-	});
+	return IsValid(Widget) && Widget->GetClass()->IsChildOf(WidgetClass);
 }

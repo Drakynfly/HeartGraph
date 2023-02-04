@@ -187,13 +187,13 @@ public:
 	void BP_OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& ConnectionEvent);
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartGraphNodeEvent OnNodeAdded;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartGraphNodeEvent OnNodeRemoved;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
 
 #if WITH_EDITORONLY_DATA

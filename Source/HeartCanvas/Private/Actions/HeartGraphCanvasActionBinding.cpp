@@ -2,31 +2,45 @@
 
 #include "Actions/HeartGraphCanvasActionBinding.h"
 #include "Actions/HeartGraphCanvasAction.h"
-#include "UMG/HeartGraphCanvas.h"
-#include "UMG/HeartGraphCanvasNode.h"
-#include "UMG/HeartGraphCanvasPin.h"
+#include "UMG/HeartGraphWidgetBase.h"
+
+FText UHeartGraphCanvasActionBinding::GetDescription(const UWidget* TestWidget) const
+{
+	if (IsValid(ActionClass))
+	{
+		return ActionClass.GetDefaultObject()->GetDescription(TestWidget);
+	}
+
+	return Super::GetDescription(TestWidget);
+}
+
+bool UHeartGraphCanvasActionBinding::PassCondition(const UWidget* TestWidget) const
+{
+	bool Failed = !Super::PassCondition(TestWidget);
+
+	if (IsValid(ActionClass))
+	{
+		if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(TestWidget))
+		{
+			Failed |= !ActionClass.GetDefaultObject()->CanExecuteOnWidget(HeartWidget);
+		}
+	}
+
+	return !Failed;
+}
 
 FReply UHeartGraphCanvasActionBinding::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
 {
-	if (Widget->IsA<UHeartGraphCanvas>() ||
-			Widget->IsA<UHeartGraphCanvasNode>() ||
-			Widget->IsA<UHeartGraphCanvasPin>())
+	if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(Widget))
 	{
-		if (UHeartGraphActionBase::QuickExecuteGraphAction(ActionClass, Widget, Trip))
+		auto&& Action = UHeartGraphActionBase::CreateGraphAction<UHeartGraphCanvasAction>(ActionClass);
+
+		if (!IsValid(Action))
 		{
-			FReply Reply = FReply::Handled();
-
-			if (CaptureMouse)
-			{
-				const TSharedPtr<SWidget> CapturingSlateWidget = Widget->GetCachedWidget();
-				if (CapturingSlateWidget.IsValid())
-				{
-					Reply.CaptureMouse(CapturingSlateWidget.ToSharedRef());
-				}
-			}
-
-			return Reply;
+			return FReply::Unhandled();
 		}
+
+		return Action->ExecuteOnWidget(HeartWidget, Trip, nullptr);
 	}
 
 	return FReply::Unhandled();

@@ -28,6 +28,16 @@ bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Ac
 	return false;
 }
 
+FText UHeartGraphActionBlueprintBase::GetDescription(const UObject* Object) const
+{
+	return BP_GetDescription(Object);
+}
+
+bool UHeartGraphActionBlueprintBase::CanExecute(const UObject* Object) const
+{
+	return BP_CanExecuteOnObject(Object);
+}
+
 void UHeartGraphActionBlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Graph)))

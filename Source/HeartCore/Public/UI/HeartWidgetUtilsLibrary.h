@@ -80,4 +80,31 @@ public:
 	/** Get the middle point of the widget in absolute space */
 	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
 	static FVector2D GetWidgetCenterAbsolute(const UWidget* Widget);
+
+	//@todo really, these should be custom K2Nodes, so that they can have expose on spawn pins, but im too lazy to do that rn
+
+	/** Creates a UUserWidget, using any widget as an outer. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary", meta = (DeterminesOutputType = "Class"))
+	static UUserWidget* CreateWidgetWithWidgetOuter(UWidget* Outer, TSubclassOf<UUserWidget> Class);
+
+	/** Creates a UUserWidget, using the game instance as an outer. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary", meta = (DeterminesOutputType = "Class"))
+	static UUserWidget* CreateWidgetWithGameInstanceOuter(UGameInstance* Outer, TSubclassOf<UUserWidget> Class);
+
+
+	// These might be suited better in another place. . .
+
+	/**
+	 * Get all manually-keyed actions for a widget. This only works if either the widget, or one of its parents,
+	 * implements IHeartWidgetInputLinkerRedirector.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
+	static TArray<struct FHeartManualInputQueryResult> GetActionsForWidget(const UWidget* Widget);
+
+	/**
+	 * Trigger a manually-keyed action for a widget. This only works if either the widget, or one of its parents,
+	 * implements IHeartWidgetInputLinkerRedirector.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
+	static bool TriggerManualInput(UWidget* Widget, FName Key);
 };

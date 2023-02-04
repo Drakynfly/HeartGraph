@@ -22,21 +22,6 @@ const FText UHeartGraphWidgetBase::GetPaletteCategory()
 
 UHeartWidgetInputLinker* UHeartGraphWidgetBase::ResolveLinker_Implementation() const
 {
-	for (auto&& Parent = GetOuter(); Parent; Parent = Parent->GetOuter())
-	{
-		if (Parent->Implements<UHeartWidgetInputLinkerRedirector>())
-		{
-			return Execute_ResolveLinker(Parent);
-		}
-	}
-
-	return nullptr;
-}
-
-void UHeartGraphWidgetBase::GetWidgetActions() const
-{
-	if (auto&& Linker = ResolveLinker())
-	{
-
-	}
+	// Assume that something up our parent chain will be able to handle this.
+	return Heart::Input::FindLinkerForWidget(GetTypedOuter<UWidget>());
 }

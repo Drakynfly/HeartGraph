@@ -22,7 +22,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode3D")
 	void SetLocation3D(const FVector& NewLocation);
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnGraphNodeLocation3DChanged OnNodeLocation3DChanged;
 
 private:

@@ -2,14 +2,25 @@
 
 #pragma once
 
+enum EHeartTripType
+{
+	Unknown,
+	Press,
+	Release,
+	Manual
+};
+
 struct FHeartWidgetInputTrip
 {
+	EHeartTripType Type = Unknown;
 	FKey Key = EKeys::Invalid;
-	bool Release = false;
+	FName CustomKey = NAME_None;
 
 	friend bool operator==(const FHeartWidgetInputTrip& Lhs, const FHeartWidgetInputTrip& Rhs)
 	{
-		return Lhs.Key == Rhs.Key && Lhs.Release == Rhs.Release;
+		return Lhs.Type == Rhs.Type &&
+			   Lhs.Key == Rhs.Key &&
+			   Lhs.CustomKey == Rhs.CustomKey;
 	}
 
 	friend bool operator!=(const FHeartWidgetInputTrip& Lhs, const FHeartWidgetInputTrip& Rhs)
@@ -21,9 +32,8 @@ struct FHeartWidgetInputTrip
 FORCEINLINE uint32 GetTypeHash(const FHeartWidgetInputTrip& Trip)
 {
 	uint32 KeyHash = 0;
+	KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.Type));
 	KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.Key));
-	KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.Release));
-	//KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.PointerEvent.Get(FPointerEvent())));
-	//KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.KeyEvent.Get(FKeyEvent())));
+	KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.CustomKey));
 	return KeyHash;
 }

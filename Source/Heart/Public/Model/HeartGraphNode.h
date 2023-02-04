@@ -53,7 +53,7 @@ struct FHeartGraphNodeSparseClassData
 
 	// Can this node be created by the editor even if it cannot be created otherwise.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
-	bool CanCreateInEditor;
+	bool CanCreateInEditor = false;
 
 	// BP properties that trigger reconstruction of SGraphNodes
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
@@ -298,13 +298,13 @@ protected:
 	void BP_OnConnectionsChanged(UHeartGraphPin* Pin);
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnPinConnectionsChanged OnPinConnectionsChanged;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnGraphNodePinChanged OnNodePinsChanged;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnGraphNodeLocationChanged OnNodeLocationChanged;
 
 #if WITH_EDITORONLY_DATA

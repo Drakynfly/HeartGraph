@@ -9,6 +9,18 @@
 #include "HeartWidgetInputTrip.h"
 #include "HeartWidgetInputLinker.generated.h"
 
+USTRUCT(BlueprintType)
+struct FHeartManualInputQueryResult
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ManualInputQueryResult")
+	FName Key;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "ManualInputQueryResult")
+	FText Description;
+};
+
 
 /**
  * Binds to UWidgets and externalizes input functions. This is used to set the DefaultLinkerClass in a
@@ -36,6 +48,10 @@ public:
 	virtual void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	virtual void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 
+	// Custom input
+	virtual FReply HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, FHeartInputActivation Activation);
+	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UWidget* Widget) const;
+
 public:
 	void BindInputCallback(const FHeartWidgetInputTrip& Trip, const Heart::Input::FConditionalInputCallback& InputCallback);
 	void UnbindInputCallback(const FHeartWidgetInputTrip& Trip);
@@ -53,14 +69,16 @@ private:
 
 namespace Heart::Input
 {
-	static UHeartWidgetInputLinker* GetWidgetLinker(const UWidget* Widget)
+	static UHeartWidgetInputLinker* FindLinkerForWidget(const UWidget* Widget)
 	{
-		if (Widget && Widget->Implements<UHeartWidgetInputLinkerRedirector>())
+		for (auto&& Test = Widget; Test; Test = Test->GetTypedOuter<UWidget>())
 		{
-			return IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Widget);
+			if (Test->Implements<UHeartWidgetInputLinkerRedirector>())
+			{
+				return IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test);
+			}
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("Widget class %s does not implement IHeartWidgetInputLinkerRedirector! Linker input will not function."), *Widget->GetClass()->GetName())
 		return nullptr;
 	}
 
@@ -69,7 +87,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnMouseWheel(Widget, InGeometry, InMouseEvent);
 
@@ -87,7 +105,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnMouseButtonDown(Widget, InGeometry, InMouseEvent);
 
@@ -105,7 +123,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnMouseButtonUp(Widget, InGeometry, InMouseEvent);
 
@@ -123,7 +141,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnKeyDown(Widget, InGeometry, InKeyEvent);
 
@@ -141,7 +159,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			FReply BindingReply = Linker->HandleOnKeyUp(Widget, InGeometry, InKeyEvent);
 
@@ -160,7 +178,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Widget, InGeometry, InMouseEvent))
 			{
@@ -178,7 +196,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			if (Linker->HandleNativeOnDrop(Widget, InGeometry, InDragDropEvent, InOperation))
 			{
@@ -195,7 +213,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			if (Linker->HandleNativeOnDragOver(Widget, InGeometry, InDragDropEvent, InOperation))
 			{
@@ -212,7 +230,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			Linker->HandleNativeOnDragEnter(Widget, InGeometry, InDragDropEvent, InOperation);
 		}
@@ -224,7 +242,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			Linker->HandleNativeOnDragLeave(Widget, InDragDropEvent, InOperation);
 		}
@@ -236,7 +254,7 @@ namespace Heart::Input
 	{
 		static_assert(TIsDerivedFrom<TWidget, UWidget>::Value, TEXT("TWidget must be a UWidget class!"));
 
-		if (auto&& Linker = GetWidgetLinker(Widget))
+		if (auto&& Linker = FindLinkerForWidget(Widget))
 		{
 			Linker->HandleNativeOnDragCancelled(Widget, InDragDropEvent, InOperation);
 		}

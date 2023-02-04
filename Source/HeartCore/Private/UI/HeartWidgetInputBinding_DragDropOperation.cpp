@@ -12,19 +12,20 @@ bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* L
 {
 	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
 
-	if (Condition)
-	{
-		DragDropTrigger.Condition = Condition->CreateCondition();
-	}
-
-	DragDropTrigger.Callback = FHeartWidgetLinkedDragDropTriggerCreate::CreateUObject(this, &ThisClass::BeginDDO);
+	DragDropTrigger.Condition.BindUObject(this, &ThisClass::PassCondition);
+	DragDropTrigger.Callback.BindUObject(this, &ThisClass::BeginDDO);
 	DragDropTrigger.Layer = Heart::Input::Event;
 
 	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{
-			Linker->BindToOnDragDetected(Trigger.Get<FHeartWidgetInputTrigger>().CreateTrip(), DragDropTrigger);
+			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
+
+			for (auto&& Trip : Trips)
+			{
+				Linker->BindToOnDragDetected(Trip, DragDropTrigger);
+			}
 		}
 	}
 
@@ -37,7 +38,12 @@ bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker*
 	{
 		if (Trigger.IsValid())
 		{
-			Linker->UnbindToOnDragDetected(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip());
+			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
+
+			for (auto&& Trip : Trips)
+			{
+				Linker->UnbindToOnDragDetected(Trip);
+			}
 		}
 	}
 

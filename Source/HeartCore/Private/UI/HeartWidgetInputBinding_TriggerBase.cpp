@@ -8,19 +8,21 @@ bool UHeartWidgetInputBinding_TriggerBase::Bind(UHeartWidgetInputLinker* Linker,
 {
 	Heart::Input::FConditionalInputCallback InputCallback;
 
-	if (Condition)
-	{
-		InputCallback.Condition = Condition->CreateCondition();
-	}
-
-	InputCallback.Callback = FHeartWidgetLinkedEventCallback::CreateUObject(this, &ThisClass::TriggerEvent);
+	InputCallback.Description.BindUObject(this, &ThisClass::GetDescription);
+	InputCallback.Condition.BindUObject(this, &ThisClass::PassCondition);
+	InputCallback.Callback.BindUObject(this, &ThisClass::TriggerEvent);
 	InputCallback.Layer = HandleInput ? Heart::Input::Event : Heart::Input::Listener;
 
 	for (auto&& Trigger : InTriggers)
 	{
 		if (Trigger.IsValid())
 		{
-			Linker->BindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip(), InputCallback);
+			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
+
+			for (auto&& Trip : Trips)
+			{
+				Linker->BindInputCallback(Trip, InputCallback);
+			}
 		}
 	}
 
@@ -33,7 +35,12 @@ bool UHeartWidgetInputBinding_TriggerBase::Unbind(UHeartWidgetInputLinker* Linke
 	{
 		if (Trigger.IsValid())
 		{
-			Linker->UnbindInputCallback(Trigger.GetMutable<FHeartWidgetInputTrigger>().CreateTrip());
+			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
+
+			for (auto&& Trip : Trips)
+			{
+				Linker->UnbindInputCallback(Trip);
+			}
 		}
 	}
 

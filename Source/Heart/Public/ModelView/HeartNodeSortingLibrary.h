@@ -71,7 +71,7 @@ struct HEART_API FNodeLooseToTreeArgs
 	bool AllowDuplicates = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	EHeartPinDirection Direction;
+	EHeartPinDirection Direction = EHeartPinDirection::None;
 };
 
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartNodeFilterPredicate, const UHeartGraphNode*, Node);

@@ -5,6 +5,10 @@
 #include "HeartDragDropOperation.h"
 #include "HeartWidgetInputCondition.h"
 
+DECLARE_DELEGATE_RetVal_OneParam(FText, FHeartWidgetInputDescription, const UWidget* /** Widget */);
+
+DECLARE_DELEGATE_RetVal_OneParam(bool, FHeartWidgetInputCondition, const UWidget* /** Widget */);
+
 DECLARE_DELEGATE_RetVal_TwoParams(
 	FReply, FHeartWidgetLinkedEventCallback, UWidget* /** Widget */, const struct FHeartInputActivation& /** Activation */);
 
@@ -22,6 +26,9 @@ namespace Heart::Input
 
 	struct FConditionalInputBase
 	{
+		// Callback to retrieve a text description of the action
+		FHeartWidgetInputDescription Description;
+
 		// @todo conditions are a hack. they don't need to be used 95% of the time, and when they are used, its to fix weird behavior in other stuff
 		// Track down and fix the general weirdness with input binding and eventually deprecate them, probably, unless they become useful in some permanent way
 		FHeartWidgetInputCondition Condition;
@@ -36,11 +43,13 @@ namespace Heart::Input
 
 	struct FConditionalInputCallback : FConditionalInputBase
 	{
+		// Callback to execute the event
 		FHeartWidgetLinkedEventCallback Callback;
 	};
 
 	struct FConditionalDragDropTrigger : FConditionalInputBase
 	{
+		// Callback to begin a DDO
 		FHeartWidgetLinkedDragDropTriggerCreate Callback;
 	};
 }

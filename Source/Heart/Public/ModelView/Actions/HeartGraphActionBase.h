@@ -9,7 +9,7 @@
 /**
  *
  */
-UCLASS(Abstract)
+UCLASS(Abstract, Const)
 class HEART_API UHeartGraphActionBase : public UObject
 {
 	GENERATED_BODY()
@@ -23,6 +23,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
 	static bool QuickExecuteGraphActionWithPayload(TSubclassOf<UHeartGraphActionBase> Class, UObject* Target, const FHeartInputActivation& Activation, UObject* Payload);
 
+	template <typename THeartGraphAction>
+	static THeartGraphAction* CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
+	{
+		static_assert(TIsDerivedFrom<THeartGraphAction, UHeartGraphActionBase>::Value, TEXT("THeartGraphAction must be a UHeartGraphActionBase"));
+		return Cast<THeartGraphAction>(CreateGraphAction(Class));
+	}
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (DeterminesOutputType = Class))
 	static UHeartGraphActionBase* CreateGraphAction(TSubclassOf<UHeartGraphActionBase> Class);
 
@@ -30,5 +37,8 @@ public:
 	static bool ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target, const FHeartInputActivation& Activation);
 
 	bool Execute(UObject* Object, const FHeartInputActivation& Activation);
+
+	virtual FText GetDescription(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText(); )
+	virtual bool CanExecute(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
 	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
 };

@@ -111,7 +111,7 @@ public:
 	static FInstancedStruct TEST_STATIC_MAKE_DOUBLE(FHeartGraphPinDouble Value);
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
 
 private:

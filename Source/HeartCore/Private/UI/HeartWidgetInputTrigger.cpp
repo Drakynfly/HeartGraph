@@ -2,20 +2,32 @@
 
 #include "UI/HeartWidgetInputTrigger.h"
 
-FHeartWidgetInputTrip FHeartWidgetInputTrigger_KeyDown::CreateTrip() const
+TArray<FHeartWidgetInputTrip> FHeartWidgetInputTrigger_KeyDown::CreateTrips() const
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = Key;
-	Trip.Release = false;
-	//Trip.KeyEvent = Heart::Input::MakeKeyEventFromKey(Key);
-	return Trip;
+	Trip.Type = Press;
+	return {Trip};
 }
 
-FHeartWidgetInputTrip FHeartWidgetInputTrigger_KeyUp::CreateTrip() const
+TArray<FHeartWidgetInputTrip> FHeartWidgetInputTrigger_KeyUp::CreateTrips() const
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = Key;
-	Trip.Release = true;
-	//Trip.KeyEvent = Heart::Input::MakeKeyEventFromKey(Key);
-	return Trip;
+	Trip.Type = Release;
+	return {Trip};
+}
+
+TArray<FHeartWidgetInputTrip> FHeartWidgetInputTrigger_Manual::CreateTrips() const
+{
+	TArray<FHeartWidgetInputTrip> Trips;
+
+	for (auto&& Key : Keys)
+	{
+		auto&& Trip = Trips.AddDefaulted_GetRef();
+		Trip.Type = Manual;
+		Trip.CustomKey = Key;
+	}
+
+	return Trips;
 }

@@ -14,7 +14,7 @@ struct FHeartWidgetInputBinding
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Instanced)
+	UPROPERTY(EditAnywhere, Instanced, meta = (NoResetToDefault))
 	TObjectPtr<UHeartWidgetInputBindingBase> BindingObject;
 
 	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))

@@ -10,6 +10,8 @@
 #include "Model/HeartGraphNode.h"
 #include "HeartGraphCanvas.generated.h"
 
+class UCanvasPanelSlot;
+
 class UHeartGraph;
 class UHeartGraphCanvasPanel;
 class UHeartGraphCanvasNode;
@@ -194,7 +196,24 @@ public:
 	void UnselectNode(FHeartNodeGuid Node);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
+	bool IsNodeSelected(FHeartNodeGuid Node) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void ClearNodeSelection();
+
+
+	/*---------------------------
+			POP UP UTILS
+	---------------------------*/
+
+	UFUNCTION(BlueprintCallable)
+	UCanvasPanelSlot* AddWidgetToPopups(UWidget* Widget, FVector2D Location);
+
+	UFUNCTION(BlueprintCallable)
+	bool RemoveWidgetFromPopups(UWidget* Widget);
+
+	UFUNCTION(BlueprintCallable)
+	void ClearPopups();
 
 
 public:
@@ -202,11 +221,15 @@ public:
 	FOnGraphViewChanged OnGraphViewChanged;
 
 protected:
-	/** The canvas to draw all nodes on. */
+	/** The canvas to draw context menus, or other extra popups on. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, DisplayName = "CANVAS_Popups"), Category = "Widgets")
+	TObjectPtr<UHeartGraphCanvasPanel> PopupsCanvas;
+
+	/** The canvas to draw nodes on. */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Nodes"), Category = "Widgets")
 	TObjectPtr<UHeartGraphCanvasPanel> NodeCanvas;
 
-	/** The canvas to draw all nodes on. */
+	/** The canvas to draw node connections on. */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Connections"), Category = "Widgets")
 	TObjectPtr<UHeartGraphCanvasPanel> ConnectionCanvas;
 

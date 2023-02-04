@@ -2,6 +2,7 @@
 
 #include "UI/HeartWidgetInputLinker.h"
 #include "Components/Widget.h"
+#include "UI/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
 
 using namespace Heart::Input;
@@ -9,8 +10,8 @@ using namespace Heart::Input;
 FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	FHeartWidgetInputTrip MouseWheelAxisTrip;
-	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis; // Heart::Input::MakeKeyEventFromKey(EKeys::MouseWheelAxis);
-	MouseWheelAxisTrip.Release = false;
+	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis;
+	MouseWheelAxisTrip.Type = Press; // Mouse wheel events must always use the 'Press' type
 
 	TArray<FConditionalInputCallback> Callbacks;
 	InputCallbackMappings.MultiFind(MouseWheelAxisTrip, Callbacks);
@@ -47,7 +48,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.Release = false;
+	Trip.Type = Press;
 
 	TArray<FConditionalInputCallback> Callbacks;
 	InputCallbackMappings.MultiFind(Trip, Callbacks);
@@ -114,7 +115,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.Release = true;
+	Trip.Type = Release;
 
 	TArray<FConditionalInputCallback> Callbacks;
 	InputCallbackMappings.MultiFind(Trip, Callbacks);
@@ -151,7 +152,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
-	Trip.Release = false;
+	Trip.Type = Press;
 
 	TArray<FConditionalInputCallback> Callbacks;
 	InputCallbackMappings.MultiFind(Trip, Callbacks);
@@ -188,7 +189,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 {
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
-	Trip.Release = true;
+	Trip.Type = Release;
 
 	TArray<FConditionalInputCallback> Callbacks;
 	InputCallbackMappings.MultiFind(Trip, Callbacks);
@@ -224,6 +225,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	FHeartWidgetInputTrip Trip;
+	Trip.Type = Press;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
 
 	TArray<FConditionalDragDropTrigger> DropDropTriggerArray;
@@ -280,16 +282,88 @@ bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FGeometr
 void UHeartWidgetInputLinker::HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
+	// Nothing here yet
 }
 
 void UHeartWidgetInputLinker::HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
+	// Nothing here yet
 }
 
 void UHeartWidgetInputLinker::HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
+	// Nothing here yet
+}
+
+FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, FHeartInputActivation Activation)
+{
+	FHeartWidgetInputTrip Trip;
+	Trip.Type = Manual;
+	Trip.CustomKey = Key;
+
+	TArray<FConditionalInputCallback> Callbacks;
+	InputCallbackMappings.MultiFind(Trip, Callbacks);
+	Callbacks.Sort();
+	for (auto&& ConditionalInputCallback : Callbacks)
+	{
+		bool PassedCondition = true;
+
+		if (ConditionalInputCallback.Condition.IsBound())
+		{
+			PassedCondition = ConditionalInputCallback.Condition.Execute(Widget);
+		}
+
+		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
+		{
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+
+			if (ConditionalInputCallback.Layer == Event)
+			{
+				if (Reply.IsEventHandled())
+				{
+					return Reply;
+				}
+			}
+		}
+	}
+
+	return FReply::Unhandled();
+}
+
+TArray<FHeartManualInputQueryResult> UHeartWidgetInputLinker::QueryManualTriggers(const UWidget* Widget) const
+{
+	TArray<FHeartManualInputQueryResult> Results;
+
+	for (auto&& ConditionalInputCallback : InputCallbackMappings)
+	{
+		if (ConditionalInputCallback.Key.Type != Manual)
+		{
+			continue;
+		}
+
+		bool PassedCondition = true;
+
+		if (ConditionalInputCallback.Value.Condition.IsBound())
+		{
+			PassedCondition = ConditionalInputCallback.Value.Condition.Execute(Widget);
+		}
+
+		if (PassedCondition)
+		{
+			if (ConditionalInputCallback.Value.Description.IsBound())
+			{
+				Results.Add({ConditionalInputCallback.Key.CustomKey, ConditionalInputCallback.Value.Description.Execute(Widget)});
+			}
+			else
+			{
+				Results.Add({ConditionalInputCallback.Key.CustomKey});
+			}
+		}
+	}
+
+	return Results;
 }
 
 void UHeartWidgetInputLinker::BindInputCallback(const FHeartWidgetInputTrip& Trip, const FConditionalInputCallback& InputCallback)

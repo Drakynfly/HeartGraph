@@ -14,5 +14,5 @@ class HEARTCANVAS_API UHeartCanvasAction_AutoLayout : public UHeartGraphCanvasAc
 {
 	GENERATED_BODY()
 
-	virtual void ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 };
