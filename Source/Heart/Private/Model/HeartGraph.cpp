@@ -13,7 +13,7 @@ UWorld* UHeartGraph::GetWorld() const
 {
 	if (!IsTemplate())
 	{
-		UWorld* World;
+		UWorld* World = nullptr;
 		if (GetSchema()->TryGetWorldForGraph(this, World))
 		{
 			return World;
@@ -138,14 +138,10 @@ TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() cons
 	return UHeartGraphSchema::StaticClass();
 }
 
-const UHeartGraphSchema* UHeartGraph::GetSchemaStatic(const TSubclassOf<UHeartGraph> HeartGraphClass)
-{
-	return GetDefault<UHeartGraph>(HeartGraphClass)->GetSchema();
-}
-
 const UHeartGraphSchema* UHeartGraph::GetSchema() const
 {
-	return GetDefault<UHeartGraphSchema>(GetSchemaClass());
+	// Always return the schema for the CDO
+	return GetSchemaStatic<UHeartGraphSchema>(GetClass());
 }
 
 const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const

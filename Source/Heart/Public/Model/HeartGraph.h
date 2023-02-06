@@ -114,14 +114,29 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Graph")
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
+	template <typename THeartGraphSchema, typename THeartGraph>
+	static const THeartGraphSchema* GetSchemaStatic()
+	{
+		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
+		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "THeartGraph must derive from UHeartGraph");
+		const THeartGraph* DefaultHeartGraph = GetDefault<THeartGraph>();
+		return GetDefault<THeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
+	}
+
+	template <typename THeartGraphSchema>
+	static const THeartGraphSchema* GetSchemaStatic(const TSubclassOf<UHeartGraph> GraphClass)
+	{
+		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
+		const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
+		return GetDefault<THeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
+	}
+
 	template <typename THeartGraphSchema>
 	const THeartGraphSchema* GetSchemaTyped() const
 	{
 		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
 		return Cast<THeartGraphSchema>(GetSchema());
 	}
-
-	static const UHeartGraphSchema* GetSchemaStatic(TSubclassOf<UHeartGraph> HeartGraphClass);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	const UHeartGraphSchema* GetSchema() const;
