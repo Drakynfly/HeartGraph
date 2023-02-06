@@ -12,6 +12,7 @@ public class HeartEditor : ModuleRules
             new []
             {
                 "Core",
+                "HeartCore",
                 "Heart"
             }
         );

@@ -265,8 +265,8 @@ UObject* UHeartGraphNodeBlueprintFactory::FactoryCreateNew(UClass* Class, UObjec
 		//if(Settings && Settings->bSpawnDefaultBlueprintNodes)
 		{
 			int32 NodePositionY = 0;
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName(TEXT("K2_ExecuteInput")), UHeartGraphNode::StaticClass(), NodePositionY);
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName(TEXT("K2_Cleanup")), UHeartGraphNode::StaticClass(), NodePositionY);
+			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_ExecuteInput"), UHeartGraphNode::StaticClass(), NodePositionY);
+			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_Cleanup"), UHeartGraphNode::StaticClass(), NodePositionY);
 		}
 	}
 

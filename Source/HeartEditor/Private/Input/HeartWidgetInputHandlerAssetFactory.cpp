@@ -1,11 +1,7 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Graph/HeartGraphBlueprintFactory.h"
+#include "Input/HeartWidgetInputHandlerAssetFactory.h"
 
-#include "Model/HeartGraph.h"
-#include "Model/HeartGraphBlueprint.h"
-
-//#include "BlueprintEditorSettings.h"
 #include "ClassViewerFilter.h"
 #include "ClassViewerModule.h"
 #include "Editor.h"
@@ -13,6 +9,7 @@
 #include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "SlateOptMacros.h"
+#include "UI/HeartWidgetInputHandlerAsset.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -21,24 +18,24 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SWindow.h"
 
-#define LOCTEXT_NAMESPACE "HeartGraphBlueprintFactory"
+#define LOCTEXT_NAMESPACE "UHeartWidgetInputHandlerAssetFactory"
 
 // ------------------------------------------------------------------------------
 // Dialog to configure creation properties
 // ------------------------------------------------------------------------------
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-class SHeartGraphBlueprintCreateDialog final : public SCompoundWidget
+class SHeartWidgetInputHandlerAssetCreateDialog final : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SHeartGraphBlueprintCreateDialog) {}
+	SLATE_BEGIN_ARGS(SHeartWidgetInputHandlerAssetCreateDialog) {}
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
 	void Construct(const FArguments& InArgs)
 	{
 		bOkClicked = false;
-		SelectedClass = UHeartGraph::StaticClass();
+		SelectedClass = UHeartWidgetInputHandlerAsset::StaticClass();
 
 		ChildSlot
 		[
@@ -76,16 +73,16 @@ public:
 												SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-													.OnClicked(this, &SHeartGraphBlueprintCreateDialog::OkClicked)
-													.Text(LOCTEXT("CreateHeartGraphBlueprintOk", "OK"))
+													.OnClicked(this, &SHeartWidgetInputHandlerAssetCreateDialog::OkClicked)
+													.Text(LOCTEXT("CreateHeartAssetOk", "OK"))
 											]
 										+ SUniformGridPanel::Slot(1, 0)
 											[
 												SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-													.OnClicked(this, &SHeartGraphBlueprintCreateDialog::CancelClicked)
-													.Text(LOCTEXT("CreateHeartGraphBlueprintCancel", "Cancel"))
+													.OnClicked(this, &SHeartWidgetInputHandlerAssetCreateDialog::CancelClicked)
+													.Text(LOCTEXT("CreateHeartAssetCancel", "Cancel"))
 											]
 								]
 						]
@@ -95,13 +92,13 @@ public:
 			MakeParentClassPicker();
 		}
 
-	/** Sets properties for the supplied HeartGraphBlueprintFactory */
-	bool ConfigureProperties(const TWeakObjectPtr<UHeartGraphBlueprintFactory> InHeartGraphBlueprintFactory)
+	/** Sets properties for the supplied UHeartWidgetInputHandlerAssetFactory */
+	bool ConfigureProperties(const TWeakObjectPtr<UHeartWidgetInputHandlerAssetFactory> InHeartWidgetInputHandlerAssetFactory)
 	{
-		HeartGraphBlueprintFactory = InHeartGraphBlueprintFactory;
+		HeartWidgetInputHandlerAssetFactory = InHeartWidgetInputHandlerAssetFactory;
 
 		const TSharedRef<SWindow> Window = SNew(SWindow)
-			.Title(LOCTEXT("CreateHeartGraphBlueprintOptions", "Pick Parent Class"))
+			.Title(LOCTEXT("CreateHeartAssetOptions", "Pick Parent Class"))
 			.ClientSize(FVector2D(400, 700))
 			.SupportsMinimize(false).SupportsMaximize(false)
 			[
@@ -111,29 +108,34 @@ public:
 		PickerWindow = Window;
 		GEditor->EditorAddModalWindow(Window);
 
-		HeartGraphBlueprintFactory.Reset();
+		HeartWidgetInputHandlerAssetFactory.Reset();
 		return bOkClicked;
 	}
 
 private:
-	class FHeartGraphBlueprintParentFilter final : public IClassViewerFilter
+	class FHeartWidgetInputHandlerAssetParentFilter final : public IClassViewerFilter
 	{
 	public:
 		/** All children of these classes will be included unless filtered out by another setting. */
 		TSet<const UClass*> AllowedChildrenOfClasses;
 
-		FHeartGraphBlueprintParentFilter() {}
+		/** Disallowed class flags. */
+		EClassFlags DisallowedClassFlags = CLASS_None;
+
+		FHeartWidgetInputHandlerAssetParentFilter() {}
 
 		virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
 		{
 			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
+			return !InClass->HasAnyClassFlags(DisallowedClassFlags)
+				&& InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
 		}
 
-		virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const TSharedRef< const IUnloadedBlueprintData > InUnloadedClassData, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
+		virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const TSharedRef<const IUnloadedBlueprintData> InUnloadedClassData, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
 		{
 			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) != EFilterReturn::Failed;
+			return !InUnloadedClassData->HasAnyClassFlags(DisallowedClassFlags)
+				&& InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) != EFilterReturn::Failed;
 		}
 	};
 
@@ -146,18 +148,19 @@ private:
 		FClassViewerInitializationOptions Options;
 		Options.Mode = EClassViewerMode::ClassPicker;
 		Options.DisplayMode = EClassViewerDisplayMode::TreeView;
-		Options.bIsBlueprintBaseOnly = true;
+		Options.bIsBlueprintBaseOnly = false;
 
-		const TSharedPtr<FHeartGraphBlueprintParentFilter> Filter = MakeShareable(new FHeartGraphBlueprintParentFilter);
+		const TSharedPtr<FHeartWidgetInputHandlerAssetParentFilter> Filter = MakeShareable(new FHeartWidgetInputHandlerAssetParentFilter);
 
-		// All child child classes of UHeartGraph are valid
-		Filter->AllowedChildrenOfClasses.Add(UHeartGraph::StaticClass());
+		// All child child classes of UHeartWidgetInputHandlerAsset are valid
+		Filter->AllowedChildrenOfClasses.Add(UHeartWidgetInputHandlerAsset::StaticClass());
+		Filter->DisallowedClassFlags = CLASS_Deprecated | CLASS_Abstract;
 		Options.ClassFilters = {Filter.ToSharedRef()};
 
 		ParentClassContainer->ClearChildren();
 		ParentClassContainer->AddSlot()
 			[
-				ClassViewerModule.CreateClassViewer(Options, FOnClassPicked::CreateSP(this, &SHeartGraphBlueprintCreateDialog::OnClassPicked))
+				ClassViewerModule.CreateClassViewer(Options, FOnClassPicked::CreateSP(this, &SHeartWidgetInputHandlerAssetCreateDialog::OnClassPicked))
 			];
 	}
 
@@ -170,9 +173,9 @@ private:
 	/** Handler for when ok is clicked */
 	FReply OkClicked()
 	{
-		if (HeartGraphBlueprintFactory.IsValid())
+		if (HeartWidgetInputHandlerAssetFactory.IsValid())
 		{
-			HeartGraphBlueprintFactory->ParentClass = SelectedClass.Get();
+			HeartWidgetInputHandlerAssetFactory->AssetClass = SelectedClass.Get();
 		}
 
 		CloseDialog(true);
@@ -208,7 +211,7 @@ private:
 
 private:
 	/** The factory for which we are setting up properties */
-	TWeakObjectPtr<UHeartGraphBlueprintFactory> HeartGraphBlueprintFactory;
+	TWeakObjectPtr<UHeartWidgetInputHandlerAssetFactory> HeartWidgetInputHandlerAssetFactory;
 
 	/** A pointer to the window that is asking the user to select a parent class */
 	TWeakPtr<SWindow> PickerWindow;
@@ -226,54 +229,42 @@ private:
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 /*------------------------------------------------------------------------------
-	UHeartGraphBlueprintFactory implementation
+	UHeartWidgetInputHandlerAssetFactory implementation
 ------------------------------------------------------------------------------*/
 
-UHeartGraphBlueprintFactory::UHeartGraphBlueprintFactory(const FObjectInitializer& ObjectInitializer)
+UHeartWidgetInputHandlerAssetFactory::UHeartWidgetInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	SupportedClass = UHeartGraphBlueprint::StaticClass();
-	ParentClass = UHeartGraph::StaticClass();
+	SupportedClass = UHeartWidgetInputHandlerAsset::StaticClass();
 
 	bCreateNew = true;
 	bEditAfterNew = true;
 }
 
-bool UHeartGraphBlueprintFactory::ConfigureProperties()
+bool UHeartWidgetInputHandlerAssetFactory::ConfigureProperties()
 {
-	const TSharedRef<SHeartGraphBlueprintCreateDialog> Dialog = SNew(SHeartGraphBlueprintCreateDialog);
+	const TSharedRef<SHeartWidgetInputHandlerAssetCreateDialog> Dialog = SNew(SHeartWidgetInputHandlerAssetCreateDialog);
 	return Dialog->ConfigureProperties(this);
 }
 
-UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	check(Class->IsChildOf(UHeartGraphBlueprint::StaticClass()));
+	check(Class->IsChildOf(UHeartWidgetInputHandlerAsset::StaticClass()));
 
-	if (ParentClass == nullptr || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass) || !ParentClass->IsChildOf(UHeartGraph::StaticClass()))
+	if (AssetClass == nullptr || !AssetClass->IsChildOf(UHeartWidgetInputHandlerAsset::StaticClass()))
 	{
 		FFormatNamedArguments Args;
-		Args.Add(TEXT("ClassName"), ParentClass ? FText::FromString(ParentClass->GetName()) : LOCTEXT("Null", "(null)"));
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(LOCTEXT("CannotCreateHeartGraphBlueprint", "Cannot create a Heart Graph Blueprint based on the class '{ClassName}'."), Args));
+		Args.Add(TEXT("ClassName"), AssetClass ? FText::FromString(AssetClass->GetName()) : LOCTEXT("Null", "(null)"));
+		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(LOCTEXT("CannotCreateHeartWidgetInputHandlerAsset", "Cannot create a Heart Widget Input Handler Asset based on the class '{ClassName}'."), Args));
 		return nullptr;
 	}
 
-	UHeartGraphBlueprint* NewBP = CastChecked<UHeartGraphBlueprint>(FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, UHeartGraphBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext));
+	UHeartWidgetInputHandlerAsset* NewAsset = NewObject<UHeartWidgetInputHandlerAsset>(InParent, AssetClass, Name, Flags);
 
-	if (NewBP && NewBP->UbergraphPages.Num() > 0)
-	{
-		//UBlueprintEditorSettings* Settings = GetMutableDefault<UBlueprintEditorSettings>();
-		//if(Settings && Settings->bSpawnDefaultBlueprintNodes)
-		{
-			int32 NodePositionY = 0;
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_ExecuteInput"), UHeartGraphNode::StaticClass(), NodePositionY);
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_Cleanup"), UHeartGraphNode::StaticClass(), NodePositionY);
-		}
-	}
-
-	return NewBP;
+	return NewAsset;
 }
 
-UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
+UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
 	return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
 }

@@ -15,7 +15,7 @@ class HEART_API UHeartGraphSettings : public UDeveloperSettings
 
 public:
 	//~ Begin UDeveloperSettings
-	virtual FName GetCategoryName() const override { return FName(TEXT("Plugins")); }
+	virtual FName GetCategoryName() const override { return FName("Plugins"); }
 	//~ End UDeveloperSettings
 
 	// Enables use of the Node Registry Subsystem at runtime. Imposes a small performance hit during startup, and a

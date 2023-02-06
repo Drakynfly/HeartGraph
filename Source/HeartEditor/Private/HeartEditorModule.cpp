@@ -19,7 +19,10 @@
 #include "Modules/ModuleManager.h"
 
 #include "Customizations/ItemsArrayCustomization.h"
+#include "Input/AssetTypeActions_HeartWidgetInputHandlerAsset.h"
 
+static FName PropertyEditorModuleName = TEXT("PropertyEditor");
+static FName AssetToolsModuleName = TEXT("AssetTools");
 static FName AssetSearchModuleName = TEXT("AssetSearch");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
@@ -40,7 +43,7 @@ void FHeartEditorModule::StartupModule()
 	//RegisterCustomClassLayout(UHeartGraph::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphDetails::MakeInstance));
 	//RegisterCustomClassLayout(UHeartGraphNode::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphNodeDetails::MakeInstance));
 
-	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 	PropertyModule.NotifyCustomizationModuleChanged();
 
 	// register asset indexers
@@ -58,9 +61,9 @@ void FHeartEditorModule::ShutdownModule()
 	UnregisterAssets();
 
 	// unregister details customizations
-	if (FModuleManager::Get().IsModuleLoaded("PropertyEditor"))
+	if (FModuleManager::Get().IsModuleLoaded(PropertyEditorModuleName))
 	{
-		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
 		for (auto It = CustomClassLayouts.CreateConstIterator(); It; ++It)
 		{
@@ -76,7 +79,7 @@ void FHeartEditorModule::ShutdownModule()
 
 void FHeartEditorModule::RegisterAssets()
 {
-	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>(AssetToolsModuleName).Get();
 
 	FText AssetCategoryText = LOCTEXT("HeartAssetCategory", "Heart");
 
@@ -84,31 +87,30 @@ void FHeartEditorModule::RegisterAssets()
 	{
 		if (HeartAssetCategory == EAssetTypeCategories::None)
 		{
-			HeartAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("Heart")), AssetCategoryText);
+			HeartAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName("Heart"), AssetCategoryText);
 		}
 	}
 
-	const TSharedRef<IAssetTypeActions> HeartGraphActions = MakeShareable(new FAssetTypeActions_HeartGraph());
-	RegisteredAssetActions.Add(HeartGraphActions);
-	AssetTools.RegisterAssetTypeActions(HeartGraphActions);
+	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraph()));
+	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphBlueprint()));
+	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint()));
 
-	const TSharedRef<IAssetTypeActions> HeartGraphBlueprintActions = MakeShareable(new FAssetTypeActions_HeartGraphBlueprint());
-	RegisteredAssetActions.Add(HeartGraphBlueprintActions);
-	AssetTools.RegisterAssetTypeActions(HeartGraphBlueprintActions);
+	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartWidgetInputHandlerAsset()));
 
-	const TSharedRef<IAssetTypeActions> HeartNodeBlueprintActions = MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint());
-	RegisteredAssetActions.Add(HeartNodeBlueprintActions);
-	AssetTools.RegisterAssetTypeActions(HeartNodeBlueprintActions);
+	for (auto&& TypeActions : RegisteredAssetActions)
+	{
+		AssetTools.RegisterAssetTypeActions(TypeActions);
+	}
 }
 
 void FHeartEditorModule::UnregisterAssets()
 {
-	if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+	if (FModuleManager::Get().IsModuleLoaded(AssetToolsModuleName))
 	{
-		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
-		for (const TSharedRef<IAssetTypeActions>& TypeAction : RegisteredAssetActions)
+		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>(AssetToolsModuleName).Get();
+		for (auto&& TypeActions : RegisteredAssetActions)
 		{
-			AssetTools.UnregisterAssetTypeActions(TypeAction);
+			AssetTools.UnregisterAssetTypeActions(TypeActions);
 		}
 	}
 
@@ -117,7 +119,7 @@ void FHeartEditorModule::UnregisterAssets()
 
 void FHeartEditorModule::RegisterPropertyCustomizations()
 {
-	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
 	PropertyCustomizations.Add(FClassList::StaticStruct()->GetFName(),
 	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FItemsArrayCustomization::MakeInstance));
@@ -138,7 +140,7 @@ void FHeartEditorModule::RegisterCustomClassLayout(const TSubclassOf<UObject> Cl
 	{
 		CustomClassLayouts.Add(Class->GetFName());
 
-		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 		PropertyModule.RegisterCustomClassLayout(Class->GetFName(), DetailLayout);
 	}
 }
