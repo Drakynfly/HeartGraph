@@ -2,7 +2,6 @@
 
 #include "UI/HeartWidgetInputBindingContainer.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
-#include "UI/HeartWidgetInputBindingBase.h"
 
 void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 {
@@ -10,17 +9,13 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 	Outer = InOuter;
 
 	// Unbind everything from the current linker
-	if (Linker)
+	if (IsValid(Linker))
 	{
 		for (auto&& BindingAsset : BindingAssets)
         {
-        	if (IsValid(BindingAsset))
-        	{
-	            for (auto&& Binding : BindingAsset->BindingData)
-	            {
-	            	Binding.BindingObject->Unbind(Linker, Binding.Triggers);
-	            }
-        	}
+        	if (!IsValid(BindingAsset)) continue;
+
+			BindingAsset->UnbindLinker(Linker);
         }
 
 		Linker = nullptr;
@@ -33,13 +28,9 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 		// Rebind everything to the new linker
 		for (auto&& BindingAsset : BindingAssets)
 		{
-			if (IsValid(BindingAsset))
-			{
-				for (auto&& Binding : BindingAsset->BindingData)
-				{
-					Binding.BindingObject->Bind(Linker, Binding.Triggers);
-				}
-			}
+			if (!IsValid(BindingAsset)) continue;
+
+			BindingAsset->BindLinker(Linker);
 		}
 	}
 }

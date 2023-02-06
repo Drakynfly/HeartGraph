@@ -2,6 +2,7 @@
 
 #include "UI/HeartWidgetUtilsLibrary.h"
 #include "UI/HeartInputActivation.h"
+#include "UI/HeartWidgetInputBindingAsset.h"
 #include "UI/HeartWidgetInputLinker.h"
 
 FVector2D UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
@@ -123,4 +124,30 @@ bool UHeartWidgetUtilsLibrary::TriggerManualInput(UWidget* Widget, const FName K
 	}
 
 	return false;
+}
+
+bool UHeartWidgetUtilsLibrary::BindInputsToWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset)
+{
+	if (!IsValid(Widget) || IsValid(BindingAsset))
+	{
+		return false;
+	}
+
+	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
+
+	BindingAsset->BindLinker(Linker);
+	return true;
+}
+
+bool UHeartWidgetUtilsLibrary::UnbindInputsFromWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset)
+{
+	if (!IsValid(Widget) || IsValid(BindingAsset))
+	{
+		return false;
+	}
+
+	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
+
+	BindingAsset->UnbindLinker(Linker);
+	return true;
 }

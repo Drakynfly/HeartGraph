@@ -15,11 +15,13 @@
 #include "AssetToolsModule.h"
 #include "EdGraphUtilities.h"
 #include "IAssetSearchModule.h"
+#include "Customizations/HeartWidgetInputBindingCustomization.h"
 #include "GraphRegistry/HeartRegistrationClasses.h"
 #include "Modules/ModuleManager.h"
 
 #include "Customizations/ItemsArrayCustomization.h"
 #include "Input/AssetTypeActions_HeartWidgetInputHandlerAsset.h"
+#include "UI/HeartWidgetInputBindingAsset.h"
 
 static FName PropertyEditorModuleName = TEXT("PropertyEditor");
 static FName AssetToolsModuleName = TEXT("AssetTools");
@@ -123,6 +125,9 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 
 	PropertyCustomizations.Add(FClassList::StaticStruct()->GetFName(),
 	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FItemsArrayCustomization::MakeInstance));
+
+	PropertyCustomizations.Add(FHeartWidgetInputBinding::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartWidgetInputBindingCustomization::MakeInstance));
 
 	// Register property customizations
 	for (auto&& Customization : PropertyCustomizations)

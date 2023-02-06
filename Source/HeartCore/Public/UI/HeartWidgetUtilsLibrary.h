@@ -6,6 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartWidgetUtilsLibrary.generated.h"
 
+class UHeartWidgetInputBindingAsset;
+
 namespace Heart::Input
 {
 	// Stolen from UWidgetInteractionComponent
@@ -107,4 +109,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static bool TriggerManualInput(UWidget* Widget, FName Key);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
+	static bool BindInputsToWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
+	static bool UnbindInputsFromWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset);
 };

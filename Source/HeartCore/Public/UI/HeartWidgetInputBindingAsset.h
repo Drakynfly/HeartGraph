@@ -3,26 +3,24 @@
 #pragma once
 
 #include "HeartWidgetInputBindingBase.h"
+#include "HeartWidgetInputBindingContainer.h"
 #include "InstancedStruct.h"
 #include "Engine/DataAsset.h"
 #include "HeartWidgetInputBindingAsset.generated.h"
-
-class UHeartWidgetInputBindingBase;
 
 USTRUCT()
 struct FHeartWidgetInputBinding
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta = (NoResetToDefault))
+	UPROPERTY(EditAnywhere, meta = (NoResetToDefault, DisplayThumbnail = false))
 	TObjectPtr<UHeartWidgetInputHandlerAsset> InputHandler;
-
-	UPROPERTY(EditAnywhere, Instanced, meta = (NoResetToDefault))
-	TObjectPtr<UHeartWidgetInputHandlerAsset> BindingObject;
 
 	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/HeartCore.HeartWidgetInputTrigger", ExcludeBaseStruct))
 	TArray<FInstancedStruct> Triggers;
 };
+
+class UHeartWidgetInputLinker;
 
 /**
  *
@@ -35,4 +33,7 @@ class HEARTCORE_API UHeartWidgetInputBindingAsset : public UDataAsset
 public:
 	UPROPERTY(EditAnywhere)
 	TArray<FHeartWidgetInputBinding> BindingData;
+
+	void BindLinker(const TObjectPtr<UHeartWidgetInputLinker>& Linker);
+	void UnbindLinker(const TObjectPtr<UHeartWidgetInputLinker>& Linker);
 };

@@ -35,7 +35,6 @@ void FItemsArrayCustomization::CustomizeChildren(const TSharedRef<IPropertyHandl
 	const TSharedPtr<IPropertyHandle> ArrayHandle = StructPropertyHandle->GetChildHandle(0);
 
 	check(ArrayHandle.IsValid())
-	//auto Widget = SNew(SProperty, ArrayHandle);
 
 	TSharedRef<FDetailArrayBuilder> ArrayBuilder = MakeShareable(
 		new FDetailArrayBuilder(ArrayHandle.ToSharedRef(), false, true, false));
