@@ -412,6 +412,11 @@ bool UHeartGraphCanvas::IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGe
 {
 	static const float GuardBandArea = 0.25f;
 
+	if (!IsValid(GraphNode) || !IsValid(GraphNode->GetNode()))
+	{
+		return true;
+	}
+
 	//if (GraphNode->ShouldAllowCulling())
 	{
 		const FVector2D Location = GraphNode->GetNode()->GetLocation();
