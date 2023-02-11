@@ -44,6 +44,8 @@ I'm sure I'll need them at some point, I always do.
 HeartCanvas specifically *doesn't* use CommonUI, as it's methods for defining UI input are not to my liking. However, using most CommonUI components for building Canvas widgets still works.
 
 ## Links
+Docs:         https://heart-1.gitbook.io/heart-plugin/
+
 Demo Project: https://github.com/Drakynfly/HeartGraphDemo
 
 Discord:      https://discord.gg/AAk9yNwKk8 (Drakynfly's Plugins)
