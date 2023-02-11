@@ -76,7 +76,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
 	TArray<UHeartGraphPin*> Connections = Pin->GetAllConnections();
 	for (auto&& Connection : Connections)
 	{
-		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(Pin->GetClass(), Connection->GetClass());
+		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(Pin->GetClass(), Connection->GetClass(), UWidget::StaticClass());
 		if (!IsValid(ConnectionVisualizer))
 		{
 			continue;
@@ -130,7 +130,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
-	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->GetClass());
+	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->GetClass(), UWidget::StaticClass());
 
 	if (PinVisualizer->IsChildOf<UHeartGraphCanvasPin>())
 	{

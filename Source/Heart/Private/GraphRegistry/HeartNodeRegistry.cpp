@@ -45,14 +45,7 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 		if (UClass* SupportedClass =
 				IGraphNodeVisualizerInterface::Execute_GetSupportedGraphNodeClass(NodeVisualizerClass->GetDefaultObject()))
 		{
-			if (auto&& Ref = NodeVisualizerMap.Find(SupportedClass))
-			{
-				Ref++;
-			}
-			else
-			{
-				NodeVisualizerMap.Add(SupportedClass, NodeVisualizerClass.Get());
-			}
+			NodeVisualizerMap.FindOrAdd(SupportedClass).FindOrAdd(NodeVisualizerClass)++;
 		}
 	}
 
@@ -66,14 +59,7 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 		if (UClass* SupportedClass =
 			   IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinClass(PinVisualizerClass->GetDefaultObject()))
 		{
-			if (auto&& Ref = PinVisualizerMap.Find(SupportedClass))
-			{
-				Ref++;
-			}
-			else
-			{
-				PinVisualizerMap.Add(SupportedClass, PinVisualizerClass.Get());
-			}
+			PinVisualizerMap.FindOrAdd(SupportedClass).FindOrAdd(PinVisualizerClass)++;
 		}
 	}
 }
@@ -377,25 +363,40 @@ TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(c
 	return nullptr;
 }
 
-UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassOf<UHeartGraphNode> GraphNodeClass) const
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase) const
 {
 	for (UClass* Class = GraphNodeClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 	{
-		if (auto&& FoundRef = NodeVisualizerMap.Find(Class))
+		if (auto&& ClassMap = NodeVisualizerMap.Find(Class))
 		{
-			return FoundRef->Class;
+			for (auto&& CountedClass : *ClassMap)
+			{
+				if (!IsValid(VisualizerBase))
+				{
+					return CountedClass.Key;
+				}
+
+				if (CountedClass.Key->IsChildOf(VisualizerBase))
+				{
+					return CountedClass.Key;
+				}
+			}
 		}
 	}
 
 	// Try and retrieve a fallback visualizer
-	// @todo this might return a widget class in cases where that is not expected. maybe allow a filter on this function
 	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
-			if (ensure(Fallback->Registration.NodeVisualizerClasses.IsValidIndex(0)))
+			for (auto&& FallbackClass : Fallback->Registration.NodeVisualizerClasses)
 			{
-				return Fallback->Registration.NodeVisualizerClasses[0];
+				ensure(IsValid(FallbackClass));
+
+				if (!IsValid(VisualizerBase) || FallbackClass->IsChildOf(VisualizerBase))
+				{
+					return FallbackClass;
+				}
 			}
 		}
 	}
@@ -405,25 +406,40 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 	return nullptr;
 }
 
-UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf<UHeartGraphPin> GraphPinClass) const
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf<UHeartGraphPin> GraphPinClass, UClass* VisualizerBase) const
 {
 	for (UClass* Class = GraphPinClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 	{
-		if (auto&& FoundRef = PinVisualizerMap.Find(Class))
+		if (auto&& ClassMap = PinVisualizerMap.Find(Class))
 		{
-			return FoundRef->Class;
+			for (auto&& CountedClass : *ClassMap)
+			{
+				if (!IsValid(VisualizerBase))
+				{
+					return CountedClass.Key;
+				}
+
+				if (CountedClass.Key->IsChildOf(VisualizerBase))
+				{
+					return CountedClass.Key;
+				}
+			}
 		}
 	}
 
 	// Try and retrieve a fallback visualizer
-	// @todo this might return a widget class in cases where that is not expected. maybe allow a filter on this function
 	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
-			if (ensure(Fallback->Registration.PinVisualizerClasses.IsValidIndex(0)))
+			for (auto&& FallbackClass : Fallback->Registration.PinVisualizerClasses)
 			{
-				return Fallback->Registration.PinVisualizerClasses[0];
+				ensure(IsValid(FallbackClass));
+
+				if (!IsValid(VisualizerBase) || FallbackClass->IsChildOf(VisualizerBase))
+				{
+					return FallbackClass;
+				}
 			}
 		}
 	}
@@ -433,21 +449,25 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf
 	return nullptr;
 }
 
-UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass) const
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass, UClass* VisualizerBase) const
 {
 	// @todo add ability to override the connection class to anything other than the default
 
 
 
 	// Try and retrieve a fallback visualizer
-	// @todo this might return a widget class in cases where that is not expected. maybe allow a filter on this function
 	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
-			if (ensure(Fallback->Registration.ConnectionVisualizerClasses.IsValidIndex(0)))
+			for (auto&& FallbackClass : Fallback->Registration.ConnectionVisualizerClasses)
 			{
-				return Fallback->Registration.ConnectionVisualizerClasses[0];
+				ensure(IsValid(FallbackClass));
+
+				if (!IsValid(VisualizerBase) || FallbackClass->IsChildOf(VisualizerBase))
+				{
+					return FallbackClass;
+				}
 			}
 		}
 	}

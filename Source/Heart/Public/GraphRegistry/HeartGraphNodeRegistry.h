@@ -15,54 +15,6 @@ class UHeartGraphNode;
 class UHeartGraphPin;
 class UGraphNodeRegistrar;
 
-USTRUCT()
-struct FRefCountedBase
-{
-	GENERATED_BODY()
-
-	void operator++() { RefCount++; }
-
-	void operator--() { RefCount--; }
-
-	uint32 GetRefCount() const { return RefCount; }
-
-private:
-	UPROPERTY()
-	uint32 RefCount = 0;
-};
-
-USTRUCT()
-struct FRefCountedClass : public FRefCountedBase
-{
-	GENERATED_BODY()
-
-	FRefCountedClass() {}
-
-	FRefCountedClass(UClass* Class)
-	  : Class(Class) {}
-
-	UPROPERTY()
-	TObjectPtr<UClass> Class;
-
-	friend bool operator==(const FRefCountedClass& Lhs, const FRefCountedClass& RHS)
-	{
-		return Lhs.Class == RHS.Class;
-	}
-
-	friend bool operator!=(const FRefCountedClass& Lhs, const FRefCountedClass& RHS)
-	{
-		return !(Lhs == RHS);
-	}
-};
-
-FORCEINLINE uint32 GetTypeHash(const FRefCountedClass& RefCountedClass)
-{
-	uint32 KeyHash = 0;
-	KeyHash = HashCombine(KeyHash, GetTypeHash(RefCountedClass.GetRefCount()));
-	KeyHash = HashCombine(KeyHash, GetTypeHash(RefCountedClass.Class));
-	return KeyHash;
-}
-
 /**
  * Stores a list of nodes, graph nodes, usable by a Graph, along with their internal graph representations and
  * visual representations.
@@ -115,18 +67,19 @@ public:
 
 	/**
 	 * Get the visualizer class that we use to represent the given node class.
+	 * If VisualizerBase is non-null, will only return a visualizer that inherits from that class.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	UClass* GetVisualizerClassForGraphNode(TSubclassOf<UHeartGraphNode> GraphNodeClass) const;
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
+	UClass* GetVisualizerClassForGraphNode(TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase) const;
 
 	/**
-	* Get the visualizer class that we use to represent the given pin class.
-	*/
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	UClass* GetVisualizerClassForGraphPin(TSubclassOf<UHeartGraphPin> GraphPinClass) const;
+	 * Get the visualizer class that we use to represent the given pin class.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
+	UClass* GetVisualizerClassForGraphPin(TSubclassOf<UHeartGraphPin> GraphPinClass, UClass* VisualizerBase) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	UClass* GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass) const;
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
+	UClass* GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass, UClass* VisualizerBase) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar);
@@ -141,14 +94,12 @@ private:
 	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, int32>> GraphClasses;
 
 	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.
-	UPROPERTY()
-	TMap<TSubclassOf<UHeartGraphNode>, FRefCountedClass> NodeVisualizerMap;
+	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, int32>> NodeVisualizerMap;
 
 	// Maps Graph Pin classes to the visualizer class that can represent them in an interactive graph.
-	UPROPERTY()
-	TMap<TSubclassOf<UHeartGraphPin>, FRefCountedClass> PinVisualizerMap;
+	TMap<TSubclassOf<UHeartGraphPin>, TMap<TObjectPtr<UClass>, int32>> PinVisualizerMap;
 
-	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMultiMaps
+	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TMaps
 	UPROPERTY()
 	TArray<TObjectPtr<UGraphNodeRegistrar>> ContainedRegistrars;
 

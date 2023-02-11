@@ -21,10 +21,10 @@ struct FHeartRegistrationClasses
 	GENERATED_BODY()
 
 	// Known node classes
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = false, BlueprintBaseOnly))
+	UPROPERTY(BlueprintReadWrite, meta = (AllowAbstract = false, BlueprintBaseOnly))
 	TArray<TObjectPtr<UClass>> NodeClasses;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	TArray<TSubclassOf<UHeartGraphNode>> GraphNodeClasses;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
