@@ -302,8 +302,9 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 
 	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 
+	// @todo this should be templated
 	auto&& VisualizerClass =
-		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass());
+		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass(), UHeartGraphCanvasNode::StaticClass());
 
 	if (VisualizerClass && VisualizerClass->IsChildOf<UHeartGraphCanvasNode>())
 	{
