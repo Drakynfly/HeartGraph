@@ -1,0 +1,104 @@
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+
+#pragma once
+
+#include "BloodData.h"
+
+#include "BloodValue.generated.h"
+
+USTRUCT(BlueprintType)
+struct BLOOD_API FBloodValue
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	FInstancedStruct Data;
+
+	template<typename TBloodDataType>
+	TBloodDataType GetValue() const
+	{
+		return Blood::TDataConverter<TBloodDataType>::Value(Data);
+	}
+
+	template<typename TBloodData>
+	TArray<TBloodData> GetArrayValue() const
+	{
+		unimplemented();
+		return {};
+	}
+
+	template<typename TBloodData>
+	TSet<TBloodData> GetSetValue() const
+	{
+		unimplemented();
+		return {};
+	}
+
+	template<typename TBloodDataKey, typename TBloodDataValue>
+	TMap<TBloodDataKey, TBloodDataValue> GetMapValue() const
+	{
+		unimplemented();
+		return {};
+	}
+};
+
+namespace Blood
+{
+	namespace Impl
+	{
+		// Internal-use-only class to move function implementations into .cpp file.
+		class BLOOD_API FPropertyHelpers
+		{
+		public:
+			static TObjectPtr<UField> GetFPropertyFieldTypeImpl(const FProperty* Prop);
+			static bool WriteToFPropertyValuePtr(const FProperty* ValueProp, uint8* ValuePtr, const FBloodValue& Value);
+			static FBloodValue ReadFromFPropertyValuePtr(const FProperty* ValueProp, const uint8* ValuePtr);
+		};
+	}
+
+	template<typename TBloodData>
+	static FBloodValue ToBloodValue(const TBloodData& Value)
+	{
+		FBloodValue OutValue;
+		OutValue.Data.InitializeAs(TDataConverter<TBloodData>::Type(), reinterpret_cast<const uint8*>(&Value));
+		return OutValue;
+	}
+
+	// Explicit specialization to prevent accidental recursion
+	template<>
+	FORCEINLINE FBloodValue ToBloodValue(const FBloodValue& Value)
+	{
+		return Value;
+	}
+
+	static TObjectPtr<UField> GetFPropertyFieldType(const FProperty* Prop)
+	{
+		return Impl::FPropertyHelpers::GetFPropertyFieldTypeImpl(Prop);
+	}
+
+	// Write the data from a BloodValue to an FProperty
+	static bool WriteToFProperty(const FProperty* Prop, uint8* ValuePtr, const FBloodValue& Value)
+	{
+		return Impl::FPropertyHelpers::WriteToFPropertyValuePtr(Prop, ValuePtr, Value);
+	}
+
+	// Write the data from a BloodValue to an FProperty
+	static bool WriteToFProperty(UObject* Container, const FProperty* Prop, const FBloodValue& Value)
+	{
+		uint8* ValuePtr = Prop->ContainerPtrToValuePtr<uint8>(Container);
+		return Impl::FPropertyHelpers::WriteToFPropertyValuePtr(Prop, ValuePtr, Value);
+	}
+
+	// Read the data from an FProperty to a BloodValue
+	static FBloodValue ReadFromFProperty(const FProperty* ValueProp, const uint8* ValuePtr)
+	{
+		return Impl::FPropertyHelpers::ReadFromFPropertyValuePtr(ValueProp, ValuePtr);
+	}
+
+	// Read the data from an FProperty to a BloodValue
+	static FBloodValue ReadFromFProperty(UObject* Container, const FProperty* Prop)
+	{
+		const uint8* ValuePtr = Prop->ContainerPtrToValuePtr<uint8>(Container);
+		return Impl::FPropertyHelpers::ReadFromFPropertyValuePtr(Prop, ValuePtr);
+	}
+}
