@@ -5,6 +5,9 @@ A generic runtime node graph editor and viewer for Unreal Engine 5.1.
 ### Heart
 The core of HeartGraph. Defines the core types used to build a graph: `UHeartGraph`, `UHeartGraphNode`, and `UHeartGraphPin`, as well as a registry subsystem that ties them together.
 
+### Blood
+What flows through a heart? Blood, of course. Blood is the data shuttler for heart graphs, a variant data type system, designed for interoperability with FProperties, as well as quick, efficient access from both c++ and BP.
+
 ### HeartCore
 Underlying math utilities, and generic UI classes that aren't specifically for HeartGraph, but kept here to avoid dependencies on another plugin. At some point, I might move some or all of this to a seperate plugin if it becomes too much.
 
@@ -35,9 +38,6 @@ https://github.com/Drakynfly/HeartGraph/issues/10
 ### ControlFlows
 https://github.com/Drakynfly/HeartGraph/issues/7#issuecomment-1399660883
 
-### GameplayTags
-I'm sure I'll need them at some point, I always do.
-
 ## Compatibility
 
 ### CommonUI
@@ -48,7 +48,7 @@ Docs:         https://heart-1.gitbook.io/heart-plugin/
 
 Demo Project: https://github.com/Drakynfly/HeartGraphDemo
 
-Discord:      https://discord.gg/AAk9yNwKk8 (Drakynfly's Plugins)
+Discord:      [![Discord](https://img.shields.io/discord/996247217314738286.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/AAk9yNwKk8) (Drakynfly's Plugins)
 
 ## Acknowledgments
 
