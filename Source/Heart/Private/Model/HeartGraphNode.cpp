@@ -25,7 +25,7 @@ UWorld* UHeartGraphNode::GetWorld() const
 
 void UHeartGraphNode::PostLoad()
 {
-	UObject::PostLoad();
+	Super::PostLoad();
 
 	if (!IsTemplate())
 	{
@@ -80,7 +80,7 @@ void UHeartGraphNode::AddReferencedObjects(UObject* InThis, FReferenceCollector&
 
 void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UObject::PostEditChangeProperty(PropertyChangedEvent);
+	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.MemberProperty &&
 		(PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct") ||
