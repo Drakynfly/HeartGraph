@@ -8,7 +8,7 @@ UHeartGraphWidgetBase::UHeartGraphWidgetBase(const FObjectInitializer& ObjectIni
   : Super(ObjectInitializer)
 {
 	// Allow keyboard to trigger input on all graph widgets. (This can always be turned off when not desired)
-	bIsFocusable = true;
+	SetIsFocusable(true);
 }
 
 HEART_WIDGET_INPUT_LINKER_BODY(UHeartGraphWidgetBase)
