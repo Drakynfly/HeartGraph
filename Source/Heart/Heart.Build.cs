@@ -20,7 +20,7 @@ public class Heart : ModuleRules
 
         // Plugin dependencies
 		PublicDependencyModuleNames.AddRange(
-			new string[]
+			new []
 			{
 				"HeartCore"
 			});
@@ -38,7 +38,7 @@ public class Heart : ModuleRules
 			PrivateDependencyModuleNames.AddRange(
 				new []
 				{
-					"UnrealEd",
+					"UnrealEd"
 				});
 		}
 	}

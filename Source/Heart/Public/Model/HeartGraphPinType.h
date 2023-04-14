@@ -128,15 +128,3 @@ struct HEART_API FHeartGraphPinType // Based on FEdGraphPinType
 		return Value.IsValid();
 	}
 };
-
-/*
- @todo something like this should be made at some point. An easier way for blueprint to generate pin types
-UCLASS()
-class UHeartPinTypeLibrary : public UBlueprintFunctionLibrary
-{
-	GENERATED_BODY()
-
-public:
-	FHeartGraphPinType MakePinType(UScriptStruct* Type);
-};
-*/

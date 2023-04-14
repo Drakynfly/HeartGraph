@@ -58,7 +58,7 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByPredicate_Exclus
 }
 
 TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass(const TArray<UHeartGraphNode*>& Nodes,
-                                                                      const TSet<TSubclassOf<UHeartGraphNode>> Classes)
+                                                                      const TSet<TSubclassOf<UHeartGraphNode>>& Classes)
 {
 	if (!ensure(!Classes.IsEmpty()))
 	{
@@ -79,7 +79,7 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass(const TArr
 }
 
 TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(const TArray<UHeartGraphNode*>& Nodes,
-                                                                                const TSet<TSubclassOf<UHeartGraphNode>> Classes)
+                                                                                const TSet<TSubclassOf<UHeartGraphNode>>& Classes)
 {
 	if (!ensure(!Classes.IsEmpty()))
 	{
@@ -114,7 +114,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 
 	// Recursive function for building tree nodes
 	TFunction<FHeartTreeNode(UHeartGraphNode*)> BuildTreeNode;
-	BuildTreeNode = [InverseDirection, &BuildTreeNode](UHeartGraphNode* Node)
+	BuildTreeNode = [InverseDirection, &BuildTreeNode](const UHeartGraphNode* Node)
 	{
 		FHeartTreeNode OutTreeNode;
 		OutTreeNode.Node = Node->GetGuid();

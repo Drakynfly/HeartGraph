@@ -235,14 +235,14 @@ public:
 	----------------------------*/
 
 	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinType Type)
+	THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinType& Type)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
 		return Cast<THeartGraphPin>(CreatePin(THeartGraphPin::StaticClass(), Direction, Type));
 	}
 
 	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType Type)
+	THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType& Type)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
 		check(Class->IsChildOf<THeartGraphPin>());
@@ -340,7 +340,7 @@ private:
 ----------------------------*/
 
 template <typename Predicate>
-TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const
+TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
 {
 	TArray<FHeartPinGuid> MatchedPins;
 
@@ -359,7 +359,7 @@ TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(EHeartPinDirection Di
 }
 
 template <typename Predicate>
-int32 UHeartGraphNode::CountPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const
+int32 UHeartGraphNode::CountPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
 {
 	int32 PinCount = 0;
 

@@ -9,6 +9,7 @@
 #include "HeartNodeSortingLibrary.generated.h"
 
 class UHeartGraph;
+class UHeartGraphNode;
 
 USTRUCT(BlueprintType)
 struct HEART_API FHeartNodeSet
@@ -100,11 +101,11 @@ public:
 
 	// Filters nodes to only return those of the given class set.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary", meta = (DisplayName = "Filter Nodes (Class)", DeterminesOutputType = "Classes"))
-	static TArray<UHeartGraphNode*> FilterNodesByClass(const TArray<UHeartGraphNode*>& Nodes, TSet<TSubclassOf<UHeartGraphNode>> Classes);
+	static TArray<UHeartGraphNode*> FilterNodesByClass(const TArray<UHeartGraphNode*>& Nodes, const TSet<TSubclassOf<UHeartGraphNode>>& Classes);
 
 	// Filters nodes to only return those *not* of the given class set.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary", meta = (DisplayName = "Filter Nodes Exclusive (Class)"))
-	static TArray<UHeartGraphNode*> FilterNodesByClass_Exclusive(const TArray<UHeartGraphNode*>& Nodes, TSet<TSubclassOf<UHeartGraphNode>> Classes);
+	static TArray<UHeartGraphNode*> FilterNodesByClass_Exclusive(const TArray<UHeartGraphNode*>& Nodes, const TSet<TSubclassOf<UHeartGraphNode>>& Classes);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
 	static void SortLooseNodesIntoTrees(const TArray<UHeartGraphNode*>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees);

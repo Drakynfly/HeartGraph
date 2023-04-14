@@ -272,8 +272,6 @@ void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* 
 		NodeLocation = FVector2D::ZeroVector;
 	}
 
-	const FVector2D Position = ScalePositionToCanvasZoom(NodeLocation);
-
 	auto&& CanvasSlot = Cast<UCanvasPanelSlot>(CanvasNode->Slot);
 
 	if (!ensure(IsValid(CanvasSlot)))
@@ -282,10 +280,10 @@ void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* 
 		return;
 	}
 
-	if (Position != CanvasSlot->GetPosition())
-	{
-		CanvasSlot->SetPosition(Position);
-	}
+	const FVector2D Position = ScalePositionToCanvasZoom(NodeLocation);
+	const FVector2D ProxiedPosition = LocationModifiers->LocationToProxy(Position);
+
+	CanvasSlot->SetPosition(ProxiedPosition);
 }
 
 void UHeartGraphCanvas::UpdateAllCanvasNodesZoom()
@@ -303,7 +301,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 
 	auto&& VisualizerClass =
-		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass());
+		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass(), UWidget::StaticClass());
 
 	if (VisualizerClass && VisualizerClass->IsChildOf<UHeartGraphCanvasNode>())
 	{
@@ -480,7 +478,7 @@ FVector2D UHeartGraphCanvas::ScalePositionToCanvasZoom(const FVector2D& Position
 
 FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Position) const
 {
-	return (SaveDivide(Position, View.Z)) - FVector2D(View);
+	return SaveDivide(Position, View.Z) - FVector2D(View);
 }
 
 UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPinReference& PinReference) const

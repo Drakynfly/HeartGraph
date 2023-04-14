@@ -40,4 +40,5 @@ namespace Heart::Math
 	}
 }
 
+// This allows anything that includes HeartMath.h to be able to use the above operator overload implicitly.
 using namespace Heart::Math;

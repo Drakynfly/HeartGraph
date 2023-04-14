@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "InputCoreTypes.h"
+
 enum EHeartTripType
 {
 	Unknown,

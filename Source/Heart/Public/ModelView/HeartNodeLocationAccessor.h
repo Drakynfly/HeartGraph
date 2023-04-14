@@ -8,6 +8,7 @@
 #include "HeartNodeLocationAccessor.generated.h"
 
 struct FHeartNodeGuid;
+class UHeartGraph;
 class UHeartGraphNode;
 class UHeartGraphNode3D;
 

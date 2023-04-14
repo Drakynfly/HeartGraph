@@ -13,7 +13,7 @@ namespace Heart::Hex
 			Southeast,	// 120
 			South,		// 180
 			Southwest,	// 240
-			Northwest	//300
+			Northwest,	// 300
 		};
 	}
 
@@ -53,7 +53,7 @@ namespace Heart::Hex
 	{
 		FHex() { }
 
-		constexpr FHex(double Q, double R)
+		constexpr FHex(const double Q, const double R)
 		  : Q(Q), R(R) { }
 
 		const double Q = 0.0;
@@ -74,7 +74,7 @@ namespace Heart::Hex
 	{
 		FCube() { }
 
-		constexpr FCube(double Q, double R, double S)
+		constexpr FCube(const double Q, const double R, const double S)
 		  : Q(Q), R(R), S(S) { }
 
 		const double Q = 0.0;
@@ -99,12 +99,12 @@ namespace Heart::Hex
 
 	struct FHexNeighbors
 	{
-		const FHex Out[6];
+		const TStaticArray<FHex, 6> Out;
 	};
 
 	struct FCubeNeighbors
 	{
-		const FCube Out[6];
+		const TStaticArray<FCube, 6> Out;
 	};
 
 	constexpr FHex ToAxial(const FCube Cube)
@@ -119,22 +119,22 @@ namespace Heart::Hex
 
 	// vectors pointing to each neighbor, with degrees in "flat" or "pointy" and cardinals for each
 	static constexpr FCube DirectionVectors_Cube[6] = {
-		FCube(0, -1, +1),	// 0 or 330 degrees		/	NORTH or NORTHWEST
-		FCube(+1, -1, 0),	// 60 or 30 degrees		/	NORTHEAST
-		FCube(+1, 0, -1),	// 120 or 90 degrees	/	SOUTHEAST or WEST
-		FCube(0, +1, -1),	// 180 or 150 degrees	/	SOUTH or SOUTHWEST
-		FCube(-1, +1, 0),	// 240 or 210 degrees	/	SOUTHWEST
-		FCube(-1, 0, +1)		// 300 or 270 degrees	/	NORTHWEST or EAST
+		FCube( 0.0, -1.0,  1.0),	// 0 or 330 degrees		/	NORTH or NORTHWEST
+		FCube( 1.0, -1.0,  0.0),	// 60 or 30 degrees		/	NORTHEAST
+		FCube( 1.0,  0.0, -1.0),	// 120 or 90 degrees	/	SOUTHEAST or WEST
+		FCube( 0.0,  1.0, -1.0),	// 180 or 150 degrees	/	SOUTH or SOUTHWEST
+		FCube(-1.0,  1.0,  0.0),	// 240 or 210 degrees	/	SOUTHWEST
+		FCube(-1.0,  0.0,  1.0)		// 300 or 270 degrees	/	NORTHWEST or EAST
 	};
 
 	// vectors pointing to each neighbor, with degrees in "flat" or "pointy" and cardinals for each
 	static constexpr FHex DirectionVectors_Axial[6] = {
-		FHex(0, -1),	// 0 or 330 degrees		/	NORTH or NORTHWEST
-		FHex(+1, -1),	// 60 or 30 degrees		/	NORTHEAST
-		FHex(+1, 0),	// 120 or 90 degrees	/	SOUTHEAST or WEST
-		FHex(0, +1),	// 180 or 150 degrees	/	SOUTH or SOUTHWEST
-		FHex(-1, +1),	// 240 or 210 degrees	/	SOUTHWEST
-		FHex(-1, 0)		// 300 or 270 degrees	/	NORTHWEST or EAST
+		FHex( 0.0, -1.0),	// 0 or 330 degrees		/	NORTH or NORTHWEST
+		FHex( 1.0, -1.0),	// 60 or 30 degrees		/	NORTHEAST
+		FHex( 1.0,  0.0),	// 120 or 90 degrees	/	SOUTHEAST or WEST
+		FHex( 0.0,  1.0),	// 180 or 150 degrees	/	SOUTH or SOUTHWEST
+		FHex(-1.0,  1.0),	// 240 or 210 degrees	/	SOUTHWEST
+		FHex(-1.0,  0.0)		// 300 or 270 degrees	/	NORTHWEST or EAST
 	};
 
 	template <typename DirectionEnum> constexpr FCube Direction_Cube(const DirectionEnum Direction)
@@ -159,29 +159,29 @@ namespace Heart::Hex
 
 	template <typename DirectionEnum> FCubeNeighbors Neighbors_Cube(const FCube& Cube)
 	{
-		FCubeNeighbors Neighbors;
+		TStaticArray<FCube, 6> Out;
 		for (DirectionEnum Direction : TEnumRange<DirectionEnum>())
 		{
-			Neighbors.Out[static_cast<uint8>(Direction)] = Neighbor_Cube(Cube, Direction);
+			Out[static_cast<uint8>(Direction)] = Neighbor_Cube(Cube, Direction);
 		}
-		return Neighbors;
+		return FCubeNeighbors{Out};
 	}
 
 	template <typename DirectionEnum> FHexNeighbors Neighbors_Axial(const FHex& Hex)
 	{
-		FHexNeighbors Neighbors;
+		TStaticArray<FHex, 6> Out;
 		for (DirectionEnum Direction : TEnumRange<DirectionEnum>())
 		{
-			Neighbors.Out[static_cast<uint8>(Direction)] = Neighbor_Axial(Hex, Direction);
+			Out[static_cast<uint8>(Direction)] = Neighbor_Axial(Hex, Direction);
 		}
-		return Neighbors;
+		return FHexNeighbors{Out};
 	}
 
-	FCube RoundHalfToEven(const FCube& Cube)
+	FORCEINLINE_DEBUGGABLE FCube RoundHalfToEven(const FCube& Cube)
 	{
-		auto RoundQ = FMath::RoundHalfToEven(Cube.Q);
-		auto RoundR = FMath::RoundHalfToEven(Cube.R);
-		auto RoundS = FMath::RoundHalfToEven(Cube.S);
+		double RoundQ = FMath::RoundHalfToEven(Cube.Q);
+		double RoundR = FMath::RoundHalfToEven(Cube.R);
+		double RoundS = FMath::RoundHalfToEven(Cube.S);
 
 		const FCube Diff = (FCube(RoundQ, RoundR, RoundS) - Cube).Abs();
 
@@ -201,12 +201,12 @@ namespace Heart::Hex
 		return FCube(RoundQ, RoundR, RoundS);
 	}
 
-	FHex RoundHalfToEven(const FHex& Hex)
+	FORCEINLINE_DEBUGGABLE FHex RoundHalfToEven(const FHex& Hex)
 	{
 		return ToAxial(RoundHalfToEven(ToCube(Hex)));
 	}
 
-	FVector2D HexToPixel_Flat(const FHex& Hex, const double Size)
+	FORCEINLINE_DEBUGGABLE FVector2D HexToPixel_Flat(const FHex& Hex, const double Size)
 	{
 		FVector2D Pixel;
 		Pixel.X = Size * (1.5 * Hex.Q);
@@ -214,7 +214,7 @@ namespace Heart::Hex
 		return Pixel;
 	}
 
-	FVector2D HexToPixel_Pointy(const FHex& Hex, const double Size)
+	FORCEINLINE_DEBUGGABLE FVector2D HexToPixel_Pointy(const FHex& Hex, const double Size)
 	{
 		FVector2D Pixel;
 		Pixel.X = Size * (UE_SQRT_3 * Hex.Q + Statics<double>::Sqrt3Over2 * Hex.R);
@@ -222,21 +222,21 @@ namespace Heart::Hex
 		return Pixel;
 	}
 
-	FHex PixelToHex_Flat(const FVector2D Point, const double Size)
+	FORCEINLINE_DEBUGGABLE FHex PixelToHex_Flat(const FVector2D Point, const double Size)
 	{
 		auto&& HexQ = (Statics<double>::TwoThirds * Point.X) / Size;
 		auto&& HexR = ((-Statics<double>::OneThird * Point.X) + (Statics<double>::Sqrt3Over3 * Point.Y)) / Size;
 		return RoundHalfToEven(FHex(HexQ, HexR));
 	}
 
-	FHex PixelToHex_Pointy(const FVector2D Point, const double Size)
+	FORCEINLINE_DEBUGGABLE FHex PixelToHex_Pointy(const FVector2D Point, const double Size)
 	{
         auto&& HexQ = (Statics<double>::Sqrt3Over3 * Point.X - 1.0 / 3.0 * Point.Y) / Size;
         auto&& HexR = (Statics<double>::TwoThirds * Point.Y) / Size;
         return RoundHalfToEven(FHex(HexQ, HexR));
 	}
 
-	FVector2D SnapToNearestHex(const FVector2D& Location, const double Size)
+	FORCEINLINE_DEBUGGABLE FVector2D SnapToNearestHex(const FVector2D& Location, const double Size)
 	{
 		auto&& HexCoord = PixelToHex_Flat(Location, Size);
 		return HexToPixel_Flat(HexCoord, Size);

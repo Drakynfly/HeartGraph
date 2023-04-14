@@ -70,16 +70,16 @@ public:
 	 * If VisualizerBase is non-null, will only return a visualizer that inherits from that class.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
-	UClass* GetVisualizerClassForGraphNode(TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase) const;
+	UClass* GetVisualizerClassForGraphNode(TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase = nullptr) const;
 
 	/**
 	 * Get the visualizer class that we use to represent the given pin class.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
-	UClass* GetVisualizerClassForGraphPin(TSubclassOf<UHeartGraphPin> GraphPinClass, UClass* VisualizerBase) const;
+	UClass* GetVisualizerClassForGraphPin(TSubclassOf<UHeartGraphPin> GraphPinClass, UClass* VisualizerBase = nullptr) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
-	UClass* GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass, UClass* VisualizerBase) const;
+	UClass* GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass, UClass* VisualizerBase = nullptr) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar);
