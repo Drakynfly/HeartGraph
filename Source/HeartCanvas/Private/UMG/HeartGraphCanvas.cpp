@@ -22,11 +22,11 @@ DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
 
 UHeartGraphCanvas::UHeartGraphCanvas()
 {
-	View = {0, 0, 1};
-	TargetView = {0, 0, 1};
-	ViewMovementScalar = {1, 1, 0.1};
-	ViewBounds.Min = { -10000, -10000, 0.1 };
-	ViewBounds.Max = { 10000, 10000, 10 };
+	View = {0.0, 0.0, 1.0};
+	TargetView = {0.0, 0.0, 1.0};
+	ViewMovementScalar = {1.0, 1.0, 0.1};
+	ViewBounds.Min = { -10000.0, -10000.0, 0.1 };
+	ViewBounds.Max = { 10000.0, 10000.0, 10.0 };
 
 	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("ProxyLayerStack");
 }
@@ -281,9 +281,9 @@ void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* 
 	}
 
 	const FVector2D Position = ScalePositionToCanvasZoom(NodeLocation);
-	const FVector2D ProxiedPosition = LocationModifiers->LocationToProxy(Position);
+	//const FVector2D ProxiedPosition = LocationModifiers->LocationToProxy(Position);
 
-	CanvasSlot->SetPosition(ProxiedPosition);
+	CanvasSlot->SetPosition(Position);
 }
 
 void UHeartGraphCanvas::UpdateAllCanvasNodesZoom()
@@ -300,10 +300,9 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 
 	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
 
-	auto&& VisualizerClass =
-		NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())->GetVisualizerClassForGraphNode(Node->GetClass(), UWidget::StaticClass());
-
-	if (VisualizerClass && VisualizerClass->IsChildOf<UHeartGraphCanvasNode>())
+	// @todo this should be templated to return UHeartGraphCanvasNode directly
+	if (auto&& VisualizerClass = NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())
+			->GetVisualizerClassForGraphNode(Node->GetClass(), UHeartGraphCanvasNode::StaticClass()))
 	{
 		if (auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass))
 		{
@@ -406,7 +405,7 @@ void UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* Connect
 	ConnectionCanvas->AddChild(ConnectionWidget);
 }
 
-bool UHeartGraphCanvas::IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const
+bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const
 {
 	static const float GuardBandArea = 0.25f;
 

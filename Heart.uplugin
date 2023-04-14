@@ -16,6 +16,11 @@
 	"Installed": false,
 	"Modules": [
 		{
+			"Name": "Blood",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault"
+		},
+		{
 			"Name": "Heart",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"

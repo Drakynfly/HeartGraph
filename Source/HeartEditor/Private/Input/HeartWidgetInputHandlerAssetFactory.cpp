@@ -18,7 +18,7 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SWindow.h"
 
-#define LOCTEXT_NAMESPACE "UHeartWidgetInputHandlerAssetFactory"
+#define LOCTEXT_NAMESPACE "HeartWidgetInputHandlerAssetFactory"
 
 // ------------------------------------------------------------------------------
 // Dialog to configure creation properties

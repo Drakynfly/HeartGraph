@@ -88,7 +88,7 @@ public:
 	void AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
 
 protected:
-	bool IsNodeCulled(UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
+	bool IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
 
 	void Reset();
 
