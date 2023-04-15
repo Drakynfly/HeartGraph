@@ -312,12 +312,12 @@ UHeartGraphNodeRegistry* UHeartNodeRegistrySubsystem::GetRegistry(const TSubclas
 	return GetRegistry_Internal(FSoftClassPath(Class));
 }
 
-void UHeartNodeRegistrySubsystem::AddRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> To)
+void UHeartNodeRegistrySubsystem::AddRegistrar(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraph> To)
 {
 	GetRegistry(To)->AddRegistrar(Registrar);
 }
 
-void UHeartNodeRegistrySubsystem::RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From)
+void UHeartNodeRegistrySubsystem::RemoveRegistrar(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraph> From)
 {
 	GetRegistry(From)->RemoveRegistrar(Registrar);
 }
