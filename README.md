@@ -54,3 +54,4 @@ Discord:      [![Discord](https://img.shields.io/discord/996247217314738286.svg?
 
 - [MothDocter's FlowGraph](https://github.com/MothCocoon/FlowGraph): Both literally and figuratively. Breaking apart and learning about the graphs in Flow is what started my interest in runtime graphs. But also, I stole a lot of the editor code to make Heart's Editor module.
 - [Red Blob Games - Hexagonal Grids](https://www.redblobgames.com/grids/hexagons/): I followed this guide for making the `Heart::Hex` namespace.
+- [olvb's nodesoup](https://github.com/olvb/nodesoup): Adapted for my own uses.
