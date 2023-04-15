@@ -1,5 +1,6 @@
 # Heart Graph Plugin
-A generic runtime node graph editor and viewer for Unreal Engine 5.1.
+A generic runtime node graph editor and viewer for Unreal Engine.
+Supports versions 5.1 and 5.2.
 
 ## Modules
 ### Heart
