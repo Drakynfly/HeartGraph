@@ -176,12 +176,6 @@ UHeartGraphPin* UHeartGraphNode::GetPinByName(const FName& Name)
 	return nullptr;
 }
 
-template <>
-TArray<UHeartGraphPin*> UHeartGraphNode::GetPinsOfDirection<UHeartGraphPin>(const EHeartPinDirection Direction) const
-{
-	return GetPinsOfDirection(Direction);
-}
-
 TArray<UHeartGraphPin*> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirection Direction) const
 {
 	TArray<UHeartGraphPin*> ReturnPins;

@@ -28,7 +28,7 @@ struct HEARTEDITOR_API FHeartBreakpoint
 		bHasBreakpoint = false;
 		bBreakpointEnabled = false;
 		bBreakpointHit = false;
-	};
+	}
 
 	void AddBreakpoint();
 	void RemoveBreakpoint();

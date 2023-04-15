@@ -11,7 +11,7 @@ class UHeartGraphNode;
 /**
  *
  */
-UCLASS(Abstract, const, BlueprintType)
+UCLASS(Abstract, BlueprintType)
 class HEART_API UHeartLayoutHelper : public UObject
 {
 	GENERATED_BODY()
