@@ -1,54 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetInputBinding_DragDropOperation.h"
-
-#include "UI/HeartWidgetInputCondition.h"
-#include "UI/HeartWidgetInputLinker.h"
-#include "UI/HeartWidgetInputTrigger.h"
-
 #include "Blueprint/UserWidget.h"
-
-bool UHeartWidgetInputBinding_DragDropOperation::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
-{
-	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
-
-	DragDropTrigger.Condition.BindUObject(this, &ThisClass::PassCondition);
-	DragDropTrigger.Callback.BindUObject(this, &ThisClass::BeginDDO);
-	DragDropTrigger.Layer = Heart::Input::Event;
-
-	for (auto&& Trigger : InTriggers)
-	{
-		if (Trigger.IsValid())
-		{
-			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
-
-			for (auto&& Trip : Trips)
-			{
-				Linker->BindToOnDragDetected(Trip, DragDropTrigger);
-			}
-		}
-	}
-
-	return true;
-}
-
-bool UHeartWidgetInputBinding_DragDropOperation::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
-{
-	for (auto&& Trigger : InTriggers)
-	{
-		if (Trigger.IsValid())
-		{
-			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
-
-			for (auto&& Trip : Trips)
-			{
-				Linker->UnbindToOnDragDetected(Trip);
-			}
-		}
-	}
-
-	return true;
-}
+#include "UI/HeartDragDropOperation.h"
 
 UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation::BeginDDO(UWidget* Widget) const
 {

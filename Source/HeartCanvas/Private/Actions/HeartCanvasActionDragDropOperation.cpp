@@ -5,8 +5,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 #include "UI/HeartUMGContextObject.h"
-#include "UI/HeartWidgetInputLinker.h"
-#include "UI/HeartWidgetInputTrigger.h"
 
 bool UHeartCanvasActionDragDropOperation::SetupDragDropOperation()
 {
@@ -23,48 +21,6 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 		Activation.ActivationValue = 0;
 		Action->Execute(GetHoveredWidget(), Activation, Payload);
 	}
-}
-
-bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
-{
-	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
-
-	DragDropTrigger.Condition.BindUObject(this, &ThisClass::PassCondition);
-	DragDropTrigger.Callback.BindUObject(this, &ThisClass::BeginDDO);
-	DragDropTrigger.Layer = Heart::Input::Event;
-
-	for (auto&& Trigger : InTriggers)
-	{
-		if (Trigger.IsValid())
-		{
-			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
-
-			for (auto&& Trip : Trips)
-			{
-				Linker->BindToOnDragDetected(Trip, DragDropTrigger);
-			}
-		}
-	}
-
-	return true;
-}
-
-bool UHeartWidgetInputBinding_DragDropOperation_Action::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
-{
-	for (auto&& Trigger : InTriggers)
-	{
-		if (Trigger.IsValid())
-		{
-			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
-
-			for (auto&& Trip : Trips)
-			{
-				Linker->UnbindToOnDragDetected(Trip);
-			}
-		}
-	}
-
-	return true;
 }
 
 UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const
