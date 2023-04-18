@@ -6,57 +6,12 @@
 
 #include "HeartGraphPinType.generated.h"
 
-// @todo this entire method of generating pin types is kinda wonky, and deserves a rethink at some point
-
-/**
- *
- */
-USTRUCT()
-struct HEART_API FHeartGraphPinValueBase
-{
-	GENERATED_BODY()
-
-	virtual ~FHeartGraphPinValueBase() {}
-};
-
-/**
- *
- */
 USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinBool : public FHeartGraphPinValueBase
+struct FHeartGraphPinData
 {
 	GENERATED_BODY()
 
-	// @todo this isn't actually used anywhere . . .
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool Value = false;
-};
-
-/**
- *
- */
-USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinDouble : public FHeartGraphPinValueBase
-{
-	GENERATED_BODY()
-
-	// @todo this isn't actually used anywhere . . .
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	double Value = 0.0;
-};
-
-
-/**
- *
- */
-USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinContainerBase
-{
-	GENERATED_BODY()
-
-	virtual ~FHeartGraphPinContainerBase() {}
-
-	virtual bool IsValidContainer() const
+	virtual bool IsValid() const
 	{
 		return true;
 	}
@@ -66,38 +21,70 @@ struct HEART_API FHeartGraphPinContainerBase
  *
  */
 USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinArray : public FHeartGraphPinContainerBase
+struct HEART_API FHeartGraphPinValue : public FHeartGraphPinData
 {
 	GENERATED_BODY()
 
-	// This is just a flag type. Is marks the pin as using Array-style behavior.
-};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	FInstancedStruct ValueType;
 
-/**
- *
- */
-USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinSet : public FHeartGraphPinContainerBase
-{
-	GENERATED_BODY()
-
-	// This is just a flag type. Is marks the pin as using Set-style behavior.
-};
-
-/**
- *
- */
-USTRUCT(BlueprintType)
-struct HEART_API FHeartGraphPinMap : public FHeartGraphPinContainerBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Heart.HeartGraphPinValueBase", ExcludeBaseStruct))
-	FInstancedStruct KeyValue;
-
-	virtual bool IsValidContainer() const override
+	virtual bool IsValid() const override
 	{
-		return KeyValue.IsValid();
+		return ValueType.IsValid();
+	}
+};
+
+/**
+ *
+ */
+USTRUCT(BlueprintType)
+struct HEART_API FHeartGraphPinArray : public FHeartGraphPinData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	FInstancedStruct ArrayType;
+
+	virtual bool IsValid() const override
+	{
+		return ArrayType.IsValid();
+	}
+};
+
+/**
+ *
+ */
+USTRUCT(BlueprintType)
+struct HEART_API FHeartGraphPinSet : public FHeartGraphPinData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	FInstancedStruct SetType;
+
+	virtual bool IsValid() const override
+	{
+		return SetType.IsValid();
+	}
+};
+
+/**
+ *
+ */
+USTRUCT(BlueprintType)
+struct HEART_API FHeartGraphPinMap : public FHeartGraphPinData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	FInstancedStruct KeyType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	FInstancedStruct ValueType;
+
+	virtual bool IsValid() const override
+	{
+		return KeyType.IsValid() && ValueType.IsValid();
 	}
 };
 
@@ -109,22 +96,18 @@ struct HEART_API FHeartGraphPinType // Based on FEdGraphPinType
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Heart.HeartGraphPinValueBase", ExcludeBaseStruct))
-	FInstancedStruct Value;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Heart.HeartGraphPinContainerBase", ExcludeBaseStruct))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BaseStruct = "/Script/Heart.HeartGraphPinData"))
 	FInstancedStruct Container;
 
 	bool IsValidType() const
 	{
 		if (Container.IsValid())
 		{
-			if (!Container.Get<FHeartGraphPinContainerBase>().IsValidContainer())
+			if (!Container.Get<FHeartGraphPinData>().IsValid())
 			{
 				return false;
 			}
 		}
-
-		return Value.IsValid();
+		return true;
 	}
 };

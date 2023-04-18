@@ -227,8 +227,3 @@ UHeartGraphPin* UHeartGraphPin::ResolveConnection(const int32 Index) const
 
 	return nullptr;
 }
-
-FInstancedStruct UHeartGraphPin::TEST_STATIC_MAKE_DOUBLE(FHeartGraphPinDouble Value)
-{
-	return FInstancedStruct::Make<FHeartGraphPinDouble>(Value);
-}

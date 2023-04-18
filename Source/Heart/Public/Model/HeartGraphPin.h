@@ -106,10 +106,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
 
-	// @todo this is obviously a temporary thing :) I should be able to use the blueprint function for making FInstancedStructs, but it appears to be bugged in 5.1
-	UFUNCTION(BlueprintPure, Category = "Heart|TEST")
-	static FInstancedStruct TEST_STATIC_MAKE_DOUBLE(FHeartGraphPinDouble Value);
-
 public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
