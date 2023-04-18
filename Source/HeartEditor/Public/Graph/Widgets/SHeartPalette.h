@@ -7,6 +7,7 @@
 class FHeartGraphAssetEditor;
 
 /** Widget displaying a single item  */
+// @todo, double-clicking on this should open up the node BP
 class HEARTEDITOR_API SHeartPaletteItem : public SGraphPaletteItem
 {
 public:

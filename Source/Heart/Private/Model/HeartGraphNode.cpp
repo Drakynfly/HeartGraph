@@ -83,10 +83,26 @@ void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.MemberProperty &&
-		(PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct") ||
+	   (PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct") ||
 		GetPropertiesTriggeringNodeReconstruction().Contains(PropertyChangedEvent.GetPropertyName())))
 	{
 		OnReconstructionRequested.Broadcast(this);
+	}
+}
+
+void UHeartGraphNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+
+	if (auto&& Head = PropertyChangedEvent.PropertyChain.GetHead())
+	{
+		const FProperty* Property = Head->GetValue();
+
+		if (Property && (Property->HasMetaData("TriggerReconstruct") ||
+		   	GetPropertiesTriggeringNodeReconstruction().Contains(Property->GetFName())))
+		{
+			OnReconstructionRequested.Broadcast(this);
+		}
 	}
 }
 

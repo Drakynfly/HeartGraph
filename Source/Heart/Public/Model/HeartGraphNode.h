@@ -56,6 +56,7 @@ struct FHeartGraphNodeSparseClassData
 	bool CanCreateInEditor = false;
 
 	// BP properties that trigger reconstruction of SGraphNodes
+	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	TArray<FName> PropertiesTriggeringNodeReconstruction;
 #endif
@@ -81,6 +82,7 @@ public:
 #if WITH_EDITOR
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
 
