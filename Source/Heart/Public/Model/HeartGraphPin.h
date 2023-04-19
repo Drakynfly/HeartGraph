@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "HeartGraphPinType.h"
 #include "UObject/Object.h"
+#include "HeartGraphPinType.h"
+#include "HeartGraphPinDesc.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartGraphPinReference.h"
 #include "Model/HeartPinDirection.h"
@@ -26,8 +27,6 @@ class HEART_API UHeartGraphPin : public UObject // Based on UEdGraphPin
 	friend class UHeartEdGraphNode;
 
 public:
-	virtual UWorld* GetWorld() const override;
-
 	bool ConnectTo(UHeartGraphPin* Other);
 
 	void DisconnectFrom(const FHeartGraphPinReference Other, bool NotifyNode);
@@ -40,6 +39,9 @@ public:
 	----------------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
+	FHeartGraphPinDesc GetPinDesc() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FName GetPinName() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
@@ -48,6 +50,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	const FText& GetToolTip() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
+	FHeartGraphPinType GetType() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
+	EHeartPinDirection GetDirection() const;
 
 	/*----------------------------
 				GETTERS
@@ -79,12 +86,6 @@ public:
 	FHeartGraphPinReference GetReference() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	FHeartGraphPinType GetType() const { return Type; }
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	EHeartPinDirection GetDirection() const { return PinDirection; }
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	const TArray<FHeartGraphPinReference>& GetLinks() const { return Links; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
@@ -111,24 +112,12 @@ public:
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
 
 private:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	FHeartPinGuid Guid;
 
-	UPROPERTY()
-	FName PinName;
+	UPROPERTY(BlueprintReadOnly)
+	FHeartGraphPinDesc PinDesc;
 
-	UPROPERTY()
-	FText PinFriendlyName;
-
-	UPROPERTY()
-	FText PinTooltip;
-
-	UPROPERTY()
-	FHeartGraphPinType Type;
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	EHeartPinDirection PinDirection;
-
-	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<FHeartGraphPinReference> Links;
 };

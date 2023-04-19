@@ -182,7 +182,7 @@ UHeartGraphPin* UHeartGraphNode::GetPinByName(const FName& Name)
 	{
 		if (IsValid(Pin.Value))
 		{
-			if (Pin.Value->PinName == Name)
+			if (Pin.Value->PinDesc.PinName == Name)
 			{
 				return Pin.Value;
 			}
@@ -257,7 +257,7 @@ uint8 UHeartGraphNode::GetUserInputNum() const
 	auto&& Inputs = GetInputPins();
 	for (auto&& Pin : Inputs)
 	{
-		if (Pin->GetPinName().ToString().IsNumeric())
+		if (Pin->PinDesc.PinName.ToString().IsNumeric())
 		{
 			Result++;
 		}
@@ -274,7 +274,7 @@ uint8 UHeartGraphNode::GetUserOutputNum() const
 	auto&& Inputs = GetOutputPins();
 	for (auto&& Pin : Inputs)
 	{
-		if (Pin->GetPinName().ToString().IsNumeric())
+		if (Pin->PinDesc.PinName.ToString().IsNumeric())
 		{
 			Result++;
 		}
@@ -347,8 +347,8 @@ UHeartGraphPin* UHeartGraphNode::CreatePinOfClass(const TSubclassOf<UHeartGraphP
 {
 	auto&& NewPin = NewObject<UHeartGraphPin>(this, Class);
 	NewPin->Guid = FHeartPinGuid::NewGuid();
-	NewPin->PinName = Name;
-	NewPin->PinDirection = Direction;
+	NewPin->PinDesc.PinName = Name;
+	NewPin->PinDesc.PinDirection = Direction;
 	return NewPin;
 }
 
@@ -445,7 +445,7 @@ void UHeartGraphNode::RemoveInstancePin(EHeartPinDirection Direction)
 
 	RemovePinsByPredicate(Direction, [PinName](const UHeartGraphPin* Pin)
 	{
-		return Pin->PinName == PinName;
+		return Pin->PinDesc.PinName == PinName;
 	});
 }
 

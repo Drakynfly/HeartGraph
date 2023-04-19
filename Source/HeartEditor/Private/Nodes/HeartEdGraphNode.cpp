@@ -221,7 +221,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			for (auto&& EdGraphPin : Pin->LinkedTo)
 			{
 				// Find the one that matches the EdGraphPin
-				if (LinkedPin->PinName == EdGraphPin->PinName)
+				if (LinkedPin->PinDesc.PinName == EdGraphPin->PinName)
 				{
 					FoundConnection = true;
 					break;
@@ -245,7 +245,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 		for (auto&& LinkedPin : LinkedPins)
 		{
 			// Find the one that matches the EdGraphPin
-			if (LinkedPin->PinName == EdGraphPin->PinName)
+			if (LinkedPin->PinDesc.PinName == EdGraphPin->PinName)
 			{
 				FoundConnection = true;
 				break;
@@ -765,7 +765,7 @@ UHeartGraphPin* UHeartEdGraphNode::GetPinByName(const FName& Name) const
 	auto&& HeartPins = GetHeartGraphNode()->GetPinsOfDirection(EHeartPinDirection::Bidirectional);
 	for (auto&& Pin : HeartPins)
 	{
-		if (Pin->GetPinName() == Name)
+		if (Pin->PinDesc.PinName == Name)
 		{
 			return Pin;
 		}
@@ -833,10 +833,10 @@ void UHeartEdGraphNode::CreateInputPin(const UHeartGraphPin* HeartPin, const int
 		return;
 	}
 
-	UEdGraphPin* NewPin = CreatePin(EGPD_Input, HeartPin->GetPinType(), HeartPin->GetPinName(), Index);
+	UEdGraphPin* NewPin = CreatePin(EGPD_Input, HeartPin->GetPinType(), HeartPin->PinDesc.PinName, Index);
 	check(NewPin);
 
-	const FText PinFriendlyName = HeartPin->GetFriendlyName();
+	const FText PinFriendlyName = HeartPin->PinDesc.PinFriendlyName;
 
 	if (!PinFriendlyName.IsEmpty())
 	{
@@ -844,7 +844,7 @@ void UHeartEdGraphNode::CreateInputPin(const UHeartGraphPin* HeartPin, const int
 		NewPin->PinFriendlyName = PinFriendlyName;
 	}
 
-	NewPin->PinToolTip = HeartPin->GetToolTip().ToString();
+	NewPin->PinToolTip = HeartPin->PinDesc.PinTooltip.ToString();
 
 	InputPins.Emplace(NewPin);
 }
@@ -856,10 +856,10 @@ void UHeartEdGraphNode::CreateOutputPin(const UHeartGraphPin* HeartPin, const in
 		return;
 	}
 
-	UEdGraphPin* NewPin = CreatePin(EGPD_Output, HeartPin->GetPinType(), HeartPin->GetPinName(), Index);
+	UEdGraphPin* NewPin = CreatePin(EGPD_Output, HeartPin->GetPinType(), HeartPin->PinDesc.PinName, Index);
 	check(NewPin);
 
-	const FText PinFriendlyName = HeartPin->GetFriendlyName();
+	const FText PinFriendlyName = HeartPin->PinDesc.PinFriendlyName;
 
 	if (!PinFriendlyName.IsEmpty())
 	{
@@ -867,7 +867,7 @@ void UHeartEdGraphNode::CreateOutputPin(const UHeartGraphPin* HeartPin, const in
 		NewPin->PinFriendlyName = PinFriendlyName;
 	}
 
-	NewPin->PinToolTip = HeartPin->GetToolTip().ToString();
+	NewPin->PinToolTip = HeartPin->PinDesc.PinTooltip.ToString();
 
 	OutputPins.Emplace(NewPin);
 }
@@ -987,7 +987,7 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 
 			HeartGraphNode->RemovePinsByPredicate(EHeartPinDirection::Input, [Pin](UHeartGraphPin* HeartPin)
 			{
-				return Pin->PinName == HeartPin->GetPinName();
+				return Pin->PinName == HeartPin->PinDesc.PinName;
 			});
 
 			Pin->MarkAsGarbage();
@@ -1002,7 +1002,7 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 
 			HeartGraphNode->RemovePinsByPredicate(EHeartPinDirection::Output, [Pin](UHeartGraphPin* HeartPin)
 			{
-				return Pin->PinName == HeartPin->GetPinName();
+				return Pin->PinName == HeartPin->PinDesc.PinName;
 			});
 
 			Pin->MarkAsGarbage();

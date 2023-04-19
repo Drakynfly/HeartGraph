@@ -11,6 +11,8 @@ struct FHeartGraphPinData
 {
 	GENERATED_BODY()
 
+	virtual ~FHeartGraphPinData() {}
+
 	virtual bool IsValid() const
 	{
 		return true;

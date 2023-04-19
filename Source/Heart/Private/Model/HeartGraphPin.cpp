@@ -4,23 +4,6 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
 
-UWorld* UHeartGraphPin::GetWorld() const
-{
-	if (!IsTemplate())
-	{
-		if (GetNode())
-		{
-			UWorld* NodeWorld = GetNode()->GetWorld();
-			if (IsValid(NodeWorld))
-			{
-				return NodeWorld;
-			}
-		}
-	}
-
-	return Super::GetWorld();
-}
-
 bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 {
 	if (!ensure(IsValid(Other)))
@@ -57,8 +40,8 @@ bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 #if WITH_EDITOR
 	if (MyNode->GetEdGraphNode() && Other->GetNode()->GetEdGraphNode())
 	{
-		auto&& ThisEdGraphPin = MyNode->GetEdGraphNode()->FindPin(PinName);
-		auto&& OtherEdGraphPin = Other->GetNode()->GetEdGraphNode()->FindPin(Other->PinName);
+		auto&& ThisEdGraphPin = MyNode->GetEdGraphNode()->FindPin(PinDesc.PinName);
+		auto&& OtherEdGraphPin = Other->GetNode()->GetEdGraphNode()->FindPin(Other->PinDesc.PinName);
 
 		if (ThisEdGraphPin && OtherEdGraphPin)
 		{
@@ -92,8 +75,8 @@ void UHeartGraphPin::DisconnectFrom(const FHeartGraphPinReference Other, const b
 #if WITH_EDITOR
 		if (GetNode()->GetEdGraphNode() && ToPin->GetNode()->GetEdGraphNode())
 		{
-			auto&& ThisEdGraphPin = GetNode()->GetEdGraphNode()->FindPin(PinName);
-			auto&& OtherEdGraphPin = ToPin->GetNode()->GetEdGraphNode()->FindPin(ToPin->PinName);
+			auto&& ThisEdGraphPin = GetNode()->GetEdGraphNode()->FindPin(PinDesc.PinName);
+			auto&& OtherEdGraphPin = ToPin->GetNode()->GetEdGraphNode()->FindPin(ToPin->PinDesc.PinName);
 
 			if (ThisEdGraphPin && OtherEdGraphPin)
 			{
@@ -131,19 +114,34 @@ void UHeartGraphPin::DisconnectFromAll(const bool NotifyNodes)
 	}
 }
 
+FHeartGraphPinDesc UHeartGraphPin::GetPinDesc() const
+{
+	return PinDesc;
+}
+
 FName UHeartGraphPin::GetPinName() const
 {
-	return PinName;
+	return PinDesc.PinName;
 }
 
 const FText& UHeartGraphPin::GetFriendlyName() const
 {
-	return PinFriendlyName;
+	return PinDesc.PinFriendlyName;
 }
 
 const FText& UHeartGraphPin::GetToolTip() const
 {
-	return PinTooltip;
+	return PinDesc.PinTooltip;
+}
+
+FHeartGraphPinType UHeartGraphPin::GetType() const
+{
+	return PinDesc.Type;
+}
+
+EHeartPinDirection UHeartGraphPin::GetDirection() const
+{
+	return PinDesc.PinDirection;
 }
 
 FEdGraphPinType UHeartGraphPin::GetPinType() const
