@@ -9,45 +9,34 @@
 #include "HeartGraphNodeRegistry.h"
 #include "Model/HeartGraph.h"
 
-#include "HeartNodeRegistrySubsystem.generated.h"
+#include "HeartRegistryRuntimeSubsystem.generated.h"
 
 class UGraphNodeRegistrar;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
 /**
- * Global singleton that stores which graphs can use which registries. May optionally exist at runtime, so always check
- * for validity before using the pointer returned by GetEngineSubsystem
+ * Global singleton that stores a node registry for each class of Heart Graph. Runtime existence is optional, so always
+ * check for validity before using the pointer returned by GetEngineSubsystem
  */
 UCLASS()
-class HEART_API UHeartNodeRegistrySubsystem : public UEngineSubsystem
+class HEART_API UHeartRegistryRuntimeSubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
+
+	friend class UHeartRegistryEditorSubsystem;
 
 public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-#if WITH_EDITOR
-	void SetupBlueprintCaching();
-
-	void OnFilesLoaded();
-	void OnAssetAdded(const FAssetData& AssetData);
-	void OnAssetRemoved(const FAssetData& AssetData);
-	void OnHotReload(EReloadCompleteReason ReloadCompleteReason);
-	void OnBlueprintPreCompile(UBlueprint* Blueprint);
-	void OnBlueprintCompiled();
-#endif
-
 protected:
-	UBlueprint* GetNodeBlueprint(const FAssetData& AssetData);
-
 	void FetchNativeClasses();
 	void FetchAssetRegistryAssets();
 
 	void FindRecursiveClassesForRegistry(UHeartGraphNodeRegistry* Registry);
 
-	UHeartGraphNodeRegistry* GetRegistry_Internal(const FSoftClassPath ClassPath);
+	UHeartGraphNodeRegistry* GetRegistry_Internal(const FSoftClassPath& ClassPath);
 
 public:
 	void AutoAddRegistrar(UGraphNodeRegistrar* Registrar);
@@ -73,9 +62,4 @@ private:
 	TObjectPtr<UGraphNodeRegistrar> FallbackRegistrar;
 
 	FHeartRegistrationClasses KnownNativeClasses;
-
-#if WITH_EDITOR
-	int32 WaitingForBlueprintToCompile;
-	bool HasSetupBlueprintCaching = false;
-#endif
 };

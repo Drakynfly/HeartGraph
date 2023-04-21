@@ -12,7 +12,7 @@
 #include "Model/HeartGraphNodeBlueprint.h"
 #include "ModelView/HeartGraphSchema.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "EdGraph/EdGraph.h"
@@ -217,7 +217,7 @@ void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 
 TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass)
 {
-	auto&& Registry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>()->GetRegistry(HeartGraphClass);
+	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(HeartGraphClass);
 	auto&& SortedCategories = Registry->GetNodeCategories();
 
 	// create list of categories
@@ -250,7 +250,7 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 {
 	TMap<UClass*, TSubclassOf<UHeartGraphNode>> FilteredNodes;
 
-	auto&& Registry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
+	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
 	Registry->GetFilteredNodeClassesWithGraphClass(FNativeNodeClassFilter::CreateLambda([](UClass* NodeClass)
 		{
 			return true;

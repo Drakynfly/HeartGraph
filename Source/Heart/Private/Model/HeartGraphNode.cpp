@@ -131,7 +131,6 @@ FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, const EH
 		}
 
 		return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
-		break;
 	case EHeartNodeNameContext::Default:
 	case EHeartNodeNameContext::Palette:
 	default:
@@ -165,6 +164,16 @@ FText UHeartGraphNode::GetInstanceTitle() const
 	return FText::AsCultureInvariant(TEXT("<<INVALID_INSTANCE>>"));
 }
 
+uint8 UHeartGraphNode::GetInstancedInputNum() const
+{
+	return InstancedInputs;
+}
+
+uint8 UHeartGraphNode::GetInstancedOutputNum() const
+{
+	return InstancedOutputs;
+}
+
 UHeartGraph* UHeartGraphNode::GetGraph() const
 {
 	return GetOwningGraph<UHeartGraph>();
@@ -182,7 +191,7 @@ UHeartGraphPin* UHeartGraphNode::GetPinByName(const FName& Name)
 	{
 		if (IsValid(Pin.Value))
 		{
-			if (Pin.Value->PinDesc.PinName == Name)
+			if (Pin.Value->PinDesc.Name == Name)
 			{
 				return Pin.Value;
 			}
@@ -203,7 +212,7 @@ TArray<UHeartGraphPin*> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirec
 			continue;
 		}
 
-		if (EnumHasAnyFlags(PinPair.Value->GetDirection(), Direction))
+		if (EnumHasAnyFlags(PinPair.Value->PinDesc.Direction, Direction))
 		{
 			ReturnPins.Add(PinPair.Value);
 		}
@@ -225,7 +234,7 @@ TArray<UHeartGraphPin*> UHeartGraphNode::GetPinsOfDirectionByClass(const EHeartP
 
 		if (PinPair.Value.IsA(Class))
 		{
-			if (EnumHasAnyFlags(PinPair.Value->GetDirection(), Direction))
+			if (EnumHasAnyFlags(PinPair.Value->PinDesc.Direction, Direction))
 			{
 				ReturnPins.Add(PinPair.Value);
 			}
@@ -245,47 +254,16 @@ TArray<UHeartGraphPin*> UHeartGraphNode::GetOutputPins(const TSubclassOf<UHeartG
 	return GetPinsOfDirectionByClass(EHeartPinDirection::Output, Class);
 }
 
-uint8 UHeartGraphNode::GetUserInputNum() const
+TArray<FHeartGraphPinDesc> UHeartGraphNode::GetDynamicPins_Implementation() const
 {
-	uint8 Result = 0;
-
-	// @todo this is not super efficient. GetInputPins is already one loop, then we do another.
-	// this should be replaced with predicate function filtering
-
-	// @todo bonus for adding ability for any filter func/ exposed to BP for custom bp pin filters
-
-	auto&& Inputs = GetInputPins();
-	for (auto&& Pin : Inputs)
-	{
-		if (Pin->PinDesc.PinName.ToString().IsNumeric())
-		{
-			Result++;
-		}
-	}
-	return Result;
+	return {};
 }
 
-uint8 UHeartGraphNode::GetUserOutputNum() const
+void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Direction, FHeartGraphPinTag& Tag,
+	TArray<UHeartGraphPinMetadata*>& Metadata) const
 {
-	uint8 Result = 0;
-
-	// @todo See above optimization
-
-	auto&& Inputs = GetOutputPins();
-	for (auto&& Pin : Inputs)
-	{
-		if (Pin->PinDesc.PinName.ToString().IsNumeric())
-		{
-			Result++;
-		}
-	}
-	return Result;
 }
 
-FHeartGraphPinType UHeartGraphNode::GetInstancedPinType_Implementation()
-{
-	return FHeartGraphPinType();
-}
 
 #if WITH_EDITOR
 void UHeartGraphNode::SetEdGraphNode(UEdGraphNode* GraphNode)
@@ -338,17 +316,16 @@ bool UHeartGraphNode::CanDuplicate_Implementation() const
 	return true;
 }
 
-UHeartGraphPin* UHeartGraphNode::CreatePin(const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType Type)
+UHeartGraphPin* UHeartGraphNode::CreatePin(const FHeartGraphPinDesc& Desc)
 {
-	return CreatePinOfClass(UHeartGraphPin::StaticClass(), Name, Direction, Type);
+	return CreatePinOfClass(UHeartGraphPin::StaticClass(), Desc);
 }
 
-UHeartGraphPin* UHeartGraphNode::CreatePinOfClass(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType Type)
+UHeartGraphPin* UHeartGraphNode::CreatePinOfClass(const TSubclassOf<UHeartGraphPin> Class, const FHeartGraphPinDesc& Desc)
 {
 	auto&& NewPin = NewObject<UHeartGraphPin>(this, Class);
 	NewPin->Guid = FHeartPinGuid::NewGuid();
-	NewPin->PinDesc.PinName = Name;
-	NewPin->PinDesc.PinDirection = Direction;
+	NewPin->PinDesc = Desc;
 	return NewPin;
 }
 
@@ -391,7 +368,7 @@ bool UHeartGraphNode::RemovePinByGuid(const FHeartPinGuid Pin)
 
 UHeartGraphPin* UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction)
 {
-	uint8 NumInstancesPinsForDirection = 0;
+	FHeartGraphPinDesc PinDesc;
 
 	switch (Direction)
 	{
@@ -401,7 +378,8 @@ UHeartGraphPin* UHeartGraphNode::AddInstancePin(const EHeartPinDirection Directi
 			return nullptr;
 		}
 
-		NumInstancesPinsForDirection = GetUserInputNum();
+		PinDesc.Name = *FString::FromInt(++InstancedInputs);
+		PinDesc.Direction = EHeartPinDirection::Input;
 		break;
 	case EHeartPinDirection::Output:
 		if (!CanUserAddOutput())
@@ -409,55 +387,64 @@ UHeartGraphPin* UHeartGraphNode::AddInstancePin(const EHeartPinDirection Directi
 			return nullptr;
 		}
 
-		NumInstancesPinsForDirection = GetUserOutputNum();
+		PinDesc.Name = *FString::FromInt(++InstancedOutputs);
+		PinDesc.Direction = EHeartPinDirection::Output;
 		break;
 	default:
 		return nullptr;
 	}
 
-	const FName PinName = *FString::FromInt(NumInstancesPinsForDirection + 1);
+	{
+		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+		GetInstancedPinData(Direction, PinDesc.Tag, PinDesc.Metadata);
+	}
 
-	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-	auto&& InstancePin = CreatePin(PinName, Direction, GetInstancedPinType());
+	auto&& InstancePin = CreatePin(PinDesc);
 
 	AddPin(InstancePin);
 
 	return InstancePin;
 }
 
-void UHeartGraphNode::RemoveInstancePin(EHeartPinDirection Direction)
+void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
 {
-	uint8 NumInstancesPinsForDirection = 0;
+	FName PinName;
 
 	switch (Direction)
 	{
 	case EHeartPinDirection::Input:
-		NumInstancesPinsForDirection = GetUserInputNum();
+		PinName = *FString::FromInt(InstancedInputs--);
 		break;
 	case EHeartPinDirection::Output:
-		NumInstancesPinsForDirection = GetUserOutputNum();
+		PinName = *FString::FromInt(InstancedOutputs--);
 		break;
 	default:
 		return;
 	}
 
-	const FName PinName = *FString::FromInt(NumInstancesPinsForDirection);
-
 	RemovePinsByPredicate(Direction, [PinName](const UHeartGraphPin* Pin)
 	{
-		return Pin->PinDesc.PinName == PinName;
+		return Pin->PinDesc.Name == PinName;
 	});
 }
 
 void UHeartGraphNode::OnCreate()
 {
+	ReconstructPins();
+
+	BP_OnCreate();
+}
+
+void UHeartGraphNode::ReconstructPins()
+{
 	auto&& TemplateInputs = GetDefaultInputs();
 	auto&& TemplateOutputs = GetDefaultOutputs();
+	auto&& DynamicPins = GetDynamicPins();
 
 	// Create inputs
 	for (auto&& TemplateInput : TemplateInputs)
 	{
-		if (auto&& NewPin = CreatePin(TemplateInput.Key, EHeartPinDirection::Input, TemplateInput.Value))
+		if (auto&& NewPin = CreatePin(TemplateInput))
 		{
 			AddPin(NewPin);
 		}
@@ -466,13 +453,19 @@ void UHeartGraphNode::OnCreate()
 	// Create outputs
 	for (auto&& TemplateOutput : TemplateOutputs)
 	{
-		if (auto&& NewPin = CreatePin(TemplateOutput.Key, EHeartPinDirection::Output, TemplateOutput.Value))
+		if (auto&& NewPin = CreatePin(TemplateOutput))
 		{
 			AddPin(NewPin);
 		}
 	}
 
-	BP_OnCreate();
+	for (auto&& DynamicPin : DynamicPins)
+	{
+		if (auto&& NewPin = CreatePin(DynamicPin))
+		{
+			AddPin(NewPin);
+		}
+	}
 }
 
 void UHeartGraphNode::NotifyPinConnectionsChanged(UHeartGraphPin* Pin)

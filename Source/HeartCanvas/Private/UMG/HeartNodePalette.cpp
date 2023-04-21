@@ -4,7 +4,7 @@
 
 #include "UMG/HeartGraphCanvas.h" // For log category
 #include "Components/PanelWidget.h"
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
 #include "UI/HeartUMGContextObject.h"
 
@@ -146,7 +146,7 @@ void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
 
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
+	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 
 	if (auto&& Registry = NodeRegistrySubsystem->GetRegistry(DisplayedRegistryGraph))
 	{

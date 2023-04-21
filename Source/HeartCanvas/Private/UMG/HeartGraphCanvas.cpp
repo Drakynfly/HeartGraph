@@ -10,7 +10,7 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "Model/HeartGraph.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "General/HeartMath.h"
 #include "UI/HeartWidgetUtilsLibrary.h"
@@ -298,7 +298,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 {
 	check(Node);
 
-	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
+	UHeartRegistryRuntimeSubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 
 	// @todo this should be templated to return UHeartGraphCanvasNode directly
 	if (auto&& VisualizerClass = NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())

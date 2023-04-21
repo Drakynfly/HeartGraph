@@ -2,28 +2,47 @@
 
 #pragma once
 
-#include "HeartGraphPinType.h"
+#include "HeartGraphPinTag.h"
 #include "HeartGraphPinDesc.generated.h"
 
 enum class EHeartPinDirection : uint8;
+class UHeartGraphPinMetadata;
 
+/**
+ * Complete description of a Heart Graph Pin.
+ */
 USTRUCT(BlueprintType)
 struct FHeartGraphPinDesc
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, Category = "Heart|PinDesc")
-	FName PinName;
+	// Internal ID for this pin, not necessarily user-facing.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
+	FName Name;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Heart|PinDesc")
-	FText PinFriendlyName;
+	// Friendlier, localizable name of this pin.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
+	FText FriendlyName;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Heart|PinDesc")
-	FText PinTooltip;
+	// Runtime tooltip can that can be shown to players.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc", meta = (MultiLine))
+	FText Tooltip;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Heart|PinDesc")
-	FHeartGraphPinType Type;
+#if WITH_EDITORONLY_DATA
+	// Additional tooltip only visible in the editor.
+	UPROPERTY(EditAnywhere, Category = "Heart|PinDesc")
+	FText EditorTooltip;
+#endif
 
-	UPROPERTY(BlueprintReadWrite, Category = "Heart|PinDesc")
-	EHeartPinDirection PinDirection;
+	// Tag used to identify the type of pin this represents.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
+	FHeartGraphPinTag Tag;
+
+	// Direction of this pin, input, or output.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
+	EHeartPinDirection Direction;
+
+	// Optional metadata objects that add additional info about this pin, such as default values, or connection rules.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Category = "Heart|PinDesc")
+	TArray<TObjectPtr<UHeartGraphPinMetadata>> Metadata;
 };

@@ -1,11 +1,10 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Input/HeartWidgetInputHandlerAssetFactory.h"
+#include "Assets/HeartWidgetInputHandlerAssetFactory.h"
 
 #include "ClassViewerFilter.h"
 #include "ClassViewerModule.h"
 #include "Editor.h"
-#include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "SlateOptMacros.h"

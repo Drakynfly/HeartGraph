@@ -19,7 +19,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
 class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface
 {
 public:
-    static EAssetTypeCategories::Type HeartAssetCategory;
+    static EAssetTypeCategories::Type HeartAssetCategory_TEMP;
 
 private:
     TArray<TSharedRef<IAssetTypeActions>> RegisteredAssetActions;

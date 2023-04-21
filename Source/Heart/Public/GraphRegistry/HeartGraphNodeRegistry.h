@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "Model/HeartGraphPinTag.h"
 #include "HeartRegistrationClasses.h"
 
 #include "HeartGraphNodeRegistry.generated.h"
@@ -12,7 +13,6 @@ DECLARE_DELEGATE_RetVal_OneParam(bool, FNativeNodeClassFilter, UClass* /* Class*
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, Class);
 
 class UHeartGraphNode;
-class UHeartGraphPin;
 class UGraphNodeRegistrar;
 
 /**
@@ -26,7 +26,7 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 {
 	GENERATED_BODY()
 
-	friend class UHeartNodeRegistrySubsystem;
+	friend class UHeartRegistryRuntimeSubsystem;
 
 protected:
 	bool FilterClassForRegistration(const TObjectPtr<UClass>& Class) const;
@@ -76,10 +76,10 @@ public:
 	 * Get the visualizer class that we use to represent the given pin class.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
-	UClass* GetVisualizerClassForGraphPin(TSubclassOf<UHeartGraphPin> GraphPinClass, UClass* VisualizerBase = nullptr) const;
+	UClass* GetVisualizerClassForGraphPin(FHeartGraphPinTag GraphPinTag, UClass* VisualizerBase = nullptr) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry", meta = (DeterminesOutputType = "VisualizerBase"))
-	UClass* GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass, UClass* VisualizerBase = nullptr) const;
+	UClass* GetVisualizerClassForGraphConnection(FHeartGraphPinTag FromPinTag, FHeartGraphPinTag ToPinTag, UClass* VisualizerBase = nullptr) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar);
@@ -97,7 +97,7 @@ private:
 	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, int32>> NodeVisualizerMap;
 
 	// Maps Graph Pin classes to the visualizer class that can represent them in an interactive graph.
-	TMap<TSubclassOf<UHeartGraphPin>, TMap<TObjectPtr<UClass>, int32>> PinVisualizerMap;
+	TMap<FHeartGraphPinTag, TMap<TObjectPtr<UClass>, int32>> PinVisualizerMap;
 
 	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TMaps
 	UPROPERTY()

@@ -4,7 +4,7 @@
 
 #include "HeartGraph.h"
 #include "HeartGraphPin.h"
-#include "HeartGraphPinType.h"
+#include "HeartGraphPinTag.h"
 #include "UObject/Object.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartPinDirection.h"
@@ -42,10 +42,10 @@ struct FHeartGraphNodeSparseClassData
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TMap<FName, FHeartGraphPinType> DefaultInputs;
+	TArray<FHeartGraphPinDesc> DefaultInputs;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TMap<FName, FHeartGraphPinType> DefaultOutputs;
+	TArray<FHeartGraphPinDesc> DefaultOutputs;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
@@ -116,6 +116,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FText GetInstanceTitle() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	uint8 GetInstancedInputNum() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	uint8 GetInstancedOutputNum() const;
+
 
 	/*----------------------------
 				GETTERS
@@ -148,7 +154,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraph* GetGraph() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DeprecatedFunction))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return GetGraph(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
@@ -189,15 +195,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
 	TArray<UHeartGraphPin*> GetOutputPins(TSubclassOf<UHeartGraphPin> Class) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	uint8 GetUserInputNum() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	uint8 GetUserOutputNum() const;
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphNode")
+	TArray<FHeartGraphPinDesc> GetDynamicPins() const;
 
 	// Declare the pin typed used for instanced pins. Overriding this is required for User Input/Output to work.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
-	FHeartGraphPinType GetInstancedPinType();
+	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
 
 
 	/*----------------------------
@@ -236,19 +239,26 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinType& Type)
+	template <typename THeartGraphPin> THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FHeartGraphPinDesc& Desc)
+	{
+		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
+		check(Class->IsChildOf<THeartGraphPin>());
+		return Cast<THeartGraphPin>(CreatePinOfClass(Class, Desc));
+	}
+
+	UE_DEPRECATED(5.2, "This overload of CreatePin is deprecated. Please use the version taking a FHeartGraphPinDesc");
+	template <typename THeartGraphPin> THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinTag& Type)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
 		return Cast<THeartGraphPin>(CreatePin(THeartGraphPin::StaticClass(), Direction, Type));
 	}
 
-	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType& Type)
+	UE_DEPRECATED(5.2, "This overload of CreatePin is deprecated. Please use the version taking a FHeartGraphPinDesc");
+	template <typename THeartGraphPin> THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinTag& Type)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
 		check(Class->IsChildOf<THeartGraphPin>());
-		return Cast<THeartGraphPin>(CreatePinOfClass(Class, Name, Direction, Type));
+		return Cast<THeartGraphPin>(CreatePinOfClass(Class, FHeartGraphPinDesc{Name, FText(), FText(), Type, Direction}));
 	}
 
 	// Get all pins that match the predicate.
@@ -264,10 +274,10 @@ public:
 	int32 RemovePinsByPredicate(EHeartPinDirection Direction, Predicate Pred);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* CreatePin(FName Name, EHeartPinDirection Direction, const FHeartGraphPinType Type);
+	UHeartGraphPin* CreatePin(const FHeartGraphPinDesc& Desc);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	UHeartGraphPin* CreatePinOfClass(TSubclassOf<UHeartGraphPin> Class, FName Name, EHeartPinDirection Direction, const FHeartGraphPinType Type);
+	UHeartGraphPin* CreatePinOfClass(TSubclassOf<UHeartGraphPin> Class, const FHeartGraphPinDesc& Desc);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void AddPin(UHeartGraphPin* Pin);
@@ -291,6 +301,8 @@ public:
 protected:
 	// Called by the owning graph when we are created.
 	virtual void OnCreate();
+
+	void ReconstructPins();
 
 	// Called by the owning graph when we are created.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Create")
@@ -328,6 +340,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FHeartPinGuid, TObjectPtr<UHeartGraphPin>> Pins;
 
+	UPROPERTY(BlueprintReadOnly)
+	uint8 InstancedInputs = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	uint8 InstancedOutputs = 0;
+
 private:
 #if WITH_EDITORONLY_DATA
 	// Always castable to UHeartEdGraphNode
@@ -348,7 +366,7 @@ TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirect
 
 	for (auto&& PinPair : Pins)
 	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value->GetDirection()))
+		if (EnumHasAnyFlags(Direction, PinPair.Value->PinDesc.Direction))
 		{
 			if (Pred(PinPair.Value))
 			{
@@ -367,7 +385,7 @@ int32 UHeartGraphNode::CountPinsByPredicate(const EHeartPinDirection Direction, 
 
 	for (auto&& PinPair : Pins)
 	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value->GetDirection()))
+		if (EnumHasAnyFlags(Direction, PinPair.Value->PinDesc.Direction))
 		{
 			if (Pred(PinPair.Value))
 			{

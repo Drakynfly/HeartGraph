@@ -20,7 +20,6 @@
 #include "Modules/ModuleManager.h"
 
 #include "Customizations/ItemsArrayCustomization.h"
-#include "Input/AssetTypeActions_HeartWidgetInputHandlerAsset.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
 
 static FName PropertyEditorModuleName = TEXT("PropertyEditor");
@@ -31,7 +30,7 @@ DEFINE_LOG_CATEGORY(LogHeartEditor);
 
 #define LOCTEXT_NAMESPACE "HeartEditorModule"
 
-EAssetTypeCategories::Type FHeartEditorModule::HeartAssetCategory = static_cast<EAssetTypeCategories::Type>(0);
+EAssetTypeCategories::Type FHeartEditorModule::HeartAssetCategory_TEMP = static_cast<EAssetTypeCategories::Type>(0);
 
 void FHeartEditorModule::StartupModule()
 {
@@ -87,17 +86,15 @@ void FHeartEditorModule::RegisterAssets()
 
 	if (!AssetCategoryText.IsEmpty())
 	{
-		if (HeartAssetCategory == EAssetTypeCategories::None)
+		if (HeartAssetCategory_TEMP == EAssetTypeCategories::None)
 		{
-			HeartAssetCategory = AssetTools.RegisterAdvancedAssetCategory(FName("Heart"), AssetCategoryText);
+			HeartAssetCategory_TEMP = AssetTools.RegisterAdvancedAssetCategory(FName("Heart"), AssetCategoryText);
 		}
 	}
 
 	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraph()));
 	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphBlueprint()));
 	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint()));
-
-	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartWidgetInputHandlerAsset()));
 
 	for (auto&& TypeActions : RegisteredAssetActions)
 	{

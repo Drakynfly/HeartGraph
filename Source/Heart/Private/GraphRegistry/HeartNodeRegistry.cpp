@@ -1,11 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "HeartGraphSettings.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphPin.h"
 #include "View/HeartVisualizerInterfaces.h"
 
 bool UHeartGraphNodeRegistry::FilterClassForRegistration(const TObjectPtr<UClass>& Class) const
@@ -56,10 +54,11 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			continue;
 		}
 
-		if (UClass* SupportedClass =
-			   IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinClass(PinVisualizerClass->GetDefaultObject()))
+		FHeartGraphPinTag SupportedTag =
+			IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinTag(PinVisualizerClass->GetDefaultObject());
+		if (SupportedTag.IsValid())
 		{
-			PinVisualizerMap.FindOrAdd(SupportedClass).FindOrAdd(PinVisualizerClass)++;
+			PinVisualizerMap.FindOrAdd(SupportedTag).FindOrAdd(PinVisualizerClass)++;
 		}
 	}
 }
@@ -109,10 +108,11 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 			continue;
 		}
 
-		if (UClass* SupportedClass =
-			IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinClass(PinVisualizerClass->GetDefaultObject()))
+		FHeartGraphPinTag SupportedTag =
+			IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinTag(PinVisualizerClass->GetDefaultObject());
+		if (SupportedTag.IsValid())
 		{
-			PinVisualizerMap.Remove(SupportedClass);
+			PinVisualizerMap.Remove(SupportedTag);
 		}
 	}
 }
@@ -385,7 +385,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 	}
 
 	// Try and retrieve a fallback visualizer
-	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
@@ -401,16 +401,17 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a node visualizer for class: %s"), *GraphNodeClass->GetName())
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a node visualizer for class '%s'"), *GraphNodeClass->GetName())
 
 	return nullptr;
 }
 
-UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf<UHeartGraphPin> GraphPinClass, UClass* VisualizerBase) const
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const FHeartGraphPinTag GraphPinTag, UClass* VisualizerBase) const
 {
-	for (UClass* Class = GraphPinClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
+	for (FHeartGraphPinTag Tag = GraphPinTag; Tag.IsValid() && Tag != FHeartGraphPinTag::GetRootTag();
+			Tag = FHeartGraphPinTag::TryConvert(Tag.RequestDirectParent()))
 	{
-		if (auto&& ClassMap = PinVisualizerMap.Find(Class))
+		if (auto&& ClassMap = PinVisualizerMap.Find(Tag))
 		{
 			for (auto&& CountedClass : *ClassMap)
 			{
@@ -428,7 +429,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf
 	}
 
 	// Try and retrieve a fallback visualizer
-	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
@@ -444,19 +445,19 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const TSubclassOf
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a pin visualizer for class: %s"), *GraphPinClass->GetName())
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a pin visualizer for Tag '%s'"), *GraphPinTag.GetTagName().ToString())
 
 	return nullptr;
 }
 
-UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(TSubclassOf<UHeartGraphPin> FromPinClass, TSubclassOf<UHeartGraphPin> ToPinClass, UClass* VisualizerBase) const
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHeartGraphPinTag FromPinTag,
+																	  const FHeartGraphPinTag ToPinTag,
+																	  UClass* VisualizerBase) const
 {
 	// @todo add ability to override the connection class to anything other than the default
 
-
-
 	// Try and retrieve a fallback visualizer
-	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
@@ -472,7 +473,8 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(TSubclassO
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a connection visualizer for class: %s"), *FromPinClass->GetName())
+	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a connection visualizer from Tag '%s' to Tag '%s'"),
+											 *FromPinTag.GetTagName().ToString(), *ToPinTag.GetTagName().ToString())
 
 	return nullptr;
 }

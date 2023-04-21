@@ -15,7 +15,7 @@ class HEART_API UGraphNodeRegistrar : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 	friend class UHeartGraphNodeRegistry;
-	friend class UHeartNodeRegistrySubsystem;
+	friend class UHeartRegistryRuntimeSubsystem;
 
 #if WITH_EDITOR
 	virtual void PreEditChange(FProperty* PropertyAboutToChange) override;

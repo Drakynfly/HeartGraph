@@ -146,8 +146,8 @@ private:
 // Pins
 
 public:
-	void CreateInputPin(const UHeartGraphPin* HeartPin, const int32 Index = INDEX_NONE);
-	void CreateOutputPin(const UHeartGraphPin* HeartPin, const int32 Index = INDEX_NONE);
+	void CreateInputPin(const UHeartGraphPin* HeartPin);
+	void CreateOutputPin(const UHeartGraphPin* HeartPin);
 
 	void RemoveOrphanedPin(UEdGraphPin* Pin);
 
@@ -161,7 +161,7 @@ public:
 	void AddUserOutput();
 
 	// Add pin only on this instance of node, under default pins
-	void AddInstancePin(const EEdGraphPinDirection Direction, const uint8 NumberedPinsAmount);
+	void AddInstancePin(const EEdGraphPinDirection Direction);
 
 	// Call node and graph updates manually, if using bBatchRemoval
 	void RemoveInstancePin(UEdGraphPin* Pin);
@@ -196,7 +196,7 @@ public:
 
 private:
 	UPROPERTY(Instanced)
-	UHeartGraphNode* HeartGraphNode;
+	TObjectPtr<UHeartGraphNode> HeartGraphNode;
 
 	bool bBlueprintCompilationPending;
 	bool bNeedsFullReconstruction;

@@ -40,8 +40,8 @@ bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 #if WITH_EDITOR
 	if (MyNode->GetEdGraphNode() && Other->GetNode()->GetEdGraphNode())
 	{
-		auto&& ThisEdGraphPin = MyNode->GetEdGraphNode()->FindPin(PinDesc.PinName);
-		auto&& OtherEdGraphPin = Other->GetNode()->GetEdGraphNode()->FindPin(Other->PinDesc.PinName);
+		auto&& ThisEdGraphPin = MyNode->GetEdGraphNode()->FindPin(PinDesc.Name);
+		auto&& OtherEdGraphPin = Other->GetNode()->GetEdGraphNode()->FindPin(Other->PinDesc.Name);
 
 		if (ThisEdGraphPin && OtherEdGraphPin)
 		{
@@ -75,8 +75,8 @@ void UHeartGraphPin::DisconnectFrom(const FHeartGraphPinReference Other, const b
 #if WITH_EDITOR
 		if (GetNode()->GetEdGraphNode() && ToPin->GetNode()->GetEdGraphNode())
 		{
-			auto&& ThisEdGraphPin = GetNode()->GetEdGraphNode()->FindPin(PinDesc.PinName);
-			auto&& OtherEdGraphPin = ToPin->GetNode()->GetEdGraphNode()->FindPin(ToPin->PinDesc.PinName);
+			auto&& ThisEdGraphPin = GetNode()->GetEdGraphNode()->FindPin(PinDesc.Name);
+			auto&& OtherEdGraphPin = ToPin->GetNode()->GetEdGraphNode()->FindPin(ToPin->PinDesc.Name);
 
 			if (ThisEdGraphPin && OtherEdGraphPin)
 			{
@@ -114,34 +114,9 @@ void UHeartGraphPin::DisconnectFromAll(const bool NotifyNodes)
 	}
 }
 
-FHeartGraphPinDesc UHeartGraphPin::GetPinDesc() const
-{
-	return PinDesc;
-}
-
-FName UHeartGraphPin::GetPinName() const
-{
-	return PinDesc.PinName;
-}
-
-const FText& UHeartGraphPin::GetFriendlyName() const
-{
-	return PinDesc.PinFriendlyName;
-}
-
-const FText& UHeartGraphPin::GetToolTip() const
-{
-	return PinDesc.PinTooltip;
-}
-
-FHeartGraphPinType UHeartGraphPin::GetType() const
-{
-	return PinDesc.Type;
-}
-
 EHeartPinDirection UHeartGraphPin::GetDirection() const
 {
-	return PinDesc.PinDirection;
+	return PinDesc.Direction;
 }
 
 FEdGraphPinType UHeartGraphPin::GetPinType() const
@@ -153,6 +128,12 @@ FEdGraphPinType UHeartGraphPin::GetPinType() const
 UHeartGraphNode* UHeartGraphPin::GetNode() const
 {
 	return GetOwningNode<UHeartGraphNode>();
+}
+
+bool UHeartGraphPin::GetNodeTyped(TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node) const
+{
+	Node = GetNode();
+	return IsValid(Node);
 }
 
 FHeartGraphPinReference UHeartGraphPin::GetReference() const

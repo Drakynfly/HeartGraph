@@ -7,7 +7,7 @@
 
 #include "Model/HeartGraph.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "UMG/HeartGraphCanvasConnection.h"
 
 UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() const
@@ -69,14 +69,14 @@ void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
 		return;
 	}
 
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
+	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
 
 	TArray<UHeartGraphPin*> Connections = Pin->GetAllConnections();
 	for (auto&& Connection : Connections)
 	{
-		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(Pin->GetClass(), Connection->GetClass(), UWidget::StaticClass());
+		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(Pin->PinDesc.Tag, Connection->PinDesc.Tag, UWidget::StaticClass());
 		if (!IsValid(ConnectionVisualizer))
 		{
 			continue;
@@ -127,10 +127,10 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 {
 	check(Pin);
 
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
+	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
-	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->GetClass(), UWidget::StaticClass());
+	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->PinDesc.Tag, UWidget::StaticClass());
 
 	if (PinVisualizer->IsChildOf<UHeartGraphCanvasPin>())
 	{

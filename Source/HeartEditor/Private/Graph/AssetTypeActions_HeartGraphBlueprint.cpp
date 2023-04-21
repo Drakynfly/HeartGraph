@@ -17,7 +17,7 @@ FText FAssetTypeActions_HeartGraphBlueprint::GetName() const
 
 uint32 FAssetTypeActions_HeartGraphBlueprint::GetCategories()
 {
-	return FHeartEditorModule::HeartAssetCategory;
+	return FHeartEditorModule::HeartAssetCategory_TEMP;
 }
 
 UClass* FAssetTypeActions_HeartGraphBlueprint::GetSupportedClass() const

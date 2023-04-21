@@ -12,6 +12,8 @@ public class HeartEditor : ModuleRules
             new []
             {
                 "Core",
+                "EditorSubsystem",
+                "GameplayTags",
                 "HeartCore",
                 "Heart"
             }
@@ -22,25 +24,17 @@ public class HeartEditor : ModuleRules
             "ApplicationCore", // For clipboard copy/paste
             "AssetSearch",
             "AssetTools",
-            //"BlueprintGraph",
             "ClassViewer",
-            //"ContentBrowser",
             "Core",
             "CoreUObject",
-            //"DetailCustomizations",
-            //"DeveloperSettings",
             "EditorFramework", // For FToolkitManager
-            //"EditorStyle",
             "Engine",
             "GraphEditor", // For SGraphPalette
             "InputCore",
-            //"Json",
-            //"JsonUtilities",
             "Kismet",
             "KismetWidgets", // For SLevelOfDetailBranchNode
             "Projects", // For IPluginManager
             "PropertyEditor",
-            //"RenderCore",
             "Slate",
             "SlateCore",
             "SourceControl", // For Diffing utils

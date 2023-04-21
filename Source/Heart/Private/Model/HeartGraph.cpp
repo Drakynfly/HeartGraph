@@ -5,7 +5,7 @@
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)
 
@@ -153,14 +153,14 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
-	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
 		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeObject->GetClass());
 	}
 
 	if (!IsValid(GraphNodeClass))
 	{
-		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class: %s!"), *NodeObject->GetClass()->GetName())
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeObject->GetClass()->GetName())
 		return nullptr;
 	}
 
@@ -178,14 +178,14 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
-	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
 		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeClass);
 	}
 
 	if (!IsValid(GraphNodeClass))
 	{
-		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class: %s!"), *NodeClass->GetName())
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeClass->GetName())
 		return nullptr;
 	}
 

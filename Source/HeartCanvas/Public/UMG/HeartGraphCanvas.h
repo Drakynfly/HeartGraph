@@ -132,7 +132,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	UHeartGraph* GetGraph() const { return DisplayedGraph.Get(); }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, meta = (DeterminesOutputType = Class, DeprecatedFunction, DeprecatedMessage = "Please use version in utils library instead"))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return DisplayedGraph.Get(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")

@@ -4,7 +4,7 @@
 	"VersionName": "0.1",
 	"FriendlyName": "Heart",
 	"Description": "Generic runtime node-graph viewer and authoring toolset",
-	"Category": "Experimental",
+	"Category": "Graphs",
 	"CreatedBy": "Guy (Drakynfly) Lundvall",
 	"CreatedByURL": "",
 	"DocsURL": "https://heart-1.gitbook.io/heart-plugin/",
@@ -12,7 +12,7 @@
 	"MarketplaceURL": "",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
-	"IsExperimentalVersion": false,
+	"IsExperimentalVersion": true,
 	"Installed": false,
 	"Modules": [
 		{
@@ -34,6 +34,11 @@
 			"Name": "HeartCore",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"
+		},
+		{
+			"Name": "HeartCoreEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		},
 		{
 			"Name": "HeartCanvas",

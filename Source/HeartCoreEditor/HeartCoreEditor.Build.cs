@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class Blood : ModuleRules
+public class HeartCoreEditor : ModuleRules
 {
-    public Blood(ReadOnlyTargetRules Target) : base(Target)
+    public HeartCoreEditor(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -12,17 +12,20 @@ public class Blood : ModuleRules
             new []
             {
                 "Core",
-                "StructUtils",
+                "HeartCore"
             }
         );
 
         PrivateDependencyModuleNames.AddRange(
             new []
             {
+                "AssetDefinition",
                 "CoreUObject",
                 "Engine",
+                "InputCore",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "UnrealEd"
             }
         );
     }

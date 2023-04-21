@@ -3,7 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
-#include "HeartGraphPinType.h"
+#include "HeartGraphPinTag.h"
 #include "HeartGraphPinDesc.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartGraphPinReference.h"
@@ -39,21 +39,6 @@ public:
 	----------------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	FHeartGraphPinDesc GetPinDesc() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	FName GetPinName() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	const FText& GetFriendlyName() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	const FText& GetToolTip() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	FHeartGraphPinType GetType() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	EHeartPinDirection GetDirection() const;
 
 	/*----------------------------
@@ -76,8 +61,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	UHeartGraphNode* GetNode() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class"))
-	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GetNode(); }
+	UFUNCTION(BlueprintCallable, BlueprintPure = "false",
+				meta = (DeprecatedFunction, DeterminesOutputType = "Class", DynamicOutputParam = "Node", ExpandBoolAsExecs = "ReturnValue"))
+	bool GetNodeTyped(TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FHeartPinGuid GetGuid() const { return Guid; }
@@ -85,13 +71,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FHeartGraphPinReference GetReference() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	const TArray<FHeartGraphPinReference>& GetLinks() const { return Links; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	bool IsConnected() const { return !Links.IsEmpty(); }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	int32 GetNumLinks() const { return Links.Num(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
@@ -111,13 +95,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartPinConnectionsChanged OnPinConnectionsChanged;
 
-private:
+public:
 	UPROPERTY(BlueprintReadOnly)
 	FHeartPinGuid Guid;
 
 	UPROPERTY(BlueprintReadOnly)
 	FHeartGraphPinDesc PinDesc;
 
-	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly)
 	TArray<FHeartGraphPinReference> Links;
 };
