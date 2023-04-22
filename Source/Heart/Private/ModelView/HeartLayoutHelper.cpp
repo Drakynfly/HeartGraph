@@ -6,7 +6,7 @@
 
 bool UHeartLayoutHelper::Layout(IHeartNodeLocationAccessor* Accessor) const
 {
-	auto&& Graph = Accessor->GetHeartGraph();
+	auto&& Graph = Accessor->GetHeartGraphNative();
 	if (IsValid(Graph))
 	{
 		TArray<UHeartGraphNode*> AllNodes;

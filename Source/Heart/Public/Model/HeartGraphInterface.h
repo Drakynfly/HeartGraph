@@ -20,4 +20,9 @@ class HEART_API IHeartGraphInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Heart|Graph")
 	UHeartGraph* GetHeartGraph() const;
+
+	UHeartGraph* GetHeartGraphNative() const
+	{
+		return Execute_GetHeartGraph(_getUObject());
+	}
 };

@@ -18,8 +18,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHeartGraphEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&, Event);
 
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, UHeartGraphNode*, Node);
-
 /**
  * Class data for UHeartGraph
  */
@@ -67,6 +65,8 @@ public:
 	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
 	//* IHeartGraphInterface */
 
+	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
+
 
 	/*-----------------------
 			GETTERS
@@ -98,18 +98,6 @@ public:
 		Nodes.GenerateValueArray(NodeArray);
 		OutNodes = NodeArray;
 	}
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
-	UHeartGraphNode* FindNodeOfClass(TSubclassOf<UHeartGraphNode> Class);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
-	UHeartGraphNode* FindNodeByPredicate(const FHeartGraphNodePredicate& Predicate);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphNode*> FindAllNodesOfClass(TSubclassOf<UHeartGraphNode> Class);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
-	TArray<UHeartGraphNode*> FindAllNodesByPredicate(const FHeartGraphNodePredicate& Predicate);
 
 
 	/*----------------------------

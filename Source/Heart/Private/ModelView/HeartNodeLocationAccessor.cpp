@@ -7,22 +7,22 @@
 
 FVector2D IHeartNodeLocationAccessor::GetNodeLocation(const FHeartNodeGuid Node) const
 {
-	return GetHeartGraph()->GetNode(Node)->GetLocation();
+	return GetHeartGraphNative()->GetNode(Node)->GetLocation();
 }
 
 void IHeartNodeLocationAccessor::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
 {
-	GetHeartGraph()->GetNode(Node)->SetLocation(Location);
+	GetHeartGraphNative()->GetNode(Node)->SetLocation(Location);
 }
 
 FVector IHeartNodeLocationAccessor::GetNodeLocation3D(const FHeartNodeGuid Node) const
 {
-	return GetHeartGraph()->GetNode<UHeartGraphNode3D>(Node)->GetLocation3D();
+	return GetHeartGraphNative()->GetNode<UHeartGraphNode3D>(Node)->GetLocation3D();
 }
 
 void IHeartNodeLocationAccessor::SetNodeLocation3D(const FHeartNodeGuid Node, const FVector& Location)
 {
-	GetHeartGraph()->GetNode<UHeartGraphNode3D>(Node)->SetLocation3D(Location);
+	GetHeartGraphNative()->GetNode<UHeartGraphNode3D>(Node)->SetLocation3D(Location);
 }
 
 FVector2D UHeartNodeLocationAccessorLibrary::GetNodeLocation_Pointer(
@@ -99,7 +99,7 @@ FVector UHeartNodeLocationModifierStack::ProxyToLocation3D(const FVector& Proxy)
 
 UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph_Implementation() const
 {
-	return ProxiedObject->GetHeartGraph();
+	return ProxiedObject->GetHeartGraphNative();
 }
 
 FVector2D UHeartNodeLocationProxy::GetNodeLocation(const FHeartNodeGuid Node) const

@@ -20,4 +20,9 @@ class HEART_API IHeartGraphNodeInterface
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Heart|Node")
 	UHeartGraphNode* GetHeartGraphNode() const;
+
+	UHeartGraphNode* GetHeartGraphNodeNative() const
+	{
+		return Execute_GetHeartGraphNode(_getUObject());
+	}
 };

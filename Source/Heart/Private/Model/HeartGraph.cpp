@@ -66,76 +66,21 @@ UHeartGraph* UHeartGraph::GetHeartGraph_Implementation() const
 	return const_cast<UHeartGraph*>(this);
 }
 
+void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const
+{
+	for (auto&& Element : Nodes)
+	{
+		if (ensure(Element.Value))
+		{
+			if (Iter(Element.Value)) return;
+		}
+	}
+}
+
 UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 {
 	auto&& Result = Nodes.Find(NodeGuid);
 	return Result ? *Result : nullptr;
-}
-
-UHeartGraphNode* UHeartGraph::FindNodeOfClass(const TSubclassOf<UHeartGraphNode> Class)
-{
-	if (!IsValid(Class))
-	{
-		return nullptr;
-	}
-
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Node.Value.IsA(Class))
-		{
-			return Node.Value;
-		}
-	}
-
-	return nullptr;
-}
-
-UHeartGraphNode* UHeartGraph::FindNodeByPredicate(const FHeartGraphNodePredicate& Predicate)
-{
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Predicate.Execute(Node.Value))
-		{
-			return Node.Value;
-		}
-	}
-
-	return nullptr;
-}
-
-TArray<UHeartGraphNode*> UHeartGraph::FindAllNodesOfClass(const TSubclassOf<UHeartGraphNode> Class)
-{
-	if (!IsValid(Class))
-	{
-		return TArray<UHeartGraphNode*>();
-	}
-
-	TArray<UHeartGraphNode*> OutNodes;
-
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Node.Value.IsA(Class))
-		{
-			OutNodes.Add(Node.Value);
-		}
-	}
-
-	return OutNodes;
-}
-
-TArray<UHeartGraphNode*> UHeartGraph::FindAllNodesByPredicate(const FHeartGraphNodePredicate& Predicate)
-{
-	TArray<UHeartGraphNode*> OutNodes;
-
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Predicate.Execute(Node.Value))
-		{
-			OutNodes.Add(Node.Value);
-		}
-	}
-
-	return OutNodes;
 }
 
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const

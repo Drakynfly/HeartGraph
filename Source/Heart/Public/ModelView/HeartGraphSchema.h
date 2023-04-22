@@ -53,8 +53,12 @@ struct FHeartConnectPinsResponse
 	FText Message;
 };
 
+/**
+ * Base class for Heart "Schemas", const classes that are interacted with via only their CDO to describe the behavior
+ * of a Heart Graph instance.
+ */
 UCLASS(Abstract, Const, BlueprintType, Blueprintable)
-class HEART_API UHeartGraphSchema : public UObject // UEdGraphSchema
+class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 {
 	GENERATED_BODY()
 
@@ -88,6 +92,7 @@ public:
 	void CreateDefaultNodesForGraph(UHeartGraph* Graph) const;
 
 #if WITH_EDITORONLY_DATA
+	// Enable to have the runtime function CanPinsConnect called by the EdGraphSchema for this graph.
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	bool RunCanPinsConnectInEdGraph;
 #endif
