@@ -151,7 +151,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UObject* GetNodeObject() const { return NodeObject; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeterminesOutputType = Class))
 	UObject* GetNodeObjectTyped(TSubclassOf<UObject> Class) const { return NodeObject; }
 
 	template <typename THeartGraph>

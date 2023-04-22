@@ -208,7 +208,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	TSet<FName> LinksToDisconnect;
 
 	// Resolve all linked pins
-	auto HeartLinks = HeartPin->GetLinks();
+	auto HeartLinks = HeartPin->Links;
 	TArray<UHeartGraphPin*> LinkedPins;
 	for (auto&& HeartLink : HeartLinks)
 	{

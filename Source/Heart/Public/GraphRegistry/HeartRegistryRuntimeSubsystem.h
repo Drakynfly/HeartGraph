@@ -11,8 +11,6 @@
 
 #include "HeartRegistryRuntimeSubsystem.generated.h"
 
-class UGraphNodeRegistrar;
-
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
 /**
@@ -24,6 +22,8 @@ class HEART_API UHeartRegistryRuntimeSubsystem : public UEngineSubsystem
 {
 	GENERATED_BODY()
 
+	friend class UGraphNodeRegistrar;
+	friend class UHeartGraphNodeRegistry;
 	friend class UHeartRegistryEditorSubsystem;
 
 public:
@@ -38,10 +38,12 @@ protected:
 
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const FSoftClassPath& ClassPath);
 
-public:
+	UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
+
 	void AutoAddRegistrar(UGraphNodeRegistrar* Registrar);
 	void AutoRemoveRegistrar(UGraphNodeRegistrar* Registrar);
 
+public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
 	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
 
@@ -50,8 +52,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
 	void RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From);
-
-	UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
 
 private:
 	// Maps Classes to the Registry instance we keep for them

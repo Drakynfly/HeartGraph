@@ -24,6 +24,8 @@ class HEARTCANVAS_API UHeartGraphCanvasNode : public UHeartGraphWidgetBase, publ
 	friend UHeartGraphCanvas;
 
 public:
+	virtual void NativeDestruct() override;
+
 	/** IHeartWidgetInputLinkerRedirector */
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
 	/** IHeartWidgetInputLinkerRedirector */
@@ -32,6 +34,10 @@ public:
 	virtual UHeartGraphNode* GetHeartGraphNode_Implementation() const override;
 	/** IHeartGraphNodeInterface */
 
+protected:
+	virtual void PostInitNode();
+
+public:
 	UHeartGraphNode* GetNode() const { return GraphNode.Get(); }
 	UHeartGraphCanvas* GetCanvas() const { return GraphCanvas.Get(); }
 	bool IsNodeSelected() const { return NodeSelected; }

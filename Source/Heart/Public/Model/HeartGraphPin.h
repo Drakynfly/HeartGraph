@@ -13,8 +13,6 @@
 class UHeartGraphNode;
 class UHeartGraphPin;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartPinConnectionsChanged, UHeartGraphPin*, Pin);
-
 /**
  *
  */
@@ -71,13 +69,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	FHeartGraphPinReference GetReference() const;
 
-	const TArray<FHeartGraphPinReference>& GetLinks() const { return Links; }
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
-	bool IsConnected() const { return !Links.IsEmpty(); }
-
-	int32 GetNumLinks() const { return Links.Num(); }
-
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin")
 	TArray<UHeartGraphPin*> GetAllConnections();
 
@@ -90,10 +81,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphPin")
 	UHeartGraphPin* ResolveConnection(const int32 Index) const;
-
-public:
-	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
-	FHeartPinConnectionsChanged OnPinConnectionsChanged;
 
 public:
 	UPROPERTY(BlueprintReadOnly)

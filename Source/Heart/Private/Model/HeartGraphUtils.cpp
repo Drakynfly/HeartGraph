@@ -100,6 +100,16 @@ bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInter
 	return IsValid(Graph);
 }
 
+bool UHeartGraphUtils::GetNodeObjectTyped(const TScriptInterface<IHeartGraphNodeInterface> Node, TSubclassOf<UObject> Class,
+                                          UObject*& Object)
+{
+	if (Node.GetInterface())
+	{
+		Object = Node->GetHeartGraphNodeNative()->GetNodeObject();
+	}
+	return IsValid(Object);
+}
+
 bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterface> Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
 {
 	if (Pin.GetInterface())

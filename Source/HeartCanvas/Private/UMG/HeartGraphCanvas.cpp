@@ -308,6 +308,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 		{
 			Widget->GraphCanvas = this;
 			Widget->GraphNode = Node;
+			Widget->PostInitNode();
 			DisplayedNodes.Add(Node->GetGuid(), Widget);
 			NodeCanvas->AddChildToCanvas(Widget)->SetAutoSize(true);
 			Widget->OnZoomSet(View.Z);

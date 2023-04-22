@@ -38,6 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Graph", ExpandBoolAsExecs = "ReturnValue"))
 	static bool GetGraphTyped(TScriptInterface<IHeartGraphNodeInterface> Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph);
 
+	// Gets the Node Object from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Object", ExpandBoolAsExecs = "ReturnValue"))
+	static bool GetNodeObjectTyped(TScriptInterface<IHeartGraphNodeInterface> Node, TSubclassOf<UObject> Class, UObject*& Object);
+
 	// Gets the Heart Node from an object representing a Heart Graph Pin, and attempts to cast it to the requested class.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Node", ExpandBoolAsExecs = "ReturnValue"))
 	static bool GetNodeTyped(TScriptInterface<IHeartGraphPinInterface> Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node);

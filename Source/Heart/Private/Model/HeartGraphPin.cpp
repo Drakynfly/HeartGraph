@@ -50,8 +50,6 @@ bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
 	}
 #endif
 
-	OnPinConnectionsChanged.Broadcast(this);
-	Other->OnPinConnectionsChanged.Broadcast(Other);
 	return true;
 }
 
@@ -84,9 +82,6 @@ void UHeartGraphPin::DisconnectFrom(const FHeartGraphPinReference Other, const b
 			}
 		}
 #endif
-
-		OnPinConnectionsChanged.Broadcast(this);
-		ToPin->OnPinConnectionsChanged.Broadcast(ToPin);
 
 		if (NotifyNode)
 		{

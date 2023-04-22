@@ -10,6 +10,16 @@
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "UMG/HeartGraphCanvasConnection.h"
 
+void UHeartGraphCanvasNode::NativeDestruct()
+{
+	if (GraphNode.IsValid())
+	{
+		GraphNode->OnPinConnectionsChanged.RemoveAll(this);
+	}
+
+	Super::NativeDestruct();
+}
+
 UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() const
 {
 	return Execute_ResolveLinker(GraphCanvas.Get());
@@ -18,6 +28,14 @@ UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() c
 UHeartGraphNode* UHeartGraphCanvasNode::GetHeartGraphNode_Implementation() const
 {
 	return GraphNode.Get();
+}
+
+void UHeartGraphCanvasNode::PostInitNode()
+{
+	if (GraphNode.IsValid())
+	{
+		GraphNode->OnPinConnectionsChanged.AddDynamic(this, &ThisClass::RebuildPinConnections);
+	}
 }
 
 void UHeartGraphCanvasNode::SetNodeSelected(const bool Selected)
@@ -135,21 +153,15 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
-	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->PinDesc.Tag, UWidget::StaticClass());
+	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->PinDesc.Tag, UHeartGraphCanvasPin::StaticClass());
 
-	if (PinVisualizer->IsChildOf<UHeartGraphCanvasPin>())
+	if (IsValid(PinVisualizer))
 	{
 		if (auto&& PinWidget = CreateWidget<UHeartGraphCanvasPin>(this, PinVisualizer))
 		{
 			PinWidget->GraphCanvasNode = this;
 			PinWidget->GraphPin = Pin;
 			PinWidgets.Add(PinWidget);
-
-			if (Pin->GetDirection() == EHeartPinDirection::Output)
-			{
-				Pin->OnPinConnectionsChanged.AddDynamic(this, &ThisClass::RebuildPinConnections);
-			}
-
 			return PinWidget;
 		}
 	}
@@ -159,11 +171,6 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 
 void UHeartGraphCanvasNode::DestroyPinWidget(UHeartGraphCanvasPin* PinWidget)
 {
-	if (auto&& Pin = PinWidget->GetPin())
-	{
-		Pin->OnPinConnectionsChanged.RemoveAll(this);
-	}
-
 	ConnectionWidgets.RemoveAll(
 		[PinWidget](const TObjectPtr<UHeartGraphCanvasConnection>& ConnectionWidget)
 		{

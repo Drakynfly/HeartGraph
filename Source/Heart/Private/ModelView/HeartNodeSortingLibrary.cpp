@@ -102,11 +102,11 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(
 void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphNode*>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
 {
 	// Find all nodes that have no pins connections in the specified direction
-	TArray<UHeartGraphNode*> RootNodes =  Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
+	TArray<UHeartGraphNode*> RootNodes = Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
 	{
 		return Node->CountPinsByPredicate(Args.Direction, [](const UHeartGraphPin* Pin)
 		{
-			return Pin->IsConnected();
+			return !Pin->Links.IsEmpty();
 		}) == 0;
 	});
 
