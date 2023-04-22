@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include "UObject/Interface.h"
+#include "Model/HeartGraphNodeInterface.h"
+#include "Model/HeartGraphPinInterface.h"
 #include "Model/HeartGraphPinTag.h"
 #include "HeartVisualizerInterfaces.generated.h"
 
-class UHeartGraphNode;
-
-// This class does not need to be modified.
 UINTERFACE()
-class HEART_API UGraphNodeVisualizerInterface : public UInterface
+class HEART_API UGraphNodeVisualizerInterface : public UHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 };
@@ -18,7 +16,7 @@ class HEART_API UGraphNodeVisualizerInterface : public UInterface
 /**
  *
  */
-class HEART_API IGraphNodeVisualizerInterface
+class HEART_API IGraphNodeVisualizerInterface : public IHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 
@@ -29,7 +27,7 @@ public:
 
 // This class does not need to be modified.
 UINTERFACE()
-class HEART_API UGraphPinVisualizerInterface : public UInterface
+class HEART_API UGraphPinVisualizerInterface : public UHeartGraphPinInterface
 {
 	GENERATED_BODY()
 };
@@ -37,7 +35,7 @@ class HEART_API UGraphPinVisualizerInterface : public UInterface
 /**
  *
  */
-class HEART_API IGraphPinVisualizerInterface
+class HEART_API IGraphPinVisualizerInterface : public IHeartGraphPinInterface
 {
 	GENERATED_BODY()
 

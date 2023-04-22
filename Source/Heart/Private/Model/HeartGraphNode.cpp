@@ -108,6 +108,11 @@ void UHeartGraphNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pr
 
 #endif
 
+UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode_Implementation() const
+{
+	return const_cast<UHeartGraphNode*>(this);
+}
+
 FText UHeartGraphNode::GetDefaultNodeCategory(const UClass* NodeClass) const
 {
 	if (!IsValid(NodeClass)) return FText();
@@ -430,6 +435,9 @@ void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
 
 void UHeartGraphNode::OnCreate()
 {
+	InstancedInputs = GetHeartGraphNodeSparseClassData()->DefaultInstancedInputs;
+	InstancedOutputs = GetHeartGraphNodeSparseClassData()->DefaultInstancedOutputs;
+
 	ReconstructPins();
 
 	BP_OnCreate();
@@ -437,12 +445,14 @@ void UHeartGraphNode::OnCreate()
 
 void UHeartGraphNode::ReconstructPins()
 {
-	auto&& TemplateInputs = GetDefaultInputs();
-	auto&& TemplateOutputs = GetDefaultOutputs();
+	Pins.Empty();
+
+	auto&& DefaultInputs = GetDefaultInputs();
+	auto&& DefaultOutputs = GetDefaultOutputs();
 	auto&& DynamicPins = GetDynamicPins();
 
 	// Create inputs
-	for (auto&& TemplateInput : TemplateInputs)
+	for (auto&& TemplateInput : DefaultInputs)
 	{
 		if (auto&& NewPin = CreatePin(TemplateInput))
 		{
@@ -451,7 +461,7 @@ void UHeartGraphNode::ReconstructPins()
 	}
 
 	// Create outputs
-	for (auto&& TemplateOutput : TemplateOutputs)
+	for (auto&& TemplateOutput : DefaultOutputs)
 	{
 		if (auto&& NewPin = CreatePin(TemplateOutput))
 		{
@@ -459,12 +469,25 @@ void UHeartGraphNode::ReconstructPins()
 		}
 	}
 
+	// Create dynamic inputs & outputs
 	for (auto&& DynamicPin : DynamicPins)
 	{
 		if (auto&& NewPin = CreatePin(DynamicPin))
 		{
 			AddPin(NewPin);
 		}
+	}
+
+	// Create instanced inputs
+	for (int32 i = 0; i < InstancedInputs; ++i)
+	{
+		AddInstancePin(EHeartPinDirection::Input);
+	}
+
+	// Create instanced outputs
+	for (int32 i = 0; i < InstancedOutputs; ++i)
+	{
+		AddInstancePin(EHeartPinDirection::Output);
 	}
 }
 

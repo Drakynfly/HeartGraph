@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "HeartGraphInterface.h"
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraph.generated.h"
@@ -41,7 +42,7 @@ struct FHeartGraphSparseClassData
  *
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, SparseClassDataTypes = "HeartGraphSparseClassData")
-class HEART_API UHeartGraph : public UObject
+class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 {
 	GENERATED_BODY()
 
@@ -61,6 +62,11 @@ public:
 #if WITH_EDITOR
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 #endif
+
+	//* IHeartGraphInterface */
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	//* IHeartGraphInterface */
+
 
 	/*-----------------------
 			GETTERS

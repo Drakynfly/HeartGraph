@@ -61,6 +61,11 @@ void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Col
 }
 #endif
 
+UHeartGraph* UHeartGraph::GetHeartGraph_Implementation() const
+{
+	return const_cast<UHeartGraph*>(this);
+}
+
 UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 {
 	auto&& Result = Nodes.Find(NodeGuid);

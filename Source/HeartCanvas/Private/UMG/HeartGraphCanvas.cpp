@@ -195,7 +195,7 @@ UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
 	return BindingContainer.GetLinker();
 }
 
-const UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
+UHeartGraph* UHeartGraphCanvas::GetHeartGraph_Implementation() const
 {
 	return DisplayedGraph.Get();
 }

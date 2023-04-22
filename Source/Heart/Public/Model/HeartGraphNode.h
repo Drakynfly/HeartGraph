@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartGraph.h"
+#include "HeartGraphNodeInterface.h"
 #include "HeartGraphPin.h"
 #include "HeartGraphPinTag.h"
 #include "UObject/Object.h"
@@ -34,7 +35,7 @@ enum class EHeartNodeNameContext : uint8
 };
 
 /**
- * Class data for UHeartGraph
+ * Class data for UHeartGraphNode
  */
 USTRUCT()
 struct FHeartGraphNodeSparseClassData
@@ -46,6 +47,12 @@ struct FHeartGraphNodeSparseClassData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	TArray<FHeartGraphPinDesc> DefaultOutputs;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	uint8 DefaultInstancedInputs = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	uint8 DefaultInstancedOutputs = 0;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
@@ -66,7 +73,7 @@ struct FHeartGraphNodeSparseClassData
  *
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, SparseClassDataTypes = "HeartGraphNodeSparseClassData")
-class HEART_API UHeartGraphNode : public UObject
+class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 
@@ -84,6 +91,10 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
+
+	/** IHeartGraphNodeInterface */
+	virtual UHeartGraphNode* GetHeartGraphNode_Implementation() const override;
+	/** IHeartGraphNodeInterface */
 
 
 	/*----------------------------

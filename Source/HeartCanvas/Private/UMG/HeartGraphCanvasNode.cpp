@@ -15,6 +15,11 @@ UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() c
 	return Execute_ResolveLinker(GraphCanvas.Get());
 }
 
+UHeartGraphNode* UHeartGraphCanvasNode::GetHeartGraphNode_Implementation() const
+{
+	return GraphNode.Get();
+}
+
 void UHeartGraphCanvasNode::SetNodeSelected(const bool Selected)
 {
 	if (NodeSelected != Selected)

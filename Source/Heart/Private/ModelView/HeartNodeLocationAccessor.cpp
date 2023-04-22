@@ -97,7 +97,7 @@ FVector UHeartNodeLocationModifierStack::ProxyToLocation3D(const FVector& Proxy)
 	return Location;
 }
 
-const UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph() const
+UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph_Implementation() const
 {
 	return ProxiedObject->GetHeartGraph();
 }

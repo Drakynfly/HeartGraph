@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "UObject/Interface.h"
+#include "Model/HeartGraphInterface.h"
 #include "UObject/Object.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartNodeLocationAccessor.generated.h"
@@ -14,7 +14,7 @@ class UHeartGraphNode3D;
 
 // This class does not need to be modified.
 UINTERFACE(NotBlueprintable)
-class HEART_API UHeartNodeLocationAccessor : public UInterface
+class HEART_API UHeartNodeLocationAccessor : public UHeartGraphInterface
 {
 	GENERATED_BODY()
 };
@@ -23,14 +23,11 @@ class HEART_API UHeartNodeLocationAccessor : public UInterface
  * This must be added to classes that display node positions visually, in order for other systems (like layout
  * automation) to interop with them.
  */
-class HEART_API IHeartNodeLocationAccessor
+class HEART_API IHeartNodeLocationAccessor : public IHeartGraphInterface
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor")
-	virtual const UHeartGraph* GetHeartGraph() const PURE_VIRTUAL(IHeartNodeLocationAccessor::GetHeartGraph, return nullptr; )
-
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location (Guid)"))
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const;
 
@@ -106,7 +103,7 @@ class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartNodeLocat
 
 public:
 	/* IHeartNodeLocationAccessor */
-	virtual const UHeartGraph* GetHeartGraph() const override final;
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override final;
 	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override final;
 	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const override final;

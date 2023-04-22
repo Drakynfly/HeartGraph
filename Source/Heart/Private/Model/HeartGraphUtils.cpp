@@ -2,15 +2,22 @@
 
 #include "Model/HeartGraphUtils.h"
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphPinInterface.h"
 
-bool UHeartGraphUtils::GetGraphTyped(UHeartGraphNode* Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph)
+bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface> Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph)
 {
-	Graph = Node->GetGraph();
+	if (Node.GetInterface())
+	{
+		Graph = Node->GetHeartGraphNode()->GetGraph();
+	}
 	return IsValid(Graph);
 }
 
-bool UHeartGraphUtils::GetNodeTyped(UHeartGraphPin* Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
+bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterface> Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
 {
-	Node = Pin->GetNode();
+	if (Pin.GetInterface())
+	{
+		Node = Pin->GetNode();
+	}
 	return IsValid(Node);
 }

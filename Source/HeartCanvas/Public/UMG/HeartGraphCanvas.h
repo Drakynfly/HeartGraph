@@ -75,8 +75,11 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 	/** IHeartWidgetInputLinkerRedirector */
 
+	/** IHeartGraphInterface */
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	/** IHeartGraphInterface */
+
 	/** IHeartNodeLocationAccessor */
-	virtual const UHeartGraph* GetHeartGraph() const override;
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override;
 	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override;
 	/** IHeartNodeLocationAccessor */

@@ -28,6 +28,10 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
 	/** IHeartWidgetInputLinkerRedirector */
 
+	/** IHeartGraphNodeInterface */
+	virtual UHeartGraphNode* GetHeartGraphNode_Implementation() const override;
+	/** IHeartGraphNodeInterface */
+
 	UHeartGraphNode* GetNode() const { return GraphNode.Get(); }
 	UHeartGraphCanvas* GetCanvas() const { return GraphCanvas.Get(); }
 	bool IsNodeSelected() const { return NodeSelected; }
