@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "AssetDefinition.h"
+#include "AssetDefinitionDefault.h"
 
 #include "AssetDefinition_HeartWidgetInputHandlerAsset.generated.h"
 
 UCLASS()
-class UAssetDefinition_HeartWidgetInputHandlerAsset : public UAssetDefinition
+class UAssetDefinition_HeartWidgetInputHandlerAsset : public UAssetDefinitionDefault
 {
 	GENERATED_BODY()
 
