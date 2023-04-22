@@ -1,8 +1,8 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Assets/HeartWidgetInputHandlerAssetFactory.h"
+#include "Assets/HeartDefaultClassFilter.h"
 
-#include "ClassViewerFilter.h"
 #include "ClassViewerModule.h"
 #include "Editor.h"
 #include "Misc/MessageDialog.h"
@@ -97,7 +97,7 @@ public:
 		HeartWidgetInputHandlerAssetFactory = InHeartWidgetInputHandlerAssetFactory;
 
 		const TSharedRef<SWindow> Window = SNew(SWindow)
-			.Title(LOCTEXT("CreateHeartAssetOptions", "Pick Parent Class"))
+			.Title(LOCTEXT("HeartWidgetInputHandlerAssetCreateDialogTitle", "Pick Asset Class"))
 			.ClientSize(FVector2D(400, 700))
 			.SupportsMinimize(false).SupportsMaximize(false)
 			[
@@ -112,32 +112,6 @@ public:
 	}
 
 private:
-	class FHeartWidgetInputHandlerAssetParentFilter final : public IClassViewerFilter
-	{
-	public:
-		/** All children of these classes will be included unless filtered out by another setting. */
-		TSet<const UClass*> AllowedChildrenOfClasses;
-
-		/** Disallowed class flags. */
-		EClassFlags DisallowedClassFlags = CLASS_None;
-
-		FHeartWidgetInputHandlerAssetParentFilter() {}
-
-		virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-		{
-			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return !InClass->HasAnyClassFlags(DisallowedClassFlags)
-				&& InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
-		}
-
-		virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const TSharedRef<const IUnloadedBlueprintData> InUnloadedClassData, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-		{
-			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return !InUnloadedClassData->HasAnyClassFlags(DisallowedClassFlags)
-				&& InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) != EFilterReturn::Failed;
-		}
-	};
-
 	/** Creates the combo menu for the parent class */
 	void MakeParentClassPicker()
 	{
@@ -148,12 +122,11 @@ private:
 		Options.Mode = EClassViewerMode::ClassPicker;
 		Options.DisplayMode = EClassViewerDisplayMode::TreeView;
 		Options.bIsBlueprintBaseOnly = false;
+		Options.bShowUnloadedBlueprints = true;
 
-		const TSharedPtr<FHeartWidgetInputHandlerAssetParentFilter> Filter = MakeShareable(new FHeartWidgetInputHandlerAssetParentFilter);
+		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShareable(new FHeartDefaultClassFilter);
 
-		// All child child classes of UHeartWidgetInputHandlerAsset are valid
 		Filter->AllowedChildrenOfClasses.Add(UHeartWidgetInputHandlerAsset::StaticClass());
-		Filter->DisallowedClassFlags = CLASS_Deprecated | CLASS_Abstract;
 		Options.ClassFilters = {Filter.ToSharedRef()};
 
 		ParentClassContainer->ClearChildren();

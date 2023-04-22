@@ -15,6 +15,7 @@ public class HeartEditor : ModuleRules
                 "EditorSubsystem",
                 "GameplayTags",
                 "HeartCore",
+                "HeartCoreEditor",
                 "Heart"
             }
         );
