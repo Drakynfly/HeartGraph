@@ -4,44 +4,13 @@
 
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
-#include "Templates/SubclassOf.h"
+#include "HeartBreakpoint.h"
 
 #include "HeartEdGraphNode.generated.h"
 
 class UEdGraphSchema;
 class UHeartGraphNode;
 class UHeartGraphPin;
-
-USTRUCT()
-struct HEARTEDITOR_API FHeartBreakpoint
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	bool bHasBreakpoint;
-
-	bool bBreakpointEnabled;
-	bool bBreakpointHit;
-
-	FHeartBreakpoint()
-	{
-		bHasBreakpoint = false;
-		bBreakpointEnabled = false;
-		bBreakpointHit = false;
-	}
-
-	void AddBreakpoint();
-	void RemoveBreakpoint();
-	bool HasBreakpoint() const;
-
-	void EnableBreakpoint();
-	bool CanEnableBreakpoint() const;
-
-	void DisableBreakpoint();
-	bool IsBreakpointEnabled() const;
-
-	void ToggleBreakpoint();
-};
 
 /**
  * Graph representation of a Heart Node in an EdGraph
@@ -57,7 +26,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Heart Graph Node
 
-public:
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
 	UHeartGraphNode* GetHeartGraphNode() const;
 
@@ -83,7 +51,7 @@ private:
 	void OnBlueprintCompiled();
 
 	UFUNCTION()
-	void OnExternalChange(UHeartGraphNode* Node);
+	void OnNodeRequestReconstruction();
 
 //////////////////////////////////////////////////////////////////////////
 // Graph node
@@ -137,10 +105,6 @@ public:
 	// --
 
 	void JumpToNodeDefinition() const;
-
-private:
-	// @todo move out of this class
-	void JumpToClassDefinition(const UClass* Class) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Pins

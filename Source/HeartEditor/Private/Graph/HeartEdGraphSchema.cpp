@@ -9,7 +9,6 @@
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphNodeBlueprint.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
@@ -20,32 +19,6 @@
 #include "Graph/HeartEdGraph.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphSchema"
-
-//TArray<UClass*> UHeartEdGraphSchema::NativeHeartGraphNodes;
-//TMap<FName, FAssetData> UHeartEdGraphSchema::BlueprintHeartGraphNodes;
-//TMap<UClass*, UClass*> UHeartEdGraphSchema::AssignedGraphNodeClasses;
-
-//bool UHeartEdGraphSchema::bBlueprintCompilationPending;
-
-//FHeartGraphSchemaRefresh UHeartEdGraphSchema::OnNodeListChanged;
-
-void UHeartEdGraphSchema::SubscribeToAssetChanges()
-{
-	/*
-	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-	AssetRegistry.Get().OnFilesLoaded().AddStatic(&UHeartEdGraphSchema::GatherHeartGraphNodes);
-	AssetRegistry.Get().OnAssetAdded().AddStatic(&UHeartEdGraphSchema::OnAssetAdded);
-	AssetRegistry.Get().OnAssetRemoved().AddStatic(&UHeartEdGraphSchema::OnAssetRemoved);
-
-	FCoreUObjectDelegates::ReloadCompleteDelegate.AddStatic(&UHeartEdGraphSchema::OnHotReload);
-
-	if (GEditor)
-	{
-		GEditor->OnBlueprintPreCompile().AddStatic(&UHeartEdGraphSchema::OnBlueprintPreCompile);
-		GEditor->OnBlueprintCompiled().AddStatic(&UHeartEdGraphSchema::OnBlueprintCompiled);
-	}
-	*/
-}
 
 void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const FString& CategoryName)
 {
@@ -58,7 +31,7 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetClassDefaults(ContextMenuBuilder.CurrentGraph), FString());
 	GetCommentAction(ContextMenuBuilder, ContextMenuBuilder.CurrentGraph);
 
-	if (!ContextMenuBuilder.FromPin && FHeartGraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph)->CanPasteNodes())
+	if (!ContextMenuBuilder.FromPin && Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph)->CanPasteNodes())
 	{
 		const TSharedPtr<FHeartGraphSchemaAction_Paste> NewAction(new FHeartGraphSchemaAction_Paste(FText::GetEmpty(), LOCTEXT("PasteHereAction", "Paste here"), FText::GetEmpty(), 0));
 		ContextMenuBuilder.AddAction(NewAction);
@@ -179,7 +152,7 @@ void UHeartEdGraphSchema::BreakPinLinks(UEdGraphPin& TargetPin, bool bSendsNodeN
 
 int32 UHeartEdGraphSchema::GetNodeSelectionCount(const UEdGraph* Graph) const
 {
-	return FHeartGraphUtils::GetHeartGraphAssetEditor(Graph)->GetNumberOfSelectedNodes();
+	return Heart::GraphUtils::GetHeartGraphAssetEditor(Graph)->GetNumberOfSelectedNodes();
 }
 
 TSharedPtr<FEdGraphSchemaAction> UHeartEdGraphSchema::GetCreateCommentAction() const
@@ -248,40 +221,36 @@ UClass* UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(const UClass* HeartGrap
 
 void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName)
 {
-	TMap<UClass*, TSubclassOf<UHeartGraphNode>> FilteredNodes;
-
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
-	Registry->GetFilteredNodeClassesWithGraphClass(FNativeNodeClassFilter::CreateLambda([](UClass* NodeClass)
-		{
-			return true;
-		}), FilteredNodes);
 
-	for (auto&& NodeClass : FilteredNodes)
-	{
-		if (NodeClass.Key && NodeClass.Value)
+	Registry->ForEachNodeObjectClass(
+		[&CategoryName, &ActionMenuBuilder](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeClass)
 		{
-			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(NodeClass.Value);
+			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(GraphNodeClass);
 
-			if (IsValid(GraphNodeDefault))
+			if (ensure(IsValid(GraphNodeDefault)))
 			{
 				if (GraphNodeDefault->CanCreate_Editor())
 				{
-					if ((CategoryName.IsEmpty() || CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeClass.Key).ToString())))
+					if (CategoryName.IsEmpty() ||
+						CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeClass).ToString()))
 					{
-						TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeClass.Key, GraphNodeDefault));
+						const TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeClass, GraphNodeDefault));
 						ActionMenuBuilder.AddAction(NewNodeAction);
 					}
 				}
 			}
-		}
-	}
+
+			// Always continue iterating...
+			return true;
+		});
 }
 
 void UHeartEdGraphSchema::GetCommentAction(FGraphActionMenuBuilder& ActionMenuBuilder, const UEdGraph* CurrentGraph /*= nullptr*/)
 {
 	if (!ActionMenuBuilder.FromPin)
 	{
-		const bool bIsManyNodesSelected = CurrentGraph ? (FHeartGraphUtils::GetHeartGraphAssetEditor(CurrentGraph)->GetNumberOfSelectedNodes() > 0) : false;
+		const bool bIsManyNodesSelected = CurrentGraph ? (Heart::GraphUtils::GetHeartGraphAssetEditor(CurrentGraph)->GetNumberOfSelectedNodes() > 0) : false;
 		const FText MenuDescription = bIsManyNodesSelected ? LOCTEXT("CreateCommentAction", "Create Comment from Selection") : LOCTEXT("AddCommentAction", "Add Comment...");
 		const FText ToolTip = LOCTEXT("CreateCommentToolTip", "Creates a comment.");
 
@@ -299,124 +268,6 @@ bool UHeartEdGraphSchema::IsHeartGraphNodePlaceable(const UClass* Class)
 
 	return true;
 }
-
-/*
-void UHeartEdGraphSchema::OnBlueprintPreCompile(UBlueprint* Blueprint)
-{
-	if (Blueprint && Blueprint->GeneratedClass && Blueprint->GeneratedClass->IsChildOf(UHeartGraphNode::StaticClass()))
-	{
-		bBlueprintCompilationPending = true;
-	}
-}
-
-void UHeartEdGraphSchema::OnBlueprintCompiled()
-{
-	if (bBlueprintCompilationPending)
-	{
-		GatherHeartGraphNodes();
-	}
-
-	bBlueprintCompilationPending = false;
-}
-
-void UHeartEdGraphSchema::GatherHeartGraphNodes()
-{
-	// prevent asset crunching during PIE
-	if (GEditor && GEditor->PlayWorld)
-	{
-		return;
-	}
-
-	// collect C++ nodes once per editor session
-	if (NativeHeartGraphNodes.Num() == 0)
-	{
-		TArray<UClass*> HeartGraphNodeClasses;
-		GetDerivedClasses(UHeartGraphNode::StaticClass(), HeartGraphNodeClasses);
-		for (UClass* Class : HeartGraphNodeClasses)
-		{
-			if (Class->ClassGeneratedBy == nullptr && IsHeartGraphNodePlaceable(Class))
-			{
-				NativeHeartGraphNodes.Emplace(Class);
-			}
-		}
-
-		TArray<UClass*> GraphNodes;
-		GetDerivedClasses(UHeartEdGraphNode::StaticClass(), GraphNodes);
-		for (UClass* Class : GraphNodes)
-		{
-			auto&& DefaultObject = Class->GetDefaultObject<UHeartEdGraphNode>();
-			for (UClass* AssignedClass : DefaultObject->AssignedNodeClasses)
-			{
-				if (AssignedClass->IsChildOf(UHeartGraphNode::StaticClass()))
-				{
-					AssignedGraphNodeClasses.Emplace(AssignedClass, Class);
-				}
-			}
-		}
-	}
-
-	// retrieve all blueprint nodes
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-
-	FARFilter Filter;
-	Filter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
-	Filter.ClassPaths.Add(UBlueprintGeneratedClass::StaticClass()->GetClassPathName());
-	Filter.bRecursiveClasses = true;
-
-	TArray<FAssetData> FoundAssets;
-	AssetRegistryModule.Get().GetAssets(Filter, FoundAssets);
-	for (const FAssetData& AssetData : FoundAssets)
-	{
-		AddAsset(AssetData, true);
-	}
-
-	OnNodeListChanged.Broadcast();
-}
-
-void UHeartEdGraphSchema::OnHotReload(EReloadCompleteReason ReloadCompleteReason)
-{
-	GatherHeartGraphNodes();
-}
-
-void UHeartEdGraphSchema::OnAssetAdded(const FAssetData& AssetData)
-{
-	AddAsset(AssetData, false);
-}
-
-void UHeartEdGraphSchema::AddAsset(const FAssetData& AssetData, const bool bBatch)
-{
-	if (!BlueprintHeartGraphNodes.Contains(AssetData.PackageName))
-	{
-		const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-		if (AssetRegistryModule.Get().IsLoadingAssets())
-		{
-			return;
-		}
-
-		if (AssetData.GetClass()->IsChildOf(UHeartGraphNodeBlueprint::StaticClass()))
-		{
-			BlueprintHeartGraphNodes.Emplace(AssetData.PackageName, AssetData);
-
-			if (!bBatch)
-			{
-				OnNodeListChanged.Broadcast();
-			}
-		}
-	}
-}
-
-
-void UHeartEdGraphSchema::OnAssetRemoved(const FAssetData& AssetData)
-{
-	if (BlueprintHeartGraphNodes.Contains(AssetData.PackageName))
-	{
-		BlueprintHeartGraphNodes.Remove(AssetData.PackageName);
-		BlueprintHeartGraphNodes.Shrink();
-
-		OnNodeListChanged.Broadcast();
-	}
-}
-*/
 
 UBlueprint* UHeartEdGraphSchema::GetPlaceableNodeBlueprint(const FAssetData& AssetData)
 {

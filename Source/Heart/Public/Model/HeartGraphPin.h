@@ -25,8 +25,6 @@ class HEART_API UHeartGraphPin : public UObject // Based on UEdGraphPin
 	friend class UHeartEdGraphNode;
 
 public:
-	bool ConnectTo(UHeartGraphPin* Other);
-
 	void DisconnectFrom(const FHeartGraphPinReference Other, bool NotifyNode);
 
 	void DisconnectFromAll(bool NotifyNodes);

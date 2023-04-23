@@ -77,7 +77,7 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 
 	NotifyGraphChanged();
 
-	auto&& HeartGraphAssetEditor = FHeartGraphUtils::GetHeartGraphAssetEditor(this);
+	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(this);
 	if (HeartGraphAssetEditor.IsValid())
 	{
 		HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);

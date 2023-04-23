@@ -22,9 +22,7 @@
 #include "HeartEditorModule.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
-#include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/DebuggerCommands.h"
-#include "LevelEditor.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 #include "ScopedTransaction.h"
@@ -34,9 +32,9 @@
 
 #define LOCTEXT_NAMESPACE "HeartAssetEditor"
 
-const FName FHeartGraphAssetEditor::DetailsTab(TEXT("Details"));
-const FName FHeartGraphAssetEditor::GraphTab(TEXT("Graph"));
-const FName FHeartGraphAssetEditor::PaletteTab(TEXT("Palette"));
+const FName FHeartGraphAssetEditor::DetailsTab("Details");
+const FName FHeartGraphAssetEditor::GraphTab("Graph");
+const FName FHeartGraphAssetEditor::PaletteTab("Palette");
 
 FHeartGraphAssetEditor::FHeartGraphAssetEditor()
 	: HeartGraph(nullptr)
@@ -183,8 +181,6 @@ void FHeartGraphAssetEditor::InitHeartGraphAssetEditor(const EToolkitMode::Type 
 	// Support undo/redo
 	HeartGraph->SetFlags(RF_Transactional);
 	GEditor->RegisterForUndo(this);
-
-	UHeartEdGraphSchema::SubscribeToAssetChanges();
 
 	BindToolbarCommands();
 	CreateToolbar();
@@ -632,6 +628,38 @@ bool FHeartGraphAssetEditor::CanSelectAllNodes() const
 	return true;
 }
 
+void FHeartGraphAssetEditor::DeleteNode(UEdGraphNode* Node)
+{
+	check(Node);
+
+	// Try to remove the Runtime Node first, if there is one.
+	if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))
+	{
+		if (auto&& RuntimeNode = HeartEdGraphNode->GetHeartGraphNode())
+		{
+			HeartGraph->RemoveNode(RuntimeNode->GetGuid());
+		}
+	}
+
+	const UEdGraphSchema* Schema = nullptr;
+
+	// Ensure we mark parent graph modified
+	if (UEdGraph* GraphObj = Node->GetGraph())
+	{
+		GraphObj->Modify();
+		Schema = GraphObj->GetSchema();
+	}
+
+	Node->Modify();
+
+	if (Schema)
+	{
+		Schema->BreakNodeLinks(*Node);
+	}
+
+	Node->DestroyNode();
+}
+
 void FHeartGraphAssetEditor::DeleteSelectedNodes()
 {
 	const FScopedTransaction Transaction(LOCTEXT("DeleteSelectedNode", "Delete Selected Node"));
@@ -647,18 +675,7 @@ void FHeartGraphAssetEditor::DeleteSelectedNodes()
 
 		if (Node->CanUserDeleteNode())
 		{
-			if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))
-			{
-				if (HeartEdGraphNode->GetHeartGraphNode())
-				{
-					auto&& NodeGuid = HeartEdGraphNode->GetHeartGraphNode()->GetGuid();
-					FBlueprintEditorUtils::RemoveNode(nullptr, Node, true);
-					HeartGraph->RemoveNode(NodeGuid);
-					continue;
-				}
-			}
-
-			FBlueprintEditorUtils::RemoveNode(nullptr, Node, true);
+			DeleteNode(Node);
 		}
 	}
 }

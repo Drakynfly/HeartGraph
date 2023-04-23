@@ -19,35 +19,38 @@ UObject* UHeartGraphSchema::GetConnectionVisualizer() const
 	return nullptr;
 }
 
-bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const
+bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
-	const FHeartConnectPinsResponse Response = CanPinsConnect(PinA, PinB);
+	UHeartGraphPin* PinPtrA = Graph->GetNode(PinA.NodeGuid)->GetPin(PinA.PinGuid);
+	UHeartGraphPin* PinPtrB = Graph->GetNode(PinB.NodeGuid)->GetPin(PinB.PinGuid);
+
+	const FHeartConnectPinsResponse Response = CanPinsConnect(PinPtrA, PinPtrB);
 
 	bool bModified = false;
 
 	switch (Response.Response)
 	{
 	case EHeartCanConnectPinsResponse::Allow:
-		PinA->ConnectTo(PinB);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakA:
-		PinA->DisconnectFromAll(true);
-		PinA->ConnectTo(PinB);
+		PinPtrA->DisconnectFromAll(true);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakB:
-		PinB->DisconnectFromAll(true);
-		PinA->ConnectTo(PinB);
+		PinPtrB->DisconnectFromAll(true);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakAB:
-		PinA->DisconnectFromAll(true);
-		PinB->DisconnectFromAll(true);
-		PinA->ConnectTo(PinB);
+		PinPtrA->DisconnectFromAll(true);
+		PinPtrB->DisconnectFromAll(true);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
@@ -68,10 +71,9 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHea
 
 	if (bModified)
 	{
-		PinA->GetNode()->NotifyPinConnectionsChanged(PinA);
-		PinB->GetNode()->NotifyPinConnectionsChanged(PinB);
-		auto&& Graph = PinA->GetNode()->GetGraph();
-		Graph->NotifyNodeConnectionsChanged({PinA->GetNode(), PinB->GetNode()}, {PinA, PinB});
+		PinPtrA->GetNode()->NotifyPinConnectionsChanged(PinPtrA);
+		PinPtrB->GetNode()->NotifyPinConnectionsChanged(PinPtrB);
+		Graph->NotifyNodeConnectionsChanged({PinPtrA->GetNode(), PinPtrB->GetNode()}, {PinPtrA, PinPtrB});
 	}
 
 	return bModified;

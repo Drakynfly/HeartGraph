@@ -22,23 +22,23 @@ public class HeartEditor : ModuleRules
 
         PrivateDependencyModuleNames.AddRange(new[]
         {
-            "ApplicationCore", // For clipboard copy/paste
+            "ApplicationCore",  // For clipboard copy/paste
             "AssetSearch",
             "AssetTools",
             "ClassViewer",
             "Core",
             "CoreUObject",
-            "EditorFramework", // For FToolkitManager
+            "EditorFramework",  // For FToolkitManager
             "Engine",
-            "GraphEditor", // For SGraphPalette
+            "GraphEditor",      // For SGraphPalette
             "InputCore",
             "Kismet",
-            "KismetWidgets", // For SLevelOfDetailBranchNode
-            "Projects", // For IPluginManager
+            "KismetWidgets",    // For SLevelOfDetailBranchNode
+            "Projects",         // For IPluginManager
             "PropertyEditor",
             "Slate",
             "SlateCore",
-            "SourceControl", // For Diffing utils
+            "SourceControl",    // For Diffing utils
             "ToolMenus",
             "UnrealEd"
         });

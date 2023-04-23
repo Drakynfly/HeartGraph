@@ -229,7 +229,9 @@ UObject* UHeartGraphNodeBlueprintFactory::FactoryCreateNew(UClass* Class, UObjec
 {
 	check(Class->IsChildOf(UHeartGraphNodeBlueprint::StaticClass()));
 
-	if (ParentClass == nullptr || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass) || !ParentClass->IsChildOf(UHeartGraphNode::StaticClass()))
+	if (ParentClass == nullptr ||
+		!FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass) ||
+		!ParentClass->IsChildOf(UHeartGraphNode::StaticClass()))
 	{
 		FFormatNamedArguments Args;
 		Args.Add(TEXT("ClassName"), ParentClass ? FText::FromString(ParentClass->GetName()) : LOCTEXT("Null", "(null)"));
@@ -237,18 +239,12 @@ UObject* UHeartGraphNodeBlueprintFactory::FactoryCreateNew(UClass* Class, UObjec
 		return nullptr;
 	}
 
-	UHeartGraphNodeBlueprint* NewBP = CastChecked<UHeartGraphNodeBlueprint>(FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, UHeartGraphNodeBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext));
-
-	if (NewBP && NewBP->UbergraphPages.Num() > 0)
-	{
-		//UBlueprintEditorSettings* Settings = GetMutableDefault<UBlueprintEditorSettings>();
-		//if(Settings && Settings->bSpawnDefaultBlueprintNodes)
-		{
-			int32 NodePositionY = 0;
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_ExecuteInput"), UHeartGraphNode::StaticClass(), NodePositionY);
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_Cleanup"), UHeartGraphNode::StaticClass(), NodePositionY);
-		}
-	}
+	UHeartGraphNodeBlueprint* NewBP = CastChecked<UHeartGraphNodeBlueprint>(
+		FKismetEditorUtilities::CreateBlueprint(
+			ParentClass, InParent, Name, BPTYPE_Normal,
+			UHeartGraphNodeBlueprint::StaticClass(),
+			UBlueprintGeneratedClass::StaticClass(),
+			CallingContext));
 
 	return NewBP;
 }

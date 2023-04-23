@@ -4,55 +4,6 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
 
-bool UHeartGraphPin::ConnectTo(UHeartGraphPin* Other)
-{
-	if (!ensure(IsValid(Other)))
-	{
-		return false;
-	}
-
-	// Make sure we don't already link to it
-	if (Links.Contains(Other->GetReference()))
-	{
-		return false;
-	}
-
-	UHeartGraphNode* MyNode = GetNode();
-
-	if (!ensureMsgf(!Other->Links.Contains(GetReference()), TEXT("")))
-	{
-		return false;
-	}
-
-	if (!ensureMsgf(MyNode->GetGraph() == Other->GetNode()->GetGraph(), TEXT("")))
-	{
-		return false;
-	}
-
-	// Check that the other pin does not link to us
-	//ensureMsgf(!Other->Links.Contains(this), TEXT("%s"), *GetLinkInfoString( LOCTEXT("MakeLinkTo", "MakeLinkTo").ToString(), LOCTEXT("IsLinked", "is linked with pin").ToString(), ToPin));
-	//ensureMsgf(MyNode->GetOuter() == ToPin->GetOwningNode()->GetOuter(), TEXT("%s"), *GetLinkInfoString( LOCTEXT("MakeLinkTo", "MakeLinkTo").ToString(), LOCTEXT("OuterMismatch", "has a different outer than pin").ToString(), ToPin)); // Ensure both pins belong to the same graph
-
-	// Add to both lists
-	Links.Add(Other->GetReference());
-	Other->Links.Add(GetReference());
-
-#if WITH_EDITOR
-	if (MyNode->GetEdGraphNode() && Other->GetNode()->GetEdGraphNode())
-	{
-		auto&& ThisEdGraphPin = MyNode->GetEdGraphNode()->FindPin(PinDesc.Name);
-		auto&& OtherEdGraphPin = Other->GetNode()->GetEdGraphNode()->FindPin(Other->PinDesc.Name);
-
-		if (ThisEdGraphPin && OtherEdGraphPin)
-		{
-			ThisEdGraphPin->MakeLinkTo(OtherEdGraphPin);
-		}
-	}
-#endif
-
-	return true;
-}
-
 void UHeartGraphPin::DisconnectFrom(const FHeartGraphPinReference Other, const bool NotifyNode)
 {
 	UHeartGraphPin* ToPin = ResolveConnectionByReference(Other);

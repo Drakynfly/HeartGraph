@@ -4,7 +4,7 @@
 
 #include "General/HeartFlakeInterface.h"
 
-static const FName SkippedObjectMarker = TEXT("_SKIP_");
+static const FName SkippedObjectMarker("_SKIP_");
 
 FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)
 {

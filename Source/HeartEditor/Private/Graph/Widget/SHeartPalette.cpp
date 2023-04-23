@@ -36,7 +36,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 	{
 		if (GraphAction->GetTypeId() == FHeartGraphSchemaAction_NewNode::StaticGetTypeId())
 		{
-			UClass* HeartGraphNodeClass = StaticCastSharedPtr<FHeartGraphSchemaAction_NewNode>(GraphAction)->NodeClass;
+			const UClass* HeartGraphNodeClass = StaticCastSharedPtr<FHeartGraphSchemaAction_NewNode>(GraphAction)->GetNodeClass();
 			HotkeyChord = FHeartSpawnNodeCommands::Get().GetChordByClass(HeartGraphNodeClass);
 		}
 		else if (GraphAction->GetTypeId() == FHeartGraphSchemaAction_NewComment::StaticGetTypeId())
@@ -148,6 +148,26 @@ SHeartPalette::~SHeartPalette()
 	//UHeartEdGraphSchema::OnNodeListChanged.RemoveAll(this);
 }
 
+TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)
+{
+	return SNew(SHeartPaletteItem, InCreateData);
+}
+
+void SHeartPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
+{
+	const UClass* AssetClass = UHeartGraph::StaticClass();
+
+	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
+	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())
+	{
+		AssetClass = HeartGraphAssetEditor->GetHeartGraph()->GetClass();
+	}
+
+	FGraphActionMenuBuilder ActionMenuBuilder;
+	UHeartEdGraphSchema::GetPaletteActions(ActionMenuBuilder, AssetClass, GetFilterCategoryName());
+	OutAllActions.Append(ActionMenuBuilder);
+}
+
 void SHeartPalette::Refresh()
 {
 	const FString LastSelectedCategory = CategoryComboBox->GetSelectedItem().IsValid() ? *CategoryComboBox->GetSelectedItem().Get() : FString();
@@ -181,26 +201,6 @@ void SHeartPalette::UpdateCategoryNames()
 	{
 		CategoryNames.Append(UHeartEdGraphSchema::GetHeartGraphNodeCategories(HeartGraphAssetEditor->GetHeartGraph()->GetClass()));
 	}
-}
-
-TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)
-{
-	return SNew(SHeartPaletteItem, InCreateData);
-}
-
-void SHeartPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
-{
-	const UClass* AssetClass = UHeartGraph::StaticClass();
-
-	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
-	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())
-	{
-		AssetClass = HeartGraphAssetEditor->GetHeartGraph()->GetClass();
-	}
-
-	FGraphActionMenuBuilder ActionMenuBuilder;
-	UHeartEdGraphSchema::GetPaletteActions(ActionMenuBuilder, AssetClass, GetFilterCategoryName());
-	OutAllActions.Append(ActionMenuBuilder);
 }
 
 FString SHeartPalette::GetFilterCategoryName() const

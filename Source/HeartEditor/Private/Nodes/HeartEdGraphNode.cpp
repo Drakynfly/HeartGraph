@@ -21,83 +21,12 @@
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditorActions.h"
 #include "HeartEditorModule.h"
-#include "Kismet2/KismetEditorUtilities.h"
 #include "ScopedTransaction.h"
-#include "SourceCodeNavigation.h"
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
-#include "UnrealEd.h"
+#include "Graph/HeartGraphUtils.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
-
-//////////////////////////////////////////////////////////////////////////
-// Heart Breakpoint
-
-void FHeartBreakpoint::AddBreakpoint()
-{
-	if (!bHasBreakpoint)
-	{
-		bHasBreakpoint = true;
-		bBreakpointEnabled = true;
-	}
-}
-
-void FHeartBreakpoint::RemoveBreakpoint()
-{
-	if (bHasBreakpoint)
-	{
-		bHasBreakpoint = false;
-		bBreakpointEnabled = false;
-	}
-}
-
-bool FHeartBreakpoint::HasBreakpoint() const
-{
-	return bHasBreakpoint;
-}
-
-void FHeartBreakpoint::EnableBreakpoint()
-{
-	if (bHasBreakpoint && !bBreakpointEnabled)
-	{
-		bBreakpointEnabled = true;
-	}
-}
-
-bool FHeartBreakpoint::CanEnableBreakpoint() const
-{
-	return bHasBreakpoint && !bBreakpointEnabled;
-}
-
-void FHeartBreakpoint::DisableBreakpoint()
-{
-	if (bHasBreakpoint && bBreakpointEnabled)
-	{
-		bBreakpointEnabled = false;
-	}
-}
-
-bool FHeartBreakpoint::IsBreakpointEnabled() const
-{
-	return bHasBreakpoint && bBreakpointEnabled;
-}
-
-void FHeartBreakpoint::ToggleBreakpoint()
-{
-	if (bHasBreakpoint)
-	{
-		bHasBreakpoint = false;
-		bBreakpointEnabled = false;
-	}
-	else
-	{
-		bHasBreakpoint = true;
-		bBreakpointEnabled = true;
-	}
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Heart Graph Node
 
 UHeartEdGraphNode::UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -160,7 +89,7 @@ void UHeartEdGraphNode::PostEditImport()
 	SubscribeToExternalChanges();
 }
 
-void UHeartEdGraphNode::PreSave(FObjectPreSaveContext SaveContext)
+void UHeartEdGraphNode::PreSave(const FObjectPreSaveContext SaveContext)
 {
 	Super::PreSave(SaveContext);
 
@@ -264,7 +193,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 				break;
 			}
 
-			if (HeartPin->ConnectTo(ConnectedHeartPin))
+			if (HeartGraphNode->GetGraph()->ConnectPins(HeartPin->GetReference(), ConnectedHeartPin->GetReference()))
 			{
 				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
 				HeartGraphNode->GetGraph()->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});
@@ -294,7 +223,7 @@ void UHeartEdGraphNode::SubscribeToExternalChanges()
 {
 	if (HeartGraphNode)
 	{
-		HeartGraphNode->OnReconstructionRequested.AddDynamic(this, &ThisClass::OnExternalChange);
+		HeartGraphNode->OnReconstructionRequested.BindUObject(this, &ThisClass::OnNodeRequestReconstruction);
 
 		// blueprint nodes
 		if (HeartGraphNode->GetClass()->ClassGeneratedBy && GEditor)
@@ -305,6 +234,7 @@ void UHeartEdGraphNode::SubscribeToExternalChanges()
 	}
 }
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void UHeartEdGraphNode::OnBlueprintPreCompile(UBlueprint* Blueprint)
 {
 	if (Blueprint && Blueprint == HeartGraphNode->GetClass()->ClassGeneratedBy)
@@ -317,13 +247,13 @@ void UHeartEdGraphNode::OnBlueprintCompiled()
 {
 	if (bBlueprintCompilationPending)
 	{
-		OnExternalChange(HeartGraphNode);
+		OnNodeRequestReconstruction();
 	}
 
 	bBlueprintCompilationPending = false;
 }
 
-void UHeartEdGraphNode::OnExternalChange(UHeartGraphNode* Node)
+void UHeartEdGraphNode::OnNodeRequestReconstruction()
 {
 	bNeedsFullReconstruction = true;
 
@@ -701,7 +631,7 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 	return SNew(SHeartGraphNode, this);
 }
 
-FText UHeartEdGraphNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
+FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) const
 {
 	if (ensure(HeartGraphNode) && HeartGraphNode->GetNodeObject())
 	{
@@ -783,7 +713,7 @@ void UHeartEdGraphNode::JumpToDefinition() const
 {
 	if (ensure(IsValid(HeartGraphNode)))
 	{
-		JumpToClassDefinition(HeartGraphNode->GetClass());
+		Heart::GraphUtils::JumpToClassDefinition(HeartGraphNode->GetClass());
 	}
 }
 
@@ -793,36 +723,8 @@ void UHeartEdGraphNode::JumpToNodeDefinition() const
 	{
 		if (ensure(IsValid(HeartGraphNode->GetNodeObject())))
 		{
-			JumpToClassDefinition(HeartGraphNode->GetNodeObject()->GetClass());
+			Heart::GraphUtils::JumpToClassDefinition(HeartGraphNode->GetNodeObject()->GetClass());
 		}
-	}
-}
-
-void UHeartEdGraphNode::JumpToClassDefinition(const UClass* Class) const
-{
-	if (Class->IsNative())
-	{
-		if (FSourceCodeNavigation::CanNavigateToClass(Class))
-		{
-			const bool bSucceeded = FSourceCodeNavigation::NavigateToClass(Class);
-			if (bSucceeded)
-			{
-				return;
-			}
-		}
-
-		// Failing that, fall back to the older method which will still get the file open assuming it exists
-		FString NativeParentClassHeaderPath;
-		const bool bFileFound = FSourceCodeNavigation::FindClassHeaderPath(Class, NativeParentClassHeaderPath) && (IFileManager::Get().FileSize(*NativeParentClassHeaderPath) != INDEX_NONE);
-		if (bFileFound)
-		{
-			const FString AbsNativeParentClassHeaderPath = FPaths::ConvertRelativePathToFull(NativeParentClassHeaderPath);
-			FSourceCodeNavigation::OpenSourceFile(AbsNativeParentClassHeaderPath);
-		}
-	}
-	else
-	{
-		FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(Class);
 	}
 }
 
@@ -1085,4 +987,4 @@ void UHeartEdGraphNode::ResetBreakpoints()
 	}
 }
 
-#undef LOCTEXT_NA
+#undef LOCTEXT_NAMESPACE

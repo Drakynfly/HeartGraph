@@ -210,6 +210,26 @@ FHeartRegistrationClasses UHeartGraphNodeRegistry::GetClassesRegisteredRecursive
 	return Classes;
 }
 
+void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, UClass*)>& Iter)
+{
+	for (auto&& GraphClassList : GraphClasses)
+	{
+		TSubclassOf<UHeartGraphNode> GraphNodeClass = GraphClassList.Key;
+		if (!ensure(IsValid(GraphNodeClass))) continue;
+
+		for (auto&& CountedClass : GraphClassList.Value)
+		{
+			UClass* NodeClass = CountedClass.Key;
+			if (!ensure(IsValid(NodeClass))) continue;
+
+			if (!Iter(GraphNodeClass, NodeClass))
+			{
+				return;
+			}
+		}
+	}
+}
+
 TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 {
 	TSet<FString> UnsortedCategories;
@@ -252,52 +272,6 @@ void UHeartGraphNodeRegistry::GetNodeClassesWithGraphClass(
 		for (auto&& GraphNode : GraphClassList.Value)
 		{
 			OutClasses.Add(GraphNode.Key, GraphClassList.Key);
-		}
-	}
-}
-
-void UHeartGraphNodeRegistry::GetFilteredNodeClasses(const FNativeNodeClassFilter& Filter,
-                                                     TArray<UClass*>& OutClasses) const
-{
-	if (!ensure(Filter.IsBound()))
-	{
-		return;
-	}
-
-	for (auto&& GraphClassList : GraphClasses)
-	{
-		for (auto&& CountedClass : GraphClassList.Value)
-		{
-			UClass* Class = CountedClass.Key;
-			if (!ensure(IsValid(Class))) continue;
-
-			if (Filter.Execute(Class))
-			{
-				OutClasses.Add(Class);
-			}
-		}
-	}
-}
-
-void UHeartGraphNodeRegistry::GetFilteredNodeClassesWithGraphClass(const FNativeNodeClassFilter& Filter,
-	TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const
-{
-	if (!ensure(Filter.IsBound()))
-	{
-		return;
-	}
-
-	for (auto&& GraphClassList : GraphClasses)
-	{
-		for (auto&& CountedClass : GraphClassList.Value)
-		{
-			UClass* Class = CountedClass.Key;
-			if (!ensure(IsValid(Class))) continue;
-
-			if (Filter.Execute(Class))
-			{
-				OutClasses.Add(Class, GraphClassList.Key);
-			}
 		}
 	}
 }

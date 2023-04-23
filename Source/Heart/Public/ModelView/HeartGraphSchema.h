@@ -5,6 +5,7 @@
 #include "UObject/Object.h"
 #include "HeartGraphSchema.generated.h"
 
+struct FHeartGraphPinReference;
 class UHeartGraph;
 class UHeartCanvasConnectionVisualizer;
 class UHeartGraphPin;
@@ -82,7 +83,7 @@ public:
 	UClass* GetConnectionVisualizerClass() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|Schema")
-	bool TryConnectPins(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
+	bool TryConnectPins(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	FHeartConnectPinsResponse CanPinsConnect(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;

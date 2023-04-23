@@ -19,7 +19,6 @@ class UHeartGraphNode;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, UHeartGraphPin*, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNodeRefreshRequested, UHeartGraphNode*, Node);
 
 UENUM(BlueprintType)
 enum class EHeartNodeNameContext : uint8
@@ -333,7 +332,8 @@ public:
 	FOnGraphNodeLocationChanged OnNodeLocationChanged;
 
 #if WITH_EDITORONLY_DATA
-	UPROPERTY(Transient)
+protected:
+	DECLARE_DELEGATE(FOnNodeRefreshRequested)
 	FOnNodeRefreshRequested OnReconstructionRequested;
 #endif
 

@@ -15,7 +15,7 @@
 #include "Editor.h"
 #include "ScopedTransaction.h"
 
-#define LOCTEXT_NAMESPACE "HeartGraphSchema_Actions"
+#define LOCTEXT_NAMESPACE "HeartEdGraphSchema_Actions"
 
 /////////////////////////////////////////////////////
 // Heart Graph Node
@@ -76,7 +76,7 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 
 	ParentGraph->NotifyGraphChanged();
 
-	auto&& HeartGraphAssetEditor = FHeartGraphUtils::GetHeartGraphAssetEditor(ParentGraph);
+	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
 	if (HeartGraphAssetEditor.IsValid())
 	{
 		HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);
@@ -96,7 +96,7 @@ UEdGraphNode* FHeartGraphSchemaAction_Paste::PerformAction(class UEdGraph* Paren
 	// prevent adding new nodes while playing
 	if (GEditor->PlayWorld == nullptr)
 	{
-		FHeartGraphUtils::GetHeartGraphAssetEditor(ParentGraph)->PasteNodesHere(Location);
+		Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph)->PasteNodesHere(Location);
 	}
 
 	return nullptr;
@@ -117,7 +117,7 @@ UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* 
 	FVector2D SpawnLocation = Location;
 
 	FSlateRect Bounds;
-	if (FHeartGraphUtils::GetHeartGraphAssetEditor(ParentGraph)->GetBoundsForSelectedNodes(Bounds, 50.0f))
+	if (Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph)->GetBoundsForSelectedNodes(Bounds, 50.0f))
 	{
 		CommentTemplate->SetBounds(Bounds);
 		SpawnLocation.X = CommentTemplate->NodePosX;

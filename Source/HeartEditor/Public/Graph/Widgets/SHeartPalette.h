@@ -32,13 +32,13 @@ public:
 	virtual ~SHeartPalette() override;
 
 protected:
-	void Refresh();
-	void UpdateCategoryNames();
-
 	// SGraphPalette
 	virtual TSharedRef<SWidget> OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData) override;
 	virtual void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override;
-	// --
+	// SGraphPalette
+
+	void Refresh();
+	void UpdateCategoryNames();
 
 	FString GetFilterCategoryName() const;
 	void CategorySelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);

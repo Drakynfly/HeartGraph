@@ -6,6 +6,7 @@
 #include "HeartGraphInterface.h"
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
+#include "HeartGraphPinReference.h"
 #include "HeartGraph.generated.h"
 
 class UHeartGraphSchema;
@@ -194,6 +195,15 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
 	void BP_OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& ConnectionEvent);
+
+
+	/*----------------------------
+			PIN EDITING
+	----------------------------*/
+
+	bool ConnectPins(FHeartGraphPinReference A, FHeartGraphPinReference B);
+
+
 
 public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")

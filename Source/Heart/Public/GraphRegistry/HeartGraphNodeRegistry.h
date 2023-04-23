@@ -8,11 +8,10 @@
 
 #include "HeartGraphNodeRegistry.generated.h"
 
-DECLARE_DELEGATE_RetVal_OneParam(bool, FNativeNodeClassFilter, UClass* /* Class*/);
-
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, Class);
-
 class UHeartGraphNode;
+
+DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, NodeClass);
+
 class UGraphNodeRegistrar;
 
 /**
@@ -39,6 +38,8 @@ protected:
 	FHeartRegistrationClasses GetClassesRegisteredRecursively();
 
 public:
+	void ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, UClass*)>& Iter);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	TArray<FString> GetNodeCategories() const;
 
@@ -47,10 +48,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	void GetNodeClassesWithGraphClass(TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
-
-	void GetFilteredNodeClasses(const FNativeNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;
-
-	void GetFilteredNodeClassesWithGraphClass(const FNativeNodeClassFilter& Filter, TMap<UClass*, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	void GetFilteredNodeClasses(const FNodeClassFilter& Filter, TArray<UClass*>& OutClasses) const;

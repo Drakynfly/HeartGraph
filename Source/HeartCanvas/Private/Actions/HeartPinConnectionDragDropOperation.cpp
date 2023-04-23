@@ -36,7 +36,9 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 
 	if (DraggedPin.IsValid() && HoveredPin.IsValid())
 	{
-		if (Canvas->GetGraph()->GetSchema()->TryConnectPins(DraggedPin->GetPin(), HoveredPin->GetPin()))
+		UHeartGraph* Graph = Canvas->GetGraph();
+
+		if (Graph->GetSchema()->TryConnectPins(Graph, DraggedPin->GetPin()->GetReference(), HoveredPin->GetPin()->GetReference()))
 		{
 		}
 	}

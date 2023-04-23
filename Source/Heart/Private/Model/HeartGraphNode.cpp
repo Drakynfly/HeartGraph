@@ -3,6 +3,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphPin.h"
+#include "Model/HeartGraphStatics.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
 
@@ -83,10 +84,10 @@ void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	if (PropertyChangedEvent.MemberProperty &&
-	   (PropertyChangedEvent.MemberProperty->HasMetaData("TriggerReconstruct") ||
+	   (PropertyChangedEvent.MemberProperty->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
 		GetPropertiesTriggeringNodeReconstruction().Contains(PropertyChangedEvent.GetPropertyName())))
 	{
-		OnReconstructionRequested.Broadcast(this);
+		OnReconstructionRequested.ExecuteIfBound();
 	}
 }
 
@@ -98,10 +99,10 @@ void UHeartGraphNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pr
 	{
 		const FProperty* Property = Head->GetValue();
 
-		if (Property && (Property->HasMetaData("TriggerReconstruct") ||
+		if (Property && (Property->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
 		   	GetPropertiesTriggeringNodeReconstruction().Contains(Property->GetFName())))
 		{
-			OnReconstructionRequested.Broadcast(this);
+			OnReconstructionRequested.ExecuteIfBound();
 		}
 	}
 }

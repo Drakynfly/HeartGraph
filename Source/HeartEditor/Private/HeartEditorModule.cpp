@@ -22,9 +22,9 @@
 #include "Customizations/ItemsArrayCustomization.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
 
-static FName PropertyEditorModuleName = TEXT("PropertyEditor");
-static FName AssetToolsModuleName = TEXT("AssetTools");
-static FName AssetSearchModuleName = TEXT("AssetSearch");
+static const FName PropertyEditorModuleName("PropertyEditor");
+static const FName AssetToolsModuleName("AssetTools");
+static const FName AssetSearchModuleName("AssetSearch");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
 

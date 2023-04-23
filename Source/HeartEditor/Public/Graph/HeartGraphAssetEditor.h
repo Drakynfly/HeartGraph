@@ -136,6 +136,8 @@ protected:
 	virtual void SelectAllNodes() const;
 	virtual bool CanSelectAllNodes() const;
 
+	virtual void DeleteNode(UEdGraphNode* Node);
+
 	virtual void DeleteSelectedNodes();
 	virtual void DeleteSelectedDuplicableNodes();
 	virtual bool CanDeleteNodes() const;

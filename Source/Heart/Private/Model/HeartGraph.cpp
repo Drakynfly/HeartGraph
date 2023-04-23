@@ -242,3 +242,48 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 
 	return Removed > 0;
 }
+
+bool UHeartGraph::ConnectPins(const FHeartGraphPinReference A, const FHeartGraphPinReference B)
+{
+	UHeartGraphNode* ANode = GetNode(A.NodeGuid);
+	UHeartGraphNode* BNode = GetNode(B.NodeGuid);
+
+	if (!ensure(IsValid(ANode) && IsValid(BNode)))
+	{
+		return false;
+	}
+
+	UHeartGraphPin* APin = ANode->GetPin(A.PinGuid);
+	UHeartGraphPin* BPin = BNode->GetPin(B.PinGuid);
+
+	if (!ensure(IsValid(APin) && IsValid(BPin)))
+	{
+		return false;
+	}
+
+	// Make sure we don't already link to it
+	if (APin->Links.Contains(B) ||
+		BPin->Links.Contains(A))
+	{
+		return false;
+	}
+
+	// Add to both lists
+	APin->Links.Add(B);
+	BPin->Links.Add(A);
+
+#if WITH_EDITOR
+	if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
+	{
+		auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(APin->PinDesc.Name);
+		auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BPin->PinDesc.Name);
+
+		if (ThisEdGraphPin && OtherEdGraphPin)
+		{
+			ThisEdGraphPin->MakeLinkTo(OtherEdGraphPin);
+		}
+	}
+#endif
+
+	return true;
+}
