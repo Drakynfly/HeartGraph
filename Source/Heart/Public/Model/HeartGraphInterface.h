@@ -7,7 +7,7 @@
 
 class UHeartGraph;
 
-UINTERFACE()
+UINTERFACE(NotBlueprintable)
 class UHeartGraphInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -18,11 +18,28 @@ class HEART_API IHeartGraphInterface
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Heart|Graph")
-	UHeartGraph* GetHeartGraph() const;
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	virtual UHeartGraph* GetHeartGraph() const PURE_VIRTUAL(IHeartGraphInterface::GetHeartGraph, return nullptr; )
+};
 
-	UHeartGraph* GetHeartGraphNative() const
+UINTERFACE()
+class UHeartGraphInterfaceBP : public UHeartGraphInterface
+{
+	GENERATED_BODY()
+};
+
+class IHeartGraphInterfaceBP : public IHeartGraphInterface
+{
+	GENERATED_BODY()
+
+protected:
+	// Defer to Blueprint implementation
+	virtual UHeartGraph* GetHeartGraph() const override final
 	{
-		return Execute_GetHeartGraph(_getUObject());
+		return Execute_GetHeartGraph_BP(_getUObject());
 	}
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph", meta = (DisplayName = "Get Heart Graph"))
+	UHeartGraph* GetHeartGraph_BP() const;
 };

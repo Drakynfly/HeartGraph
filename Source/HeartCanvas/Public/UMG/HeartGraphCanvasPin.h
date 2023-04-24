@@ -26,13 +26,11 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
 	/** IHeartWidgetInputLinkerRedirector */
 
-protected:
 	/** IHeartGraphPinInterface */
-	virtual UHeartGraphNode* GetNode_Implementation() override;
-	virtual FHeartPinGuid GetPinGuid_Implementation() const override;
+	virtual UHeartGraphNode* GetNode() const override;
+	virtual FHeartPinGuid GetPinGuid() const override;
 	/** IHeartGraphPinInterface */
 
-public:
 	// Called by UHeartPinConnectionDragDropOperation when connecting pins.
 	void SetIsPreviewConnectionTarget(bool IsTarget, bool CanConnect);
 

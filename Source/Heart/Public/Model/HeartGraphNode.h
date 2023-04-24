@@ -91,7 +91,7 @@ public:
 #endif
 
 	/** IHeartGraphNodeInterface */
-	virtual UHeartGraphNode* GetHeartGraphNode_Implementation() const override;
+	virtual UHeartGraphNode* GetHeartGraphNode() const override final;
 	/** IHeartGraphNodeInterface */
 
 

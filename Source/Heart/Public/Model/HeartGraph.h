@@ -62,7 +62,7 @@ public:
 #endif
 
 	//* IHeartGraphInterface */
-	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	virtual UHeartGraph* GetHeartGraph() const override final;
 	//* IHeartGraphInterface */
 
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;

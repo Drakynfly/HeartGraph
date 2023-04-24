@@ -78,7 +78,7 @@ void UHeartGraphNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pr
 
 #endif
 
-UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode_Implementation() const
+UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 {
 	return const_cast<UHeartGraphNode*>(this);
 }

@@ -26,11 +26,11 @@ public:
 	virtual void NativeDestruct() override;
 
 	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
+	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 	/** IHeartWidgetInputLinkerRedirector */
 
 	/** IHeartGraphNodeInterface */
-	virtual UHeartGraphNode* GetHeartGraphNode_Implementation() const override;
+	virtual UHeartGraphNode* GetHeartGraphNode() const override;
 	/** IHeartGraphNodeInterface */
 
 protected:

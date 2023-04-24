@@ -25,7 +25,7 @@ UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() c
 	return Execute_ResolveLinker(GraphCanvas.Get());
 }
 
-UHeartGraphNode* UHeartGraphCanvasNode::GetHeartGraphNode_Implementation() const
+UHeartGraphNode* UHeartGraphCanvasNode::GetHeartGraphNode() const
 {
 	return GraphNode.Get();
 }
@@ -84,7 +84,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(FHeartPinGuid Pin)
 	auto&& ThisPin = PinWidgets.FindByPredicate(
 		[Pin](const TObjectPtr<UHeartGraphCanvasPin>& PinWidget)
 		{
-			return IHeartGraphPinInterface::Execute_GetPinGuid(PinWidget) == Pin;
+			return PinWidget->GetPinGuid() == Pin;
 		});
 
 	if (!ThisPin)
@@ -141,7 +141,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid Gu
 {
 	for (auto&& PinWidget : PinWidgets)
 	{
-		if (IHeartGraphPinInterface::Execute_GetPinGuid(PinWidget) == Guid)
+		if (PinWidget->GetPinGuid() == Guid)
 		{
 			return PinWidget;
 		}

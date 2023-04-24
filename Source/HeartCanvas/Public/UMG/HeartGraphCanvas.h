@@ -76,7 +76,7 @@ public:
 	/** IHeartWidgetInputLinkerRedirector */
 
 	/** IHeartGraphInterface */
-	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	virtual UHeartGraph* GetHeartGraph() const override;
 	/** IHeartGraphInterface */
 
 	/** IHeartNodeLocationAccessor */

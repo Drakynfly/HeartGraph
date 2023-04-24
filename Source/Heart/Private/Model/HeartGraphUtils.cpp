@@ -13,7 +13,7 @@ UHeartGraphNode* UHeartGraphUtils::FindNodeOfClass(const TScriptInterface<IHeart
 	UHeartGraphNode* OutNode = nullptr;
 
 	// Find first node of the given class
-	Graph->GetHeartGraphNative()->ForEachNode(
+	Graph->GetHeartGraph()->ForEachNode(
 		[Class, &OutNode](UHeartGraphNode* Node)
 		{
 			if (Node->IsA(Class))
@@ -35,7 +35,7 @@ UHeartGraphNode* UHeartGraphUtils::FindNodeByPredicate(const TScriptInterface<IH
 	UHeartGraphNode* OutNode = nullptr;
 
 	// Find first node that returns true for the given predicate
-	Graph->GetHeartGraphNative()->ForEachNode(
+	Graph->GetHeartGraph()->ForEachNode(
 		[Predicate, &OutNode](UHeartGraphNode* Node)
 		{
 			if (Predicate.Execute(Node))
@@ -57,7 +57,7 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInte
 	TArray<UHeartGraphNode*> OutNodes;
 
 	// Find first node of the given class
-	Graph->GetHeartGraphNative()->ForEachNode(
+	Graph->GetHeartGraph()->ForEachNode(
 		[Class, &OutNodes](UHeartGraphNode* Node)
 		{
 			if (Node->IsA(Class))
@@ -78,7 +78,7 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScript
 	TArray<UHeartGraphNode*> OutNodes;
 
 	// Find first node of the given class
-	Graph->GetHeartGraphNative()->ForEachNode(
+	Graph->GetHeartGraph()->ForEachNode(
 		[Predicate, &OutNodes](UHeartGraphNode* Node)
 		{
 			if (Predicate.Execute(Node))
@@ -95,7 +95,7 @@ bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInter
 {
 	if (Node.GetInterface())
 	{
-		Graph = Node->GetHeartGraphNodeNative()->GetGraph();
+		Graph = Node->GetHeartGraphNode()->GetGraph();
 	}
 	return IsValid(Graph);
 }
@@ -105,7 +105,7 @@ bool UHeartGraphUtils::GetNodeObjectTyped(const TScriptInterface<IHeartGraphNode
 {
 	if (Node.GetInterface())
 	{
-		Object = Node->GetHeartGraphNodeNative()->GetNodeObject();
+		Object = Node->GetHeartGraphNode()->GetNodeObject();
 	}
 	return IsValid(Object);
 }
@@ -114,7 +114,7 @@ bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterfa
 {
 	if (Pin.GetInterface())
 	{
-		Node = IHeartGraphPinInterface::Execute_GetNode(Pin.GetObject());
+		Node = Pin->GetNode();
 	}
 	return IsValid(Node);
 }

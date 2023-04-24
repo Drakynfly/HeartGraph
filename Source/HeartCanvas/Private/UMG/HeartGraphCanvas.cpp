@@ -107,7 +107,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 			for (UHeartGraphCanvasPin* PinWidget : PinWidgets)
 			{
-				FHeartPinGuid WidgetGuid = IHeartGraphPinInterface::Execute_GetPinGuid(PinWidget);
+				FHeartPinGuid WidgetGuid = PinWidget->GetPinGuid();
 				if (WidgetGuid.IsValid())
 				{
 					FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
@@ -125,7 +125,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 	for (auto&& VisiblePin : VisiblePins)
 	{
-		PinGeometries.Add(IHeartGraphPinInterface::Execute_GetPinGuid(VisiblePin), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
+		PinGeometries.Add(VisiblePin->GetPinGuid(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
 	}
 
 	/*
@@ -145,7 +145,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		if (IsValid(PreviewPin))
 		{
 			auto&& GraphGeo = GetTickSpaceGeometry();
-			FGeometry PinGeo = PinGeometries.Find(IHeartGraphPinInterface::Execute_GetPinGuid(PreviewPin))->Value;
+			FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPinGuid())->Value;
 
 			FVector2D StartPoint;
 			FVector2D EndPoint;
@@ -196,7 +196,7 @@ UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
 	return BindingContainer.GetLinker();
 }
 
-UHeartGraph* UHeartGraphCanvas::GetHeartGraph_Implementation() const
+UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
 {
 	return DisplayedGraph.Get();
 }

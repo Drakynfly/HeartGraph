@@ -1,12 +1,12 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartLayoutHelper.h"
-#include "Model/HeartGraph.h"
 #include "ModelView/HeartNodeLocationAccessor.h"
+#include "Model/HeartGraph.h"
 
 bool UHeartLayoutHelper::Layout(IHeartNodeLocationAccessor* Accessor) const
 {
-	auto&& Graph = Accessor->GetHeartGraphNative();
+	const UHeartGraph* Graph = Accessor->GetHeartGraph();
 	if (IsValid(Graph))
 	{
 		TArray<UHeartGraphNode*> AllNodes;

@@ -103,7 +103,7 @@ class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartNodeLocat
 
 public:
 	/* IHeartNodeLocationAccessor */
-	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	virtual UHeartGraph* GetHeartGraph() const override;
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override final;
 	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override final;
 	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const override final;
