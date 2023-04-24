@@ -4,7 +4,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinInterface.h"
 
-UHeartGraphNode* UHeartGraphUtils::FindNodeOfClass(const TScriptInterface<IHeartGraphInterface> Graph,
+UHeartGraphNode* UHeartGraphUtils::FindNodeOfClass(const TScriptInterface<IHeartGraphInterface>& Graph,
                                                    TSubclassOf<UHeartGraphNode> Class)
 {
 	if (!Graph.GetInterface()) return nullptr;
@@ -26,7 +26,7 @@ UHeartGraphNode* UHeartGraphUtils::FindNodeOfClass(const TScriptInterface<IHeart
 	return OutNode;
 }
 
-UHeartGraphNode* UHeartGraphUtils::FindNodeByPredicate(const TScriptInterface<IHeartGraphInterface> Graph,
+UHeartGraphNode* UHeartGraphUtils::FindNodeByPredicate(const TScriptInterface<IHeartGraphInterface>& Graph,
                                                        const FHeartGraphNodePredicate& Predicate)
 {
 	if (!Graph.GetInterface()) return nullptr;
@@ -48,7 +48,7 @@ UHeartGraphNode* UHeartGraphUtils::FindNodeByPredicate(const TScriptInterface<IH
 	return OutNode;
 }
 
-TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInterface<IHeartGraphInterface> Graph,
+TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInterface<IHeartGraphInterface>& Graph,
                                                                TSubclassOf<UHeartGraphNode> Class)
 {
 	if (!Graph.GetInterface()) return {};
@@ -70,7 +70,7 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInte
 	return OutNodes;
 }
 
-TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScriptInterface<IHeartGraphInterface> Graph,
+TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScriptInterface<IHeartGraphInterface>& Graph,
                                                                    const FHeartGraphNodePredicate& Predicate)
 {
 	if (!Graph.GetInterface()) return {};
@@ -91,7 +91,7 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScript
 	return OutNodes;
 }
 
-bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface> Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph)
+bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph)
 {
 	if (Node.GetInterface())
 	{
@@ -100,7 +100,7 @@ bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInter
 	return IsValid(Graph);
 }
 
-bool UHeartGraphUtils::GetNodeObjectTyped(const TScriptInterface<IHeartGraphNodeInterface> Node, TSubclassOf<UObject> Class,
+bool UHeartGraphUtils::GetNodeObjectTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UObject> Class,
                                           UObject*& Object)
 {
 	if (Node.GetInterface())
@@ -110,7 +110,13 @@ bool UHeartGraphUtils::GetNodeObjectTyped(const TScriptInterface<IHeartGraphNode
 	return IsValid(Object);
 }
 
-bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterface> Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
+FHeartGraphPinReference UHeartGraphUtils::MakeReference(const TScriptInterface<IHeartGraphNodeInterface>& Node,
+                                                        const TScriptInterface<IHeartGraphPinInterface>& Pin)
+{
+	return FHeartGraphPinReference{Node->GetHeartGraphNode()->GetGuid(), Pin->GetPinGuid()};
+}
+
+bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
 {
 	if (Pin.GetInterface())
 	{

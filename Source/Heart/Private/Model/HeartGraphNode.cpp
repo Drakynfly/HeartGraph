@@ -154,7 +154,7 @@ UHeartGraph* UHeartGraphNode::GetGraph() const
 	return GetOwningGraph<UHeartGraph>();
 }
 
-FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid Pin)
+FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid Pin) const
 {
 	if (PinDescriptions.Contains(Pin))
 	{
@@ -163,7 +163,16 @@ FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid Pin)
 	return FHeartGraphPinDesc();
 }
 
-FHeartPinGuid UHeartGraphNode::GetPinByName(const FName& Name)
+FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid Pin) const
+{
+	if (PinDescriptions.Contains(Pin))
+	{
+		return {Guid, Pin};
+	}
+	return FHeartGraphPinReference();
+}
+
+FHeartPinGuid UHeartGraphNode::GetPinByName(const FName& Name) const
 {
 	for (auto&& Pin : PinDescriptions)
 	{

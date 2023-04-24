@@ -173,10 +173,13 @@ public:
 	FVector2D GetLocation() const { return Location; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartGraphPinDesc GetPinDesc(FHeartPinGuid Pin);
+	FHeartGraphPinDesc GetPinDesc(FHeartPinGuid Pin) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartPinGuid GetPinByName(const FName& Name);
+	FHeartGraphPinReference GetPinReference(FHeartPinGuid Pin) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	FHeartPinGuid GetPinByName(const FName& Name) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetPinsOfDirection(EHeartPinDirection Direction) const;

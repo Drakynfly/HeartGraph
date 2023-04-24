@@ -7,7 +7,7 @@
 #include "Model/HeartGraphPinTag.h"
 #include "HeartVisualizerInterfaces.generated.h"
 
-UINTERFACE()
+UINTERFACE(Blueprintable)
 class HEART_API UGraphNodeVisualizerInterface : public UHeartGraphNodeInterface
 {
 	GENERATED_BODY()
@@ -20,13 +20,24 @@ class HEART_API IGraphNodeVisualizerInterface : public IHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 
+protected:
+	// Defer to Blueprint implementation by default
+	virtual UHeartGraphNode* GetHeartGraphNode() const override
+	{
+		return Execute_GetVisualizingNode(_getUObject());
+	}
+
 public:
+	// Get the Heart Graph Node that this object visualizes
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
+	UHeartGraphNode* GetVisualizingNode() const;
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
 	TSubclassOf<UHeartGraphNode> GetSupportedGraphNodeClass();
 };
 
 // This class does not need to be modified.
-UINTERFACE()
+UINTERFACE(Blueprintable)
 class HEART_API UGraphPinVisualizerInterface : public UHeartGraphPinInterface
 {
 	GENERATED_BODY()
@@ -53,7 +64,7 @@ public:
 };
 
 // This class does not need to be modified.
-UINTERFACE()
+UINTERFACE(Blueprintable)
 class HEART_API UGraphConnectionVisualizerInterface : public UInterface
 {
 	GENERATED_BODY()
