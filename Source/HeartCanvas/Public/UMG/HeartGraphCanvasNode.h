@@ -7,7 +7,6 @@
 #include "View/HeartVisualizerInterfaces.h"
 #include "HeartGraphCanvasNode.generated.h"
 
-class UHeartGraphPin;
 class UHeartGraphNode;
 class UHeartGraphCanvas;
 class UHeartGraphCanvasPin;
@@ -47,19 +46,19 @@ public:
 	void RebuildAllPinConnections();
 
 	UFUNCTION()
-	void RebuildPinConnections(UHeartGraphPin* Pin);
+	void RebuildPinConnections(FHeartPinGuid Pin);
 
 	UFUNCTION(BlueprintCallable, meta = (DeterminesOutputType = Class, DeprecatedFunction))
 	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GraphNode.Get(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
-	UHeartGraphCanvasPin* GetPinWidget(const FHeartPinGuid& Guid) const;
+	UHeartGraphCanvasPin* GetPinWidget(FHeartPinGuid Pin) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphCanvasNode")
 	TArray<UHeartGraphCanvasPin*> GetPinWidgets() const { return PinWidgets; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
-	UHeartGraphCanvasPin* CreatePinWidget(UHeartGraphPin* Pin);
+	UHeartGraphCanvasPin* CreatePinWidget(FHeartPinGuid Pin);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
 	void DestroyPinWidget(UHeartGraphCanvasPin* PinWidget);

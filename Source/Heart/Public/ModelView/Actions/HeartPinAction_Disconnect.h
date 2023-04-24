@@ -5,6 +5,8 @@
 #include "HeartGraphAction.h"
 #include "HeartPinAction_Disconnect.generated.h"
 
+class IHeartGraphPinInterface;
+
 /**
  *
  */
@@ -15,5 +17,5 @@ class HEART_API UHeartPinAction_Disconnect : public UHeartGraphAction
 
 public:
 	virtual bool CanExecute(const UObject* Object) const override;
-	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual void ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>&, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 };

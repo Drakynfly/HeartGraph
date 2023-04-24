@@ -36,7 +36,7 @@ void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
 #endif
 }
 
-void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<UHeartGraphPin*>& AffectedPins)
+void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<FHeartPinGuid>& AffectedPins)
 {
 	FHeartGraphConnectionEvent Event;
 	Event.AffectedNodes = AffectedNodes;
@@ -243,40 +243,25 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	return Removed > 0;
 }
 
-bool UHeartGraph::ConnectPins(const FHeartGraphPinReference A, const FHeartGraphPinReference B)
+bool UHeartGraph::ConnectPins(const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB)
 {
-	UHeartGraphNode* ANode = GetNode(A.NodeGuid);
-	UHeartGraphNode* BNode = GetNode(B.NodeGuid);
+	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
+	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
 
 	if (!ensure(IsValid(ANode) && IsValid(BNode)))
 	{
 		return false;
 	}
 
-	UHeartGraphPin* APin = ANode->GetPin(A.PinGuid);
-	UHeartGraphPin* BPin = BNode->GetPin(B.PinGuid);
-
-	if (!ensure(IsValid(APin) && IsValid(BPin)))
-	{
-		return false;
-	}
-
-	// Make sure we don't already link to it
-	if (APin->Links.Contains(B) ||
-		BPin->Links.Contains(A))
-	{
-		return false;
-	}
-
 	// Add to both lists
-	APin->Links.Add(B);
-	BPin->Links.Add(A);
+	ANode->GetLinks(PinA.PinGuid).Links.Add(PinB);
+	BNode->GetLinks(PinB.PinGuid).Links.Add(PinA);
 
 #if WITH_EDITOR
 	if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
 	{
-		auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(APin->PinDesc.Name);
-		auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BPin->PinDesc.Name);
+		auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(ANode->GetPinDesc(PinA.PinGuid).Name);
+		auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BNode->GetPinDesc(PinB.PinGuid).Name);
 
 		if (ThisEdGraphPin && OtherEdGraphPin)
 		{
@@ -286,4 +271,57 @@ bool UHeartGraph::ConnectPins(const FHeartGraphPinReference A, const FHeartGraph
 #endif
 
 	return true;
+}
+
+bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB)
+{
+	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
+	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
+
+	if (!ensure(IsValid(ANode) && IsValid(BNode)))
+	{
+		return false;
+	}
+
+	// We assume that both of these are true, but proceed anyway if only one of them are...
+	if (ANode->GetLinks(PinA.NodeGuid).Links.Contains(PinB) ||
+		BNode->GetLinks(PinB.NodeGuid).Links.Contains(PinA))
+	{
+		ANode->GetLinks(PinA.NodeGuid).Links.Remove(PinB);
+		BNode->GetLinks(PinB.NodeGuid).Links.Remove(PinA);
+
+#if WITH_EDITOR
+		if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
+		{
+			auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(ANode->GetPinDesc(PinA.PinGuid).Name);
+			auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BNode->GetPinDesc(PinB.PinGuid).Name);
+
+			if (ThisEdGraphPin && OtherEdGraphPin)
+			{
+				ThisEdGraphPin->BreakLinkTo(OtherEdGraphPin);
+			}
+		}
+#endif
+
+		ANode->NotifyPinConnectionsChanged(PinA.PinGuid);
+		BNode->NotifyPinConnectionsChanged(PinB.PinGuid);
+		NotifyNodeConnectionsChanged({ANode, BNode}, {PinA.PinGuid, PinB.PinGuid});
+	}
+
+	return true;
+}
+
+void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference Pin)
+{
+	UHeartGraphNode* ANode = GetNode(Pin.NodeGuid);
+
+	if (!ensure(IsValid(ANode)))
+	{
+		return;
+	}
+
+	for (const FHeartGraphPinReference& Link : ANode->GetLinks(Pin.PinGuid).Links)
+	{
+		DisconnectPins(Pin, Link);
+	}
 }

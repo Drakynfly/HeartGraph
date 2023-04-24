@@ -4,7 +4,7 @@
 
 #include "HeartGraph.h"
 #include "HeartGraphNodeInterface.h"
-#include "HeartGraphPin.h"
+#include "HeartGraphPinDesc.h"
 #include "HeartGraphPinTag.h"
 #include "UObject/Object.h"
 #include "Model/HeartGuids.h"
@@ -12,11 +12,10 @@
 #include "HeartGraphNode.generated.h"
 
 class UHeartGraph;
-class UHeartGraphPin;
 class UHeartGraphCanvas;
 class UHeartGraphNode;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, UHeartGraphPin*, Pin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, FHeartPinGuid, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
 
@@ -174,36 +173,19 @@ public:
 	FVector2D GetLocation() const { return Location; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* GetPin(const FHeartPinGuid& PinGuid);
+	FHeartGraphPinDesc GetPinDesc(FHeartPinGuid Pin);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* GetPinByName(const FName& Name);
-
-	template <typename THeartGraphPin = UHeartGraphPin>
-	TArray<THeartGraphPin*> GetPinsOfDirection(EHeartPinDirection Direction) const
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		auto&& DirectedPins = GetPinsOfDirectionByClass(Direction, THeartGraphPin::StaticClass());
-		return *reinterpret_cast<TArray<THeartGraphPin*>*>(&DirectedPins);
-	}
-
-	template <typename THeartGraphPin = UHeartGraphPin>
-	TArray<THeartGraphPin*> GetInputPins() const { return GetPinsOfDirection<THeartGraphPin>(EHeartPinDirection::Input); }
-
-	template <typename THeartGraphPin = UHeartGraphPin>
-	TArray<THeartGraphPin*> GetOutputPins() const { return GetPinsOfDirection<THeartGraphPin>(EHeartPinDirection::Output); }
+	FHeartPinGuid GetPinByName(const FName& Name);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	TArray<UHeartGraphPin*> GetPinsOfDirection(EHeartPinDirection Direction) const;
+	TArray<FHeartPinGuid> GetPinsOfDirection(EHeartPinDirection Direction) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphPin*> GetPinsOfDirectionByClass(EHeartPinDirection Direction, TSubclassOf<UHeartGraphPin> Class) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	TArray<FHeartPinGuid> GetInputPins() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphPin*> GetInputPins(TSubclassOf<UHeartGraphPin> Class) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphPin*> GetOutputPins(TSubclassOf<UHeartGraphPin> Class) const;
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	TArray<FHeartPinGuid> GetOutputPins() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphNode")
 	TArray<FHeartGraphPinDesc> GetDynamicPins() const;
@@ -249,27 +231,8 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	template <typename THeartGraphPin> THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FHeartGraphPinDesc& Desc)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		check(Class->IsChildOf<THeartGraphPin>());
-		return Cast<THeartGraphPin>(CreatePinOfClass(Class, Desc));
-	}
-
-	UE_DEPRECATED(5.2, "This overload of CreatePin is deprecated. Please use the version taking a FHeartGraphPinDesc");
-	template <typename THeartGraphPin> THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinTag& Type)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		return Cast<THeartGraphPin>(CreatePin(THeartGraphPin::StaticClass(), Direction, Type));
-	}
-
-	UE_DEPRECATED(5.2, "This overload of CreatePin is deprecated. Please use the version taking a FHeartGraphPinDesc");
-	template <typename THeartGraphPin> THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinTag& Type)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		check(Class->IsChildOf<THeartGraphPin>());
-		return Cast<THeartGraphPin>(CreatePinOfClass(Class, FHeartGraphPinDesc{Name, FText(), FText(), Type, Direction}));
-	}
+	FHeartGraphPinConnections& GetLinks(FHeartPinGuid Pin);
+	FHeartGraphPinConnections GetLinks(FHeartPinGuid Pin) const;
 
 	// Get all pins that match the predicate.
 	template <typename Predicate>
@@ -284,29 +247,20 @@ public:
 	int32 RemovePinsByPredicate(EHeartPinDirection Direction, Predicate Pred);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* CreatePin(const FHeartGraphPinDesc& Desc);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	UHeartGraphPin* CreatePinOfClass(TSubclassOf<UHeartGraphPin> Class, const FHeartGraphPinDesc& Desc);
+	FHeartPinGuid AddPin(const FHeartGraphPinDesc& Desc);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	void AddPin(UHeartGraphPin* Pin);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	bool RemovePin(UHeartGraphPin* Pin);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	bool RemovePinByGuid(FHeartPinGuid Pin);
+	bool RemovePin(FHeartPinGuid Pin);
 
 	// Add a numbered instance pin
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* AddInstancePin(EHeartPinDirection Direction);
+	FHeartPinGuid AddInstancePin(EHeartPinDirection Direction);
 
 	// Remove the last numbered instance pin
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void RemoveInstancePin(EHeartPinDirection Direction);
 
-	virtual void NotifyPinConnectionsChanged(UHeartGraphPin* Pin);
+	virtual void NotifyPinConnectionsChanged(FHeartPinGuid Pin);
 
 protected:
 	// Called by the owning graph when we are created.
@@ -319,7 +273,7 @@ protected:
 	void BP_OnCreate();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Connections Changed")
-	void BP_OnConnectionsChanged(UHeartGraphPin* Pin);
+	void BP_OnConnectionsChanged(FHeartPinGuid Pin);
 
 public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
@@ -349,7 +303,10 @@ protected:
 	FVector2D Location;
 
 	UPROPERTY(BlueprintReadOnly)
-	TMap<FHeartPinGuid, TObjectPtr<UHeartGraphPin>> Pins;
+	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
 
 	UPROPERTY(BlueprintReadOnly)
 	uint8 InstancedInputs = 0;
@@ -375,11 +332,11 @@ TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirect
 {
 	TArray<FHeartPinGuid> MatchedPins;
 
-	for (auto&& PinPair : Pins)
+	for (const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& PinPair : PinDescriptions)
 	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value->PinDesc.Direction))
+		if (EnumHasAnyFlags(Direction, PinPair.Value.Direction))
 		{
-			if (Pred(PinPair.Value))
+			if (Pred(PinPair))
 			{
 				MatchedPins.Add(PinPair.Key);
 			}
@@ -394,11 +351,11 @@ int32 UHeartGraphNode::CountPinsByPredicate(const EHeartPinDirection Direction, 
 {
 	int32 PinCount = 0;
 
-	for (auto&& PinPair : Pins)
+	for (auto&& PinPair : PinDescriptions)
 	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value->PinDesc.Direction))
+		if (EnumHasAnyFlags(Direction, PinPair.Value.Direction))
 		{
-			if (Pred(PinPair.Value))
+			if (Pred(PinPair))
 			{
 				PinCount++;
 			}
@@ -415,7 +372,7 @@ int32 UHeartGraphNode::RemovePinsByPredicate(const EHeartPinDirection Direction,
 
 	for (auto&& ToRemove : PinsToRemove)
 	{
-		Pins.Remove(ToRemove);
+		RemovePin(ToRemove);
 	}
 
 	return PinsToRemove.Num();

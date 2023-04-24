@@ -2,7 +2,9 @@
 
 #include "HeartCanvasConnectionVisualizer.h"
 
+#include "Model/HeartGraphNode.h"
 #include "UI/HeartWidgetUtilsLibrary.h"
+#include "UMG/HeartGraphCanvasNode.h"
 
 // @todo move to blueprint function library
 class FGeometryHelper_TEMPEMULATOR
@@ -91,8 +93,8 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnection_Implementation
 	SplineParams.Color = FLinearColor::White;
 	SplineParams.Thickness = 1.f;
 
-	SplineParams.FromDirection = EnumHasAnyFlags(PinParams.FromPin->GetPin()->GetDirection(), EHeartPinDirection::Input) ? EHeartPinDirection::Input : EHeartPinDirection::Output;
-	SplineParams.ToDirection = EnumHasAnyFlags(PinParams.ToPin->GetPin()->GetDirection(), EHeartPinDirection::Input) ? EHeartPinDirection::Input : EHeartPinDirection::Output;
+	SplineParams.FromDirection = EnumHasAnyFlags(PinParams.FromPin->GetPinDesc().Direction, EHeartPinDirection::Input) ? EHeartPinDirection::Input : EHeartPinDirection::Output;
+	SplineParams.ToDirection = EnumHasAnyFlags(PinParams.ToPin->GetPinDesc().Direction, EHeartPinDirection::Input) ? EHeartPinDirection::Input : EHeartPinDirection::Output;
 	DrawConnectionSpline(Context, Start, End, SplineParams);
 }
 
@@ -104,17 +106,17 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPreviewConnection_Implementa
 	SplineParams.Color = FLinearColor::White;
 	SplineParams.Thickness = 1.f;
 
-	SplineParams.FromDirection = EnumHasAnyFlags(FromPin->GetPin()->GetDirection(), EHeartPinDirection::Input) ? EHeartPinDirection::Input : EHeartPinDirection::Output;
+	SplineParams.FromDirection = EnumHasAnyFlags(FromPin->GetPinDesc().Direction, EHeartPinDirection::Input) ? EHeartPinDirection::Input : EHeartPinDirection::Output;
 	SplineParams.ToDirection = SplineParams.FromDirection == EHeartPinDirection::Input ? EHeartPinDirection::Output : EHeartPinDirection::Input;
 
 	DrawConnectionSpline(Context, Start, End, SplineParams);
 }
 
-void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins)
+void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins)
 {
-	for (auto&& PinPair : Pins)
+	for (TTuple<FHeartPinGuid, TTuple<UHeartGraphCanvasPin*, FGeometry>>& PinPair : Pins)
 	{
-		if (!ensureMsgf(IsValid(PinPair.Key),
+		if (!ensureMsgf(PinPair.Key.IsValid(),
 			TEXT("PaintTimeDrawPinConnections was given invalid UHeartGraphPin!")))
 		{
 			continue;
@@ -126,16 +128,8 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 			continue;
 		}
 
-		auto&& Pin = PinPair.Value.Key->GetPin();
-
-		if (!ensureMsgf(IsValid(Pin),
-			TEXT("PaintTimeDrawPinConnections was unable to resolve Pin!")))
-		{
-			continue;
-		}
-
 		// Only draw connections from output pins to their connected inputs.
-		if (!EnumHasAnyFlags(Pin->GetDirection(), EHeartPinDirection::Output))
+		if (!EnumHasAnyFlags(PinPair.Value.Key->GetPinDesc().Direction, EHeartPinDirection::Output))
 		{
 			continue;
 		}
@@ -159,10 +153,11 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 			StartPoint += FVector2D(CustomPosition);
 		}
 
-		auto&& ConnectedPins = Pin->GetAllConnections();
-		for (auto&& ConnectedPin : ConnectedPins)
+		TSet<FHeartGraphPinReference>& ConnectedPins = PinPair.Value.Key->GetCanvasNode()->GetNode()->
+		                                                       GetLinks(PinPair.Key).Links;
+		for (FHeartGraphPinReference& ConnectedPin : ConnectedPins)
 		{
-			auto&& ConnectedPinAndGeo = Pins.Find(ConnectedPin);
+			auto&& ConnectedPinAndGeo = Pins.Find(ConnectedPin.PinGuid);
 			if (!ConnectedPinAndGeo) continue;
 
 			auto&& EndGeom = ConnectedPinAndGeo->Value;

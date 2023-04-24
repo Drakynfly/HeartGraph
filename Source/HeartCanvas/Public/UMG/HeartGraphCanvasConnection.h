@@ -23,8 +23,6 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
 	/** IHeartWidgetInputLinkerRedirector */
 
-
-
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TWeakObjectPtr<UHeartGraphCanvas> GraphCanvas;

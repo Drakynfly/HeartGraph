@@ -68,5 +68,5 @@ class HEART_API IGraphConnectionVisualizerInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
-	TSubclassOf<UHeartGraphPin> GetSupportedGraphPinClass();
+	FHeartGraphPinTag GetSupportedGraphPinTag();
 };

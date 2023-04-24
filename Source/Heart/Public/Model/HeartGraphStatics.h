@@ -5,6 +5,8 @@
 namespace Heart::Graph
 {
 #if WITH_EDITOR
+	// Metadata added to UProperties on children of UHeartGraphNode to trigger reconstruction of pins on the node
+	// in the editor.
 	static const FName Metadata_TriggersReconstruct("TriggersReconstruct");
 #endif
 }

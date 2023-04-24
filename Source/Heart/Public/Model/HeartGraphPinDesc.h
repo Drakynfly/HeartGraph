@@ -45,4 +45,9 @@ struct FHeartGraphPinDesc
 	// Optional metadata objects that add additional info about this pin, such as default values, or connection rules.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Category = "Heart|PinDesc")
 	TArray<TObjectPtr<UHeartGraphPinMetadata>> Metadata;
+
+	bool IsValid() const
+	{
+		return !Name.IsNone() && Tag.IsValid();
+	}
 };

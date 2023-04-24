@@ -32,7 +32,6 @@ public class HeartEditor : ModuleRules
             "Engine",
             "GraphEditor",      // For SGraphPalette
             "InputCore",
-            "Kismet",
             "KismetWidgets",    // For SLevelOfDetailBranchNode
             "Projects",         // For IPluginManager
             "PropertyEditor",

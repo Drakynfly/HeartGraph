@@ -91,7 +91,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	}
 
 	// Get the set of pins for all children and synthesize geometry for culled out pins so lines can be drawn to them.
-	TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
+	TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
 	TSet<UHeartGraphCanvasPin*> VisiblePins;
 
 	for (auto&& DisplayedNode : DisplayedNodes)
@@ -105,14 +105,15 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 			const FVector2D NodeLoc = GraphNode->GetNode()->GetLocation();
 
-			for (auto&& PinWidget : PinWidgets)
+			for (UHeartGraphCanvasPin* PinWidget : PinWidgets)
 			{
-				if (PinWidget->GetPin())
+				FHeartPinGuid WidgetGuid = IHeartGraphPinInterface::Execute_GetPinGuid(PinWidget);
+				if (WidgetGuid.IsValid())
 				{
 					FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
 
 					const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom(PinLoc) * AllottedGeometry.Scale, FVector2D(AllottedGeometry.AbsolutePosition), FVector2D::ZeroVector, 1.f);
-					PinGeometries.Add(PinWidget->GetPin(), {PinWidget, SynthesizedPinGeometry});
+					PinGeometries.Add(WidgetGuid, {PinWidget, SynthesizedPinGeometry});
 				}
 			}
 		}
@@ -124,7 +125,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 	for (auto&& VisiblePin : VisiblePins)
 	{
-		PinGeometries.Add(VisiblePin->GetPin(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
+		PinGeometries.Add(IHeartGraphPinInterface::Execute_GetPinGuid(VisiblePin), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
 	}
 
 	/*
@@ -141,10 +142,10 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	{
 		auto&& PreviewPin = ResolvePinReference(PreviewConnectionPin);
 
-		if (IsValid(PreviewPin) && PreviewPin->GetPin())
+		if (IsValid(PreviewPin))
 		{
 			auto&& GraphGeo = GetTickSpaceGeometry();
-			FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPin())->Value;
+			FGeometry PinGeo = PinGeometries.Find(IHeartGraphPinInterface::Execute_GetPinGuid(PreviewPin))->Value;
 
 			FVector2D StartPoint;
 			FVector2D EndPoint;

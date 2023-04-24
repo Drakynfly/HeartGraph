@@ -8,7 +8,6 @@
 struct FHeartGraphPinReference;
 class UHeartGraph;
 class UHeartCanvasConnectionVisualizer;
-class UHeartGraphPin;
 class UHeartGraphNode;
 
 /**
@@ -86,7 +85,7 @@ public:
 	bool TryConnectPins(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
-	FHeartConnectPinsResponse CanPinsConnect(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
+	FHeartConnectPinsResponse CanPinsConnect(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
 	// AKA, setup function called on all graphs when they are created.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")

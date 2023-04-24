@@ -21,15 +21,15 @@ bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, cons
 
 		TArray<int32>& TEMPARRAY = TEMPGRAPHARRAYS.AddDefaulted_GetRef();
 
-		TArray<UHeartGraphPin*> Pins = Node->GetOutputPins();
+		TArray<FHeartPinGuid> Pins = Node->GetOutputPins();
 
 		for (auto&& Pin : Pins)
 		{
-			TArray<UHeartGraphPin*> Connections = Pin->GetAllConnections();
+			TSet<FHeartGraphPinReference> Connections = Node->GetLinks(Pin).Links;
 
 			for (auto&& Connection : Connections)
 			{
-				TEMPARRAY.Add(Nodes.Find(Connection->GetNode()));
+				TEMPARRAY.Add(Nodes.Find(Node->GetGraph()->GetNode(Connection.NodeGuid)));
 			}
 		}
 

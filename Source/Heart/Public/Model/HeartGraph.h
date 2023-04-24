@@ -11,7 +11,6 @@
 
 class UHeartGraphSchema;
 class UHeartGraphNode;
-class UHeartGraphPin;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
@@ -53,7 +52,7 @@ public:
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
 	// Called after a pin connection change has been made.
-	void NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<UHeartGraphPin*>& AffectedPins);
+	void NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<FHeartPinGuid>& AffectedPins);
 
 	// Called after a pin connection change has been made.
 	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
@@ -201,9 +200,11 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	bool ConnectPins(FHeartGraphPinReference A, FHeartGraphPinReference B);
+	bool ConnectPins(FHeartGraphPinReference PinA, FHeartGraphPinReference PinB);
 
+	bool DisconnectPins(FHeartGraphPinReference PinA, FHeartGraphPinReference PinB);
 
+	void DisconnectAllPins(FHeartGraphPinReference Pin);
 
 public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")

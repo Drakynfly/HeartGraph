@@ -5,12 +5,13 @@
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
 #include "HeartBreakpoint.h"
+#include "Model/HeartGuids.h"
+#include "Model/HeartGraphPinDesc.h"
 
 #include "HeartEdGraphNode.generated.h"
 
 class UEdGraphSchema;
 class UHeartGraphNode;
-class UHeartGraphPin;
 
 /**
  * Graph representation of a Heart Node in an EdGraph
@@ -96,7 +97,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Utils
 
-	UHeartGraphPin* GetPinByName(const FName& Name) const;
+	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType
+	FEdGraphPinType GetEdGraphPinTypeFromPinDesc(const FHeartGraphPinDesc& PinDesc) const;
+
+	FHeartPinGuid GetPinByName(const FName& Name) const;
 
 public:
 	// UEdGraphNode
@@ -110,8 +114,8 @@ public:
 // Pins
 
 public:
-	void CreateInputPin(const UHeartGraphPin* HeartPin);
-	void CreateOutputPin(const UHeartGraphPin* HeartPin);
+	void CreateInputPin(const FHeartGraphPinDesc& PinDesc);
+	void CreateOutputPin(const FHeartGraphPinDesc& PinDesc);
 
 	void RemoveOrphanedPin(UEdGraphPin* Pin);
 

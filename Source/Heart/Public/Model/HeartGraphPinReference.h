@@ -40,3 +40,12 @@ FORCEINLINE uint32 GetTypeHash(const FHeartGraphPinReference& PinReference)
 	KeyHash = HashCombine(KeyHash, GetTypeHash(PinReference.PinGuid));
 	return KeyHash;
 }
+
+USTRUCT(BlueprintType)
+struct FHeartGraphPinConnections
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	TSet<FHeartGraphPinReference> Links;
+};

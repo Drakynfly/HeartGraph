@@ -40,8 +40,12 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 
 const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
 {
-	auto&& OwningNodeA = Cast<UHeartEdGraphNode>(PinA->GetOwningNodeUnchecked());
-	auto&& OwningNodeB = Cast<UHeartEdGraphNode>(PinB->GetOwningNodeUnchecked());
+	UHeartEdGraphNode* OwningNodeA = Cast<UHeartEdGraphNode>(PinA->GetOwningNodeUnchecked());
+	UHeartEdGraphNode* OwningNodeB = Cast<UHeartEdGraphNode>(PinB->GetOwningNodeUnchecked());
+
+	UHeartGraph* Graph = OwningNodeA->GetHeartGraphNode()->GetGraph();
+
+	check(OwningNodeB->GetHeartGraphNode()->GetGraph() == Graph);
 
 	if (!OwningNodeA || !OwningNodeB)
 	{
@@ -65,15 +69,15 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 	{
 		if (RuntimeSchema->RunCanPinsConnectInEdGraph)
 		{
-			auto&& HeartPinA = OwningNodeA->GetPinByName(PinA->GetFName());
-			auto&& HeartPinB = OwningNodeB->GetPinByName(PinB->GetFName());
+			const FHeartPinGuid HeartPinA = OwningNodeA->GetPinByName(PinA->GetFName());
+			const FHeartPinGuid HeartPinB = OwningNodeB->GetPinByName(PinB->GetFName());
 
 			FHeartConnectPinsResponse RuntimeResult;
 
 			{
 				// Run blueprint logic to see if pins are compatible
 				FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-				RuntimeResult = RuntimeSchema->CanPinsConnect(HeartPinA, HeartPinB);
+				RuntimeResult = RuntimeSchema->CanPinsConnect(Graph, {OwningNodeA->NodeGuid, HeartPinA}, {OwningNodeB->NodeGuid, HeartPinB});
 			}
 
 			FPinConnectionResponse Response;

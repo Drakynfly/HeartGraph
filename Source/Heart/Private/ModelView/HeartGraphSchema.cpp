@@ -2,7 +2,6 @@
 
 #include "ModelView/HeartGraphSchema.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphPin.h"
 
 bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
 {
@@ -21,10 +20,10 @@ UObject* UHeartGraphSchema::GetConnectionVisualizer() const
 
 bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
-	UHeartGraphPin* PinPtrA = Graph->GetNode(PinA.NodeGuid)->GetPin(PinA.PinGuid);
-	UHeartGraphPin* PinPtrB = Graph->GetNode(PinB.NodeGuid)->GetPin(PinB.PinGuid);
+	UHeartGraphNode* NodeA = Graph->GetNode(PinA.NodeGuid);
+	UHeartGraphNode* NodeB = Graph->GetNode(PinB.NodeGuid);
 
-	const FHeartConnectPinsResponse Response = CanPinsConnect(PinPtrA, PinPtrB);
+	const FHeartConnectPinsResponse Response = CanPinsConnect(Graph, PinA, PinB);
 
 	bool bModified = false;
 
@@ -36,20 +35,20 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeart
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakA:
-		PinPtrA->DisconnectFromAll(true);
+		Graph->DisconnectAllPins(PinA);
 		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakB:
-		PinPtrB->DisconnectFromAll(true);
+		Graph->DisconnectAllPins(PinB);
 		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakAB:
-		PinPtrA->DisconnectFromAll(true);
-		PinPtrB->DisconnectFromAll(true);
+		Graph->DisconnectAllPins(PinA);
+		Graph->DisconnectAllPins(PinB);
 		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
@@ -71,14 +70,14 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeart
 
 	if (bModified)
 	{
-		PinPtrA->GetNode()->NotifyPinConnectionsChanged(PinPtrA);
-		PinPtrB->GetNode()->NotifyPinConnectionsChanged(PinPtrB);
-		Graph->NotifyNodeConnectionsChanged({PinPtrA->GetNode(), PinPtrB->GetNode()}, {PinPtrA, PinPtrB});
+		NodeA->NotifyPinConnectionsChanged(PinA.PinGuid);
+		NodeB->NotifyPinConnectionsChanged(PinB.PinGuid);
+		Graph->NotifyNodeConnectionsChanged({NodeA, NodeB}, {PinA.PinGuid, PinB.PinGuid});
 	}
 
 	return bModified;
 }
-FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(UHeartGraphPin* A, UHeartGraphPin* B) const
+FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
 	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow};
 }

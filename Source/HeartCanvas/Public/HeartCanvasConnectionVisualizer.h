@@ -4,6 +4,7 @@
 
 #include "UObject/Object.h"
 #include "UMG/HeartGraphCanvasPin.h"
+#include "Model/HeartPinDirection.h"
 #include "HeartCanvasConnectionVisualizer.generated.h"
 
 USTRUCT(BlueprintType)
@@ -54,7 +55,7 @@ public:
 									const FHeartCanvasConnectionPinParams& GeneralParams) const;
 
 	// @todo  GraphDesktopGeometry is a hack because I dont know how to use the Context.AllocatedGeometry correctly
-	void PaintTimeDrawPinConnections(UPARAM(ref) FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins);
+	void PaintTimeDrawPinConnections(UPARAM(ref) FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|CanvasConnectionVisualizer")
 	void PaintTimeDrawPreviewConnection(UPARAM(ref) FPaintContext& Context, const FVector2D& Start, const FVector2D& End, UHeartGraphCanvasPin* FromPin) const;

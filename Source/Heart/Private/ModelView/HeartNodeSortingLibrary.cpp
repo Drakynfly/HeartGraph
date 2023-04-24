@@ -104,9 +104,9 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 	// Find all nodes that have no pins connections in the specified direction
 	TArray<UHeartGraphNode*> RootNodes = Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
 	{
-		return Node->CountPinsByPredicate(Args.Direction, [](const UHeartGraphPin* Pin)
+		return Node->CountPinsByPredicate(Args.Direction, [Node](const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& Pin)
 		{
-			return !Pin->Links.IsEmpty();
+			return !Node->GetLinks(Pin.Key).Links.IsEmpty();
 		}) == 0;
 	});
 
@@ -121,10 +121,10 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 		auto&& Pins = Node->GetPinsOfDirection(InverseDirection);
 		for (auto&& Pin : Pins)
 		{
-			auto&& ConnectedPins = Pin->GetAllConnections();
+			auto&& ConnectedPins = Node->GetLinks(Pin).Links;
 			for (auto&& ConnectedPin : ConnectedPins)
 			{
-				if (auto&& ConnectedNode = ConnectedPin->GetNode())
+				if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
 				{
 					OutTreeNode.Children.Add(FInstancedStruct::Make(BuildTreeNode(ConnectedNode)));
 				}
