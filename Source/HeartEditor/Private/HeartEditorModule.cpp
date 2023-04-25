@@ -138,8 +138,8 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 			Heart::FItemsArrayCustomization::FArgs{GET_MEMBER_NAME_CHECKED(FHeartWidgetInputBinding, InputHandler),
 												   GET_MEMBER_NAME_CHECKED(FHeartWidgetInputBinding, Triggers)}));
 
-	//Customizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
-	//	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
+	Customizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
 
 	// Register property customizations
 	for (auto&& Customization : Customizations)

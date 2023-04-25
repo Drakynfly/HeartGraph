@@ -52,6 +52,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "GameplayTagsEditor",
+			"Enabled": true
+		},
+		{
 			"Name": "StructUtils",
 			"Enabled": true
 		}
