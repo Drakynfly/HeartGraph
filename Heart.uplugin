@@ -48,11 +48,11 @@
 	],
 	"Plugins": [
 		{
-			"Name": "StructUtils",
+			"Name": "AssetSearch",
 			"Enabled": true
 		},
 		{
-			"Name": "AssetSearch",
+			"Name": "StructUtils",
 			"Enabled": true
 		}
 	]

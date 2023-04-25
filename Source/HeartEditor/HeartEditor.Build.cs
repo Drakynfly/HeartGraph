@@ -20,26 +20,29 @@ public class HeartEditor : ModuleRules
             }
         );
 
-        PrivateDependencyModuleNames.AddRange(new[]
-        {
-            "ApplicationCore",  // For clipboard copy/paste
-            "AssetSearch",
-            "AssetTools",
-            "ClassViewer",
-            "Core",
-            "CoreUObject",
-            "EditorFramework",  // For FToolkitManager
-            "Engine",
-            "GraphEditor",      // For SGraphPalette
-            "InputCore",
-            "KismetWidgets",    // For SLevelOfDetailBranchNode
-            "Projects",         // For IPluginManager
-            "PropertyEditor",
-            "Slate",
-            "SlateCore",
-            "SourceControl",    // For Diffing utils
-            "ToolMenus",
-            "UnrealEd"
-        });
+        PrivateDependencyModuleNames.AddRange(
+            new[]
+            {
+                "ApplicationCore",  // For clipboard copy/paste
+                "AssetDefinition",
+                "AssetSearch",
+                "AssetTools",
+                "ClassViewer",
+                "Core",
+                "CoreUObject",
+                "EditorFramework",  // For FToolkitManager
+                "Engine",
+                "GameplayTagsEditor", // For FGameplayTagCustomizationPublic
+                "GraphEditor",      // For SGraphPalette
+                "InputCore",
+                "KismetWidgets",    // For SLevelOfDetailBranchNode
+                "Projects",         // For IPluginManager
+                "PropertyEditor",
+                "Slate",
+                "SlateCore",
+                "SourceControl",    // For Diffing utils
+                "ToolMenus",
+                "UnrealEd"
+            });
     }
 }

@@ -134,7 +134,7 @@ namespace Heart::Hex
 		FHex( 1.0,  0.0),	// 120 or 90 degrees	/	SOUTHEAST or WEST
 		FHex( 0.0,  1.0),	// 180 or 150 degrees	/	SOUTH or SOUTHWEST
 		FHex(-1.0,  1.0),	// 240 or 210 degrees	/	SOUTHWEST
-		FHex(-1.0,  0.0)		// 300 or 270 degrees	/	NORTHWEST or EAST
+		FHex(-1.0,  0.0)	// 300 or 270 degrees	/	NORTHWEST or EAST
 	};
 
 	template <typename DirectionEnum> constexpr FCube Direction_Cube(const DirectionEnum Direction)

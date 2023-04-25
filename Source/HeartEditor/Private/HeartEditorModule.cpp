@@ -3,27 +3,31 @@
 #include "HeartEditorModule.h"
 #include "HeartEditorStyle.h"
 
-#include "Graph/AssetTypeActions_HeartGraph.h"
 #include "Graph/HeartGraphAssetEditor.h"
 //#include "Asset/HeartAssetIndexer.h"
-#include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
-#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
-#include "AssetToolsModule.h"
+#include "UI/HeartWidgetInputBindingAsset.h"
+
 #include "EdGraphUtilities.h"
 #include "IAssetSearchModule.h"
-#include "Customizations/HeartWidgetInputBindingCustomization.h"
 #include "GraphRegistry/HeartRegistrationClasses.h"
 #include "Modules/ModuleManager.h"
 
 #include "Customizations/ItemsArrayCustomization.h"
-#include "UI/HeartWidgetInputBindingAsset.h"
+#include "Customizations/HeartWidgetInputBindingCustomization.h"
+#include "GameplayTagsEditorModule.h"
+
+
+// @todo temp includes
+#include "AssetToolsModule.h"
+#include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
+#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
+
 
 static const FName PropertyEditorModuleName("PropertyEditor");
-static const FName AssetToolsModuleName("AssetTools");
 static const FName AssetSearchModuleName("AssetSearch");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
@@ -36,7 +40,29 @@ void FHeartEditorModule::StartupModule()
 {
 	FHeartEditorStyle::Initialize();
 
-	RegisterAssets();
+	// @TODO BEGIN TEMP STUFF
+	{
+		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+
+		FText AssetCategoryText = LOCTEXT("HeartAssetCategory", "Heart");
+
+		if (!AssetCategoryText.IsEmpty())
+		{
+			if (HeartAssetCategory_TEMP == EAssetTypeCategories::None)
+			{
+				HeartAssetCategory_TEMP = AssetTools.RegisterAdvancedAssetCategory(FName("Heart"), AssetCategoryText);
+			}
+		}
+
+		RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphBlueprint()));
+		RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint()));
+
+		for (auto&& TypeActions : RegisteredAssetActions)
+		{
+			AssetTools.RegisterAssetTypeActions(TypeActions);
+		}
+	}
+	// @TODO END TEMP STUFF
 
 	RegisterPropertyCustomizations();
 
@@ -59,7 +85,20 @@ void FHeartEditorModule::ShutdownModule()
 {
 	FHeartEditorStyle::Shutdown();
 
-	UnregisterAssets();
+	// @TODO BEGIN TEMP STUFF
+	{
+		if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+		{
+			IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+			for (auto&& TypeActions : RegisteredAssetActions)
+			{
+				AssetTools.UnregisterAssetTypeActions(TypeActions);
+			}
+		}
+
+		RegisteredAssetActions.Empty();
+	}
+	// @TODO END TEMP STUFF
 
 	// unregister details customizations
 	if (FModuleManager::Get().IsModuleLoaded(PropertyEditorModuleName))
@@ -78,42 +117,11 @@ void FHeartEditorModule::ShutdownModule()
 	FModuleManager::Get().OnModulesChanged().Remove(ModulesChangedHandle);
 }
 
-void FHeartEditorModule::RegisterAssets()
+TSharedRef<FHeartGraphAssetEditor> FHeartEditorModule::CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
 {
-	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>(AssetToolsModuleName).Get();
-
-	FText AssetCategoryText = LOCTEXT("HeartAssetCategory", "Heart");
-
-	if (!AssetCategoryText.IsEmpty())
-	{
-		if (HeartAssetCategory_TEMP == EAssetTypeCategories::None)
-		{
-			HeartAssetCategory_TEMP = AssetTools.RegisterAdvancedAssetCategory(FName("Heart"), AssetCategoryText);
-		}
-	}
-
-	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraph()));
-	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphBlueprint()));
-	RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint()));
-
-	for (auto&& TypeActions : RegisteredAssetActions)
-	{
-		AssetTools.RegisterAssetTypeActions(TypeActions);
-	}
-}
-
-void FHeartEditorModule::UnregisterAssets()
-{
-	if (FModuleManager::Get().IsModuleLoaded(AssetToolsModuleName))
-	{
-		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>(AssetToolsModuleName).Get();
-		for (auto&& TypeActions : RegisteredAssetActions)
-		{
-			AssetTools.UnregisterAssetTypeActions(TypeActions);
-		}
-	}
-
-	RegisteredAssetActions.Empty();
+	TSharedRef<FHeartGraphAssetEditor> NewHeartGraphAssetEditor(new FHeartGraphAssetEditor());
+	NewHeartGraphAssetEditor->InitHeartGraphAssetEditor(Mode, InitToolkitHost, HeartGraph);
+	return NewHeartGraphAssetEditor;
 }
 
 void FHeartEditorModule::RegisterPropertyCustomizations()
@@ -121,10 +129,11 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
 	PropertyCustomizations.Add(FClassList::StaticStruct()->GetFName(),
-	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FItemsArrayCustomization::MakeInstance));
-
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FItemsArrayCustomization::MakeInstance));
 	PropertyCustomizations.Add(FHeartWidgetInputBinding::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartWidgetInputBindingCustomization::MakeInstance));
+	PropertyCustomizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
 
 	// Register property customizations
 	for (auto&& Customization : PropertyCustomizations)
@@ -159,13 +168,6 @@ void FHeartEditorModule::RegisterAssetIndexers() const
 {
 	// @todo
 	//IAssetSearchModule::Get().RegisterAssetIndexer(UHeartGraph::StaticClass(), MakeUnique<FHeartAssetIndexer>());
-}
-
-TSharedRef<FHeartGraphAssetEditor> FHeartEditorModule::CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
-{
-	TSharedRef<FHeartGraphAssetEditor> NewHeartGraphAssetEditor(new FHeartGraphAssetEditor());
-	NewHeartGraphAssetEditor->InitHeartGraphAssetEditor(Mode, InitToolkitHost, HeartGraph);
-	return NewHeartGraphAssetEditor;
 }
 
 #undef LOCTEXT_NAMESPACE

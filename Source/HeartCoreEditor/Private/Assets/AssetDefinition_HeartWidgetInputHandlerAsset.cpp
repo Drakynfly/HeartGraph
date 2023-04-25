@@ -3,6 +3,7 @@
 #include "Assets/AssetDefinition_HeartWidgetInputHandlerAsset.h"
 
 #include "UI/HeartWidgetInputHandlerAsset.h"
+#include "HeartEditorShared.h"
 
 #define LOCTEXT_NAMESPACE "AssetDefinition_HeartWidgetInputHandlerAsset"
 
@@ -23,8 +24,7 @@ TSoftClassPtr<> UAssetDefinition_HeartWidgetInputHandlerAsset::GetAssetClass() c
 
 TConstArrayView<FAssetCategoryPath> UAssetDefinition_HeartWidgetInputHandlerAsset::GetAssetCategories() const
 {
-	static const TArray<FAssetCategoryPath> CategoryPaths = { LOCTEXT("AssetCategory", "Heart") };
-	return CategoryPaths;
+	return Heart::EditorShared::GetAssetCategories();
 }
 
 #undef LOCTEXT_NAMESPACE

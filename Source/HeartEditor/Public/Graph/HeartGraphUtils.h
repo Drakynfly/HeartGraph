@@ -9,4 +9,4 @@ namespace Heart::GraphUtils
 	void JumpToClassDefinition(const UClass* Class);
 
 	TSharedPtr<FHeartGraphAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn);
-};
+}
