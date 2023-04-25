@@ -22,13 +22,16 @@ A toolset for displaying and editing a `UHeartGraph` using entirely UMG widgets.
 A (currently WIP) asset authoring tool for Heart graphs using Unreal's native UEdGraph toolset. Such a workflow allows for creating a graph inside the Unreal Engine Editor, and viewing it using HeartCanvas at runtime (such as a perk tree).
 
 
-## Dependencies
-
-### StructUtils
-`FInstancedStruct` is currently used for defining Pin Types. This may not always be the case, pending a possible refactor of Pin Type declaration.
+## Engine Plugin Dependencies
 
 ### AssetSearch
-I want to implement an asset search feature similar to Flow Graph's implementation.
+I want to implement an asset search feature similar to Flow Graph's implementation. Not implemented yet...
+
+### GameplayTagsEditor
+A "plugin dependency" by a technicality. I don't know why the main module is part of core engine, but this module isn't. Anyway.
+
+### StructUtils
+`FInstancedStruct` is used for implementing FBloodValue.
 
 
 ## Planned Dependencies
