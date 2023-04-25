@@ -11,18 +11,7 @@ void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collect
 {
 	Super::Initialize(Collection);
 
-	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
-	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
-	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
-
-	FCoreUObjectDelegates::ReloadCompleteDelegate.AddUObject(this, &ThisClass::OnHotReload);
-
-	if (GEditor)
-	{
-		GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
-		GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
-	}
+	SubscribeToAssetChanges();
 
 	FetchAssetRegistryAssets();
 }
@@ -48,6 +37,24 @@ void UHeartRegistryEditorSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+void UHeartRegistryEditorSubsystem::SubscribeToAssetChanges()
+{
+	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+
+	AssetRegistry.Get().WaitForCompletion();
+	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
+	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
+	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
+
+	FCoreUObjectDelegates::ReloadCompleteDelegate.AddUObject(this, &ThisClass::OnHotReload);
+
+	if (GEditor)
+	{
+		GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
+		GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
+	}
+}
+
 void UHeartRegistryEditorSubsystem::OnFilesLoaded()
 {
 	FetchAssetRegistryAssets();
@@ -63,7 +70,7 @@ void UHeartRegistryEditorSubsystem::OnAssetAdded(const FAssetData& AssetData)
 		return;
 	}
 
-	if (auto&& AssetClass = AssetData.GetClass())
+	if (const UClass* AssetClass = AssetData.GetClass())
 	{
 		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 		{

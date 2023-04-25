@@ -93,9 +93,13 @@ void UHeartRegistryRuntimeSubsystem::FetchNativeClasses()
 
 void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 {
+	// @todo this is a hack to prevent this function from being recursively triggered. I'd like a cleaner solution, but this'll do...
+	static bool IsFetchingRegistryAssets = false;
+	if (IsFetchingRegistryAssets) return;
+
 	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
-	//AssetRegistryModule.Get().WaitForCompletion();
+	IsFetchingRegistryAssets = true;
 
 	FARFilter RegistrarFilter;
 	RegistrarFilter.ClassPaths.Add(UGraphNodeRegistrar::StaticClass()->GetClassPathName());
@@ -105,12 +109,6 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 	AssetRegistryModule.Get().GetAssets(RegistrarFilter, FoundRegistrarAssets);
 	for (const FAssetData& RegistrarAsset : FoundRegistrarAssets)
 	{
-		// We can't try to load assets while they are still loading in. Try again later.
-		if (AssetRegistryModule.Get().IsLoadingAssets())
-		{
-			return;
-		}
-
 		UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets adding registrar '%s'"), *RegistrarAsset.GetFullName())
 
 		if (auto&& Registrar = Cast<UGraphNodeRegistrar>(RegistrarAsset.GetAsset()))
@@ -123,6 +121,8 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 	{
 		FindRecursiveClassesForRegistry(RegistryTuple.Value);
 	}
+
+	IsFetchingRegistryAssets = false;
 }
 
 void UHeartRegistryRuntimeSubsystem::FindRecursiveClassesForRegistry(UHeartGraphNodeRegistry* Registry)

@@ -17,6 +17,9 @@ class HEARTEDITOR_API UHeartRegistryEditorSubsystem : public UEditorSubsystem
 	virtual void Deinitialize() override;
 
 protected:
+	void SubscribeToAssetChanges();
+	void FetchAssetRegistryAssets();
+
 	void OnFilesLoaded();
 	void OnAssetAdded(const FAssetData& AssetData);
 	void OnAssetRemoved(const FAssetData& AssetData);
@@ -24,7 +27,6 @@ protected:
 	void OnBlueprintPreCompile(UBlueprint* Blueprint);
 	void OnBlueprintCompiled();
 
-	void FetchAssetRegistryAssets();
 
 	UBlueprint* GetNodeBlueprint(const FAssetData& AssetData) const;
 

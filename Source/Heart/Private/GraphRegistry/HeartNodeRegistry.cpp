@@ -210,7 +210,7 @@ FHeartRegistrationClasses UHeartGraphNodeRegistry::GetClassesRegisteredRecursive
 	return Classes;
 }
 
-void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, UClass*)>& Iter)
+void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, UClass*)>& Iter) const
 {
 	for (auto&& GraphClassList : GraphClasses)
 	{
@@ -234,19 +234,16 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 {
 	TSet<FString> UnsortedCategories;
 
-	for (auto&& GraphClassList : GraphClasses)
-	{
-		if (auto&& GraphNodeCDO = GraphClassList.Key->GetDefaultObject<UHeartGraphNode>())
+	ForEachNodeObjectClass(
+		[&UnsortedCategories](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeClass)
 		{
-			for (auto&& NodeClass : GraphClassList.Value)
-			{
-				if (auto&& NodeClassCDO = NodeClass.Key->GetDefaultObject())
-				{
-					UnsortedCategories.Emplace(GraphNodeCDO->GetNodeCategory(NodeClassCDO).ToString());
-				}
-			}
-		}
-	}
+			const UHeartGraphNode* GraphNodeCDO = GraphNodeClass->GetDefaultObject<UHeartGraphNode>();
+			const UObject* NodeClassCDO = NodeClass->GetDefaultObject();
+
+			UnsortedCategories.Emplace(GraphNodeCDO->GetNodeCategory(NodeClassCDO).ToString());
+
+			return true;
+		});
 
 	TArray<FString> SortedCategories = UnsortedCategories.Array();
 	SortedCategories.Sort();

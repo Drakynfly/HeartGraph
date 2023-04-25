@@ -38,7 +38,7 @@ protected:
 	FHeartRegistrationClasses GetClassesRegisteredRecursively();
 
 public:
-	void ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, UClass*)>& Iter);
+	void ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, UClass*)>& Iter) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	TArray<FString> GetNodeCategories() const;
