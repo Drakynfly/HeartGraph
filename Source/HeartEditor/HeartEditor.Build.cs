@@ -14,6 +14,7 @@ public class HeartEditor : ModuleRules
                 "Core",
                 "EditorSubsystem",
                 "GameplayTags",
+                "GameplayTagsEditor",   // For FGameplayTagCustomizationPublic
                 "HeartCore",
                 "HeartCoreEditor",
                 "Heart"
@@ -32,7 +33,6 @@ public class HeartEditor : ModuleRules
                 "CoreUObject",
                 "EditorFramework",  // For FToolkitManager
                 "Engine",
-                "GameplayTagsEditor", // For FGameplayTagCustomizationPublic
                 "GraphEditor",      // For SGraphPalette
                 "InputCore",
                 "KismetWidgets",    // For SLevelOfDetailBranchNode

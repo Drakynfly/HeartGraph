@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartGraphPinTag.h"
+#include "HeartPinDirection.h"
 #include "HeartGraphPinDesc.generated.h"
 
 enum class EHeartPinDirection : uint8;
@@ -40,7 +41,7 @@ struct FHeartGraphPinDesc
 
 	// Direction of this pin, input, or output.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
-	EHeartPinDirection Direction;
+	EHeartPinDirection Direction = EHeartPinDirection::None;
 
 	// Optional metadata objects that add additional info about this pin, such as default values, or connection rules.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Category = "Heart|PinDesc")

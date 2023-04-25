@@ -23,6 +23,7 @@ public class HeartCoreEditor : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "InputCore",
+                "PropertyEditor",
                 "Slate",
                 "SlateCore",
                 "UnrealEd"

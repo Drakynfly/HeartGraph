@@ -11,15 +11,13 @@
 
 #include "UI/HeartWidgetInputBindingAsset.h"
 
-#include "EdGraphUtilities.h"
 #include "IAssetSearchModule.h"
 #include "GraphRegistry/HeartRegistrationClasses.h"
 #include "Modules/ModuleManager.h"
 
 #include "Customizations/ItemsArrayCustomization.h"
-#include "Customizations/HeartWidgetInputBindingCustomization.h"
-#include "GameplayTagsEditorModule.h"
 
+#include "GameplayTagsEditorModule.h"
 
 // @todo temp includes
 #include "AssetToolsModule.h"
@@ -100,17 +98,19 @@ void FHeartEditorModule::ShutdownModule()
 	}
 	// @TODO END TEMP STUFF
 
-	// unregister details customizations
+	// Unregister customizations
 	if (FModuleManager::Get().IsModuleLoaded(PropertyEditorModuleName))
 	{
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
-		for (auto It = CustomClassLayouts.CreateConstIterator(); It; ++It)
+		for (FName Key : PropertyCustomizations)
 		{
-			if (It->IsValid())
-			{
-				PropertyModule.UnregisterCustomClassLayout(*It);
-			}
+			PropertyModule.UnregisterCustomPropertyTypeLayout(Key);
+		}
+
+		for (FName Key : CustomClassLayouts)
+		{
+			PropertyModule.UnregisterCustomClassLayout(Key);
 		}
 	}
 
@@ -128,16 +128,23 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
-	PropertyCustomizations.Add(FClassList::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FItemsArrayCustomization::MakeInstance));
-	PropertyCustomizations.Add(FHeartWidgetInputBinding::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartWidgetInputBindingCustomization::MakeInstance));
-	PropertyCustomizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
+	TMap<FName, FOnGetPropertyTypeCustomizationInstance> Customizations;
+
+	Customizations.Add(FClassList::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&Heart::FItemsArrayCustomization::MakeInstance));
+
+	Customizations.Add(FHeartWidgetInputBinding::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&Heart::FItemsArrayCustomization::MakeInstance,
+			Heart::FItemsArrayCustomization::FArgs{GET_MEMBER_NAME_CHECKED(FHeartWidgetInputBinding, InputHandler),
+												   GET_MEMBER_NAME_CHECKED(FHeartWidgetInputBinding, Triggers)}));
+
+	//Customizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
+	//	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
 
 	// Register property customizations
-	for (auto&& Customization : PropertyCustomizations)
+	for (auto&& Customization : Customizations)
 	{
+		PropertyCustomizations.Add(Customization.Key);
 		PropertyModule.RegisterCustomPropertyTypeLayout(Customization.Key, Customization.Value);
 	}
 

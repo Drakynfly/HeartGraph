@@ -20,7 +20,6 @@ public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
-public:
     static TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
 
 private:
@@ -31,7 +30,7 @@ private:
     void RegisterAssetIndexers() const;
 
     /** Property Customizations; Cached so they can be unregistered */
-    TMap<FName, FOnGetPropertyTypeCustomizationInstance> PropertyCustomizations;
+    TSet<FName> PropertyCustomizations;
 
 public:
     FDelegateHandle ModulesChangedHandle;
