@@ -102,14 +102,14 @@ FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, const EH
 	case EHeartNodeNameContext::NodeInstance:
 		if (Node)
 		{
-			return Node->GetClass()->GetDisplayNameText();
+			return FText::FromString(Node->GetClass()->GetName());
 		}
 
 		return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
 	case EHeartNodeNameContext::Default:
 	case EHeartNodeNameContext::Palette:
 	default:
-		return GetClass()->GetDisplayNameText();
+		return FText::FromString(GetClass()->GetName());
 	}
 }
 
@@ -122,7 +122,7 @@ FText UHeartGraphNode::GetNodeCategory_Implementation(const UObject* Node) const
 
 FText UHeartGraphNode::GetNodeToolTip_Implementation(const UObject* Node) const
 {
-	return Node->GetClass()->GetToolTipText();
+	return FText();
 }
 
 bool UHeartGraphNode::GetDynamicTitleColor_Implementation(FLinearColor& LinearColor)
@@ -386,20 +386,17 @@ void UHeartGraphNode::ReconstructPins()
 
 	//@todo this will dump everything in PinConnections. either we need to reconstruct while preserving FGuids, or just use FNames
 
-	TConstArrayView<FHeartGraphPinDesc> DefaultInputs = GetDefaultInputs();
-	TConstArrayView<FHeartGraphPinDesc> DefaultOutputs = GetDefaultOutputs();
+	TArray<FHeartGraphPinDesc> DefaultPins = GetDefaultPins();
 	TArray<FHeartGraphPinDesc> DynamicPins = GetDynamicPins();
+	const uint8 InstancedInputNum = InstancedInputs;
+	const uint8 InstancedOutputNum = InstancedOutputs;
+	InstancedInputs = 0;
+	InstancedOutputs = 0;
 
-	// Create inputs
-	for (auto&& TemplateInput : DefaultInputs)
+	// Create default inputs & outputs
+	for (auto&& DefaultPin : DefaultPins)
 	{
-		AddPin(TemplateInput);
-	}
-
-	// Create outputs
-	for (auto&& TemplateOutput : DefaultOutputs)
-	{
-		AddPin(TemplateOutput);
+		AddPin(DefaultPin);
 	}
 
 	// Create dynamic inputs & outputs
@@ -409,13 +406,13 @@ void UHeartGraphNode::ReconstructPins()
 	}
 
 	// Create instanced inputs
-	for (int32 i = 0; i < InstancedInputs; ++i)
+	for (uint8 i = 0; i < InstancedInputNum; ++i)
 	{
 		AddInstancePin(EHeartPinDirection::Input);
 	}
 
 	// Create instanced outputs
-	for (int32 i = 0; i < InstancedOutputs; ++i)
+	for (uint8 i = 0; i < InstancedOutputNum; ++i)
 	{
 		AddInstancePin(EHeartPinDirection::Output);
 	}

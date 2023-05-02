@@ -41,7 +41,7 @@ struct FHeartGraphPinDesc
 
 	// Direction of this pin, input, or output.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
-	EHeartPinDirection Direction = EHeartPinDirection::None;
+	EHeartPinDirection Direction = EHeartPinDirection::Input;
 
 	// Optional metadata objects that add additional info about this pin, such as default values, or connection rules.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Category = "Heart|PinDesc")
@@ -49,6 +49,6 @@ struct FHeartGraphPinDesc
 
 	bool IsValid() const
 	{
-		return !Name.IsNone() && Tag.IsValid();
+		return !Name.IsNone() && Tag.IsValid() && Direction != EHeartPinDirection::None;
 	}
 };

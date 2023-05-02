@@ -32,25 +32,12 @@ enum class EHeartNodeNameContext : uint8
 	Palette,
 };
 
-/**
- * Class data for UHeartGraphNode
- */
+// @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
+// If/when Epic fixes that, these properties should be moved back into the sparse class struct below
 USTRUCT()
-struct FHeartGraphNodeSparseClassData
+struct FHeartGraphNodeEditorDataTemp
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TArray<FHeartGraphPinDesc> DefaultInputs;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TArray<FHeartGraphPinDesc> DefaultOutputs;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	uint8 DefaultInstancedInputs = 0;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	uint8 DefaultInstancedOutputs = 0;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
@@ -65,6 +52,46 @@ struct FHeartGraphNodeSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	TArray<FName> PropertiesTriggeringNodeReconstruction;
 #endif
+};
+
+/**
+ * Class data for UHeartGraphNode
+ */
+USTRUCT()
+struct FHeartGraphNodeSparseClassData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	TArray<FHeartGraphPinDesc> DefaultPins;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	TArray<FHeartGraphPinDesc> DefaultInputs;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	TArray<FHeartGraphPinDesc> DefaultOutputs;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	uint8 DefaultInstancedInputs = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	uint8 DefaultInstancedOutputs = 0;
+
+	/*
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
+	bool OverrideCanCreateInEditor = false;
+
+	// Can this node be created by the editor even if it cannot be created otherwise.
+	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
+	bool CanCreateInEditor = false;
+
+	// BP properties that trigger reconstruction of SGraphNodes
+	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	TArray<FName> PropertiesTriggeringNodeReconstruction;
+#endif
+	*/
 };
 
 /**
@@ -292,6 +319,14 @@ public:
 protected:
 	DECLARE_DELEGATE(FOnNodeRefreshRequested)
 	FOnNodeRefreshRequested OnReconstructionRequested;
+
+	// @todo temp while sparse struct is broken, see above comment on this
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FHeartGraphNodeEditorDataTemp EditorData;
+public:
+	auto GetOverrideCanCreateInEditor() const { return EditorData.OverrideCanCreateInEditor; }
+	auto GetCanCreateInEditor() const { return EditorData.CanCreateInEditor; }
+	auto GetPropertiesTriggeringNodeReconstruction() const { return EditorData.PropertiesTriggeringNodeReconstruction; }
 #endif
 
 protected:
@@ -319,7 +354,7 @@ protected:
 
 private:
 #if WITH_EDITORONLY_DATA
-	// Always castable to UHeartEdGraphNode
+	// If valid, always castable to UHeartEdGraphNode. Not set for nodes created during runtime, even in PIE.
 	UPROPERTY()
 	TObjectPtr<UEdGraphNode> HeartEdGraphNode;
 #endif

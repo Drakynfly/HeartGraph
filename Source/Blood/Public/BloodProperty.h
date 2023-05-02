@@ -190,7 +190,10 @@ namespace Blood
 		FBloodProperty OutProp;
 
 		OutProp.PropName = Prop->GetFName();
+
+#if WITH_EDITOR
 		OutProp.ToolTip = Prop->GetToolTipText();
+#endif
 
 		if (auto&& ArrayProp = CastField<FArrayProperty>(Prop))
 		{

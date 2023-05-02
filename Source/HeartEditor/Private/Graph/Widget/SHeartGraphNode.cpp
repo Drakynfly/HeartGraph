@@ -46,8 +46,6 @@ void SHeartGraphNode::Construct(const FArguments& InArgs, UHeartEdGraphNode* InN
 	GraphNode = InNode;
 	HeartEdGraphNode = InNode;
 
-	//HeartEdGraphNode->OnSignalModeChanged.BindRaw(this, &SHeartGraphNode::UpdateGraphNode);
-
 	SetCursor(EMouseCursor::CardinalCross);
 	UpdateGraphNode();
 }
@@ -495,7 +493,7 @@ void SHeartGraphNode::CreateOutputSideAddButton(TSharedPtr<SVerticalBox> OutputB
 
 void SHeartGraphNode::AddPinButton(TSharedPtr<SVerticalBox> OutputBox, const TSharedRef<SWidget> ButtonContent, const EEdGraphPinDirection Direction, const FString DocumentationExcerpt, const TSharedPtr<SToolTip> CustomTooltip)
 {
-	const FText PinTooltipText = (Direction == EEdGraphPinDirection::EGPD_Input) ? LOCTEXT("HeartNodeAddPinButton_InputTooltip", "Adds an input pin") : LOCTEXT("HeartNodeAddPinButton_OutputTooltip", "Adds an output pin");
+	const FText PinTooltipText = (Direction == EGPD_Input) ? LOCTEXT("HeartNodeAddPinButton_InputTooltip", "Adds an input pin") : LOCTEXT("HeartNodeAddPinButton_OutputTooltip", "Adds an output pin");
 	TSharedPtr<SToolTip> Tooltip;
 
 	if (CustomTooltip.IsValid())
@@ -521,7 +519,7 @@ void SHeartGraphNode::AddPinButton(TSharedPtr<SVerticalBox> OutputBox, const TSh
 
 	AddPinButton->SetCursor(EMouseCursor::Hand);
 
-	FMargin AddPinPadding = (Direction == EEdGraphPinDirection::EGPD_Input) ? Settings->GetInputPinPadding() : Settings->GetOutputPinPadding();
+	FMargin AddPinPadding = (Direction == EGPD_Input) ? Settings->GetInputPinPadding() : Settings->GetOutputPinPadding();
 	AddPinPadding.Top += 6.0f;
 
 	OutputBox->AddSlot()

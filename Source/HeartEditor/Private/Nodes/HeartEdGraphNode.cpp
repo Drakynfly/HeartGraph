@@ -72,11 +72,29 @@ void UHeartEdGraphNode::PostDuplicate(bool bDuplicateForPIE)
 	{
 		CreateNewGuid();
 
-		//if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
-		//{
-		//	auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
-		//	HeartGraphNode->GetGraph()->AddNode(DuplicatedNode);
-		//}
+		if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
+		{
+			auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
+			DuplicatedNode->Guid = FHeartNodeGuid::NewGuid();
+			DuplicatedNode->Location = FVector2D(NodePosX, NodePosY);
+
+			/*
+			// If the Graph Node's Object is owned within the graph, we should make a copy of it.
+			if (HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode ||
+				HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode->GetGraph())
+			{
+				DuplicatedNode->NodeObject = DuplicateObject(HeartGraphNode->NodeObject, HeartGraphNode->GetGraph());
+			}
+			// Otherwise, its an external asset, that we can both reference.
+			else
+			{
+				DuplicatedNode->NodeObject = HeartGraphNode->NodeObject;
+			}
+			*/
+
+			HeartGraphNode->GetGraph()->AddNode(DuplicatedNode);
+			HeartGraphNode = DuplicatedNode;
+		}
 	}
 }
 
@@ -117,6 +135,22 @@ void UHeartEdGraphNode::PrepareForCopying()
 	{
 		// Temporarily take ownership of the HeartGraphNode, so that it is not deleted when cutting
 		HeartGraphNode->Rename(nullptr, this, REN_DontCreateRedirectors);
+	}
+}
+
+void UHeartEdGraphNode::PostPasteNode()
+{
+	Super::PostPasteNode();
+
+	if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
+	{
+		// If the Graph Node's Object is owned within the graph, we should make a copy of it.
+		if (HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode ||
+			HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode->GetGraph())
+		{
+			HeartGraphNode->NodeObject = DuplicateObject(HeartGraphNode->NodeObject, HeartGraphNode->GetGraph());
+		}
+		// Otherwise, its an external asset, that we can both reference.
 	}
 }
 
@@ -370,8 +404,6 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 
 	TArray<FHeartPinGuid> ExistingInputPins = HeartGraphNode->GetInputPins();
 	TArray<FHeartPinGuid> ExistingOutputPins = HeartGraphNode->GetOutputPins();
-	//auto&& DefaultInputs = HeartGraphNode->GetDefaultInputs();
-	//auto&& DefaultOutputs = HeartGraphNode->GetDefaultOutputs();
 
 	for (FHeartPinGuid InputPin : ExistingInputPins)
 	{
@@ -392,62 +424,6 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 
 		CreateOutputPin(HeartGraphNode->GetPinDesc(OutputPin));
 	}
-
-	/*
-	for (auto&& InputPinType : DefaultInputs)
-	{
-		UHeartGraphPin* InputPin = nullptr;
-
-		for (auto&& ExistingInput : ExistingInputPins)
-		{
-			if (IsValid(ExistingInput) && ExistingInput->PinName == InputPinType.Key)
-			{
-				InputPin = ExistingInput;
-			}
-		}
-
-		if (!IsValid(InputPin))
-		{
-			if (auto&& NewPin = HeartGraphNode->CreatePin(InputPinType.Key, EHeartPinDirection::Input, InputPinType.Value))
-			{
-				HeartGraphNode->AddPin(NewPin);
-				InputPin = NewPin;
-			}
-		}
-
-		if (IsValid(InputPin))
-		{
-			CreateInputPin(InputPin);
-		}
-	}
-
-	for (auto&& OutputPinType : DefaultOutputs)
-	{
-		UHeartGraphPin* OutputPin = nullptr;
-
-		for (auto&& ExistingOutput : ExistingOutputPins)
-		{
-			if (IsValid(ExistingOutput) && ExistingOutput->PinName == OutputPinType.Key)
-			{
-				OutputPin = ExistingOutput;
-			}
-		}
-
-		if (!IsValid(OutputPin))
-		{
-			if (auto&& NewPin = HeartGraphNode->CreatePin(OutputPinType.Key, EHeartPinDirection::Output, OutputPinType.Value))
-			{
-				HeartGraphNode->AddPin(NewPin);
-				OutputPin = NewPin;
-			}
-		}
-
-		if (IsValid(OutputPin))
-		{
-			CreateOutputPin(OutputPin);
-		}
-	}
-	*/
 }
 
 void UHeartEdGraphNode::RewireOldPinsToNewPins(TArray<UEdGraphPin*>& InOldPins)
@@ -639,12 +615,12 @@ FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) cons
 				// @todo is full FullTitle only used for in-graph instances? i *think* so
 				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::NodeInstance);
 			case ENodeTitleType::MenuTitle:
-				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::Palette);
+				return HeartGraphNode->GetNodeTitle(nullptr, EHeartNodeNameContext::Palette);
 			case ENodeTitleType::EditableTitle:
 				// @todo support for EditableTitles when? :)
 			case ENodeTitleType::ListView:
 			default: ;
-				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::Default);
+				return HeartGraphNode->GetNodeTitle(nullptr, EHeartNodeNameContext::Default);
 			}
 		}
 	}
@@ -741,17 +717,21 @@ void UHeartEdGraphNode::CreateInputPin(const FHeartGraphPinDesc& PinDesc)
 	UEdGraphPin* NewPin = CreatePin(EGPD_Input, GetEdGraphPinTypeFromPinDesc(PinDesc), PinDesc.Name);
 	check(NewPin);
 
-	const FText PinFriendlyName = PinDesc.FriendlyName;
-
-	if (!PinFriendlyName.IsEmpty())
+	if (!PinDesc.FriendlyName.IsEmpty())
 	{
 		NewPin->bAllowFriendlyName = true;
-		NewPin->PinFriendlyName = PinFriendlyName;
+		NewPin->PinFriendlyName = PinDesc.FriendlyName;
 	}
 
-	NewPin->PinToolTip.Append(PinDesc.Tooltip.ToString());
-	NewPin->PinToolTip += LINE_TERMINATOR LINE_TERMINATOR;
-	NewPin->PinToolTip.Append(PinDesc.EditorTooltip.ToString());
+	if (!PinDesc.Tooltip.IsEmpty())
+	{
+		NewPin->PinToolTip.Append(PinDesc.Tooltip.ToString());
+	}
+	if (!PinDesc.EditorTooltip.IsEmpty())
+	{
+		NewPin->PinToolTip += LINE_TERMINATOR LINE_TERMINATOR;
+		NewPin->PinToolTip.Append(PinDesc.EditorTooltip.ToString());
+	}
 
 	InputPins.Emplace(NewPin);
 }
@@ -766,17 +746,21 @@ void UHeartEdGraphNode::CreateOutputPin(const FHeartGraphPinDesc& PinDesc)
 	UEdGraphPin* NewPin = CreatePin(EGPD_Output, GetEdGraphPinTypeFromPinDesc(PinDesc), PinDesc.Name);
 	check(NewPin);
 
-	const FText PinFriendlyName = PinDesc.FriendlyName;
-
-	if (!PinFriendlyName.IsEmpty())
+	if (!PinDesc.FriendlyName.IsEmpty())
 	{
 		NewPin->bAllowFriendlyName = true;
-		NewPin->PinFriendlyName = PinFriendlyName;
+		NewPin->PinFriendlyName = PinDesc.FriendlyName;
 	}
 
-	NewPin->PinToolTip.Append(PinDesc.Tooltip.ToString());
-	NewPin->PinToolTip += LINE_TERMINATOR LINE_TERMINATOR;
-	NewPin->PinToolTip.Append(PinDesc.EditorTooltip.ToString());
+	if (!PinDesc.Tooltip.IsEmpty())
+	{
+		NewPin->PinToolTip.Append(PinDesc.Tooltip.ToString());
+	}
+	if (!PinDesc.EditorTooltip.IsEmpty())
+	{
+		NewPin->PinToolTip += LINE_TERMINATOR LINE_TERMINATOR;
+		NewPin->PinToolTip.Append(PinDesc.EditorTooltip.ToString());
+	}
 
 	OutputPins.Emplace(NewPin);
 }

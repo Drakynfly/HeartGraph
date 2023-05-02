@@ -23,6 +23,38 @@ UWorld* UHeartGraph::GetWorld() const
 	return Super::GetWorld();
 }
 
+void UHeartGraph::PostLoad()
+{
+	Super::PostLoad();
+
+#if WITH_EDITOR
+
+	TArray<FHeartNodeGuid> DeadNodes;
+
+	// Fix-up node map in editor, when loading asset
+	for (auto&& Node : Nodes)
+	{
+		if (!IsValid(Node.Value))
+		{
+			DeadNodes.Add(Node.Key);
+		}
+
+		// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
+		// or these nodes will be invisible in the EdGraph
+		if (!IsValid(Node.Value->HeartEdGraphNode))
+		{
+			// Broadcasting this delegate is our hook to request the EdGraph to generate an EdGraphNode for us.
+			OnNodeCreatedInEditorExternally.ExecuteIfBound(Node.Value);
+		}
+	}
+
+	for (FHeartNodeGuid DeadNode : DeadNodes)
+	{
+		Nodes.Remove(DeadNode);
+	}
+#endif
+}
+
 void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
 {
 	Super::PostDuplicate(DuplicateMode);
@@ -142,9 +174,9 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 	// The graph has to be the outer for the NodeObjects or Unreal will kill them when recompiling the heart graph blueprint
 	// This is probably just a issue with the current version of unreal (5.1.0), but even if it's fixed, it's probably fine
 	// to leave it like this.
-	auto&& NewNodeObject = NewObject<UObject>(this, NodeClass);
+	UObject* NewNodeObject = NewObject<UObject>(this, NodeClass);
 
-	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
+	UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
 	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
 	NewGraphNode->Location = Location;
 	NewGraphNode->NodeObject = NewNodeObject;
@@ -226,7 +258,7 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	auto&& Removed = Nodes.Remove(NodeGuid);
 
 #if WITH_EDITOR
-	if (HeartEdGraph)
+	if (HeartEdGraph && NodeBeingRemoved)
 	{
 		if (auto&& EdGraphNode = (*NodeBeingRemoved)->GetEdGraphNode())
 		{

@@ -40,6 +40,7 @@ public:
 	// UEdGraphNode
 	virtual void PostPlacedNewNode() override;
 	virtual void PrepareForCopying() override;
+	virtual void PostPasteNode() override;
 	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
     // --
 
@@ -92,6 +93,9 @@ public:
 	virtual FSlateIcon GetIconAndTint(FLinearColor& OutColor) const override;
 	virtual bool ShowPaletteIconOnNode() const override { return true; }
 	virtual FText GetTooltipText() const override;
+	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;
+	virtual bool CanJumpToDefinition() const override;
+	virtual void JumpToDefinition() const override;
 	// --
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,12 +105,6 @@ public:
 	FEdGraphPinType GetEdGraphPinTypeFromPinDesc(const FHeartGraphPinDesc& PinDesc) const;
 
 	FHeartPinGuid GetPinByName(const FName& Name) const;
-
-public:
-	// UEdGraphNode
-	virtual bool CanJumpToDefinition() const override;
-	virtual void JumpToDefinition() const override;
-	// --
 
 	void JumpToNodeDefinition() const;
 
@@ -133,10 +131,6 @@ public:
 
 	// Call node and graph updates manually, if using bBatchRemoval
 	void RemoveInstancePin(UEdGraphPin* Pin);
-
-	// UEdGraphNode
-	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;
-	// --
 
 //////////////////////////////////////////////////////////////////////////
 // Breakpoints

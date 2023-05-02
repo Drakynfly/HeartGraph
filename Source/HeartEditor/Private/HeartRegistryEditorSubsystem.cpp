@@ -3,6 +3,7 @@
 #include "HeartRegistryEditorSubsystem.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "General/HeartGeneralUtils.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
@@ -35,6 +36,19 @@ void UHeartRegistryEditorSubsystem::Deinitialize()
 	}
 
 	Super::Deinitialize();
+}
+
+TArray<UClass*> UHeartRegistryEditorSubsystem::GetFactoryCommonClasses()
+{
+	return UHeartGeneralUtils::GetChildClasses(UHeartGraph::StaticClass(), false).FilterByPredicate(
+		[](const UClass* Class)
+		{
+			if (Class->IsChildOf<UHeartGraph>())
+			{
+				return Class->GetDefaultObject<UHeartGraph>()->GetDisplayClassAsCommonInFactory();
+			}
+			return false;
+		});
 }
 
 void UHeartRegistryEditorSubsystem::SubscribeToAssetChanges()

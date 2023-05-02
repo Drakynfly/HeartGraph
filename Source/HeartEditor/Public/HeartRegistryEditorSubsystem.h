@@ -16,6 +16,13 @@ class HEARTEDITOR_API UHeartRegistryEditorSubsystem : public UEditorSubsystem
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
+public:
+	/*
+	 * Gets the list of classes that should show up in the Common Classes section of the Class Picker Dialog when
+	 * creating a new Heart Graph Asset
+	 */
+	static TArray<UClass*> GetFactoryCommonClasses();
+
 protected:
 	void SubscribeToAssetChanges();
 	void FetchAssetRegistryAssets();

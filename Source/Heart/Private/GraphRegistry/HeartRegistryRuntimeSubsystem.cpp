@@ -129,6 +129,7 @@ void UHeartRegistryRuntimeSubsystem::FindRecursiveClassesForRegistry(UHeartGraph
 {
 	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
+	/*
 	FHeartRegistrationClasses Classes = Registry->GetClassesRegisteredRecursively();
 
 	FARFilter GraphNodeClassFilter;
@@ -139,7 +140,7 @@ void UHeartRegistryRuntimeSubsystem::FindRecursiveClassesForRegistry(UHeartGraph
 
 		if (auto&& Blueprint = Cast<UBlueprint>(Class->ClassGeneratedBy))
 		{
-			GraphNodeClassFilter.ClassPaths.Add(Blueprint->StaticClass()->GetClassPathName());
+			GraphNodeClassFilter.ClassPaths.Add(Blueprint->StaticClass()->GetStructPathName());
 		}
 	}
 
@@ -164,6 +165,7 @@ void UHeartRegistryRuntimeSubsystem::FindRecursiveClassesForRegistry(UHeartGraph
 	{
 		Registry->SetRecursivelyDiscoveredClasses(FoundClasses);
 	}
+	*/
 }
 
 UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const FSoftClassPath& ClassPath)

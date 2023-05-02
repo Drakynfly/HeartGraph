@@ -13,13 +13,13 @@ class UHeartGraphNodeBlueprintFactory : public UFactory
 public:
 	UHeartGraphNodeBlueprintFactory(const FObjectInitializer& ObjectInitializer);
 
-	// The parent class of the created blueprint
-	UPROPERTY(EditAnywhere, Category = "HeartGraphNodeBlueprintFactory")
-	TSubclassOf<class UHeartGraphNode> ParentClass;
-
 	// UFactory
 	virtual bool ConfigureProperties() override;
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext) override;
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
 	// --
+
+	// The parent class of the created blueprint
+	UPROPERTY(EditAnywhere, Category = "HeartGraphNodeBlueprintFactory")
+	TSubclassOf<class UHeartGraphNode> ParentClass;
 };

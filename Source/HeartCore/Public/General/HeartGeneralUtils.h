@@ -43,12 +43,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Class", meta = (DeterminesOutputType = Class))
 	static const UObject* GetClassDefaultObject(UClass* Class);
 
-	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class")
-	static FText GetClassDisplayNameText(const UClass* Class);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class")
-	static FText GetClassTooltip(const UClass* Class);
-
 
 	/*------------------------
 			MATH UTILS

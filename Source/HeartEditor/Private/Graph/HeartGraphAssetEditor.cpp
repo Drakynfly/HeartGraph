@@ -214,7 +214,7 @@ void FHeartGraphAssetEditor::InitHeartGraphAssetEditor(const EToolkitMode::Type 
 
 	constexpr bool bCreateDefaultStandaloneMenu = true;
 	constexpr bool bCreateDefaultToolbar = true;
-	InitAssetEditor(Mode, InitToolkitHost, TEXT("HeartEditorApp"), StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, ObjectToEdit, false);
+	InitAssetEditor(Mode, InitToolkitHost, "HeartEditorApp", StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, ObjectToEdit, false);
 
 	RegenerateMenusAndToolbars();
 }

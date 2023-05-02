@@ -41,16 +41,6 @@ const UObject* UHeartGeneralUtils::GetClassDefaultObject(UClass* Class)
 	return IsValid(Class) ? Class->GetDefaultObject() : nullptr;
 }
 
-FText UHeartGeneralUtils::GetClassDisplayNameText(const UClass* Class)
-{
-	return IsValid(Class) ? Class->GetDisplayNameText() : FText();
-}
-
-FText UHeartGeneralUtils::GetClassTooltip(const UClass* Class)
-{
-	return IsValid(Class) ? Class->GetToolTipText() : FText();
-}
-
 FVector UHeartGeneralUtils::BP_ClampVector(const FVector& Value, const FVectorBounds& Bounds)
 {
 	return ClampVector(Value, Bounds.Min, Bounds.Max);

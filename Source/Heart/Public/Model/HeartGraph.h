@@ -18,6 +18,27 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHeartGraphEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&, Event);
 
+// @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
+// If/when Epic fixes that, these properties should be moved back into the sparse class struct below
+USTRUCT()
+struct FHeartGraphEditorDataTemp
+{
+	GENERATED_BODY()
+
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditDefaultsOnly, Category = "Display")
+	FText GraphTypeName;
+
+	// Can the editor create instances of this graph as an asset.
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	bool CanCreateAssetFromFactory = false;
+
+	// Should this class be shown in the "Common" section when creating a new Heart Graph
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	bool DisplayClassAsCommonInFactory = false;
+#endif
+};
+
 /**
  * Class data for UHeartGraph
  */
@@ -26,14 +47,14 @@ struct FHeartGraphSparseClassData
 {
 	GENERATED_BODY()
 
+/*
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
 
-#if WITH_EDITORONLY_DATA
 	// Can the editor create instances of this graph as an asset.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	bool CanCreateAssetFromFactory = false;
-#endif
+*/
 };
 
 /**
@@ -49,6 +70,7 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 public:
 	virtual UWorld* GetWorld() const override;
 
+	virtual void PostLoad() override;
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
 	// Called after a pin connection change has been made.
@@ -156,7 +178,8 @@ public:
 		return Cast<THeartGraphNode>(CreateNodeForNodeObject(NodeObject, Location));
 	}
 
-	// Create from template graph class and template node class
+	// Create from template node class and attempt to cast the return to the template graph class
+	// Note that this does not enforce the created GraphNode to be of the templated graph node class.
 	template <typename THeartGraphNode, typename THeartNode>
 	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
 	{
@@ -165,7 +188,8 @@ public:
 		return Cast<THeartGraphNode>(CreateNodeForNodeClass(THeartNode::StaticClass(), Location));
 	}
 
-	// Create from template graph class and node class
+	// Create from node class and attempt to cast the return to the template graph class
+	// Note that this does not enforce the created GraphNode to be of the templated graph node class.
 	template <typename THeartGraphNode>
 	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 	{
@@ -218,7 +242,7 @@ public:
 
 #if WITH_EDITORONLY_DATA
 private:
-	// Always castable to UHeartEdGraph
+	// Always castable to UHeartEdGraph. Only valid for HeartGraphs created by the editor.
 	UPROPERTY()
 	TObjectPtr<UEdGraph> HeartEdGraph;
 
@@ -227,6 +251,15 @@ private:
 	// is needed to visualize the node in the editor.
 	DECLARE_DELEGATE_OneParam(FNodeCreatedInEditorExternally, UHeartGraphNode* /* Node */)
 	FNodeCreatedInEditorExternally OnNodeCreatedInEditorExternally;
+
+	// @todo temp while sparse struct is broken, see above comment on this
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FHeartGraphEditorDataTemp EditorData;
+public:
+	auto GetGraphTypeName() const { return EditorData.GraphTypeName; }
+	auto GetCanCreateAssetFromFactory() const { return EditorData.CanCreateAssetFromFactory; }
+	auto GetDisplayClassAsCommonInFactory() const { return EditorData.DisplayClassAsCommonInFactory; }
+private:
 #endif
 
 private:
