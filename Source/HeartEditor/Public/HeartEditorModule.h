@@ -6,11 +6,13 @@
 #include "AssetTypeCategories.h"
 
 #include "Modules/ModuleInterface.h"
-#include "PropertyEditorDelegates.h"
 #include "Toolkits/IToolkit.h"
 
+class SHeartGraphNode;
+class UHeartEdGraphNode;
 class FHeartGraphAssetEditor;
-class UHeartGraph;
+
+DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SHeartGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
 
@@ -20,11 +22,14 @@ public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
-    static TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
+    void RegisterSlateEditorWidget(FName Style, const FOnGetSlateGraphWidgetInstance& Callback);
+    void DeregisterSlateEditorWidget(FName Style);
+    TArray<FName> GetSlateStyles() const;
+    TSharedPtr<SHeartGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
 
 private:
     void RegisterPropertyCustomizations();
-    void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance DetailLayout);
+    void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance& DetailLayout);
 
     void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
     void RegisterAssetIndexers() const;
@@ -43,4 +48,6 @@ public:
     static EAssetTypeCategories::Type HeartAssetCategory_TEMP;
 private:
     TArray<TSharedRef<class IAssetTypeActions>> RegisteredAssetActions;
+
+    TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
 };

@@ -3,6 +3,7 @@
 #include "Graph/Widgets/SHeartPalette.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "HeartEditorCommands.h"
+#include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartEdGraphSchema_Actions.h"
 
@@ -56,7 +57,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 	const TSharedRef<SWidget> HotkeyDisplayWidget = CreateHotkeyDisplayWidget(NameFont, HotkeyChord);
 
 	// Create the actual widget
-	this->ChildSlot
+	ChildSlot
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -104,10 +105,12 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 
 	UpdateCategoryNames();
 
-	// @todo bind to the registry subsystem changing
-	//UHeartEdGraphSchema::OnNodeListChanged.AddSP(this, &SHeartPalette::Refresh);
+	if (auto&& EditorRegistry = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>())
+	{
+		EditorRegistry->OnRefreshPalettes.AddSP(this, &SHeartPalette::Refresh);
+	}
 
-	this->ChildSlot
+	ChildSlot
 	[
 		SNew(SBorder)
 			.Padding(2.0f)
@@ -144,8 +147,10 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 
 SHeartPalette::~SHeartPalette()
 {
-	// @todo unbind from the registry subsystem changing
-	//UHeartEdGraphSchema::OnNodeListChanged.RemoveAll(this);
+	if (auto&& EditorRegistry = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>())
+	{
+		EditorRegistry->OnRefreshPalettes.RemoveAll(this);
+	}
 }
 
 TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)

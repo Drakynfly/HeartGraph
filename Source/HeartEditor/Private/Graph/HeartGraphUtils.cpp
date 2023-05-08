@@ -40,6 +40,13 @@ void Heart::GraphUtils::JumpToClassDefinition(const UClass* Class)
 	}
 }
 
+TSharedRef<FHeartGraphAssetEditor> Heart::GraphUtils::CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
+{
+	TSharedRef<FHeartGraphAssetEditor> NewHeartGraphAssetEditor(new FHeartGraphAssetEditor());
+	NewHeartGraphAssetEditor->InitHeartGraphAssetEditor(Mode, InitToolkitHost, HeartGraph);
+	return NewHeartGraphAssetEditor;
+}
+
 TSharedPtr<FHeartGraphAssetEditor> Heart::GraphUtils::GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn)
 {
 	check(ObjectToFocusOn);

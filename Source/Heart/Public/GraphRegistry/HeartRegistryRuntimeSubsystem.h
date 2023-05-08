@@ -13,6 +13,10 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
+class UHeartGraphNodeRegistry;
+DECLARE_MULTICAST_DELEGATE_OneParam(FHeartRegistryEventNative, UHeartGraphNodeRegistry*);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartRegistryEvent, class UHeartGraphNodeRegistry*, Registry);
+
 /**
  * Global singleton that stores a node registry for each class of Heart Graph. Runtime existence is optional, so always
  * check for validity before using the pointer returned by GetEngineSubsystem
@@ -30,6 +34,10 @@ public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
+	FHeartRegistryEventNative& GetPostRegistryAddedNative() { return PostRegistryAddedNative; }
+	FHeartRegistryEventNative& GetPreRegistryRemovedNative() { return PreRegistryRemovedNative; }
+	FHeartRegistryEventNative& GetOnAnyRegistryChangedNative() { return OnAnyRegistryChangedNative; }
+
 protected:
 	void FetchNativeClasses();
 	void FetchAssetRegistryAssets();
@@ -38,20 +46,40 @@ protected:
 
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const FSoftClassPath& ClassPath);
 
+	void OnRegistryChanged(UHeartGraphNodeRegistry* Registry);
+
 	UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
 
 	void AutoAddRegistrar(UGraphNodeRegistrar* Registrar);
 	void AutoRemoveRegistrar(UGraphNodeRegistrar* Registrar);
 
+	void BroadcastPostRegistryAdded(UHeartGraphNodeRegistry* Registry);
+	void BroadcastPreRegistryRemoved(UHeartGraphNodeRegistry* Registry);
+	void BroadcastOnAnyRegistryChanged(UHeartGraphNodeRegistry* Registry);
+
 public:
-	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> To);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|NodeRegistrySubsystem")
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From);
+
+	UPROPERTY(BlueprintAssignable, Category = "Heart|RuntimeRegistry|Events")
+	FHeartRegistryEvent PostRegistryAdded;
+
+	UPROPERTY(BlueprintAssignable, Category = "Heart|RuntimeRegistry|Events")
+	FHeartRegistryEvent PreRegistryRemoved;
+
+	UPROPERTY(BlueprintAssignable, Category = "Heart|RuntimeRegistry|Events")
+	FHeartRegistryEvent OnAnyRegistryChanged;
+
+protected:
+	FHeartRegistryEventNative PostRegistryAddedNative;
+	FHeartRegistryEventNative PreRegistryRemovedNative; // Future-proofing: Currently, Registries are never removed, but if they are, use this.
+	FHeartRegistryEventNative OnAnyRegistryChangedNative;
 
 private:
 	// Maps Classes to the Registry instance we keep for them

@@ -51,6 +51,9 @@ struct FHeartGraphNodeEditorDataTemp
 	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	TArray<FName> PropertiesTriggeringNodeReconstruction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FName EditorSlateStyle;
 #endif
 };
 
@@ -64,12 +67,6 @@ struct FHeartGraphNodeSparseClassData
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	TArray<FHeartGraphPinDesc> DefaultPins;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TArray<FHeartGraphPinDesc> DefaultInputs;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TArray<FHeartGraphPinDesc> DefaultOutputs;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	uint8 DefaultInstancedInputs = 0;
@@ -90,6 +87,9 @@ struct FHeartGraphNodeSparseClassData
 	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	TArray<FName> PropertiesTriggeringNodeReconstruction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FName EditorSlateStyle;
 #endif
 	*/
 };
@@ -107,6 +107,8 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 	friend class UHeartEdGraphNode;
 
 public:
+	UHeartGraphNode();
+
 	virtual UWorld* GetWorld() const override;
 
 	virtual void PostLoad() override;
@@ -327,6 +329,7 @@ public:
 	auto GetOverrideCanCreateInEditor() const { return EditorData.OverrideCanCreateInEditor; }
 	auto GetCanCreateInEditor() const { return EditorData.CanCreateInEditor; }
 	auto GetPropertiesTriggeringNodeReconstruction() const { return EditorData.PropertiesTriggeringNodeReconstruction; }
+	auto GetEditorSlateStyle() const { return EditorData.EditorSlateStyle; }
 #endif
 
 protected:

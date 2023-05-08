@@ -7,13 +7,12 @@
 
 #include "Assets/HeartDefaultClassFilter.h"
 
-//#include "BlueprintEditorSettings.h"
 #include "ClassViewerModule.h"
 #include "Editor.h"
-#include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "SlateOptMacros.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"

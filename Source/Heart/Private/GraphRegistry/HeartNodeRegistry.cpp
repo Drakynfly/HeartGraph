@@ -11,7 +11,7 @@ bool UHeartGraphNodeRegistry::FilterClassForRegistration(const TObjectPtr<UClass
 	return IsValid(Class) ? !(Class->HasAnyClassFlags(CLASS_Abstract | CLASS_Deprecated)) : false;
 }
 
-void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasses& Registration)
+void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast)
 {
 	for (auto&& GraphNodeList : Registration.GraphNodeLists)
 	{
@@ -61,9 +61,14 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			PinVisualizerMap.FindOrAdd(SupportedTag).FindOrAdd(PinVisualizerClass)++;
 		}
 	}
+
+	if (Broadcast)
+	{
+		BroadcastChange();
+	}
 }
 
-void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationClasses& Registration)
+void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast)
 {
 	for (auto&& GraphNodeList : Registration.GraphNodeLists)
 	{
@@ -115,6 +120,21 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 			PinVisualizerMap.Remove(SupportedTag);
 		}
 	}
+
+	if (Broadcast)
+	{
+		BroadcastChange();
+	}
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+void UHeartGraphNodeRegistry::BroadcastChange()
+{
+#if WITH_EDITOR
+	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+	OnRegistryChangedNative.Broadcast(this);
+	OnRegistryChanged.Broadcast(this);
 }
 
 void UHeartGraphNodeRegistry::SetRecursivelyDiscoveredClasses(const FHeartRegistrationClasses& Classes)
@@ -153,7 +173,7 @@ void UHeartGraphNodeRegistry::SetRecursivelyDiscoveredClasses(const FHeartRegist
         }
     }
 
-	RemoveRegistrationList(ClassesToRemove);
+	RemoveRegistrationList(ClassesToRemove, false);
 
 	FHeartRegistrationClasses ClassesToAdd;
 
@@ -189,7 +209,7 @@ void UHeartGraphNodeRegistry::SetRecursivelyDiscoveredClasses(const FHeartRegist
 		}
 	}
 
-	AddRegistrationList(ClassesToAdd);
+	AddRegistrationList(ClassesToAdd, true);
 }
 
 FHeartRegistrationClasses UHeartGraphNodeRegistry::GetClassesRegisteredRecursively()
@@ -465,7 +485,7 @@ void UHeartGraphNodeRegistry::AddRegistrar(UGraphNodeRegistrar* Registrar)
 		return;
 	}
 
-	AddRegistrationList(Registrar->Registration);
+	AddRegistrationList(Registrar->Registration, true);
 
 	ContainedRegistrars.Add(Registrar);
 }
@@ -484,7 +504,7 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(UGraphNodeRegistrar* Registrar)
 		return;
 	}
 
-	RemoveRegistrationList(Registrar->Registration);
+	RemoveRegistrationList(Registrar->Registration, true);
 
 	ContainedRegistrars.Remove(Registrar);
 }

@@ -16,11 +16,14 @@ UHeartEdGraph::UHeartEdGraph(const FObjectInitializer& ObjectInitializer)
 {
 }
 
-void UHeartEdGraph::PostLoad()
+void UHeartEdGraph::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
 
-	GetHeartGraph()->OnNodeCreatedInEditorExternally.BindUObject(this, &ThisClass::OnNodeCreatedInEditorExternally);
+	if (!IsTemplate())
+	{
+		GetHeartGraph()->OnNodeCreatedInEditorExternally.BindUObject(this, &ThisClass::OnNodeCreatedInEditorExternally);
+	}
 }
 
 UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
@@ -29,7 +32,6 @@ UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
 	NewGraph->bAllowDeletion = false;
 
 	InHeartGraph->HeartEdGraph = NewGraph;
-	InHeartGraph->OnNodeCreatedInEditorExternally.BindUObject(NewGraph, &ThisClass::OnNodeCreatedInEditorExternally);
 
 	NewGraph->GetSchema()->CreateDefaultNodesForGraph(*NewGraph);
 

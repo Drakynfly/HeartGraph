@@ -224,7 +224,7 @@ void SHeartGraphNode::UpdateGraphNode()
 	FGraphNodeMetaData TagMeta(TEXT("HeartGraphNode"));
 	PopulateMetaTag(&TagMeta);
 
-	this->ContentScale.Bind(this, &SGraphNode::GetContentScale);
+	ContentScale.Bind(this, &SGraphNode::GetContentScale);
 
 	const TSharedPtr<SVerticalBox> InnerVerticalBox = SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
@@ -263,7 +263,7 @@ void SHeartGraphNode::UpdateGraphNode()
 			ErrorReporting->AsWidget()
 		];
 
-	this->GetOrAddSlot(ENodeZone::Center)
+	GetOrAddSlot(ENodeZone::Center)
 		.HAlign(HAlign_Center)
 		.VAlign(VAlign_Center)
 		[
@@ -380,31 +380,6 @@ const FSlateBrush* SHeartGraphNode::GetNodeBodyBrush() const
 	return FHeartEditorStyle::GetBrush("Heart.Node.Body");
 }
 
-FSlateColor SHeartGraphNode::GetNodeTitleColor() const
-{
-	FLinearColor ReturnTitleColor = GraphNode->IsDeprecated() ? FLinearColor::Red : GetNodeObj()->GetNodeTitleColor();
-	ReturnTitleColor.A = FadeCurve.GetLerp();
-	return ReturnTitleColor;
-}
-
-FSlateColor SHeartGraphNode::GetNodeBodyColor() const
-{
-	const FLinearColor ReturnBodyColor = GraphNode->GetNodeBodyTintColor();
-	return ReturnBodyColor;
-}
-
-FSlateColor SHeartGraphNode::GetNodeTitleIconColor() const
-{
-	const FLinearColor ReturnIconColor = IconColor;
-	return ReturnIconColor;
-}
-
-FLinearColor SHeartGraphNode::GetNodeTitleTextColor() const
-{
-	const FLinearColor ReturnTextColor = FLinearColor::White;
-	return ReturnTextColor;
-}
-
 void SHeartGraphNode::CreateStandardPinWidget(UEdGraphPin* Pin)
 {
 	const TSharedPtr<SGraphPin> NewPin = SNew(SHeartGraphPin, Pin);
@@ -427,7 +402,7 @@ void SHeartGraphNode::CreateStandardPinWidget(UEdGraphPin* Pin)
 		}
 	}
 
-	this->AddPin(NewPin.ToSharedRef());
+	AddPin(NewPin.ToSharedRef());
 }
 
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION

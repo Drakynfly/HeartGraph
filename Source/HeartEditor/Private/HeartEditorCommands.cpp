@@ -109,7 +109,7 @@ void FHeartSpawnNodeCommands::RegisterCommands()
 		const FText CommandLabelText = FText::FromString(NodeClass->GetName());
 		const FText Description = FText::Format(LOCTEXT("NodeSpawnDescription", "Hold down the bound keys and left click in the graph panel to spawn a {0} node."), CommandLabelText);
 
-		FUICommandInfo::MakeCommandInfo(this->AsShared(), CommandInfo, FName(*NodeSpawns[i]), CommandLabelText, Description, FSlateIcon(FAppStyle::GetAppStyleSetName(), *FString::Printf(TEXT("%s.%s"), *this->GetContextName().ToString(), *NodeSpawns[i])), EUserInterfaceActionType::Button, Chord);
+		FUICommandInfo::MakeCommandInfo(AsShared(), CommandInfo, FName(*NodeSpawns[i]), CommandLabelText, Description, FSlateIcon(FAppStyle::GetAppStyleSetName(), *FString::Printf(TEXT("%s.%s"), *GetContextName().ToString(), *NodeSpawns[i])), EUserInterfaceActionType::Button, Chord);
 
 		NodeCommands.Add(NodeClass, CommandInfo);
 	}

@@ -2,6 +2,7 @@
 
 #include "HeartRegistryEditorSubsystem.h"
 
+#include "HeartEditorModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "General/HeartGeneralUtils.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
@@ -12,13 +13,21 @@ void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collect
 {
 	Super::Initialize(Collection);
 
+	BindToRuntimeSubsystem();
 	SubscribeToAssetChanges();
-
 	FetchAssetRegistryAssets();
 }
 
 void UHeartRegistryEditorSubsystem::Deinitialize()
 {
+	// Unbind from the runtime subsystem
+	if (auto&& RuntimeSS = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	{
+		RuntimeSS->GetPostRegistryAddedNative().RemoveAll(this);
+		RuntimeSS->GetPreRegistryRemovedNative().RemoveAll(this);
+		RuntimeSS->GetOnAnyRegistryChangedNative().RemoveAll(this);
+	}
+
 	if (FModuleManager::Get().IsModuleLoaded(AssetRegistryConstants::ModuleName))
 	{
 		const FAssetRegistryModule& AssetRegistry = FModuleManager::GetModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
@@ -49,6 +58,22 @@ TArray<UClass*> UHeartRegistryEditorSubsystem::GetFactoryCommonClasses()
 			}
 			return false;
 		});
+}
+
+TSharedPtr<SHeartGraphNode> UHeartRegistryEditorSubsystem::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
+{
+	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	return HeartEditorModule.MakeVisualWidget(Style, Node);
+}
+
+void UHeartRegistryEditorSubsystem::BindToRuntimeSubsystem()
+{
+	if (auto&& RuntimeSS = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	{
+		RuntimeSS->GetPostRegistryAddedNative().AddUObject(this, &ThisClass::PostRegistryRemoved);
+		RuntimeSS->GetPreRegistryRemovedNative().AddUObject(this, &ThisClass::PreRegistryAdded);
+		RuntimeSS->GetOnAnyRegistryChangedNative().AddUObject(this, &ThisClass::OnAnyRegistryChanged);
+	}
 }
 
 void UHeartRegistryEditorSubsystem::SubscribeToAssetChanges()
@@ -133,6 +158,21 @@ void UHeartRegistryEditorSubsystem::OnBlueprintCompiled()
 		WaitingForBlueprintToCompile = 0;
 		FetchAssetRegistryAssets();
 	}
+}
+
+void UHeartRegistryEditorSubsystem::PreRegistryAdded(UHeartGraphNodeRegistry* HeartGraphNodeRegistry)
+{
+	OnRefreshPalettes.Broadcast();
+}
+
+void UHeartRegistryEditorSubsystem::PostRegistryRemoved(UHeartGraphNodeRegistry* HeartGraphNodeRegistry)
+{
+	OnRefreshPalettes.Broadcast();
+}
+
+void UHeartRegistryEditorSubsystem::OnAnyRegistryChanged(UHeartGraphNodeRegistry* HeartGraphNodeRegistry)
+{
+	OnRefreshPalettes.Broadcast();
 }
 
 void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()

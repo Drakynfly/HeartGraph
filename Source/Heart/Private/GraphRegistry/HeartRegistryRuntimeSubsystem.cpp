@@ -1,5 +1,7 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
+// ReSharper disable CppMemberFunctionMayBeConst
+
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "HeartGraphSettings.h"
@@ -30,9 +32,9 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 
 	FetchNativeClasses();
 
-#if !WITH_EDITOR
 	// We can't cache blueprints in the editor during Initialize because they might not be compiled yet.
 	// Instead, the HeartRegistryEditorSubsystem will load for us.
+#if !WITH_EDITOR
 	FetchAssetRegistryAssets();
 #endif
 
@@ -71,24 +73,6 @@ void UHeartRegistryRuntimeSubsystem::FetchNativeClasses()
 			}
 		}
 	}
-
-	// @todo we cannot autodiscover native classes of UHeartEdGraphNode as they are in the editor module
-	// To fix this we would need to have the editor module inject them somehow, but preferable we wouldn't do this at all
-	/*
-	TArray<UClass*> GraphNodes;
-	GetDerivedClasses(UHeartEdGraphNode::StaticClass(), GraphNodes);
-	for (UClass* Class : GraphNodes)
-	{
-		auto&& DefaultObject = Class->GetDefaultObject<UHeartEdGraphNode>();
-		for (UClass* AssignedClass : DefaultObject->AssignedNodeClasses)
-		{
-			if (AssignedClass->IsChildOf(UHeartGraphNode::StaticClass()))
-			{
-				AssignedGraphNodeClasses.Emplace(AssignedClass, Class);
-			}
-		}
-	}
-	*/
 }
 
 void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
@@ -176,7 +160,17 @@ UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(co
 	}
 
 	auto&& NewRegistry = NewObject<UHeartGraphNodeRegistry>(this);
-	return Registries.Add(ClassPath, NewRegistry);
+	Registries.Add(ClassPath, NewRegistry);
+	BroadcastPostRegistryAdded(NewRegistry);
+
+	NewRegistry->OnRegistryChangedNative.AddUObject(this, &ThisClass::OnRegistryChanged);
+
+	return NewRegistry;
+}
+
+void UHeartRegistryRuntimeSubsystem::OnRegistryChanged(UHeartGraphNodeRegistry* Registry)
+{
+	BroadcastOnAnyRegistryChanged(Registry);
 }
 
 void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(UGraphNodeRegistrar* Registrar)
@@ -199,6 +193,33 @@ void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(UGraphNodeRegistrar* Re
 			GetRegistry_Internal(ClassPath)->RemoveRegistrar(Registrar);
 		}
 	}
+}
+
+void UHeartRegistryRuntimeSubsystem::BroadcastPostRegistryAdded(UHeartGraphNodeRegistry* Registry)
+{
+#if WITH_EDITOR
+	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+	PostRegistryAddedNative.Broadcast(Registry);
+	PostRegistryAdded.Broadcast(Registry);
+}
+
+void UHeartRegistryRuntimeSubsystem::BroadcastPreRegistryRemoved(UHeartGraphNodeRegistry* Registry)
+{
+#if WITH_EDITOR
+	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+	PreRegistryRemovedNative.Broadcast(Registry);
+	PreRegistryRemoved.Broadcast(Registry);
+}
+
+void UHeartRegistryRuntimeSubsystem::BroadcastOnAnyRegistryChanged(UHeartGraphNodeRegistry* Registry)
+{
+#if WITH_EDITOR
+	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+	OnAnyRegistryChangedNative.Broadcast(Registry);
+	OnAnyRegistryChanged.Broadcast(Registry);
 }
 
 UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry(const TSubclassOf<UHeartGraph> Class)

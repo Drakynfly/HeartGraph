@@ -8,8 +8,6 @@
 class UHeartGraph;
 class UHeartGraphNode;
 
-//DECLARE_MULTICAST_DELEGATE(FHeartGraphSchemaRefresh);
-
 UCLASS()
 class HEARTEDITOR_API UHeartEdGraphSchema : public UEdGraphSchema
 {
@@ -35,7 +33,6 @@ public:
 	// --
 
 	virtual void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
-
 	//~ EdGraphSchema
 
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
@@ -48,7 +45,6 @@ private:
 	static bool IsHeartGraphNodePlaceable(const UClass* Class);
 
 public:
-	//static FHeartGraphSchemaRefresh OnNodeListChanged;
 	static UBlueprint* GetPlaceableNodeBlueprint(const FAssetData& AssetData);
 
 	static const UHeartGraph* GetAssetClassDefaults(const UEdGraph* Graph);

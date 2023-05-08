@@ -180,19 +180,19 @@ void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	Super::CreateDefaultNodesForGraph(Graph);
 
-	auto&& HeartEdGraph = Cast<UHeartEdGraph>(&Graph);
+	const UHeartEdGraph* HeartEdGraph = Cast<UHeartEdGraph>(&Graph);
 	check(HeartEdGraph);
 
-	auto&& HeartGraph = HeartEdGraph->GetHeartGraph();
+	UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
 	check(HeartGraph);
 
-	auto&& HeartSchema = HeartGraph->GetSchema();
+	const UHeartGraphSchema* HeartSchema = HeartGraph->GetSchema();
 	check(HeartSchema);
 
 	HeartSchema->CreateDefaultNodesForGraph(HeartGraph);
 }
 
-TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass)
+TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(const TSubclassOf<UHeartGraph> HeartGraphClass)
 {
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(HeartGraphClass);
 	auto&& SortedCategories = Registry->GetNodeCategories();

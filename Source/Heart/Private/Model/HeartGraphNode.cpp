@@ -6,6 +6,13 @@
 
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
 
+UHeartGraphNode::UHeartGraphNode()
+{
+#if WITH_EDITOR
+	EditorData.EditorSlateStyle = "Default";
+#endif
+}
+
 UWorld* UHeartGraphNode::GetWorld() const
 {
 	if (!IsTemplate())

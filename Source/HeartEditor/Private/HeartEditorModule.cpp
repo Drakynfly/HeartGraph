@@ -3,26 +3,28 @@
 #include "HeartEditorModule.h"
 #include "HeartEditorStyle.h"
 
-#include "Graph/HeartGraphAssetEditor.h"
+#include "Modules/ModuleManager.h"
+#include "GameplayTagsEditorModule.h"
+
 //#include "Asset/HeartAssetIndexer.h"
 
-#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 #include "UI/HeartWidgetInputBindingAsset.h"
 
-#include "IAssetSearchModule.h"
 #include "GraphRegistry/HeartRegistrationClasses.h"
-#include "Modules/ModuleManager.h"
 
 #include "Customizations/ItemsArrayCustomization.h"
 
-#include "GameplayTagsEditorModule.h"
+#include "Graph/Widgets/SHeartGraphNode.h"
+#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
+#include "Nodes/HeartGraphNodeCustomization.h"
+
 
 // @todo temp includes
 #include "AssetToolsModule.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
-#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
+
 
 
 static const FName PropertyEditorModuleName("PropertyEditor");
@@ -32,6 +34,7 @@ DEFINE_LOG_CATEGORY(LogHeartEditor);
 
 #define LOCTEXT_NAMESPACE "HeartEditorModule"
 
+// @TODO TEMP
 EAssetTypeCategories::Type FHeartEditorModule::HeartAssetCategory_TEMP = static_cast<EAssetTypeCategories::Type>(0);
 
 void FHeartEditorModule::StartupModule()
@@ -66,7 +69,7 @@ void FHeartEditorModule::StartupModule()
 
 	// register detail customizations
 	//RegisterCustomClassLayout(UHeartGraph::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphDetails::MakeInstance));
-	//RegisterCustomClassLayout(UHeartGraphNode::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphNodeDetails::MakeInstance));
+	RegisterCustomClassLayout(UHeartGraphNode::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphNodeCustomization::MakeInstance));
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 	PropertyModule.NotifyCustomizationModuleChanged();
@@ -76,6 +79,9 @@ void FHeartEditorModule::StartupModule()
 	{
 		RegisterAssetIndexers();
 	}
+
+	RegisterSlateEditorWidget("Default", FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNode::MakeInstance<SHeartGraphNode>));
+
 	ModulesChangedHandle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FHeartEditorModule::ModulesChangesCallback);
 }
 
@@ -103,12 +109,12 @@ void FHeartEditorModule::ShutdownModule()
 	{
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
-		for (FName Key : PropertyCustomizations)
+		for (const FName Key : PropertyCustomizations)
 		{
 			PropertyModule.UnregisterCustomPropertyTypeLayout(Key);
 		}
 
-		for (FName Key : CustomClassLayouts)
+		for (const FName Key : CustomClassLayouts)
 		{
 			PropertyModule.UnregisterCustomClassLayout(Key);
 		}
@@ -117,11 +123,30 @@ void FHeartEditorModule::ShutdownModule()
 	FModuleManager::Get().OnModulesChanged().Remove(ModulesChangedHandle);
 }
 
-TSharedRef<FHeartGraphAssetEditor> FHeartEditorModule::CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
+void FHeartEditorModule::RegisterSlateEditorWidget(const FName Style, const FOnGetSlateGraphWidgetInstance& Callback)
 {
-	TSharedRef<FHeartGraphAssetEditor> NewHeartGraphAssetEditor(new FHeartGraphAssetEditor());
-	NewHeartGraphAssetEditor->InitHeartGraphAssetEditor(Mode, InitToolkitHost, HeartGraph);
-	return NewHeartGraphAssetEditor;
+	EditorSlateCallbacks.Add(Style, Callback);
+}
+
+void FHeartEditorModule::DeregisterSlateEditorWidget(const FName Style)
+{
+	EditorSlateCallbacks.Remove(Style);
+}
+
+TArray<FName> FHeartEditorModule::GetSlateStyles() const
+{
+	TArray<FName> Out;
+	EditorSlateCallbacks.GenerateKeyArray(Out);
+	return Out;
+}
+
+TSharedPtr<SHeartGraphNode> FHeartEditorModule::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
+{
+	if (const FOnGetSlateGraphWidgetInstance* Callback = EditorSlateCallbacks.Find(Style))
+	{
+		return Callback->Execute(Node);
+	}
+	return nullptr;
 }
 
 void FHeartEditorModule::RegisterPropertyCustomizations()
@@ -141,6 +166,9 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 	Customizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
 
+	Customizations.Add(FHeartGraphNodeEditorDataTemp::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGraphNodeEditorDataTempCustomization::MakeInstance));
+
 	// Register property customizations
 	for (auto&& Customization : Customizations)
 	{
@@ -152,7 +180,7 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
-void FHeartEditorModule::RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance DetailLayout)
+void FHeartEditorModule::RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance& DetailLayout)
 {
 	if (Class)
 	{

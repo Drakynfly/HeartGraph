@@ -10,6 +10,10 @@
 
 class UHeartGraphNode;
 
+class UHeartGraphNodeRegistry;
+DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEventNative, UHeartGraphNodeRegistry*);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEvent, UHeartGraphNodeRegistry*, Registry);
+
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeClassFilter, UClass*, NodeClass);
 
 class UGraphNodeRegistrar;
@@ -30,8 +34,10 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 protected:
 	bool FilterClassForRegistration(const TObjectPtr<UClass>& Class) const;
 
-	void AddRegistrationList(const FHeartRegistrationClasses& Registration);
-	void RemoveRegistrationList(const FHeartRegistrationClasses& Registration);
+	void AddRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast);
+	void RemoveRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast);
+
+	void BroadcastChange();
 
 	void SetRecursivelyDiscoveredClasses(const FHeartRegistrationClasses& Classes);
 
@@ -87,7 +93,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	void DeregisterAll();
 
+	// Broadcast on any change to registered class lists.
+	UPROPERTY(BlueprintAssignable, Category = "Heart|GraphNodeRegistry|Events")
+	FHeartGraphNodeRegistryEvent OnRegistryChanged;
+
 private:
+	// Broadcast on any change to registered class lists.
+	FHeartGraphNodeRegistryEventNative OnRegistryChangedNative;
+
 	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, int32>> GraphClasses;
 
 	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.

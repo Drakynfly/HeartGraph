@@ -20,6 +20,7 @@
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditorActions.h"
 #include "HeartEditorModule.h"
+#include "HeartRegistryEditorSubsystem.h"
 #include "ScopedTransaction.h"
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
@@ -78,7 +79,7 @@ void UHeartEdGraphNode::PostDuplicate(bool bDuplicateForPIE)
 			DuplicatedNode->Guid = FHeartNodeGuid::NewGuid();
 			DuplicatedNode->Location = FVector2D(NodePosX, NodePosY);
 
-			/*
+
 			// If the Graph Node's Object is owned within the graph, we should make a copy of it.
 			if (HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode ||
 				HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode->GetGraph())
@@ -90,7 +91,7 @@ void UHeartEdGraphNode::PostDuplicate(bool bDuplicateForPIE)
 			{
 				DuplicatedNode->NodeObject = HeartGraphNode->NodeObject;
 			}
-			*/
+
 
 			HeartGraphNode->GetGraph()->AddNode(DuplicatedNode);
 			HeartGraphNode = DuplicatedNode;
@@ -161,7 +162,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	// Get the matching HeartPin for the EdGraphPin that was changed
 	FHeartPinGuid HeartPin = HeartGraphNode->GetPinByName(Pin->PinName);
 
-	FHeartGraphPinReference SelfReference{HeartGraphNode->GetGuid(), HeartPin};
+	const FHeartGraphPinReference SelfReference{HeartGraphNode->GetGuid(), HeartPin};
 
 	if (!ensure(HeartPin.IsValid()))
 	{
@@ -174,7 +175,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	TArray<FHeartGraphPinDesc> LinkedPins;
 	for (auto&& LinkedRef : HeartLinks)
 	{
-		auto&& LinkedPin = HeartGraphNode->GetGraph()->GetNode(LinkedRef.NodeGuid)->GetPinDesc(LinkedRef.PinGuid);
+		const FHeartGraphPinDesc& LinkedPin = HeartGraphNode->GetPinDesc(LinkedRef.PinGuid);
 
 		LinkedPins.Add(LinkedPin);
 
@@ -601,7 +602,15 @@ bool UHeartEdGraphNode::CanDuplicateNode() const
 
 TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 {
-	return SNew(SHeartGraphNode, this);
+	if (HeartGraphNode)
+	{
+		const FName VisualWidgetType = HeartGraphNode->GetEditorSlateStyle();
+
+		auto&& EditorRegister = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();
+		return EditorRegister->MakeVisualWidget(VisualWidgetType, this);
+	}
+
+	return Super::CreateVisualWidget();
 }
 
 FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) const
@@ -796,7 +805,7 @@ bool UHeartEdGraphNode::CanUserRemoveInput(const UEdGraphPin* Pin) const
 		return false;
 	}
 
-	auto&& DefaultPins = HeartGraphNode->GetClass()->GetDefaultObject<UHeartGraphNode>()->GetDefaultInputs();
+	auto&& DefaultPins = HeartGraphNode->GetClass()->GetDefaultObject<UHeartGraphNode>()->GetDefaultPins();
 
 	// Don't allow user to delete a default pin.
 	for (auto&& DefaultPin : DefaultPins)
@@ -817,7 +826,7 @@ bool UHeartEdGraphNode::CanUserRemoveOutput(const UEdGraphPin* Pin) const
 		return false;
 	}
 
-	auto&& DefaultPins = HeartGraphNode->GetClass()->GetDefaultObject<UHeartGraphNode>()->GetDefaultOutputs();
+	auto&& DefaultPins = HeartGraphNode->GetClass()->GetDefaultObject<UHeartGraphNode>()->GetDefaultPins();
 
 	// Don't allow user to delete a default pin.
 	for (auto&& DefaultPin : DefaultPins)

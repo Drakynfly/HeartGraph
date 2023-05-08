@@ -1,12 +1,12 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/AssetDefinition_HeartGraph.h"
-#include "HeartEditorModule.h"
 
 #include "Model/HeartGraph.h"
 
 #include "Toolkits/IToolkit.h"
 #include "HeartEditorShared.h"
+#include "Graph/HeartGraphUtils.h"
 
 #define LOCTEXT_NAMESPACE "AssetDefinition_HeartGraph"
 
@@ -32,13 +32,11 @@ TSoftClassPtr<> UAssetDefinition_HeartGraph::GetAssetClass() const
 
 EAssetCommandResult UAssetDefinition_HeartGraph::OpenAssets(const FAssetOpenArgs& OpenArgs) const
 {
-	const FHeartEditorModule& HeartModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
-
 	TArray<UHeartGraph*> HeartGraphs = OpenArgs.LoadObjects<UHeartGraph>();
 
 	for (UHeartGraph* HeartGraph : HeartGraphs)
 	{
-		HeartModule.CreateHeartGraphAssetEditor(OpenArgs.GetToolkitMode(), OpenArgs.ToolkitHost, HeartGraph);
+		Heart::GraphUtils::CreateHeartGraphAssetEditor(OpenArgs.GetToolkitMode(), OpenArgs.ToolkitHost, HeartGraph);
 	}
 
 	return EAssetCommandResult::Handled;

@@ -25,7 +25,14 @@ public:
 
 	void Construct(const FArguments& InArgs, UHeartEdGraphNode* InNode);
 
+	template <typename THeartGraphNode>
+	static TSharedRef<SHeartGraphNode> MakeInstance(UHeartEdGraphNode* InNode)
+	{
+		return SNew(THeartGraphNode, InNode);
+	}
+
 protected:
+
 	// SNodePanel::SNode
 	virtual void GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInformationPopupInfo>& Popups) const override;
 	virtual const FSlateBrush* GetShadowBrush(bool bSelected) const override;
@@ -41,12 +48,6 @@ protected:
 	virtual TSharedRef<SWidget> CreateTitleWidget(TSharedPtr<SNodeTitle> NodeTitle) override;
 	virtual TSharedRef<SWidget> CreateNodeContentArea() override;
 	virtual const FSlateBrush* GetNodeBodyBrush() const override;
-
-	// purposely overriden non-virtual methods, avoiding engine modification
-	FSlateColor GetNodeTitleColor() const;
-	FSlateColor GetNodeBodyColor() const;
-	FSlateColor GetNodeTitleIconColor() const;
-	FLinearColor GetNodeTitleTextColor() const;
 
 	virtual void CreateStandardPinWidget(UEdGraphPin* Pin) override;
 	virtual TSharedPtr<SToolTip> GetComplexTooltip() override;
