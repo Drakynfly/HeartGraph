@@ -137,6 +137,11 @@ bool UHeartGraphNode::GetDynamicTitleColor_Implementation(FLinearColor& LinearCo
 	return false;
 }
 
+TArray<FHeartGraphNodeMessage> UHeartGraphNode::GetNodeMessages_Implementation() const
+{
+	return {};
+}
+
 FText UHeartGraphNode::GetInstanceTitle() const
 {
 	if (IsValid(NodeObject))

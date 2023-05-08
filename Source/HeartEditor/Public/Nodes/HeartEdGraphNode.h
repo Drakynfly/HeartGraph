@@ -101,6 +101,8 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Utils
 
+	virtual void GetPopupMessages(TArray<TPair<FString, FLinearColor>>& Messages) const;
+
 	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType
 	FEdGraphPinType GetEdGraphPinTypeFromPinDesc(const FHeartGraphPinDesc& PinDesc) const;
 

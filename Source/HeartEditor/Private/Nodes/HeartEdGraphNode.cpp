@@ -705,6 +705,16 @@ void UHeartEdGraphNode::JumpToDefinition() const
 	}
 }
 
+void UHeartEdGraphNode::GetPopupMessages(TArray<TPair<FString, FLinearColor>>& Messages) const
+{
+	TArray<FHeartGraphNodeMessage> RuntimeMessages = HeartGraphNode->GetNodeMessages();
+
+	for (const FHeartGraphNodeMessage& Tuple : RuntimeMessages)
+	{
+		Messages.Add({Tuple.Message.ToString(), Tuple.Color});
+	}
+}
+
 void UHeartEdGraphNode::JumpToNodeDefinition() const
 {
 	if (ensure(IsValid(HeartGraphNode)))

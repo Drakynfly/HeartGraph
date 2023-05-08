@@ -32,7 +32,6 @@
 
 SHeartGraphPin::SHeartGraphPin()
 {
-	//PinColorModifier =
 }
 
 void SHeartGraphPin::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
@@ -52,11 +51,15 @@ void SHeartGraphNode::Construct(const FArguments& InArgs, UHeartEdGraphNode* InN
 
 void SHeartGraphNode::GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInformationPopupInfo>& Popups) const
 {
-	//const FString Description = HeartEdGraphNode->GetNodeDescription();
-	//if (!Description.IsEmpty())
+	TArray<TPair<FString, FLinearColor>> PopupMessages;
+	HeartEdGraphNode->GetPopupMessages(PopupMessages);
+
+	for (const TPair<FString, FLinearColor>& NodeMessage : PopupMessages)
 	{
-		//const FGraphInformationPopupInfo DescriptionPopup = FGraphInformationPopupInfo(nullptr, BackgroundColor, Description);
-		//Popups.Add(DescriptionPopup);
+		const FSlateBrush* Icon = nullptr; // @todo provide interface to set these
+
+		const FGraphInformationPopupInfo DescriptionPopup = FGraphInformationPopupInfo(Icon, NodeMessage.Value, NodeMessage.Key);
+		Popups.Add(DescriptionPopup);
 	}
 }
 
@@ -384,18 +387,20 @@ void SHeartGraphNode::CreateStandardPinWidget(UEdGraphPin* Pin)
 {
 	const TSharedPtr<SGraphPin> NewPin = SNew(SHeartGraphPin, Pin);
 
-	if (HeartEdGraphNode->GetHeartGraphNode())
+	const UHeartGraphNode* HeartGraphNode = HeartEdGraphNode->GetHeartGraphNode();
+
+	if (IsValid(HeartGraphNode))
 	{
 		if (Pin->Direction == EGPD_Input)
 		{
-			//if (HeartEdGraphNode->GetHeartGraphNode()->GetInputPins().Num() == 1 && Pin->PinName == UHeartGraphNode::DefaultInputPin.PinName)
+			//if (HeartGraphNode->GetInputPins().Num() == 1 && Pin->PinName == UHeartGraphNode::DefaultInputPin.PinName)
 			{
 			//	NewPin->SetShowLabel(false);
 			}
 		}
 		else
 		{
-			//if (HeartEdGraphNode->GetHeartGraphNode()->GetOutputPins().Num() == 1 && Pin->PinName == UHeartGraphNode::DefaultOutputPin.PinName)
+			//if (HeartGraphNode->GetOutputPins().Num() == 1 && Pin->PinName == UHeartGraphNode::DefaultOutputPin.PinName)
 			{
 			//	NewPin->SetShowLabel(false);
 			}
@@ -409,7 +414,11 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 TSharedPtr<SToolTip> SHeartGraphNode::GetComplexTooltip()
 {
-	return IDocumentation::Get()->CreateToolTip(TAttribute<FText>(this, &SGraphNode::GetNodeTooltip), nullptr, GraphNode->GetDocumentationLink(), GraphNode->GetDocumentationExcerptName());
+	return IDocumentation::Get()->CreateToolTip(
+		TAttribute<FText>(this, &SHeartGraphNode::GetNodeTooltip),
+		nullptr,
+		GraphNode->GetDocumentationLink(),
+		GraphNode->GetDocumentationExcerptName());
 }
 
 void SHeartGraphNode::CreateInputSideAddButton(TSharedPtr<SVerticalBox> OutputBox)
@@ -481,16 +490,16 @@ void SHeartGraphNode::AddPinButton(TSharedPtr<SVerticalBox> OutputBox, const TSh
 	}
 
 	const TSharedRef<SButton> AddPinButton = SNew(SButton)
-	.ContentPadding(0.0f)
-	.ButtonStyle(FAppStyle::Get(), "NoBorder")
-	.OnClicked(this, &SHeartGraphNode::OnAddHeartPin, Direction)
-	.IsEnabled(this, &SHeartGraphNode::IsNodeEditable)
-	.ToolTipText(PinTooltipText)
-	.ToolTip(Tooltip)
-	.Visibility(this, &SHeartGraphNode::IsAddPinButtonVisible)
-	[
-		ButtonContent
-	];
+		.ContentPadding(0.0f)
+		.ButtonStyle(FAppStyle::Get(), "NoBorder")
+		.OnClicked(this, &SHeartGraphNode::OnAddHeartPin, Direction)
+		.IsEnabled(this, &SHeartGraphNode::IsNodeEditable)
+		.ToolTipText(PinTooltipText)
+		.ToolTip(Tooltip)
+		.Visibility(this, &SHeartGraphNode::IsAddPinButtonVisible)
+		[
+			ButtonContent
+		];
 
 	AddPinButton->SetCursor(EMouseCursor::Hand);
 

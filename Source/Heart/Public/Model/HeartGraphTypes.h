@@ -18,3 +18,17 @@ struct FHeartGraphConnectionEvent
 	UPROPERTY(BlueprintReadOnly, Category = "ConnectionEvent")
 	TArray<FHeartPinGuid> AffectedPins;
 };
+
+USTRUCT(BlueprintType)
+struct FHeartGraphNodeMessage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "NodeMessage")
+	FText Message;
+
+	UPROPERTY(BlueprintReadOnly, Category = "NodeMessage")
+	FLinearColor Color;
+};
+
+

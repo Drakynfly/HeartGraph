@@ -151,6 +151,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool GetDynamicTitleColor(FLinearColor& LinearColor);
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
+	TArray<FHeartGraphNodeMessage> GetNodeMessages() const;
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FText GetInstanceTitle() const;
 
