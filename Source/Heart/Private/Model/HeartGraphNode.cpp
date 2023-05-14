@@ -9,7 +9,8 @@
 UHeartGraphNode::UHeartGraphNode()
 {
 #if WITH_EDITOR
-	EditorData.EditorSlateStyle = "Default";
+	// Unless specified otherwise, use the graph's Schema default style.
+	EditorData.EditorSlateStyle = "GraphDefault";
 #endif
 }
 

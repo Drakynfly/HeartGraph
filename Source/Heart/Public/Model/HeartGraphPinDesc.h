@@ -21,20 +21,6 @@ struct FHeartGraphPinDesc
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
 	FName Name;
 
-	// Friendlier, localizable name of this pin.
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
-	FText FriendlyName;
-
-	// Runtime tooltip can that can be shown to players.
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc", meta = (MultiLine))
-	FText Tooltip;
-
-#if WITH_EDITORONLY_DATA
-	// Additional tooltip only visible in the editor.
-	UPROPERTY(EditAnywhere, Category = "Heart|PinDesc")
-	FText EditorTooltip;
-#endif
-
 	// Tag used to identify the type of pin this represents.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc")
 	FHeartGraphPinTag Tag;
@@ -46,6 +32,20 @@ struct FHeartGraphPinDesc
 	// Optional metadata objects that add additional info about this pin, such as default values, or connection rules.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced, Category = "Heart|PinDesc")
 	TArray<TObjectPtr<UHeartGraphPinMetadata>> Metadata;
+
+	// Friendlier, localizable name of this pin.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc", AdvancedDisplay)
+	FText FriendlyName;
+
+	// Runtime tooltip can that can be shown to players.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|PinDesc", meta = (MultiLine), AdvancedDisplay)
+	FText Tooltip;
+
+#if WITH_EDITORONLY_DATA
+	// Additional tooltip only visible in the editor.
+	UPROPERTY(EditAnywhere, Category = "Heart|PinDesc", AdvancedDisplay)
+	FText EditorTooltip;
+#endif
 
 	bool IsValid() const
 	{

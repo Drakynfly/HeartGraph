@@ -63,6 +63,8 @@ class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 	GENERATED_BODY()
 
 public:
+	UHeartGraphSchema();
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryGetWorldForGraph(const UHeartGraph* HeartGraph, UWorld*& World) const;
 
@@ -95,5 +97,9 @@ public:
 	// Enable to have the runtime function CanPinsConnect called by the EdGraphSchema for this graph.
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	bool RunCanPinsConnectInEdGraph;
+
+	// Style of slate widget to use by default
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	FName DefaultEditorStyle;
 #endif
 };
