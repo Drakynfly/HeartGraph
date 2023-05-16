@@ -125,11 +125,12 @@ public:
 	/*----------------------------
 			CLASS BEHAVIOR
 	----------------------------*/
-public:
+protected:
 	/** Override to specify the behavior class for this graph class */
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Graph")
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
+public:
 	template <typename THeartGraphSchema, typename THeartGraph>
 	static const THeartGraphSchema* GetSchemaStatic()
 	{
