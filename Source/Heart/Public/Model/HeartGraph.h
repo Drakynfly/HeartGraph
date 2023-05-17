@@ -26,6 +26,11 @@ struct FHeartGraphEditorDataTemp
 	GENERATED_BODY()
 
 #if WITH_EDITORONLY_DATA
+	/**
+	 * The displayed name of graphs in the Unreal Editor graph window corner text. By default, will read "Heart" unless
+	 * changed by a subclass, either in BP via the details panel, or in C++ by settings EditorData.GraphTypeName in the
+	 * constructor.
+	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
 
@@ -68,6 +73,8 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 	friend class UHeartEdGraph;
 
 public:
+	UHeartGraph();
+
 	virtual UWorld* GetWorld() const override;
 
 	virtual void PostLoad() override;
@@ -253,10 +260,10 @@ private:
 	DECLARE_DELEGATE_OneParam(FNodeCreatedInEditorExternally, UHeartGraphNode* /* Node */)
 	FNodeCreatedInEditorExternally OnNodeCreatedInEditorExternally;
 
+public:
 	// @todo temp while sparse struct is broken, see above comment on this
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	FHeartGraphEditorDataTemp EditorData;
-public:
 	auto GetGraphTypeName() const { return EditorData.GraphTypeName; }
 	auto GetCanCreateAssetFromFactory() const { return EditorData.CanCreateAssetFromFactory; }
 	auto GetDisplayClassAsCommonInFactory() const { return EditorData.DisplayClassAsCommonInFactory; }
