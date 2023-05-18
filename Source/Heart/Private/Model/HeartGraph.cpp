@@ -7,7 +7,16 @@
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
+#define LOCTEXT_NAMESPACE "HeartGraph"
+
 DEFINE_LOG_CATEGORY(LogHeartGraph)
+
+UHeartGraph::UHeartGraph()
+{
+#if WITH_EDITORONLY_DATA
+	EditorData.GraphTypeName = LOCTEXT("DefaultGraphTypeName", "HEART");
+#endif
+}
 
 UWorld* UHeartGraph::GetWorld() const
 {

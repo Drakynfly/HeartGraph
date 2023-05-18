@@ -28,7 +28,7 @@ struct FHeartGraphNodeMessage
 	FText Message;
 
 	UPROPERTY(BlueprintReadOnly, Category = "NodeMessage")
-	FLinearColor Color;
+	FLinearColor Color = FLinearColor::White;
 };
 
 
