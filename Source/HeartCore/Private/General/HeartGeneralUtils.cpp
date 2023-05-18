@@ -36,9 +36,19 @@ UObject* UHeartGeneralUtils::ClassAsObject(UClass* Class)
 	return Class;
 }
 
+UClass* UHeartGeneralUtils::ObjectAsClass(UObject* Object)
+{
+	return Cast<UClass>(Object);
+}
+
 const UObject* UHeartGeneralUtils::GetClassDefaultObject(UClass* Class)
 {
 	return IsValid(Class) ? Class->GetDefaultObject() : nullptr;
+}
+
+bool UHeartGeneralUtils::IsClassDefaultObject(const UObject* Object)
+{
+	return Object && Object->HasAnyFlags(RF_ClassDefaultObject);
 }
 
 FVector UHeartGeneralUtils::BP_ClampVector(const FVector& Value, const FVectorBounds& Bounds)
