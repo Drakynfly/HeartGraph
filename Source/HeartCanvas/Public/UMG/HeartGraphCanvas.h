@@ -88,7 +88,7 @@ public:
 	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing so we can draw the preview link
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);
 
-	void AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
+	UCanvasPanelSlot* AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
 
 protected:
 	bool IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
@@ -224,23 +224,18 @@ public:
 	FOnGraphViewChanged OnGraphViewChanged;
 
 protected:
-	/** The canvas to draw context menus, or other extra popups on. */
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, DisplayName = "CANVAS_Popups"), Category = "Widgets")
-	TObjectPtr<UHeartGraphCanvasPanel> PopupsCanvas;
-
-	/** The canvas to draw nodes on. */
+	/** The canvas to draw widgets on. */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Nodes"), Category = "Widgets")
 	TObjectPtr<UHeartGraphCanvasPanel> NodeCanvas;
-
-	/** The canvas to draw node connections on. */
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Connections"), Category = "Widgets")
-	TObjectPtr<UHeartGraphCanvasPanel> ConnectionCanvas;
 
 	UPROPERTY()
 	TWeakObjectPtr<UHeartGraph> DisplayedGraph;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphCanvasNode>> DisplayedNodes;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
+	TArray<TObjectPtr<UWidget>> Popups;
 
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;

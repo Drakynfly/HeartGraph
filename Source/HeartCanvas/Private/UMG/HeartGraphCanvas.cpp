@@ -20,6 +20,13 @@
 
 DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
 
+namespace Heart::Canvas
+{
+	int32 ConnectionZOrder = 0;
+	int32 NodeZOrder = 1;
+	int32 PopUpZOrder = 2;
+}
+
 UHeartGraphCanvas::UHeartGraphCanvas()
 {
 	View = {0.0, 0.0, 1.0};
@@ -82,7 +89,12 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		return SuperLayerID;
 	}
 
-	auto&& ConnectionVisualizer = GetGraph()->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+	UHeartCanvasConnectionVisualizer* ConnectionVisualizer = nullptr;
+
+	if (DisplayedGraph.IsValid())
+	{
+		ConnectionVisualizer = DisplayedGraph->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+	}
 
 	if (!ensure(IsValid(ConnectionVisualizer)))
 	{
@@ -311,7 +323,11 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 			Widget->GraphNode = Node;
 			Widget->PostInitNode();
 			DisplayedNodes.Add(Node->GetGuid(), Widget);
-			NodeCanvas->AddChildToCanvas(Widget)->SetAutoSize(true);
+
+			UCanvasPanelSlot* NodeSlot = NodeCanvas->AddChildToCanvas(Widget);
+			NodeSlot->SetZOrder(Heart::Canvas::NodeZOrder);
+			NodeSlot->SetAutoSize(true);
+
 			Widget->OnZoomSet(View.Z);
 			UpdateNodePositionOnCanvas(Widget);
 		}
@@ -402,9 +418,11 @@ void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Refe
 	PreviewConnectionPin = Reference;
 }
 
-void UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget)
+UCanvasPanelSlot* UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget)
 {
-	ConnectionCanvas->AddChild(ConnectionWidget);
+	UCanvasPanelSlot* ConnectionSlot = NodeCanvas->AddChildToCanvas(ConnectionWidget);
+	ConnectionSlot->SetZOrder(Heart::Canvas::ConnectionZOrder);
+	return ConnectionSlot;
 }
 
 bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const
@@ -633,33 +651,32 @@ UCanvasPanelSlot* UHeartGraphCanvas::AddWidgetToPopups(UWidget* Widget, const FV
 {
 	if (!IsValid(Widget)) return nullptr;
 
-	if (IsValid(PopupsCanvas))
-	{
-		auto&& CanvasSlot = PopupsCanvas->AddChildToCanvas(Widget);
-		CanvasSlot->SetPosition(Location);
-		CanvasSlot->SetAutoSize(true);
-		return CanvasSlot;
-	}
+	Popups.Add(Widget);
 
-	return nullptr;
+	UCanvasPanelSlot* CanvasSlot = NodeCanvas->AddChildToCanvas(Widget);
+	CanvasSlot->SetPosition(Location);
+	CanvasSlot->SetAutoSize(true);
+	CanvasSlot->SetZOrder(Heart::Canvas::PopUpZOrder);
+	return CanvasSlot;
 }
 
 bool UHeartGraphCanvas::RemoveWidgetFromPopups(UWidget* Widget)
 {
 	if (!IsValid(Widget)) return false;
 
-	if (IsValid(PopupsCanvas))
-	{
-		return PopupsCanvas->RemoveChild(Widget);
-	}
+	Popups.Remove(Widget);
 
-	return false;
+	return NodeCanvas->RemoveChild(Widget);
 }
 
 void UHeartGraphCanvas::ClearPopups()
 {
-	if (IsValid(PopupsCanvas))
+	TArray<TObjectPtr<UWidget>> PopupsCopy = Popups;
+
+	for (auto&& Widget : PopupsCopy)
 	{
-		PopupsCanvas->ClearChildren();
+		RemoveWidgetFromPopups(Widget);
 	}
+
+	Popups.Empty();
 }
