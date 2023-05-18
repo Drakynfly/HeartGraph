@@ -8,6 +8,7 @@
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
+#include "Nodes/HeartEdGraphNode.h"
 
 void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -60,7 +61,7 @@ TArray<UClass*> UHeartRegistryEditorSubsystem::GetFactoryCommonClasses()
 		});
 }
 
-TSharedPtr<SHeartGraphNode> UHeartRegistryEditorSubsystem::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
+TSharedPtr<SGraphNode> UHeartRegistryEditorSubsystem::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 	return HeartEditorModule.MakeVisualWidget(Style, Node);

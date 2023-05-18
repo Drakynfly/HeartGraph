@@ -7,7 +7,16 @@
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
+#define LOCTEXT_NAMESPACE "HeartGraph"
+
 DEFINE_LOG_CATEGORY(LogHeartGraph)
+
+UHeartGraph::UHeartGraph()
+{
+#if WITH_EDITORONLY_DATA
+	EditorData.GraphTypeName = LOCTEXT("DefaultGraphTypeName", "HEART");
+#endif
+}
 
 UWorld* UHeartGraph::GetWorld() const
 {
@@ -109,6 +118,17 @@ void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) 
 	}
 }
 
+void UHeartGraph::ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const
+{
+	for (auto&& Element : Extensions)
+	{
+		if (ensure(Element.Value))
+		{
+			if (Iter(Element.Value)) return;
+		}
+	}
+}
+
 UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 {
 	auto&& Result = Nodes.Find(NodeGuid);
@@ -129,6 +149,37 @@ const UHeartGraphSchema* UHeartGraph::GetSchema() const
 const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const
 {
 	return GetSchema();
+}
+
+UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExtension> Class) const
+{
+	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
+	{
+		return *ExtensionPtr;
+	}
+	return nullptr;
+}
+
+UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExtension> Class)
+{
+	if (Extensions.Contains(Class))
+	{
+		return nullptr;
+	}
+
+	UHeartGraphExtension* NewExtension = NewObject<UHeartGraphExtension>(this, Class);
+	Extensions.Add(NewExtension);
+	NewExtension->PostExtensionAdded();
+	return NewExtension;
+}
+
+void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
+{
+	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
+	{
+		(*ExtensionPtr)->PreExtensionRemove();
+		Extensions.Remove(Class);
+	}
 }
 
 UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location)

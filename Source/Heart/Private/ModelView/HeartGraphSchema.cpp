@@ -3,6 +3,13 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "Model/HeartGraphNode.h"
 
+UHeartGraphSchema::UHeartGraphSchema()
+{
+#if WITH_EDITORONLY_DATA
+	DefaultEditorStyle = "Horizontal";
+#endif
+}
+
 bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
 {
 	return false;

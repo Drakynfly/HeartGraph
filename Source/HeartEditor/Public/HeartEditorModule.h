@@ -8,11 +8,10 @@
 #include "Modules/ModuleInterface.h"
 #include "Toolkits/IToolkit.h"
 
-class SHeartGraphNode;
 class UHeartEdGraphNode;
 class FHeartGraphAssetEditor;
 
-DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SHeartGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
+DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
 
@@ -25,7 +24,7 @@ public:
     void RegisterSlateEditorWidget(FName Style, const FOnGetSlateGraphWidgetInstance& Callback);
     void DeregisterSlateEditorWidget(FName Style);
     TArray<FName> GetSlateStyles() const;
-    TSharedPtr<SHeartGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
+    TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
 
 private:
     void RegisterPropertyCustomizations();

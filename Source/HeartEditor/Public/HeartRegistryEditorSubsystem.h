@@ -6,7 +6,6 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "HeartRegistryEditorSubsystem.generated.h"
 
-class SHeartGraphNode;
 class UHeartEdGraphNode;
 
 /**
@@ -30,7 +29,7 @@ public:
 	/**
 	 * Creates a slate widget for a EdGraphNode, by looking up a style registered with the Module.
 	 */
-	TSharedPtr<SHeartGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
+	TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
 
 protected:
 	void BindToRuntimeSubsystem();

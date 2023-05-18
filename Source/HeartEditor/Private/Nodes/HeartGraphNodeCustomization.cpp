@@ -18,7 +18,9 @@ TSharedRef<IPropertyTypeCustomization> FHeartGraphNodeEditorDataTempCustomizatio
 FHeartGraphNodeEditorDataTempCustomization::FHeartGraphNodeEditorDataTempCustomization()
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
-	Options = HeartEditorModule.GetSlateStyles();
+
+	Options.Add("GraphDefault");
+	Options.Append(HeartEditorModule.GetSlateStyles());
 }
 
 void FHeartGraphNodeEditorDataTempCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle,
@@ -76,8 +78,16 @@ void FHeartGraphNodeEditorDataTempCustomization::OnStyleSelectionChanged(const F
 
 TSharedRef<SWidget> FHeartGraphNodeEditorDataTempCustomization::OnGenerateStyleWidget(const FName Style)
 {
+	FText Tooltip;
+
+	if (Style == FName("GraphDefault"))
+	{
+		Tooltip = LOCTEXT("DefaultOptionTooltip", "Use the Default Editor Style of the graph's Schema");
+	}
+
 	return SNew(STextBlock)
-		.Text(FText::FromName(Style));
+		.Text(FText::FromString(FName::NameToDisplayString(Style.ToString(), false)))
+		.ToolTipText(Tooltip);
 }
 
 FText FHeartGraphNodeEditorDataTempCustomization::GetSelectedStyle() const
@@ -87,7 +97,7 @@ FText FHeartGraphNodeEditorDataTempCustomization::GetSelectedStyle() const
 	{
 		StyleProp->GetValue(Value);
 	}
-	return FText::FromName(Value);
+	return FText::FromString(FName::NameToDisplayString(Value.ToString(), false));
 }
 
 #undef LOCTEXT_NAMESPACE

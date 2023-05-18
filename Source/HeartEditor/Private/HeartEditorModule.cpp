@@ -16,15 +16,19 @@
 
 #include "Customizations/ItemsArrayCustomization.h"
 
-#include "Graph/Widgets/SHeartGraphNode.h"
-#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
-#include "Nodes/HeartGraphNodeCustomization.h"
+#include "Graph/Widgets/Nodes/SHeartGraphNodeBase.h"
+#include "Graph/Widgets/Nodes/SHeartGraphNode_Horizontal.h"
 
+#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
+
+#include "Nodes/HeartGraphNodeCustomization.h"
+#include "Graph/HeartGraphSchemaCustomization.h"
 
 // @todo temp includes
 #include "AssetToolsModule.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
-
+#include "Graph/Widgets/Nodes/SHeartGraphNode_Vertical.h"
+#include "ModelView/HeartGraphSchema.h"
 
 
 static const FName PropertyEditorModuleName("PropertyEditor");
@@ -68,8 +72,12 @@ void FHeartEditorModule::StartupModule()
 	RegisterPropertyCustomizations();
 
 	// register detail customizations
-	//RegisterCustomClassLayout(UHeartGraph::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphDetails::MakeInstance));
-	RegisterCustomClassLayout(UHeartGraphNode::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphNodeCustomization::MakeInstance));
+	//RegisterCustomClassLayout(UHeartGraph::StaticClass(),
+	//	FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphDetails::MakeInstance));
+	RegisterCustomClassLayout(UHeartGraphNode::StaticClass(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphNodeCustomization::MakeInstance));
+	RegisterCustomClassLayout(UHeartGraphSchema::StaticClass(),
+		FOnGetDetailCustomizationInstance::CreateStatic(&FHeartGraphSchemaCustomization::MakeInstance));
 
 	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 	PropertyModule.NotifyCustomizationModuleChanged();
@@ -80,7 +88,11 @@ void FHeartEditorModule::StartupModule()
 		RegisterAssetIndexers();
 	}
 
-	RegisterSlateEditorWidget("Default", FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNode::MakeInstance<SHeartGraphNode>));
+	RegisterSlateEditorWidget("Horizontal",
+		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Horizontal>));
+
+	RegisterSlateEditorWidget("Vertical",
+		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Vertical>));
 
 	ModulesChangedHandle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FHeartEditorModule::ModulesChangesCallback);
 }
@@ -140,7 +152,7 @@ TArray<FName> FHeartEditorModule::GetSlateStyles() const
 	return Out;
 }
 
-TSharedPtr<SHeartGraphNode> FHeartEditorModule::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
+TSharedPtr<SGraphNode> FHeartEditorModule::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
 {
 	if (const FOnGetSlateGraphWidgetInstance* Callback = EditorSlateCallbacks.Find(Style))
 	{

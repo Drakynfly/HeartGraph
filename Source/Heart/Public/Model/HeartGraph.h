@@ -4,19 +4,21 @@
 
 #include "UObject/Object.h"
 #include "HeartGraphInterface.h"
+#include "HeartGraphExtension.h"
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
 #include "HeartGraph.generated.h"
 
+class UHeartGraph;
 class UHeartGraphSchema;
 class UHeartGraphNode;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHeartGraphEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*, Node);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&, Event);
+DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphEvent, UHeartGraph*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&);
 
 // @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
 // If/when Epic fixes that, these properties should be moved back into the sparse class struct below
@@ -26,6 +28,11 @@ struct FHeartGraphEditorDataTemp
 	GENERATED_BODY()
 
 #if WITH_EDITORONLY_DATA
+	/**
+	 * The displayed name of graphs in the Unreal Editor graph window corner text. By default, will read "Heart" unless
+	 * changed by a subclass, either in BP via the details panel, or in C++ by settings EditorData.GraphTypeName in the
+	 * constructor.
+	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
 
@@ -68,6 +75,8 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 	friend class UHeartEdGraph;
 
 public:
+	UHeartGraph();
+
 	virtual UWorld* GetWorld() const override;
 
 	virtual void PostLoad() override;
@@ -89,15 +98,20 @@ public:
 
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
 
+	void ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const;
+
 
 	/*-----------------------
 			GETTERS
 	------------------------*/
 public:
-
 #if WITH_EDITOR
 	UEdGraph* GetEdGraph() const { return HeartEdGraph; }
 #endif
+
+	FHeartGraphNodeEvent& GetOnNodeAdded() { return OnNodeAdded; }
+	FHeartGraphNodeEvent& GetOnNodeRemoved() { return OnNodeRemoved; }
+	FHeartGraphNodeConnectionEvent& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
@@ -125,17 +139,18 @@ public:
 	/*----------------------------
 			CLASS BEHAVIOR
 	----------------------------*/
-public:
+protected:
 	/** Override to specify the behavior class for this graph class */
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Graph")
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
+public:
 	template <typename THeartGraphSchema, typename THeartGraph>
 	static const THeartGraphSchema* GetSchemaStatic()
 	{
 		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
 		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "THeartGraph must derive from UHeartGraph");
-		const THeartGraph* DefaultHeartGraph = GetDefault<THeartGraph>();
+		const UHeartGraph* DefaultHeartGraph = GetDefault<THeartGraph>();
 		return GetDefault<THeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
 	}
 
@@ -160,6 +175,38 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
+	/** Find the first extension of the template type. */
+	template<typename TExtensionClass>
+	TExtensionClass* GetExtension() const
+	{
+		return CastChecked<TExtensionClass>(GetExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
+	}
+
+	/** Find the first extension of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	UHeartGraphExtension* GetExtension(TSubclassOf<UHeartGraphExtension> Class) const;
+
+	/** Add the extension of the template class. */
+	template<typename TExtensionClass>
+	TExtensionClass* AddExtension()
+	{
+		return CastChecked<TExtensionClass>(AddExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
+	}
+
+	/** Add the extension of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	UHeartGraphExtension* AddExtension(TSubclassOf<UHeartGraphExtension> Class);
+
+	/** Remove the extension. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	void RemoveExtension(TSubclassOf<UHeartGraphExtension> Class);
+
+	/** Remove extension of the template class. */
+	template<typename ExtensionType>
+	void RemoveExtension()
+	{
+		return RemoveExtension(ExtensionType::StaticClass());
+	}
 
 	/*----------------------------
 			NODE EDITING
@@ -216,6 +263,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	bool RemoveNode(const FHeartNodeGuid& NodeGuid);
 
+	// @todo move to extension
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
 	void BP_OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& ConnectionEvent);
 
@@ -230,15 +278,6 @@ public:
 
 	void DisconnectAllPins(FHeartGraphPinReference Pin);
 
-public:
-	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
-	FHeartGraphNodeEvent OnNodeAdded;
-
-	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
-	FHeartGraphNodeEvent OnNodeRemoved;
-
-	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
-	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
 
 #if WITH_EDITORONLY_DATA
 private:
@@ -252,10 +291,10 @@ private:
 	DECLARE_DELEGATE_OneParam(FNodeCreatedInEditorExternally, UHeartGraphNode* /* Node */)
 	FNodeCreatedInEditorExternally OnNodeCreatedInEditorExternally;
 
+public:
 	// @todo temp while sparse struct is broken, see above comment on this
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	FHeartGraphEditorDataTemp EditorData;
-public:
 	auto GetGraphTypeName() const { return EditorData.GraphTypeName; }
 	auto GetCanCreateAssetFromFactory() const { return EditorData.CanCreateAssetFromFactory; }
 	auto GetDisplayClassAsCommonInFactory() const { return EditorData.DisplayClassAsCommonInFactory; }
@@ -268,4 +307,11 @@ private:
 
 	UPROPERTY()
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
+
+	UPROPERTY()
+	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
+
+	FHeartGraphNodeEvent OnNodeAdded;
+	FHeartGraphNodeEvent OnNodeRemoved;
+	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
 };

@@ -535,8 +535,8 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 			return;
 		}
 
-		DisplayedGraph->OnNodeAdded.RemoveAll(this);
-		DisplayedGraph->OnNodeRemoved.RemoveAll(this);
+		DisplayedGraph->GetOnNodeAdded().RemoveAll(this);
+		DisplayedGraph->GetOnNodeRemoved().RemoveAll(this);
 		Reset();
 	}
 
@@ -544,8 +544,8 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 
 	if (DisplayedGraph.IsValid())
 	{
-		DisplayedGraph->OnNodeAdded.AddDynamic(this, &ThisClass::UHeartGraphCanvas::OnNodeAddedToGraph);
-		DisplayedGraph->OnNodeRemoved.AddDynamic(this, &ThisClass::UHeartGraphCanvas::OnNodeRemovedFromGraph);
+		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &UHeartGraphCanvas::OnNodeAddedToGraph);
+		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &UHeartGraphCanvas::OnNodeRemovedFromGraph);
 		Refresh();
 	}
 }

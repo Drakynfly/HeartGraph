@@ -6,7 +6,6 @@
 #include "HeartEditorCommands.h"
 #include "Graph/HeartEdGraph.h"
 #include "Graph/HeartEdGraphSchema.h"
-#include "Graph/Widgets/SHeartGraphNode.h"
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
@@ -25,6 +24,7 @@
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
 #include "Graph/HeartGraphUtils.h"
+#include "ModelView/HeartGraphSchema.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
 
@@ -604,7 +604,12 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 {
 	if (HeartGraphNode)
 	{
-		const FName VisualWidgetType = HeartGraphNode->GetEditorSlateStyle();
+		FName VisualWidgetType = HeartGraphNode->GetEditorSlateStyle();
+
+		if (VisualWidgetType == "GraphDefault")
+		{
+			VisualWidgetType = HeartGraphNode->GetGraph()->GetSchema()->DefaultEditorStyle;
+		}
 
 		auto&& EditorRegister = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();
 		return EditorRegister->MakeVisualWidget(VisualWidgetType, this);

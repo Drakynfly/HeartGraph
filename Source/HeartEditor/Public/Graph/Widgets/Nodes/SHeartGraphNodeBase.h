@@ -3,32 +3,23 @@
 #pragma once
 
 #include "SGraphNode.h"
-#include "SGraphPin.h"
 #include "Nodes/HeartEdGraphNode.h"
 
-class HEARTEDITOR_API SHeartGraphPin : public SGraphPin
+// Base class for SGraphNodes in heart graphs
+class HEARTEDITOR_API SHeartGraphNodeBase : public SGraphNode
 {
 public:
-	SHeartGraphPin();
-
-	SLATE_BEGIN_ARGS(SHeartGraphPin) {}
-	SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs, UEdGraphPin* InPin);
-};
-
-class HEARTEDITOR_API SHeartGraphNode : public SGraphNode
-{
-public:
-	SLATE_BEGIN_ARGS(SHeartGraphNode) {}
+	SLATE_BEGIN_ARGS(SHeartGraphNodeBase) {}
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, UHeartEdGraphNode* InNode);
 
-	template <typename THeartGraphNode>
-	static TSharedRef<SHeartGraphNode> MakeInstance(UHeartEdGraphNode* InNode)
+	template <typename TGraphNodeClass>
+	static TSharedRef<SGraphNode> MakeInstance(UHeartEdGraphNode* InNode)
 	{
-		return SNew(THeartGraphNode, InNode);
+		static_assert(TIsDerivedFrom<TGraphNodeClass, SHeartGraphNodeBase>::Value, TEXT("TGraphNodeClass should derive from SHeartGraphNodeBase..."));
+		static_assert(!std::is_same_v<TGraphNodeClass, SHeartGraphNodeBase>, TEXT("... but not be SHeartGraphNodeBase itself!"));
+		return SNew(TGraphNodeClass, InNode);
 	}
 
 protected:
@@ -51,16 +42,18 @@ protected:
 
 	virtual void CreateStandardPinWidget(UEdGraphPin* Pin) override;
 	virtual TSharedPtr<SToolTip> GetComplexTooltip() override;
-
-	virtual void CreateInputSideAddButton(TSharedPtr<SVerticalBox> OutputBox) override;
-	virtual void CreateOutputSideAddButton(TSharedPtr<SVerticalBox> OutputBox) override;
 	// --
 
-	// Variant of SGraphNode::AddPinButtonContent
-	virtual void AddPinButton(TSharedPtr<SVerticalBox> OutputBox, TSharedRef<SWidget> ButtonContent, const EEdGraphPinDirection Direction, FString DocumentationExcerpt = FString(), TSharedPtr<SToolTip> CustomTooltip = nullptr);
+	// Variant of SGraphNode::CreateInputSideAddButton
+	virtual TSharedPtr<SWidget> CreateAddInputButton();
+
+	// Variant of SGraphNode::CreateInputSideAddButton
+	virtual TSharedPtr<SWidget> CreateAddOutputButton();
 
 	// Variant of SGraphNode::OnAddPin
 	virtual FReply OnAddHeartPin(const EEdGraphPinDirection Direction);
+
+	void CreateCommentBubble();
 
 protected:
 	UHeartEdGraphNode* HeartEdGraphNode = nullptr;
