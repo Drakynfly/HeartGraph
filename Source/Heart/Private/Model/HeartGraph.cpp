@@ -191,7 +191,7 @@ UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExt
 	}
 
 	UHeartGraphExtension* NewExtension = NewObject<UHeartGraphExtension>(this, Class);
-	Extensions.Add(NewExtension);
+	Extensions.Add(Class, NewExtension);
 	NewExtension->PostExtensionAdded();
 	return NewExtension;
 }
