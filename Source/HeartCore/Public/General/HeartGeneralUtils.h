@@ -40,8 +40,15 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class", meta = (BlueprintAutocast, CompactNodeTitle = "->"))
 	static UObject* ClassAsObject(UClass* Class);
 
+	// Essentially the same as UKismetSystemLibrary's CastToClass, but without specifying a base class.
+	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class", meta = (BlueprintAutocast, CompactNodeTitle = "->"))
+	static UClass* ObjectAsClass(UObject* Object);
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Class", meta = (DeterminesOutputType = Class))
 	static const UObject* GetClassDefaultObject(UClass* Class);
+
+	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class")
+	static bool IsClassDefaultObject(const UObject* Object);
 
 
 	/*------------------------
