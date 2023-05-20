@@ -297,29 +297,30 @@ void UHeartGraphCanvas::UpdateAllCanvasNodesZoom()
 
 void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 {
+	// This function is only used internally, so Node should *always* be validated prior to this point.
 	check(Node);
 
-	UHeartRegistryRuntimeSubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-
-	// @todo this should be templated to return UHeartGraphCanvasNode directly
-	if (auto&& VisualizerClass = NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())
-			->GetVisualizerClassForGraphNode(Node->GetClass(), UHeartGraphCanvasNode::StaticClass()))
+	if (const TSubclassOf<UHeartGraphCanvasNode> VisualizerClass = GetVisualClassForNode(Node))
 	{
-		if (auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass))
-		{
-			Widget->GraphCanvas = this;
-			Widget->GraphNode = Node;
-			Widget->PostInitNode();
-			DisplayedNodes.Add(Node->GetGuid(), Widget);
-			NodeCanvas->AddChildToCanvas(Widget)->SetAutoSize(true);
-			Widget->OnZoomSet(View.Z);
-			UpdateNodePositionOnCanvas(Widget);
-		}
+		auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass);
+		check(Widget);
+
+		Widget->GraphCanvas = this;
+		Widget->GraphNode = Node;
+		Widget->PostInitNode();
+		DisplayedNodes.Add(Node->GetGuid(), Widget);
+		NodeCanvas->AddChildToCanvas(Widget)->SetAutoSize(true);
+		Widget->OnZoomSet(View.Z);
+		UpdateNodePositionOnCanvas(Widget);
 
 		if (!IsDesignTime())
 		{
 			Node->OnNodeLocationChanged.AddDynamic(this, &ThisClass::OnNodeLocationChanged);
 		}
+	}
+	else
+	{
+		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Unable to determine Visual Class. Node '%s' will not be displayed"), *Node->GetName())
 	}
 }
 
@@ -395,6 +396,22 @@ void UHeartGraphCanvas::AddToZoom(const double& Value)
 	{
 		SetZoom(View.Z + Value);
 	}
+}
+
+TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Implementation(const UHeartGraphNode* Node) const
+{
+	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	if (!IsValid(RegistrySubsystem))
+	{
+		UE_LOG(LogHeartGraphCanvas, Error,
+			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+					"This error occured in UHeartGraphCanvas::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		return nullptr;
+	}
+
+	return RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass())
+								->GetVisualizerClassForGraphNode<UHeartGraphCanvasNode>(Node->GetClass());
 }
 
 void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Reference)

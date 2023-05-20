@@ -71,12 +71,18 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 	GENERATED_BODY()
 
 	friend class UHeartEdGraph;
+	friend class UHeartGraphSchema;
 
 public:
 	UHeartGraph();
 
+#if WITH_EDITOR
+	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
+#endif
+
 	virtual UWorld* GetWorld() const override;
 
+	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
 	virtual void PostLoad() override;
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
@@ -86,13 +92,10 @@ public:
 	// Called after a pin connection change has been made.
 	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
 
-#if WITH_EDITOR
-	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
-#endif
-
 	//* IHeartGraphInterface */
 	virtual UHeartGraph* GetHeartGraph() const override final;
 	//* IHeartGraphInterface */
+
 
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
 
@@ -138,6 +141,7 @@ protected:
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
 public:
+	UE_DEPRECATED(5.2, "Use UHeartGraphSchema::Get instead");
 	template <typename THeartGraphSchema, typename THeartGraph>
 	static const THeartGraphSchema* GetSchemaStatic()
 	{
@@ -147,6 +151,7 @@ public:
 		return GetDefault<THeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
 	}
 
+	UE_DEPRECATED(5.2, "Use UHeartGraphSchema::Get instead");
 	template <typename THeartGraphSchema>
 	static const THeartGraphSchema* GetSchemaStatic(const TSubclassOf<UHeartGraph> GraphClass)
 	{

@@ -110,6 +110,12 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 		EditorRegistry->OnRefreshPalettes.AddSP(this, &SHeartPalette::Refresh);
 	}
 
+	UEdGraph* EdGraph = nullptr;
+	if (auto&& HeartGraph = InHeartGraphAssetEditor.Pin()->GetHeartGraph())
+	{
+		EdGraph = HeartGraph->GetEdGraph();
+	}
+
 	ChildSlot
 	[
 		SNew(SBorder)
@@ -140,6 +146,7 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 							.OnCreateWidgetForAction(this, &SHeartPalette::OnCreateWidgetForAction)
 							.OnCollectAllActions(this, &SHeartPalette::CollectAllActions)
 							.AutoExpandActionMenu(true)
+							.GraphObj(EdGraph)
 					]
 			]
 	];

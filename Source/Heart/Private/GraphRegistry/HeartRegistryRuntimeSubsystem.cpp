@@ -3,13 +3,12 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
-
-#include "HeartGraphSettings.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 
-#include "Model/HeartGraphNode.h"
-#include "View/HeartVisualizerInterfaces.h"
+#include "ModelView/HeartGraphSchema.h"
+
+#include "HeartGraphSettings.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
 
@@ -20,7 +19,7 @@ bool UHeartRegistryRuntimeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 #if WITH_EDITOR
 	return Super::ShouldCreateSubsystem(Outer);
 #else
-	return Super::ShouldCreateSubsystem(Outer) && GetDefault<UHeartGraphSettings>()->CreateRuntimeNodeRegistry;
+	return Super::ShouldCreateSubsystem(Outer) && GetDefault<UHeartGraphSettings>()->CreateRuntimeRegistrySubsystem;
 #endif
 }
 
@@ -29,8 +28,6 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 	Super::Initialize(Collection);
 
 	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartNodeRegistrySubsystem Initialized"))
-
-	FetchNativeClasses();
 
 	// We can't cache blueprints in the editor during Initialize because they might not be compiled yet.
 	// Instead, the HeartRegistryEditorSubsystem will load for us.
@@ -41,37 +38,6 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
 	{
 		FallbackRegistrar = Cast<UGraphNodeRegistrar>(Settings->FallbackVisualizerRegistrar.TryLoad());
-	}
-}
-
-void UHeartRegistryRuntimeSubsystem::FetchNativeClasses()
-{
-	TArray<UClass*> HeartGraphNodeClasses;
-	GetDerivedClasses(UHeartGraphNode::StaticClass(), HeartGraphNodeClasses);
-	for (UClass* Class : HeartGraphNodeClasses)
-	{
-		if (Class->IsNative())
-		{
-			KnownNativeClasses.GraphNodeClasses.Emplace(Class);
-		}
-	}
-
-	// @todo PLEASE FIND A BETTER WAY TO DO THIS
-	TArray<UClass*> VisualizerClasses;
-	GetDerivedClasses(UObject::StaticClass(), VisualizerClasses);
-	for (UClass* Class : VisualizerClasses)
-	{
-		if (Class->IsNative())
-		{
-			if (Class->ImplementsInterface(UGraphNodeVisualizerInterface::StaticClass()))
-			{
-				KnownNativeClasses.NodeVisualizerClasses.Emplace(Class);
-			}
-			else if (Class->ImplementsInterface(UGraphPinVisualizerInterface::StaticClass()))
-			{
-				KnownNativeClasses.PinVisualizerClasses.Emplace(Class);
-			}
-		}
 	}
 }
 
@@ -101,66 +67,30 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 		}
 	}
 
-	for (auto&& RegistryTuple : Registries)
-	{
-		FindRecursiveClassesForRegistry(RegistryTuple.Value);
-	}
-
 	IsFetchingRegistryAssets = false;
 }
 
-void UHeartRegistryRuntimeSubsystem::FindRecursiveClassesForRegistry(UHeartGraphNodeRegistry* Registry)
+UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const TSubclassOf<UHeartGraph> Class)
 {
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+	check(Class);
 
-	/*
-	FHeartRegistrationClasses Classes = Registry->GetClassesRegisteredRecursively();
+	const FSoftClassPath Path(Class);
 
-	FARFilter GraphNodeClassFilter;
-
-	for (auto&& Class : Classes.GraphNodeClasses)
-	{
-		if (!IsValid(Class)) continue;
-
-		if (auto&& Blueprint = Cast<UBlueprint>(Class->ClassGeneratedBy))
-		{
-			GraphNodeClassFilter.ClassPaths.Add(Blueprint->StaticClass()->GetStructPathName());
-		}
-	}
-
-	GraphNodeClassFilter.bRecursiveClasses = true;
-
-	bool FoundAnyAssets = false;
-	FHeartRegistrationClasses FoundClasses;
-
-	TArray<FAssetData> FoundAssets;
-	AssetRegistryModule.Get().GetAssets(GraphNodeClassFilter, FoundAssets);
-	if (!FoundAssets.IsEmpty())
-	{
-		FoundAnyAssets = true;
-	}
-
-	for (const FAssetData& AssetData : FoundAssets)
-	{
-		FoundClasses.GraphNodeClasses.Add(AssetData.GetClass());
-	}
-
-	if (FoundAnyAssets)
-	{
-		Registry->SetRecursivelyDiscoveredClasses(FoundClasses);
-	}
-	*/
-}
-
-UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const FSoftClassPath& ClassPath)
-{
-	if (auto&& FoundRegistry = Registries.Find(ClassPath))
+	if (auto&& FoundRegistry = Registries.Find(Path))
 	{
 		return *FoundRegistry;
 	}
 
-	auto&& NewRegistry = NewObject<UHeartGraphNodeRegistry>(this);
-	Registries.Add(ClassPath, NewRegistry);
+	const UClass* RegistryClass = UHeartGraphSchema::Get(Class)->GetRegistryClass();
+
+	if (!IsValid(RegistryClass))
+	{
+		UE_LOG(LogHeartNodeRegistry, Warning, TEXT("GetRegistryClass returned invalid class for Graph '%s'!"), *Class->GetName())
+		RegistryClass = UHeartGraphNodeRegistry::StaticClass();
+	}
+
+	auto&& NewRegistry = NewObject<UHeartGraphNodeRegistry>(this, RegistryClass);
+	Registries.Add(Path, NewRegistry);
 	BroadcastPostRegistryAdded(NewRegistry);
 
 	NewRegistry->OnRegistryChangedNative.AddUObject(this, &ThisClass::OnRegistryChanged);
@@ -179,7 +109,7 @@ void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(UGraphNodeRegistrar* Regis
 	{
 		if (ClassPath.IsValid())
 		{
-			GetRegistry_Internal(ClassPath)->AddRegistrar(Registrar);
+			GetRegistry_Internal(ClassPath.ResolveClass())->AddRegistrar(Registrar);
 		}
 	}
 }
@@ -190,7 +120,7 @@ void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(UGraphNodeRegistrar* Re
 	{
 		if (ClassPath.IsValid())
 		{
-			GetRegistry_Internal(ClassPath)->RemoveRegistrar(Registrar);
+			GetRegistry_Internal(ClassPath.ResolveClass())->RemoveRegistrar(Registrar);
 		}
 	}
 }
@@ -224,7 +154,7 @@ void UHeartRegistryRuntimeSubsystem::BroadcastOnAnyRegistryChanged(UHeartGraphNo
 
 UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry(const TSubclassOf<UHeartGraph> Class)
 {
-	return GetRegistry_Internal(FSoftClassPath(Class));
+	return GetRegistry_Internal(Class);
 }
 
 void UHeartRegistryRuntimeSubsystem::AddRegistrar(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraph> To)

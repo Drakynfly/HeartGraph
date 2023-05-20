@@ -1,8 +1,11 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "General/HeartGeneralUtils.h"
+
 #include "General/VectorBounds.h"
 #include "General/Vector2DBounds.h"
+
+#include "Algo/LevenshteinDistance.h"
 
 UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 {
@@ -14,18 +17,18 @@ UClass* UHeartGeneralUtils::GetParentClass(const UClass* Class)
 	return IsValid(Class) ? Class->GetSuperClass() : nullptr;
 }
 
-TArray<UClass*> UHeartGeneralUtils::GetChildClasses(const UClass* Class, const bool AllowAbstract)
+TArray<UClass*> UHeartGeneralUtils::GetChildClasses(const UClass* BaseClass, const bool AllowAbstract)
 {
 	TArray<UClass*> OutClasses;
+	GetDerivedClasses(BaseClass, OutClasses);
 
-	for (TObjectIterator<UClass> ClassIt; ClassIt; ++ClassIt)
+	if (!AllowAbstract)
 	{
-		if (!(*ClassIt)->IsChildOf(Class) || ((*ClassIt)->HasAnyClassFlags(CLASS_Abstract | CLASS_NewerVersionExists) || AllowAbstract))
-		{
-			continue;
-		}
-
-		OutClasses.Add(*ClassIt);
+		OutClasses.RemoveAll(
+			[](const UClass* Class)
+			{
+				return Class->HasAnyClassFlags(CLASS_Abstract);
+			});
 	}
 
 	return OutClasses;
@@ -61,4 +64,9 @@ FVector2D UHeartGeneralUtils::ComputeSplineTangent(const FVector2D& Start, const
 	auto&& TensionScalar = RotatedStartAngle - RotatedEndAngle;
 	auto&& TensionVector = FVector2D(0, ReversedSpline ? -TensionMultiplier : TensionMultiplier);
 	return FVector2D(TensionScalar) * TensionVector.GetRotated(Direction);
+}
+
+int32 UHeartGeneralUtils::LevenshteinDistance(const FString& A, const FString& B)
+{
+	return Algo::LevenshteinDistance(A, B);
 }

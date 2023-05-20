@@ -1,6 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraphUtils.h"
+
+#include "Model/HeartGraph.h"
+#include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinInterface.h"
 
@@ -123,4 +126,32 @@ bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterfa
 		Node = Pin->GetNode();
 	}
 	return IsValid(Node);
+}
+
+FHeartNodeSource UHeartGraphUtils::MakeNodeSourceFromClass(UClass* Class)
+{
+	return FHeartNodeSource(Class);
+}
+
+FHeartNodeSource UHeartGraphUtils::MakeNodeSourceFromObject(UObject* Object)
+{
+	return FHeartNodeSource(Object);
+}
+
+UClass* UHeartGraphUtils::NodeSourceToClass(const FHeartNodeSource NodeSource, const UClass* BaseClass)
+{
+	if (NodeSource.IsAOrClassOf(BaseClass))
+	{
+		return NodeSource.As<UClass>();
+	}
+	return nullptr;
+}
+
+UObject* UHeartGraphUtils::NodeSourceToObject(const FHeartNodeSource NodeSource, const UClass* BaseClass)
+{
+	if (NodeSource.IsAOrClassOf(BaseClass))
+	{
+		return NodeSource.As<UObject>();
+	}
+	return nullptr;
 }

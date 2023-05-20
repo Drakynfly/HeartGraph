@@ -91,16 +91,16 @@ UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 	return const_cast<UHeartGraphNode*>(this);
 }
 
-FText UHeartGraphNode::GetDefaultNodeCategory(const UClass* NodeClass) const
+FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource NodeSource) const
 {
-	if (!IsValid(NodeClass)) return FText();
-	return GetNodeCategory(NodeClass->GetDefaultObject());
+	if (!NodeSource.IsValid()) return FText();
+	return GetNodeCategory(NodeSource.GetDefaultObject());
 }
 
-FText UHeartGraphNode::GetDefaultNodeTooltip(const UClass* NodeClass) const
+FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource NodeSource) const
 {
-	if (!IsValid(NodeClass)) return FText();
-	return GetNodeToolTip(NodeClass->GetDefaultObject());
+	if (!NodeSource.IsValid()) return FText();
+	return GetNodeToolTip(NodeSource.GetDefaultObject());
 }
 
 FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, const EHeartNodeNameContext Context) const
@@ -110,13 +110,18 @@ FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, const EH
 	case EHeartNodeNameContext::NodeInstance:
 		if (Node)
 		{
-			return FText::FromString(Node->GetClass()->GetName());
+			return FText::FromString(Node->GetName());
 		}
 
 		return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
 	case EHeartNodeNameContext::Default:
 	case EHeartNodeNameContext::Palette:
 	default:
+		if (Node)
+		{
+			return FText::FromString(Node->GetName());
+		}
+
 		return FText::FromString(GetClass()->GetName());
 	}
 }
@@ -133,9 +138,9 @@ FText UHeartGraphNode::GetNodeToolTip_Implementation(const UObject* Node) const
 	return FText();
 }
 
-bool UHeartGraphNode::GetDynamicTitleColor_Implementation(FLinearColor& LinearColor)
+FLinearColor UHeartGraphNode::GetNodeTitleColor_Implementation(const UObject* Node)
 {
-	return false;
+	return FLinearColor::White;
 }
 
 TArray<FHeartGraphNodeMessage> UHeartGraphNode::GetNodeMessages_Implementation() const

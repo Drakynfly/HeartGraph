@@ -31,6 +31,11 @@ public:
 	 */
 	TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
 
+	/**
+	 * Get the class of UEdGraphNode to represent a given class of UHeartGraphNode
+	 */
+	UClass* GetAssignedEdGraphNodeClass(const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const;
+
 protected:
 	void BindToRuntimeSubsystem();
 	void SubscribeToAssetChanges();
@@ -47,8 +52,6 @@ protected:
 	void PreRegistryAdded(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
 	void PostRegistryRemoved(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
 	void OnAnyRegistryChanged(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
-
-	UBlueprint* GetNodeBlueprint(const FAssetData& AssetData) const;
 
 public:
 	DECLARE_MULTICAST_DELEGATE(FHeartRegistryEditorPaletteRefresh);

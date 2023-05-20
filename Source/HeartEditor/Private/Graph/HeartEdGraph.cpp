@@ -1,6 +1,8 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/HeartEdGraph.h"
+
+#include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/HeartGraphUtils.h"
@@ -57,7 +59,9 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 	auto&& HeartGraph = GetHeartGraph();
 	HeartGraph->Modify();
 
-	const UClass* EdGraphNodeClass = UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(Node->GetClass());
+	if (!ensure(GEditor)) return;
+
+	const UClass* EdGraphNodeClass = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>()->GetAssignedEdGraphNodeClass(Node->GetClass());
 	auto&& NewEdGraphNode = NewObject<UHeartEdGraphNode>(this, EdGraphNodeClass, NAME_None, RF_NoFlags);
 	NewEdGraphNode->CreateNewGuid();
 

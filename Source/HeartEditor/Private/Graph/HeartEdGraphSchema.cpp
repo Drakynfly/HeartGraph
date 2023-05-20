@@ -13,10 +13,10 @@
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "EdGraph/EdGraph.h"
-#include "ScopedTransaction.h"
 #include "Graph/HeartEdGraph.h"
+
+#include "ScopedTransaction.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphSchema"
 
@@ -211,25 +211,15 @@ TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(con
 	return Result;
 }
 
-UClass* UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(const UClass* HeartGraphNodeClass)
-{
-	/*
-	if (UClass* AssignedGraphNode = AssignedGraphNodeClasses.FindRef(HeartGraphNodeClass))
-	{
-		return AssignedGraphNode;
-	}
-	*/
-
-	return UHeartEdGraphNode::StaticClass();
-}
-
 void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName)
 {
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
 
 	Registry->ForEachNodeObjectClass(
-		[&CategoryName, &ActionMenuBuilder](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeClass)
+		[&CategoryName, &ActionMenuBuilder](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeClass)
 		{
+			if (NodeClass.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return true;
+
 			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(GraphNodeClass);
 
 			if (ensure(IsValid(GraphNodeDefault)))
@@ -261,27 +251,6 @@ void UHeartEdGraphSchema::GetCommentAction(FGraphActionMenuBuilder& ActionMenuBu
 		const TSharedPtr<FHeartGraphSchemaAction_NewComment> NewAction(new FHeartGraphSchemaAction_NewComment(FText::GetEmpty(), MenuDescription, ToolTip, 0));
 		ActionMenuBuilder.AddAction(NewAction);
 	}
-}
-
-bool UHeartEdGraphSchema::IsHeartGraphNodePlaceable(const UClass* Class)
-{
-	if (Class->HasAnyClassFlags(CLASS_Abstract | CLASS_NotPlaceable | CLASS_Deprecated))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-UBlueprint* UHeartEdGraphSchema::GetPlaceableNodeBlueprint(const FAssetData& AssetData)
-{
-	UBlueprint* Blueprint = Cast<UBlueprint>(AssetData.GetAsset());
-	if (Blueprint && IsHeartGraphNodePlaceable(Blueprint->GeneratedClass))
-	{
-		return Blueprint;
-	}
-
-	return nullptr;
 }
 
 const UHeartGraph* UHeartEdGraphSchema::GetAssetClassDefaults(const UEdGraph* Graph)

@@ -13,6 +13,7 @@
 #include "EdGraph/EdGraph.h"
 #include "EdGraphNode_Comment.h"
 #include "Editor.h"
+#include "HeartRegistryEditorSubsystem.h"
 #include "ScopedTransaction.h"
 
 #define LOCTEXT_NAMESPACE "HeartEdGraphSchema_Actions"
@@ -20,7 +21,8 @@
 /////////////////////////////////////////////////////
 // Heart Graph Node
 
-UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode /* = true*/)
+UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FVector2D Location, bool bSelectNewNode /* = true*/)
 {
 	// prevent adding new nodes while playing
 	if (GEditor->PlayWorld != nullptr)
@@ -28,17 +30,27 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 		return nullptr;
 	}
 
-	if (NodeClass)
+	if (NodeSource.IsValid())
 	{
-		return CreateNode(ParentGraph, FromPin, NodeClass, Location, bSelectNewNode);
+		return CreateNode(ParentGraph, FromPin, NodeSource, Location, bSelectNewNode);
 	}
 
 	return nullptr;
 }
 
-UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode /*= true*/)
+UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FHeartNodeSource NodeSource, const FVector2D Location, const bool bSelectNewNode /*= true*/)
 {
-	check(NodeClass);
+	check(NodeSource.IsValid());
+	if (!ensure(GEditor)) return nullptr;
+
+	auto&& EditorSubsystem = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();
+	check(EditorSubsystem);
+
+
+	/**-----------------------------*/
+	/*		Prepare Heart Graph		*/
+	/**-----------------------------*/
 
 	const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
 
@@ -51,16 +63,35 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	auto&& HeartGraph = CastChecked<UHeartEdGraph>(ParentGraph)->GetHeartGraph();
 	HeartGraph->Modify();
 
-	const UClass* EdGraphNodeClass = UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(NodeClass);
-	auto&& NewEdGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, EdGraphNodeClass, NAME_None, RF_Transactional);
+
+	/**-----------------------------*/
+	/*		Create Runtime Node		*/
+	/**-----------------------------*/
+
+	UHeartGraphNode* NewGraphNode;
+	if (const UClass* AsClass = NodeSource.As<UClass>())
+	{
+		NewGraphNode = HeartGraph->CreateNodeFromClass(AsClass, Location);
+	}
+	else
+	{
+		NewGraphNode = HeartGraph->CreateNodeFromObject(NodeSource.As<UObject>(), Location);
+	}
+	check(NewGraphNode)
+
+
+	/**-----------------------------*/
+	/*		Create EdGraphNode		*/
+	/**-----------------------------*/
+
+	const UClass* EdGraphNodeClass = EditorSubsystem->GetAssignedEdGraphNodeClass(NewGraphNode->GetClass());
+	UHeartEdGraphNode* NewEdGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, EdGraphNodeClass, NAME_None,
+																	   RF_Transactional);
 	NewEdGraphNode->CreateNewGuid();
 
 	NewEdGraphNode->NodePosX = Location.X;
 	NewEdGraphNode->NodePosY = Location.Y;
 	//ParentGraph->AddNode(NewEdGraphNode, false, bSelectNewNode);
-
-	const FVector2D NodeLocation = FVector2D(NewEdGraphNode->NodePosX, NewEdGraphNode->NodePosY);
-	auto&& NewGraphNode = HeartGraph->CreateNodeFromClass(NodeClass, NodeLocation);
 
 	// Assign nodes to each other
 	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime
@@ -74,12 +105,13 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 
 	NewEdGraphNode->AutowireNewNode(FromPin);
 
-	ParentGraph->NotifyGraphChanged();
-
-	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
-	if (HeartGraphAssetEditor.IsValid())
+	if (bSelectNewNode)
 	{
-		HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);
+		auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
+		if (HeartGraphAssetEditor.IsValid())
+		{
+			HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);
+		}
 	}
 
 	HeartGraph->PostEditChange();

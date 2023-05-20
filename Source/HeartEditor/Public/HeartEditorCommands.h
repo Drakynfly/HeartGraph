@@ -54,7 +54,7 @@ public:
 	TSharedPtr<FEdGraphSchemaAction> GetActionByChord(const FInputChord& InChord) const;
 
 private:
-	TSharedPtr<FEdGraphSchemaAction> GetActionByClass(UClass* NodeClass) const;
+	TSharedPtr<FEdGraphSchemaAction> GetActionByClass(const UClass* NodeClass) const;
 
 	TMap<UClass*, TSharedPtr<FUICommandInfo>> NodeCommands;
 };

@@ -8,6 +8,7 @@
 #include "Modules/ModuleInterface.h"
 #include "Toolkits/IToolkit.h"
 
+class UHeartGraphNode;
 class UHeartEdGraphNode;
 class FHeartGraphAssetEditor;
 
@@ -25,6 +26,10 @@ public:
     void DeregisterSlateEditorWidget(FName Style);
     TArray<FName> GetSlateStyles() const;
     TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
+
+    void RegisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass, TSubclassOf<UHeartEdGraphNode> EdClass);
+    void DeregisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass);
+    TSubclassOf<UHeartEdGraphNode> GetEdGraphClass(TSubclassOf<UHeartGraphNode> HeartClass) const;
 
 private:
     void RegisterPropertyCustomizations();
@@ -49,4 +54,6 @@ private:
     TArray<TSharedRef<class IAssetTypeActions>> RegisteredAssetActions;
 
     TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
+
+    TMap<TSubclassOf<UHeartGraphNode>, TSubclassOf<UHeartEdGraphNode>> HeartGraphNodeToEdGraphNodeClassMap;
 };

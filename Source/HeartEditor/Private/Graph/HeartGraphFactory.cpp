@@ -37,7 +37,6 @@ public:
 				return false;
 			}
 
-			// @todo this doesnt seem to work
 			if (!InClass->GetDefaultObject<UHeartGraph>()->GetCanCreateAssetFromFactory())
 			{
 				return false;

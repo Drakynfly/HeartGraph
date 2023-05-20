@@ -33,11 +33,4 @@ protected:
 	// with UHeartGraphNodeRegistry::AddRegistrar
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MetaClass = "/Script/Heart.HeartGraph"))
 	TArray<FSoftClassPath> AutoRegisterWith;
-
-	/**
-	 * Are the classes we register only registering themselves, or all their children as well. This must be enabled
-	 * when registering abstract classes.
-	 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool Recursive;
 };

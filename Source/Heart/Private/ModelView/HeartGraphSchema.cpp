@@ -1,6 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartGraphSchema.h"
+
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "Model/HeartGraphNode.h"
 
 UHeartGraphSchema::UHeartGraphSchema()
@@ -10,9 +12,20 @@ UHeartGraphSchema::UHeartGraphSchema()
 #endif
 }
 
+const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph> GraphClass)
+{
+	const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
+	return GetDefault<UHeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
+}
+
 bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
 {
 	return false;
+}
+
+TSubclassOf<UHeartGraphNodeRegistry> UHeartGraphSchema::GetRegistryClass_Implementation() const
+{
+	return UHeartGraphNodeRegistry::StaticClass();
 }
 
 UObject* UHeartGraphSchema::GetConnectionVisualizer() const

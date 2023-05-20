@@ -36,16 +36,11 @@ public:
 	//~ EdGraphSchema
 
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
-	static UClass* GetAssignedEdGraphNodeClass(const UClass* HeartGraphNodeClass);
 
 private:
 	static void GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName);
 	static void GetCommentAction(FGraphActionMenuBuilder& ActionMenuBuilder, const UEdGraph* CurrentGraph = nullptr);
 
-	static bool IsHeartGraphNodePlaceable(const UClass* Class);
-
 public:
-	static UBlueprint* GetPlaceableNodeBlueprint(const FAssetData& AssetData);
-
 	static const UHeartGraph* GetAssetClassDefaults(const UEdGraph* Graph);
 };

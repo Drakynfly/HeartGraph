@@ -20,6 +20,7 @@ class HEART_API UHeartGraphAction : public UHeartGraphActionBase
 public:
 	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
 
+protected:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 

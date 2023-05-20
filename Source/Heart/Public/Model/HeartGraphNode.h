@@ -2,15 +2,19 @@
 
 #pragma once
 
-#include "HeartGraph.h"
+#include "UObject/Object.h"
+
 #include "HeartGraphNodeInterface.h"
 #include "HeartGraphPinDesc.h"
 #include "HeartGraphPinTag.h"
-#include "UObject/Object.h"
+#include "HeartGraphPinReference.h"
+#include "GraphRegistry/HeartNodeSource.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartPinDirection.h"
+
 #include "HeartGraphNode.generated.h"
 
+struct FHeartGraphNodeMessage;
 class UHeartGraph;
 class UHeartGraphCanvas;
 class UHeartGraphNode;
@@ -129,15 +133,10 @@ public:
 	----------------------------*/
 
 	template<EHeartNodeNameContext Context>
-	FText GetDefaultNodeTitle(const UClass* NodeClass) const
-	{
-		static_assert(Context != EHeartNodeNameContext::NodeInstance, TEXT("NodeInstance is not allowed in GetDefaultNodeTitle"));
-		if (!IsValid(NodeClass)) return FText();
-		return GetNodeTitle(NodeClass->GetDefaultObject(), Context);
-	}
+	FText GetDefaultNodeTitle(FHeartNodeSource NodeSource) const;
 
-	FText GetDefaultNodeCategory(const UClass* NodeClass) const;
-	FText GetDefaultNodeTooltip(const UClass* NodeClass) const;
+	FText GetDefaultNodeCategory(FHeartNodeSource NodeSource) const;
+	FText GetDefaultNodeTooltip(FHeartNodeSource NodeSource) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetNodeTitle(const UObject* Node, EHeartNodeNameContext Context) const;
@@ -149,7 +148,7 @@ public:
 	FText GetNodeToolTip(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	bool GetDynamicTitleColor(FLinearColor& LinearColor);
+	FLinearColor GetNodeTitleColor(const UObject* Node);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	TArray<FHeartGraphNodeMessage> GetNodeMessages() const;
@@ -370,6 +369,14 @@ private:
 /*----------------------------
 		TEMPLATE IMPL.
 ----------------------------*/
+
+template <EHeartNodeNameContext Context>
+FText UHeartGraphNode::GetDefaultNodeTitle(const FHeartNodeSource NodeSource) const
+{
+	static_assert(Context != EHeartNodeNameContext::NodeInstance, TEXT("NodeInstance is not allowed for GetDefaultNodeTitle"));
+	if (!NodeSource.IsValid()) return FText();
+	return GetNodeTitle(NodeSource.GetDefaultObject(), Context);
+}
 
 template <typename Predicate>
 TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const

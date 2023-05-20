@@ -67,6 +67,13 @@ TSharedPtr<SGraphNode> UHeartRegistryEditorSubsystem::MakeVisualWidget(const FNa
 	return HeartEditorModule.MakeVisualWidget(Style, Node);
 }
 
+UClass* UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(
+	const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const
+{
+	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	return HeartEditorModule.GetEdGraphClass(HeartGraphNodeClass);
+}
+
 void UHeartRegistryEditorSubsystem::BindToRuntimeSubsystem()
 {
 	if (auto&& RuntimeSS = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
@@ -179,15 +186,6 @@ void UHeartRegistryEditorSubsystem::OnAnyRegistryChanged(UHeartGraphNodeRegistry
 void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
 {
 	GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->FetchAssetRegistryAssets();
-}
 
-UBlueprint* UHeartRegistryEditorSubsystem::GetNodeBlueprint(const FAssetData& AssetData) const
-{
-	UBlueprint* Blueprint = Cast<UBlueprint>(AssetData.GetAsset());
-	if (Blueprint && (Blueprint->GeneratedClass))
-	{
-		return Blueprint;
-	}
-
-	return nullptr;
+	OnRefreshPalettes.Broadcast();
 }

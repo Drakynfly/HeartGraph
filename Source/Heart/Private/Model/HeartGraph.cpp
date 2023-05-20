@@ -6,6 +6,7 @@
 #include "ModelView/HeartGraphSchema.h"
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
+#include "UObject/ObjectSaveContext.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraph"
 
@@ -17,6 +18,17 @@ UHeartGraph::UHeartGraph()
 	EditorData.GraphTypeName = LOCTEXT("DefaultGraphTypeName", "HEART");
 #endif
 }
+
+#if WITH_EDITOR
+void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
+{
+	// Save the EdGraph with us in the editor
+	UHeartGraph* This = CastChecked<UHeartGraph>(InThis);
+	Collector.AddReferencedObject(This->HeartEdGraph, This);
+
+	Super::AddReferencedObjects(InThis, Collector);
+}
+#endif
 
 UWorld* UHeartGraph::GetWorld() const
 {
@@ -32,12 +44,26 @@ UWorld* UHeartGraph::GetWorld() const
 	return Super::GetWorld();
 }
 
+void UHeartGraph::PreSave(FObjectPreSaveContext SaveContext)
+{
+	Super::PreSave(SaveContext);
+
+#if WITH_EDITOR
+	if (SaveContext.IsCooking())
+	{
+		if (GetSchema()->FlushNodesForRuntime)
+		{
+			Nodes.Empty();
+		}
+	}
+#endif
+}
+
 void UHeartGraph::PostLoad()
 {
 	Super::PostLoad();
 
 #if WITH_EDITOR
-
 	TArray<FHeartNodeGuid> DeadNodes;
 
 	// Fix-up node map in editor, when loading asset
@@ -64,7 +90,7 @@ void UHeartGraph::PostLoad()
 #endif
 }
 
-void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
+void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 {
 	Super::PostDuplicate(DuplicateMode);
 
@@ -73,6 +99,14 @@ void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
 	if (GetWorld()->IsGameWorld())
 	{
 		HeartEdGraph = nullptr;
+	}
+
+	if (DuplicateMode == EDuplicateMode::PIE)
+	{
+		if (GetSchema()->FlushNodesForRuntime)
+		{
+			Nodes.Empty();
+		}
 	}
 #endif
 }
@@ -90,17 +124,6 @@ void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent&
 	BP_OnNodeConnectionsChanged(Event);
 	OnNodeConnectionsChanged.Broadcast(Event);
 }
-
-#if WITH_EDITOR
-void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
-{
-	// Save the EdGraph with us in the editor
-	UHeartGraph* This = CastChecked<UHeartGraph>(InThis);
-	Collector.AddReferencedObject(This->HeartEdGraph, This);
-
-	Super::AddReferencedObjects(InThis, Collector);
-}
-#endif
 
 UHeartGraph* UHeartGraph::GetHeartGraph() const
 {
@@ -144,9 +167,9 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
-	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
-		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeObject->GetClass());
+		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
 	}
 
 	if (!IsValid(GraphNodeClass))
@@ -169,9 +192,9 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
-	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
-		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeClass);
+		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeClass));
 	}
 
 	if (!IsValid(GraphNodeClass))
@@ -366,3 +389,5 @@ void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference Pin)
 		DisconnectPins(Pin, Link);
 	}
 }
+
+#undef LOCTEXT_NAMESPACE

@@ -4,10 +4,14 @@
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #if WITH_EDITOR
+
+/**
+ * We always unregister ourself before we are edited. This will prevent the registry from holding onto stuff we are no
+ * longer registering. We then have to re-auto-register ourself after the edit.
+ */
+
 void UGraphNodeRegistrar::PreEditChange(FProperty* PropertyAboutToChange)
 {
-	// Always unregister ourself before we are edited. This will prevent the registry from holding onto stuff we are no
-	// longer registering.
 	GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->AutoRemoveRegistrar(this);
 
 	Super::PreEditChange(PropertyAboutToChange);
@@ -15,8 +19,6 @@ void UGraphNodeRegistrar::PreEditChange(FProperty* PropertyAboutToChange)
 
 void UGraphNodeRegistrar::PreEditChange(FEditPropertyChain& PropertyAboutToChange)
 {
-	// Always unregister ourself before we are edited. This will prevent the registry from holding onto stuff we are no
-	// longer registering.
 	GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->AutoRemoveRegistrar(this);
 
 	Super::PreEditChange(PropertyAboutToChange);
@@ -26,6 +28,7 @@ void UGraphNodeRegistrar::PostEditChangeProperty(FPropertyChangedEvent& Property
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
+	GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->AutoAddRegistrar(this);
 }
 
 void UGraphNodeRegistrar::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)

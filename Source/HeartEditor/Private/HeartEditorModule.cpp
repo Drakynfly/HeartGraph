@@ -161,6 +161,35 @@ TSharedPtr<SGraphNode> FHeartEditorModule::MakeVisualWidget(const FName Style, U
 	return nullptr;
 }
 
+void FHeartEditorModule::RegisterEdGraphNode(const TSubclassOf<UHeartGraphNode> HeartClass,
+											 const TSubclassOf<UHeartEdGraphNode> EdClass)
+{
+	HeartGraphNodeToEdGraphNodeClassMap.Add(HeartClass, EdClass);
+}
+
+void FHeartEditorModule::DeregisterEdGraphNode(const TSubclassOf<UHeartGraphNode> HeartClass)
+{
+	HeartGraphNodeToEdGraphNodeClassMap.Remove(HeartClass);
+}
+
+TSubclassOf<UHeartEdGraphNode> FHeartEditorModule::GetEdGraphClass(const TSubclassOf<UHeartGraphNode> HeartClass) const
+{
+	if (!HeartGraphNodeToEdGraphNodeClassMap.IsEmpty())
+	{
+		for (UClass* Test = HeartClass;
+			Test && Test != UObject::StaticClass();
+			Test = Test->GetSuperClass())
+		{
+			if (auto&& FoundClass = HeartGraphNodeToEdGraphNodeClassMap.Find(Test))
+			{
+				return *FoundClass;
+			}
+		}
+	}
+
+	return UHeartEdGraphNode::StaticClass();
+}
+
 void FHeartEditorModule::RegisterPropertyCustomizations()
 {
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);

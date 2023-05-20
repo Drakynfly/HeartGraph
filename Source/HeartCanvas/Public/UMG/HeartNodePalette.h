@@ -22,13 +22,13 @@ protected:
 	void ClearChildren();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "NodePaletteCategory")
-	void AddNode(UClass* NodeClass);
+	void AddNode(FHeartNodeSource NodeSource);
 
 	UFUNCTION(BlueprintCallable, Category = "NodePaletteCategory")
 	UHeartNodePalette* GetPalette() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "NodePaletteCategory")
-	UWidget* MakeWidgetForNode(UClass* NodeClass);
+	UWidget* MakeWidgetForNode(FHeartNodeSource NodeSource);
 };
 
 
@@ -52,11 +52,11 @@ protected:
 	//~
 
 	virtual void Reset();
-	virtual void Display(const TMap<UClass*, TSubclassOf<UHeartGraphNode>>& Classes);
+	virtual void Display(const TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& Classes);
 
 	UHeartNodePaletteCategory* FindOrCreateCategory(const FText& Category);
 
-	UUserWidget* CreateNodeWidgetFromFactory(UClass* NodeClass);
+	UUserWidget* CreateNodeWidgetFromFactory(FHeartNodeSource NodeSource);
 
 public:
 	/** Regenerate the list of nodes in the palette, triggering the filter for each node again. */
@@ -65,7 +65,7 @@ public:
 
 	/** Set a custom filter function. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
-	void SetFilter(const FNodeClassFilter& NewFilter, bool bRefreshPalette);
+	void SetFilter(const FNodeSourceFilter& NewFilter, bool bRefreshPalette);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
 	void ClearFilter(bool bRefreshPalette);
@@ -74,7 +74,7 @@ public:
 	const FHeartWidgetFactoryRules& GetWidgetFactory() const { return WidgetFactory; }
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Node Palette")
-	bool ShouldDisplayNode(const UClass* NodeClass, TSubclassOf<UHeartGraphNode> GraphNodeClass);
+	bool ShouldDisplayNode(const FHeartNodeSource NodeSource, TSubclassOf<UHeartGraphNode> GraphNodeClass);
 
 	/** */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Node Palette")
@@ -103,7 +103,7 @@ protected:
 	FHeartWidgetInputBindingContainer BindingContainer;
 
 	UPROPERTY(EditAnywhere, Category = "Events", meta = (IsBindableEvent = "True"))
-	FNodeClassFilter Filter;
+	FHeartRegistryQuery Query;
 
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FString, TObjectPtr<UHeartNodePaletteCategory>> Categories;

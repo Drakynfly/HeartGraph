@@ -141,7 +141,7 @@ TSharedPtr<FEdGraphSchemaAction> FHeartSpawnNodeCommands::GetActionByChord(const
 	return TSharedPtr<FEdGraphSchemaAction>();
 }
 
-TSharedPtr<FEdGraphSchemaAction> FHeartSpawnNodeCommands::GetActionByClass(UClass* NodeClass) const
+TSharedPtr<FEdGraphSchemaAction> FHeartSpawnNodeCommands::GetActionByClass(const UClass* NodeClass) const
 {
 	if (NodeClass == UHeartGraphNode::StaticClass())
 	{

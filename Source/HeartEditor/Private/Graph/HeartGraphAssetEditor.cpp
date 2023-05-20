@@ -632,15 +632,6 @@ void FHeartGraphAssetEditor::DeleteNode(UEdGraphNode* Node)
 {
 	check(Node);
 
-	// Try to remove the Runtime Node first, if there is one.
-	if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))
-	{
-		if (auto&& RuntimeNode = HeartEdGraphNode->GetHeartGraphNode())
-		{
-			HeartGraph->RemoveNode(RuntimeNode->GetGuid());
-		}
-	}
-
 	const UEdGraphSchema* Schema = nullptr;
 
 	// Ensure we mark parent graph modified
@@ -657,6 +648,16 @@ void FHeartGraphAssetEditor::DeleteNode(UEdGraphNode* Node)
 		Schema->BreakNodeLinks(*Node);
 	}
 
+	// Try to remove the Runtime Node first, if there is one.
+	if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))
+	{
+		if (auto&& RuntimeNode = HeartEdGraphNode->GetHeartGraphNode())
+		{
+			HeartGraph->RemoveNode(RuntimeNode->GetGuid());
+		}
+	}
+
+	// Destroy Editor node
 	Node->DestroyNode();
 }
 

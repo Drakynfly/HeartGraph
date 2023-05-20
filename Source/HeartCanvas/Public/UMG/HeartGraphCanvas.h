@@ -111,6 +111,13 @@ protected:
 	void SetZoom(const double& Value);
 	void AddToZoom(const double& Value);
 
+	/**
+	 * Get the class used to display a node on the Canvas Graph. This has a default implementation that fetches a
+	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
+	TSubclassOf<UHeartGraphCanvasNode> GetVisualClassForNode(const UHeartGraphNode* Node) const;
+
 	UFUNCTION()
 	void OnNodeAddedToGraph(UHeartGraphNode* Node);
 

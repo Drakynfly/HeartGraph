@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Subsystems/EngineSubsystem.h"
-#include "HeartRegistrationClasses.h"
+
 #include "Templates/SubclassOf.h"
 
 #include "HeartGraphNodeRegistry.h"
@@ -39,12 +39,9 @@ public:
 	FHeartRegistryEventNative& GetOnAnyRegistryChangedNative() { return OnAnyRegistryChangedNative; }
 
 protected:
-	void FetchNativeClasses();
 	void FetchAssetRegistryAssets();
 
-	void FindRecursiveClassesForRegistry(UHeartGraphNodeRegistry* Registry);
-
-	UHeartGraphNodeRegistry* GetRegistry_Internal(const FSoftClassPath& ClassPath);
+	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph> Class);
 
 	void OnRegistryChanged(UHeartGraphNodeRegistry* Registry);
 
@@ -88,6 +85,4 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UGraphNodeRegistrar> FallbackRegistrar;
-
-	FHeartRegistrationClasses KnownNativeClasses;
 };

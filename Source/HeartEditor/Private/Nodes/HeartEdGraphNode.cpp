@@ -648,11 +648,7 @@ FLinearColor UHeartEdGraphNode::GetNodeTitleColor() const
 {
 	if (HeartGraphNode)
 	{
-		FLinearColor DynamicColor;
-		if (HeartGraphNode->GetDynamicTitleColor(DynamicColor))
-		{
-			return DynamicColor;
-		}
+		return HeartGraphNode->GetNodeTitleColor(HeartGraphNode->GetNodeObject());
 	}
 
 	return Super::GetNodeTitleColor();

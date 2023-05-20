@@ -5,7 +5,6 @@
 #include "EdGraph/EdGraphSchema.h"
 
 #include "Model/HeartGraphNode.h"
-#include "Nodes/HeartEdGraphNode.h"
 #include "HeartEdGraphSchema_Actions.generated.h"
 
 /** Action to add a node to the graph */
@@ -16,16 +15,17 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 
 	FHeartGraphSchemaAction_NewNode() {}
 
-	FHeartGraphSchemaAction_NewNode(UClass* Node)
-	  :  NodeClass(Node) {}
+	FHeartGraphSchemaAction_NewNode(const UClass* Node)
+	  :  NodeSource(Node) {}
 
-	FHeartGraphSchemaAction_NewNode(const UClass* NodeClass, const UHeartGraphNode* GraphNode)
+	FHeartGraphSchemaAction_NewNode(const FHeartNodeSource NodeSource, const UHeartGraphNode* GraphNode)
 	  : FEdGraphSchemaAction(
-			GraphNode->GetDefaultNodeCategory(NodeClass),
-			GraphNode->GetDefaultNodeTitle<EHeartNodeNameContext::Palette>(NodeClass),
-			GraphNode->GetDefaultNodeTooltip(NodeClass),
-			0, FText::FromString(NodeClass->GetMetaData("Keywords"))),
-		NodeClass(NodeClass) {}
+			GraphNode->GetDefaultNodeCategory(NodeSource),
+			GraphNode->GetDefaultNodeTitle<EHeartNodeNameContext::Palette>(NodeSource),
+			GraphNode->GetDefaultNodeTooltip(NodeSource),
+			0, // Grouping
+			FText::FromString(NodeSource.ThisClass()->GetMetaData("Keywords"))),
+		NodeSource(NodeSource) {}
 
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
@@ -38,13 +38,13 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	// FEdGraphSchemaAction
 
-	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode = true);
+	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeSource NodeSource, const FVector2D Location, const bool bSelectNewNode = true);
 
-	const UClass* GetNodeClass() const { return NodeClass; }
+	const UClass* GetNodeClass() const { return NodeSource.As<UClass>(); }
 
 private:
 	UPROPERTY()
-	TObjectPtr<const UClass> NodeClass = nullptr;
+	FHeartNodeSource NodeSource;
 };
 
 /** Action to paste clipboard contents into the graph */
