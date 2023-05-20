@@ -48,6 +48,8 @@ void UHeartGraph::PreSave(FObjectPreSaveContext SaveContext)
 {
 	Super::PreSave(SaveContext);
 
+	GetSchema()->OnPreSaveGraph(this, SaveContext);
+
 #if WITH_EDITOR
 	if (SaveContext.IsCooking())
 	{

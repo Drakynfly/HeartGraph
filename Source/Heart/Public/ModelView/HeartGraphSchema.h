@@ -7,6 +7,7 @@
 
 struct FHeartGraphPinReference;
 class UHeartGraph;
+class UHeartGraphAction;
 class UHeartGraphNodeRegistry;
 
 /**
@@ -53,13 +54,15 @@ struct FHeartConnectPinsResponse
 };
 
 /**
- * Base class for Heart "Schemas", const classes that are interacted with via only their CDO to describe the behavior
+ * Base class for Heart Schemas, const classes that are interacted with via only their CDO to describe the behavior
  * of a Heart Graph instance.
  */
 UCLASS(Abstract, Const, BlueprintType, Blueprintable)
 class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 {
 	GENERATED_BODY()
+
+	friend UHeartGraph;
 
 public:
 	UHeartGraphSchema();
@@ -87,6 +90,12 @@ public:
 		return Cast<THeartGraphSchema>(Get<THeartGraph>());
 	}
 
+protected:
+	// Called by UHeartGraph's PreSave.
+	virtual void OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPreSaveContext& SaveContext) const;
+
+
+public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryGetWorldForGraph(const UHeartGraph* HeartGraph, UWorld*& World) const;
 
@@ -134,5 +143,9 @@ public:
 	// Style of slate widget to use by default
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	FName DefaultEditorStyle;
+
+	// Action to run on the graph during PreSave
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	TSubclassOf<UHeartGraphAction> EditorPreSaveAction;
 #endif
 };

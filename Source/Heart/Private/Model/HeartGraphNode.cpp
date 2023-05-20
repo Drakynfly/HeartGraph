@@ -143,9 +143,8 @@ FLinearColor UHeartGraphNode::GetNodeTitleColor_Implementation(const UObject* No
 	return FLinearColor::White;
 }
 
-TArray<FHeartGraphNodeMessage> UHeartGraphNode::GetNodeMessages_Implementation() const
+void UHeartGraphNode::GetNodeMessages_Implementation(TArray<FHeartGraphNodeMessage>& Messages) const
 {
-	return {};
 }
 
 FText UHeartGraphNode::GetInstanceTitle() const

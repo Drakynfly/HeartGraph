@@ -708,7 +708,8 @@ void UHeartEdGraphNode::JumpToDefinition() const
 
 void UHeartEdGraphNode::GetPopupMessages(TArray<TPair<FString, FLinearColor>>& Messages) const
 {
-	TArray<FHeartGraphNodeMessage> RuntimeMessages = HeartGraphNode->GetNodeMessages();
+	TArray<FHeartGraphNodeMessage> RuntimeMessages;
+	HeartGraphNode->GetNodeMessages(RuntimeMessages);
 
 	for (const FHeartGraphNodeMessage& Tuple : RuntimeMessages)
 	{

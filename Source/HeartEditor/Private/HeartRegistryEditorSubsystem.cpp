@@ -131,7 +131,9 @@ void UHeartRegistryEditorSubsystem::OnAssetAdded(const FAssetData& AssetData)
 
 void UHeartRegistryEditorSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 {
-	if (AssetData.GetClass()->IsChildOf(UGraphNodeRegistrar::StaticClass()))
+	const UClass* Class = AssetData.GetClass();
+
+	if (Class && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 	{
 		auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset());
 

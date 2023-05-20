@@ -151,7 +151,7 @@ public:
 	FLinearColor GetNodeTitleColor(const UObject* Node);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	TArray<FHeartGraphNodeMessage> GetNodeMessages() const;
+	void GetNodeMessages(TArray<FHeartGraphNodeMessage>& Messages) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FText GetInstanceTitle() const;

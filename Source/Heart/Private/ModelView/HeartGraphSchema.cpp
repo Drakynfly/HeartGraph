@@ -5,6 +5,8 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
+#include "ModelView/Actions/HeartGraphAction.h"
+#include "UObject/ObjectSaveContext.h"
 
 UHeartGraphSchema::UHeartGraphSchema()
 {
@@ -27,6 +29,19 @@ bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* He
 TSubclassOf<UHeartGraphNodeRegistry> UHeartGraphSchema::GetRegistryClass_Implementation() const
 {
 	return UHeartGraphNodeRegistry::StaticClass();
+}
+
+void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPreSaveContext& SaveContext) const
+{
+	if (!ensure(HeartGraph)) return;
+
+#if WITH_EDITOR
+	if (IsValid(EditorPreSaveAction))
+	{
+		FHeartInputActivation Activation;
+		UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, Activation);
+	}
+#endif
 }
 
 UObject* UHeartGraphSchema::GetConnectionVisualizer() const
