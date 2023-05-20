@@ -2,6 +2,7 @@
 
 #include "ModelView/HeartNodeLocationAccessor.h"
 
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 

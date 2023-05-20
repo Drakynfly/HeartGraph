@@ -3,6 +3,7 @@
 #include "ModelView/HeartGraphSchema.h"
 
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 UHeartGraphSchema::UHeartGraphSchema()

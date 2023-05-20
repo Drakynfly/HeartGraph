@@ -2,6 +2,7 @@
 
 #include "ModelView/Actions/HeartPinAction_Disconnect.h"
 
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphPinInterface.h"
 
 #include "Model/HeartGraphNode.h"

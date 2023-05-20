@@ -1,6 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartNodeSortingLibrary.h"
+
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::SortNodes(const TArray<UHeartGraphNode*>& Nodes,

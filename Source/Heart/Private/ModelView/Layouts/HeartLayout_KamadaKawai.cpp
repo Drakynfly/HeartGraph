@@ -3,6 +3,7 @@
 #include "ModelView/Layouts/HeartLayout_KamadaKawai.h"
 
 #include "Algorithms/Nodesoup.h"
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const
