@@ -306,9 +306,9 @@ FHeartPinGuid UHeartGraphNode::AddPin(const FHeartGraphPinDesc& Desc)
 		return FHeartPinGuid();
 	}
 
-	const FHeartPinGuid NewKey = FHeartPinGuid::NewGuid();
+	const FHeartPinGuid NewKey = FHeartPinGuid::New();
 
-	PinDescriptions.Add(FHeartPinGuid::NewGuid(), Desc);
+	PinDescriptions.Add(NewKey, Desc);
 
 	OnNodePinsChanged.Broadcast(this);
 

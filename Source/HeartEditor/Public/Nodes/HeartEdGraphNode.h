@@ -5,7 +5,6 @@
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
 #include "HeartBreakpoint.h"
-#include "Model/HeartGuids.h"
 #include "Model/HeartGraphPinDesc.h"
 
 #include "HeartEdGraphNode.generated.h"
@@ -105,8 +104,6 @@ public:
 
 	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType
 	FEdGraphPinType GetEdGraphPinTypeFromPinDesc(const FHeartGraphPinDesc& PinDesc) const;
-
-	FHeartPinGuid GetPinByName(const FName& Name) const;
 
 	void JumpToNodeDefinition() const;
 

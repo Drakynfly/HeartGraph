@@ -20,6 +20,18 @@
 
 #define LOCTEXT_NAMESPACE "HeartGraphSchema"
 
+namespace Heart::Editor
+{
+	// Converts a Runtime Call response struct into a editor response struct
+	FPinConnectionResponse ConvertConnectPinsResponseToPinConnectionResponse(const FHeartConnectPinsResponse& RuntimeResponse)
+	{
+		FPinConnectionResponse Response;
+		Response.Message = RuntimeResponse.Message;
+		Response.Response = static_cast<ECanCreateConnectionResponse>(RuntimeResponse.Response);
+		return Response;
+	}
+}
+
 void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const FString& CategoryName)
 {
 	GetHeartGraphNodeActions(ActionMenuBuilder, AssetClass->GetDefaultObject<UHeartGraph>(), CategoryName);
@@ -40,10 +52,10 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 
 const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdGraphPin* PinA, const UEdGraphPin* PinB) const
 {
-	UHeartEdGraphNode* OwningNodeA = Cast<UHeartEdGraphNode>(PinA->GetOwningNodeUnchecked());
-	UHeartEdGraphNode* OwningNodeB = Cast<UHeartEdGraphNode>(PinB->GetOwningNodeUnchecked());
+	const UHeartEdGraphNode* OwningNodeA = Cast<UHeartEdGraphNode>(PinA->GetOwningNodeUnchecked());
+	const UHeartEdGraphNode* OwningNodeB = Cast<UHeartEdGraphNode>(PinB->GetOwningNodeUnchecked());
 
-	UHeartGraph* Graph = OwningNodeA->GetHeartGraphNode()->GetGraph();
+	const UHeartGraph* Graph = OwningNodeA->GetHeartGraphNode()->GetGraph();
 
 	check(OwningNodeB->GetHeartGraphNode()->GetGraph() == Graph);
 
@@ -69,21 +81,26 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 	{
 		if (RuntimeSchema->RunCanPinsConnectInEdGraph)
 		{
-			const FHeartPinGuid HeartPinA = OwningNodeA->GetPinByName(PinA->GetFName());
-			const FHeartPinGuid HeartPinB = OwningNodeB->GetPinByName(PinB->GetFName());
+			auto&& HeartNodeA = OwningNodeA->GetHeartGraphNode();
+			auto&& HeartNodeB = OwningNodeB->GetHeartGraphNode();
+
+			if (!ensure(HeartNodeA && HeartNodeB))
+			{
+				return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Invalid Heart Graph Node!"));
+			}
+
+			const FHeartPinGuid HeartPinA = HeartNodeA->GetPinByName(PinA->GetFName());
+			const FHeartPinGuid HeartPinB = HeartNodeB->GetPinByName(PinB->GetFName());
 
 			FHeartConnectPinsResponse RuntimeResult;
 
 			{
 				// Run blueprint logic to see if pins are compatible
 				FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-				RuntimeResult = RuntimeSchema->CanPinsConnect(Graph, {OwningNodeA->NodeGuid, HeartPinA}, {OwningNodeB->NodeGuid, HeartPinB});
+				RuntimeResult = RuntimeSchema->CanPinsConnect(Graph, {HeartNodeA->GetGuid(), HeartPinA}, {HeartNodeB->GetGuid(), HeartPinB});
 			}
 
-			FPinConnectionResponse Response;
-			Response.Response = static_cast<ECanCreateConnectionResponse>(RuntimeResult.Response);
-			Response.Message = RuntimeResult.Message;
-			return Response;
+			return Heart::Editor::ConvertConnectPinsResponseToPinConnectionResponse(RuntimeResult);
 		}
 	}
 

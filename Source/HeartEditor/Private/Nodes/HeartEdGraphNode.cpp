@@ -76,7 +76,7 @@ void UHeartEdGraphNode::PostDuplicate(bool bDuplicateForPIE)
 		if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
 		{
 			auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
-			DuplicatedNode->Guid = FHeartNodeGuid::NewGuid();
+			DuplicatedNode->Guid = FHeartNodeGuid::New();
 			DuplicatedNode->Location = FVector2D(NodePosX, NodePosY);
 
 
@@ -684,20 +684,6 @@ FEdGraphPinType UHeartEdGraphNode::GetEdGraphPinTypeFromPinDesc(const FHeartGrap
 {
 	static FEdGraphPinType DefaultEdGraphPinType = FEdGraphPinType("exec", NAME_None, nullptr, EPinContainerType::None, false, FEdGraphTerminalType());
 	return DefaultEdGraphPinType;
-}
-
-FHeartPinGuid UHeartEdGraphNode::GetPinByName(const FName& Name) const
-{
-	TArray<FHeartPinGuid> HeartPins = HeartGraphNode->GetPinsOfDirection(EHeartPinDirection::Bidirectional);
-	for (const FHeartPinGuid Pin : HeartPins)
-	{
-		if (HeartGraphNode->GetPinDesc(Pin).Name == Name)
-		{
-			return Pin;
-		}
-	}
-
-	return FHeartPinGuid();
 }
 
 bool UHeartEdGraphNode::CanJumpToDefinition() const

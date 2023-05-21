@@ -223,7 +223,7 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const
 	}
 
 	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
-	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
+	NewGraphNode->Guid = FHeartNodeGuid::New();
 	NewGraphNode->Location = Location;
 	NewGraphNode->NodeObject = NodeObject;
 
@@ -253,7 +253,7 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 	UObject* NewNodeObject = NewObject<UObject>(this, NodeClass);
 
 	UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
-	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
+	NewGraphNode->Guid = FHeartNodeGuid::New();
 	NewGraphNode->Location = Location;
 	NewGraphNode->NodeObject = NewNodeObject;
 
@@ -391,12 +391,15 @@ bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference PinA, const FHear
 		return false;
 	}
 
+	auto& AConnections = ANode->GetLinks(PinA.PinGuid);
+	auto& BConnections = BNode->GetLinks(PinB.PinGuid);
+
 	// We assume that both of these are true, but proceed anyway if only one of them are...
-	if (ANode->GetLinks(PinA.NodeGuid).Links.Contains(PinB) ||
-		BNode->GetLinks(PinB.NodeGuid).Links.Contains(PinA))
+	if (AConnections.Links.Contains(PinB) ||
+		BConnections.Links.Contains(PinA))
 	{
-		ANode->GetLinks(PinA.NodeGuid).Links.Remove(PinB);
-		BNode->GetLinks(PinB.NodeGuid).Links.Remove(PinA);
+		AConnections.Links.Remove(PinB);
+		BConnections.Links.Remove(PinA);
 
 #if WITH_EDITOR
 		if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
