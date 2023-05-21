@@ -386,7 +386,7 @@ bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference PinA, const FHear
 	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
 	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
 
-	if (!ensure(IsValid(ANode) && IsValid(BNode)))
+	if (!ensureAlways(IsValid(ANode) && IsValid(BNode)))
 	{
 		return false;
 	}

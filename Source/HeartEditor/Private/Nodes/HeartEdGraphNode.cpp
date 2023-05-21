@@ -159,6 +159,8 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 {
 	Super::PinConnectionListChanged(Pin);
 
+	UHeartGraph* HeartGraph = HeartGraphNode->GetGraph();
+
 	// Get the matching HeartPin for the EdGraphPin that was changed
 	FHeartPinGuid HeartPin = HeartGraphNode->GetPinByName(Pin->PinName);
 
@@ -166,35 +168,40 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	if (!ensure(HeartPin.IsValid()))
 	{
-		UE_LOG(LogHeartEditor, Error, TEXT("Changed HeartEdGraphNode does not have a runtime equivilant!"))
+		UE_LOG(LogHeartEditor, Error, TEXT("Changed UEdGraphPin does not have a runtime equivilant!"))
 		return;
 	}
 
 	// Resolve all linked pins
-	TSet<FHeartGraphPinReference> HeartLinks = HeartGraphNode->GetLinks(HeartPin).Links;
+	FHeartGraphPinConnections PinConnections = HeartGraphNode->GetLinks(HeartPin);
 	TArray<FHeartGraphPinDesc> LinkedPins;
-	for (auto&& LinkedRef : HeartLinks)
+	for (auto&& LinkedRef : PinConnections.Links)
 	{
-		const FHeartGraphPinDesc& LinkedPin = HeartGraphNode->GetPinDesc(LinkedRef.PinGuid);
+		const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
+		if (!IsValid(LinkedNode))
+		{
+			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
+				*HeartGraphNode.GetName())
+			continue;
+		}
+
+		const FHeartGraphPinDesc& LinkedPin = LinkedNode->GetPinDesc(LinkedRef.PinGuid);
+		if (!LinkedPin.IsValid())
+		{
+			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
+				*HeartGraphNode.GetName(), *LinkedNode->GetName())
+			continue;
+		}
 
 		LinkedPins.Add(LinkedPin);
 
-		bool FoundConnection = false;
-
-		for (auto&& EdGraphPin : Pin->LinkedTo)
-		{
-			// Find the one that matches the EdGraphPin
-			if (LinkedPin.Name == EdGraphPin->PinName)
+		if (!Pin->LinkedTo.ContainsByPredicate([LinkedPin](const UEdGraphPin* EdGraphPin)
 			{
-				FoundConnection = true;
-				break;
-			}
-		}
-
-		// If we failed to find a connection, then we need to disconnect the runtime pins
-		if (!FoundConnection)
+				return LinkedPin.Name == EdGraphPin->PinName;
+			}))
 		{
-			HeartGraphNode->GetGraph()->DisconnectPins(LinkedRef, SelfReference);
+			// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
+			HeartGraph->DisconnectPins(LinkedRef, SelfReference);
 		}
 	}
 
@@ -225,10 +232,10 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 				break;
 			}
 
-			if (HeartGraphNode->GetGraph()->ConnectPins(SelfReference, {HeartNodeConnectedInEditor->GetGuid(), ConnectedHeartPin}))
+			if (HeartGraph->ConnectPins(SelfReference, {HeartNodeConnectedInEditor->GetGuid(), ConnectedHeartPin}))
 			{
 				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
-				HeartGraphNode->GetGraph()->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});
+				HeartGraph->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});
 			}
 		}
 	}
