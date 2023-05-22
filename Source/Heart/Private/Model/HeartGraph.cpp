@@ -74,6 +74,7 @@ void UHeartGraph::PostLoad()
 		if (!IsValid(Node.Value))
 		{
 			DeadNodes.Add(Node.Key);
+			continue;
 		}
 
 		// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
@@ -158,6 +159,14 @@ UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 {
 	auto&& Result = Nodes.Find(NodeGuid);
 	return Result ? *Result : nullptr;
+}
+
+void UHeartGraph::GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
+{
+	// *le sign* epic templates mess this up . . .
+	TArray<TObjectPtr<UHeartGraphNode>> NodeArray;
+	Nodes.GenerateValueArray(NodeArray);
+	OutNodes = NodeArray;
 }
 
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const

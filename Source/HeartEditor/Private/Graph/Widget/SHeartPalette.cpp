@@ -237,7 +237,7 @@ void SHeartPalette::OnActionSelected(const TArray<TSharedPtr<FEdGraphSchemaActio
 		auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
 		if (HeartGraphAssetEditor)
 		{
-			HeartGraphAssetEditor->SetUISelectionState(FHeartGraphAssetEditor::PaletteTab);
+			HeartGraphAssetEditor->SetUISelectionState(Heart::Editor::Public::GetPaletteTabID());
 		}
 	}
 }

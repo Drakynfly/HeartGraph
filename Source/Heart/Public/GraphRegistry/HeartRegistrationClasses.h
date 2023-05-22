@@ -11,7 +11,7 @@ struct FHeartRegisteredClass
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = true))
 	TObjectPtr<UClass> Class;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

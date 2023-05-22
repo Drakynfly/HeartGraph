@@ -130,13 +130,7 @@ public:
 	UHeartGraphNode* GetNode(const FHeartNodeGuid& NodeGuid) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
-	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
-	{
-		// *le sign* epic templates mess this up . . .
-		TArray<TObjectPtr<UHeartGraphNode>> NodeArray;
-		Nodes.GenerateValueArray(NodeArray);
-		OutNodes = NodeArray;
-	}
+	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const;
 
 
 	/*----------------------------
