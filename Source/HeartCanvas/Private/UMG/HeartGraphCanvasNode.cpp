@@ -96,12 +96,12 @@ void UHeartGraphCanvasNode::RebuildPinConnections(FHeartPinGuid Pin)
 	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(CanvasGraphClass);
 
-	const FHeartGraphPinDesc ThisDesc = GetNode()->GetPinDesc(Pin);
+	const FHeartGraphPinDesc ThisDesc = GetGraphNode()->GetPinDesc(Pin);
 
-	TSet<FHeartGraphPinReference> Connections = GetNode()->GetLinks(Pin).Links;
+	TSet<FHeartGraphPinReference> Connections = GetGraphNode()->GetLinks(Pin).Links;
 	for (const FHeartGraphPinReference& Connection : Connections)
 	{
-		const FHeartGraphPinDesc ConnectionDesc = GetNode()->GetPinDesc(Connection.PinGuid);
+		const FHeartGraphPinDesc ConnectionDesc = GetGraphNode()->GetPinDesc(Connection.PinGuid);
 
 		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(ThisDesc, ConnectionDesc, UWidget::StaticClass());
 		if (!IsValid(ConnectionVisualizer))

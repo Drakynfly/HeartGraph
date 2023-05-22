@@ -27,7 +27,7 @@ public:
 	/** IHeartWidgetInputLinkerRedirector */
 
 	/** IHeartGraphPinInterface */
-	virtual UHeartGraphNode* GetNode() const override;
+	virtual UHeartGraphNode* GetHeartGraphNode() const override;
 	virtual FHeartPinGuid GetPinGuid() const override;
 	/** IHeartGraphPinInterface */
 

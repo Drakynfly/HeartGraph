@@ -53,7 +53,7 @@ public:
 
 	// Gets the Heart Node from an object representing a Heart Graph Pin, and attempts to cast it to the requested class.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Node", ExpandBoolAsExecs = "ReturnValue"))
-	static bool GetNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node);
+	static bool GetGraphNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node);
 
 
 	// Makes a Node Source from a Class. Add this to a Registry to spawn nodes with instances of this class.

@@ -14,7 +14,7 @@ bool UHeartPinAction_Disconnect::CanExecute(const UObject* Object) const
 
 void UHeartPinAction_Disconnect::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
-	if (const UHeartGraphNode* Node = Pin->GetNode())
+	if (const UHeartGraphNode* Node = Pin->GetHeartGraphNode())
 	{
 		Node->GetGraph()->DisconnectAllPins({Node->GetGuid(), Pin->GetPinGuid()});
 	}

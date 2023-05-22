@@ -153,7 +153,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 			StartPoint += FVector2D(CustomPosition);
 		}
 
-		TSet<FHeartGraphPinReference>& ConnectedPins = PinPair.Value.Key->GetCanvasNode()->GetNode()->
+		TSet<FHeartGraphPinReference>& ConnectedPins = PinPair.Value.Key->GetCanvasNode()->GetGraphNode()->
 		                                                       GetLinks(PinPair.Key).Links;
 		for (FHeartGraphPinReference& ConnectedPin : ConnectedPins)
 		{

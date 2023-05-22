@@ -115,7 +115,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		{
 			auto&& PinWidgets = GraphNode->GetPinWidgets();
 
-			const FVector2D NodeLoc = GraphNode->GetNode()->GetLocation();
+			const FVector2D NodeLoc = GraphNode->GetGraphNode()->GetLocation();
 
 			for (UHeartGraphCanvasPin* PinWidget : PinWidgets)
 			{
@@ -277,7 +277,7 @@ void UHeartGraphCanvas::UpdateAllPositionsOnCanvas()
 
 void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* CanvasNode)
 {
-	auto&& Node = CanvasNode->GetNode();
+	auto&& Node = CanvasNode->GetGraphNode();
 	auto&& NodeLocation = Node->GetLocation();
 
 	if (NodeLocation.ContainsNaN())
@@ -446,14 +446,14 @@ bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, con
 {
 	static const float GuardBandArea = 0.25f;
 
-	if (!IsValid(GraphNode) || !IsValid(GraphNode->GetNode()))
+	if (!IsValid(GraphNode) || !IsValid(GraphNode->GetGraphNode()))
 	{
 		return true;
 	}
 
 	//if (GraphNode->ShouldAllowCulling())
 	{
-		const FVector2D Location = GraphNode->GetNode()->GetLocation();
+		const FVector2D Location = GraphNode->GetGraphNode()->GetLocation();
 		const FVector2D MinClipArea = Geometry.GetLocalSize() * -GuardBandArea;
 		const FVector2D MaxClipArea = Geometry.GetLocalSize() * ( 1.f + GuardBandArea);
 		const FVector2D NodeTopLeft = ScalePositionToCanvasZoom(Location);

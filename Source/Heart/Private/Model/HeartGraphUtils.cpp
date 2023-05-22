@@ -119,11 +119,11 @@ FHeartGraphPinReference UHeartGraphUtils::MakeReference(const TScriptInterface<I
 	return FHeartGraphPinReference{Node->GetHeartGraphNode()->GetGuid(), Pin->GetPinGuid()};
 }
 
-bool UHeartGraphUtils::GetNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
+bool UHeartGraphUtils::GetGraphNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
 {
 	if (Pin.GetInterface())
 	{
-		Node = Pin->GetNode();
+		Node = Pin->GetHeartGraphNode();
 	}
 	return IsValid(Node);
 }

@@ -9,9 +9,9 @@ UHeartWidgetInputLinker* UHeartGraphCanvasPin::ResolveLinker_Implementation() co
 	return Execute_ResolveLinker(GraphCanvasNode.Get());
 }
 
-UHeartGraphNode* UHeartGraphCanvasPin::GetNode() const
+UHeartGraphNode* UHeartGraphCanvasPin::GetHeartGraphNode() const
 {
-	return GraphCanvasNode.IsValid() ? GraphCanvasNode->GetNode() : nullptr;
+	return GraphCanvasNode.IsValid() ? GraphCanvasNode->GetGraphNode() : nullptr;
 }
 
 FHeartPinGuid UHeartGraphCanvasPin::GetPinGuid() const
@@ -26,7 +26,7 @@ void UHeartGraphCanvasPin::SetIsPreviewConnectionTarget(const bool IsTarget, con
 
 FHeartGraphPinReference UHeartGraphCanvasPin::GetPinReference() const
 {
-	return { GraphCanvasNode->GetNode()->GetGuid(), GraphPin };
+	return { GraphCanvasNode->GetGraphNode()->GetGuid(), GraphPin };
 }
 
 UHeartGraphCanvas* UHeartGraphCanvasPin::GetCanvas() const

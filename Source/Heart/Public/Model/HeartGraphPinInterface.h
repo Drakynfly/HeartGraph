@@ -20,7 +20,7 @@ class HEART_API IHeartGraphPinInterface
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
-	virtual UHeartGraphNode* GetNode() const PURE_VIRTUAL(IHeartGraphPinInterface::GetNode, return nullptr; )
+	virtual UHeartGraphNode* GetHeartGraphNode() const PURE_VIRTUAL(IHeartGraphPinInterface::GetGraphNode, return nullptr; )
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
 	virtual FHeartPinGuid GetPinGuid() const PURE_VIRTUAL(IHeartGraphPinInterface::GetPinGuid, return FHeartPinGuid(); )
@@ -39,7 +39,7 @@ class HEART_API IHeartGraphPinInterfaceBP : public IHeartGraphPinInterface
 protected:
 	// Defer to Blueprint implementations
 
-	virtual UHeartGraphNode* GetNode() const override final
+	virtual UHeartGraphNode* GetHeartGraphNode() const override final
 	{
 		return Execute_GetNode_BP(_getUObject());
 	}
