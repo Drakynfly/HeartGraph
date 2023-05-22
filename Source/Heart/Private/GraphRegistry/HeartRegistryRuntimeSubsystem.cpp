@@ -107,9 +107,9 @@ void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(UGraphNodeRegistrar* Regis
 {
 	for (auto&& ClassPath : Registrar->AutoRegisterWith)
 	{
-		if (ClassPath.IsValid())
+		if (const TSubclassOf<UHeartGraph> Class = ClassPath.TryLoadClass<UHeartGraph>())
 		{
-			GetRegistry_Internal(ClassPath.ResolveClass())->AddRegistrar(Registrar);
+			GetRegistry_Internal(Class)->AddRegistrar(Registrar);
 		}
 	}
 }
@@ -118,9 +118,9 @@ void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(UGraphNodeRegistrar* Re
 {
 	for (auto&& ClassPath : Registrar->AutoRegisterWith)
 	{
-		if (ClassPath.IsValid())
+		if (const TSubclassOf<UHeartGraph> Class = ClassPath.TryLoadClass<UHeartGraph>())
 		{
-			GetRegistry_Internal(ClassPath.ResolveClass())->RemoveRegistrar(Registrar);
+			GetRegistry_Internal(Class)->RemoveRegistrar(Registrar);
 		}
 	}
 }
