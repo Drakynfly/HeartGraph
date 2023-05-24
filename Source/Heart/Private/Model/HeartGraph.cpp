@@ -95,8 +95,6 @@ void UHeartGraph::PostLoad()
 
 void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 {
-	Super::PostDuplicate(DuplicateMode);
-
 #if WITH_EDITOR
 	// The HeartEdGraph doesn't need to persist for graphs duplicated during gameplay
 	if (GetWorld()->IsGameWorld())
@@ -112,6 +110,8 @@ void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 		}
 	}
 #endif
+
+	Super::PostDuplicate(DuplicateMode);
 }
 
 void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<FHeartPinGuid>& AffectedPins)
@@ -307,7 +307,7 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 
 	const FHeartNodeGuid NodeGuid = Node->GetGuid();
 
-	if (Nodes.Contains(NodeGuid))
+	if (!ensure(!Nodes.Contains(NodeGuid)))
 	{
 		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
 		return;

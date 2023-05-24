@@ -65,16 +65,26 @@ void UHeartEdGraphNode::PostLoad()
 	}
 }
 
-void UHeartEdGraphNode::PostDuplicate(bool bDuplicateForPIE)
+void UHeartEdGraphNode::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 {
-	Super::PostDuplicate(bDuplicateForPIE);
+	Super::PostDuplicate(DuplicateMode);
 
-	if (!bDuplicateForPIE)
+	if (DuplicateMode != EDuplicateMode::PIE)
 	{
 		CreateNewGuid();
 
 		if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
 		{
+			// @todo this check ensures that nodes are not duplicated at runtime, when Duplicating a HeartGraph:
+			// Doing so propogates sub-object DuplicateObject calls to us, and results in HeartNodes being added to the
+			// graph twice. This is all kinda ugly, since the code below is a hack to fix duplicating nodes in the first
+			// place, and now this code is a secondary hack to fix the first, so really, the node duplication stuff below
+			// needs to be moved elsewhere, then this can be removed too.
+			if (!HeartGraphNode->GetGraph()->GetEdGraph())
+			{
+				return;
+			}
+
 			auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
 			DuplicatedNode->Guid = FHeartNodeGuid::New();
 			DuplicatedNode->Location = FVector2D(NodePosX, NodePosY);

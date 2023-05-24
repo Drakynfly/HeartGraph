@@ -31,7 +31,7 @@ public:
 
 	// UObject
 	virtual void PostLoad() override;
-	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 	virtual void PostEditImport() override;
 	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
 	// --
