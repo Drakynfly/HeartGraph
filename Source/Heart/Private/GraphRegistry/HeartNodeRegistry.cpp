@@ -473,21 +473,24 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 
 UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const FHeartGraphPinDesc& GraphPinDesc, UClass* VisualizerBase) const
 {
-	for (FHeartGraphPinTag Tag = GraphPinDesc.Tag; Tag.IsValid() && Tag != FHeartGraphPinTag::GetRootTag();
-			Tag = FHeartGraphPinTag::TryConvert(Tag.RequestDirectParent()))
+	if (!PinVisualizerMap.IsEmpty())
 	{
-		if (auto&& ClassMap = PinVisualizerMap.Find(Tag))
+		for (FHeartGraphPinTag Tag = GraphPinDesc.Tag; Tag.IsValid() && Tag != FHeartGraphPinTag::GetRootTag();
+				Tag = FHeartGraphPinTag::TryConvert(Tag.RequestDirectParent()))
 		{
-			for (auto&& CountedClass : *ClassMap)
+			if (auto&& ClassMap = PinVisualizerMap.Find(Tag))
 			{
-				if (!IsValid(VisualizerBase))
+				for (auto&& CountedClass : *ClassMap)
 				{
-					return CountedClass.Key;
-				}
+					if (!IsValid(VisualizerBase))
+					{
+						return CountedClass.Key;
+					}
 
-				if (CountedClass.Key->IsChildOf(VisualizerBase))
-				{
-					return CountedClass.Key;
+					if (CountedClass.Key->IsChildOf(VisualizerBase))
+					{
+						return CountedClass.Key;
+					}
 				}
 			}
 		}
