@@ -87,5 +87,5 @@ protected:
 	TArray<TObjectPtr<UHeartGraphCanvasConnection>> ConnectionWidgets;
 
 	UPROPERTY(BlueprintReadOnly, Category = "State")
-	bool NodeSelected;
+	bool NodeSelected = false;
 };
