@@ -187,7 +187,15 @@ void UHeartRegistryEditorSubsystem::OnAnyRegistryChanged(UHeartGraphNodeRegistry
 
 void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
 {
-	GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->FetchAssetRegistryAssets();
+	auto RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	// Flush all registries so it won't disregard re-added registrars.
+	for (auto&& Registry : RuntimeSubsystem->Registries)
+	{
+		Registry.Value->DeregisterAll();
+	}
+
+	RuntimeSubsystem->FetchAssetRegistryAssets();
 
 	OnRefreshPalettes.Broadcast();
 }
