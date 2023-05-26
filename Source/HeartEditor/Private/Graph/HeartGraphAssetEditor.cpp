@@ -274,6 +274,8 @@ void FHeartGraphAssetEditor::RefreshAsset()
 		UE_LOG(LogHeartEditor, Warning, TEXT("Asset: '%s' missing EdGraph! Creating new in Refresh Asset."), *HeartGraph->GetName())
 		UHeartEdGraph::CreateGraph(HeartGraph);
 
+		RemoveEditingObject(HeartGraph);
+
 		// Reinitialize the Asset Editor
 		constexpr bool bCreateDefaultStandaloneMenu = true;
 		constexpr bool bCreateDefaultToolbar = true;

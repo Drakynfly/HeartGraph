@@ -237,6 +237,27 @@ void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Dire
 {
 }
 
+TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes() const
+{
+	const UHeartGraph* Graph = GetGraph();
+	if (!ensure(IsValid(Graph))) return {};
+
+	TSet<UHeartGraphNode*> UniqueConnections;
+
+	for (const TTuple<FHeartPinGuid, FHeartGraphPinConnections>& Element : PinConnections)
+	{
+		for (FHeartGraphPinReference Link : Element.Value.Links)
+		{
+			if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
+			{
+				UniqueConnections.Add(Node);
+			}
+		}
+	}
+
+	return UniqueConnections;
+}
+
 
 #if WITH_EDITOR
 void UHeartGraphNode::SetEdGraphNode(UEdGraphNode* GraphNode)

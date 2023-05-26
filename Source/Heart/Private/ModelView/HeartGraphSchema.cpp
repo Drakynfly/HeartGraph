@@ -17,7 +17,20 @@ UHeartGraphSchema::UHeartGraphSchema()
 
 const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph> GraphClass)
 {
+	if (!ensure(IsValid(GraphClass)))
+	{
+		return nullptr;
+	}
+
 	const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
+	const UClass* Class = DefaultHeartGraph->GetSchemaClass();
+
+	if (!ensure(IsValid(Class)))
+	{
+		UE_LOG(LogHeartGraph, Warning, TEXT("GetSchemaClass for Graph Class '%s' returned nullptr!"), *GraphClass->GetName())
+		return nullptr;
+	}
+
 	return GetDefault<UHeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
 }
 

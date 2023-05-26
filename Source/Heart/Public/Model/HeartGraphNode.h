@@ -228,6 +228,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
 	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TSet<UHeartGraphNode*> GetConnectedGraphNodes() const;
+
 
 	/*----------------------------
 			NODE EDITING

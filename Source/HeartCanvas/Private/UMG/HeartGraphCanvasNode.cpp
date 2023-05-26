@@ -38,12 +38,24 @@ void UHeartGraphCanvasNode::PostInitNode()
 	}
 }
 
-void UHeartGraphCanvasNode::SetNodeSelected(const bool Selected)
+void UHeartGraphCanvasNode::SetNodeSelectedFromGraph(const bool Selected)
 {
 	if (NodeSelected != Selected)
 	{
 		NodeSelected = Selected;
 		OnNodeSelectionChanged();
+	}
+}
+
+void UHeartGraphCanvasNode::SetNodeSelected(const bool Selected)
+{
+	if (Selected)
+	{
+		GraphCanvas->SelectNode(GraphNode->GetGuid());
+	}
+	else
+	{
+		GraphCanvas->UnselectNode(GraphNode->GetGuid());
 	}
 }
 

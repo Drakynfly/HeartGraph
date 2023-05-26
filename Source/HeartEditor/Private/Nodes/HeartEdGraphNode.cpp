@@ -245,6 +245,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			if (HeartGraph->ConnectPins(SelfReference, {HeartNodeConnectedInEditor->GetGuid(), ConnectedHeartPin}))
 			{
 				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
+				HeartNodeConnectedInEditor->NotifyPinConnectionsChanged(ConnectedHeartPin);
 				HeartGraph->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});
 			}
 		}

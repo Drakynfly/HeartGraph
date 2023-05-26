@@ -35,7 +35,7 @@ UHeartGraphCanvas::UHeartGraphCanvas()
 	ViewBounds.Min = { -10000.0, -10000.0, 0.1 };
 	ViewBounds.Max = { 10000.0, 10000.0, 10.0 };
 
-	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("ProxyLayerStack");
+	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("LocationModifiers");
 }
 
 bool UHeartGraphCanvas::Initialize()
@@ -307,6 +307,53 @@ void UHeartGraphCanvas::UpdateAllCanvasNodesZoom()
 	}
 }
 
+void UHeartGraphCanvas::UpdateAfterSelectionChanged()
+{
+	if ((PanToSelectionSettings.EnablePanToSelection ||
+		PanToSelectionSettings.EnableZoomToSelection) &&
+		!SelectedNodes.IsEmpty())
+	{
+		FVector2D AverageNodePosition = FVector2D::ZeroVector;
+
+		for (FHeartNodeGuid SelectedNode : SelectedNodes)
+		{
+			if (auto&& Node = DisplayedNodes.Find(SelectedNode))
+			{
+				if (const TObjectPtr<UHeartGraphCanvasNode> CanvasNode = *Node)
+				{
+					// Add the canonical location of the graph node.
+					AverageNodePosition += CanvasNode->GetGraphNode()->GetLocation();
+
+					// Add half the size of the node. We are focusing on the center of the node, not the corner
+					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5 * (1.0 / View.Z);
+				}
+			}
+		}
+
+		AverageNodePosition *= 1.0 / SelectedNodes.Num();
+
+		if (PanToSelectionSettings.EnablePanToSelection)
+		{
+			FVector2D LocalNewCorner = AverageNodePosition;
+
+			LocalNewCorner = -LocalNewCorner;
+
+
+			// Add half the size of the canvas, to "center" the focus
+			LocalNewCorner += NodeCanvas->GetCachedGeometry().GetLocalSize() * 0.5;
+
+			SetViewCorner(LocalNewCorner, true);
+		}
+
+		if (PanToSelectionSettings.EnableZoomToSelection)
+		{
+			float TargetZoom = 0.f;
+
+			//SetZoom(TargetZoom, true);
+		}
+	}
+}
+
 void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 {
 	// This function is only used internally, so Node should *always* be validated prior to this point.
@@ -514,7 +561,7 @@ FVector2D UHeartGraphCanvas::ScalePositionToCanvasZoom(const FVector2D& Position
 
 FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Position) const
 {
-	return SaveDivide(Position, View.Z) - FVector2D(View);
+	return SafeDivide(Position, View.Z) - FVector2D(View);
 }
 
 UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPinReference& PinReference) const
@@ -616,10 +663,16 @@ void UHeartGraphCanvas::SelectNode(const FHeartNodeGuid Node)
 {
 	if (ensure(Node.IsValid()))
 	{
-		if (auto&& NodePtr = DisplayedNodes.Find(Node))
+		bool IsAlreadyInSetPtr;
+		SelectedNodes.Add(Node, &IsAlreadyInSetPtr);
+		if (!IsAlreadyInSetPtr)
 		{
-			SelectedNodes.Add(Node);
-			(*NodePtr)->SetNodeSelected(true);
+			if (auto&& NodePtr = DisplayedNodes.Find(Node))
+			{
+				(*NodePtr)->SetNodeSelectedFromGraph(true);
+
+				UpdateAfterSelectionChanged();
+			}
 		}
 	}
 }
@@ -640,7 +693,9 @@ void UHeartGraphCanvas::UnselectNode(const FHeartNodeGuid Node)
 		{
 			if (auto&& NodePtr = DisplayedNodes.Find(Node))
 			{
-				(*NodePtr)->SetNodeSelected(false);
+				(*NodePtr)->SetNodeSelectedFromGraph(false);
+
+				UpdateAfterSelectionChanged();
 			}
 		}
 	}
@@ -657,7 +712,7 @@ void UHeartGraphCanvas::ClearNodeSelection()
 	{
 		if (auto&& Node = DisplayedNodes.Find(SelectedGuid))
 		{
-			(*Node)->SetNodeSelected(false);
+			(*Node)->SetNodeSelectedFromGraph(false);
 		}
 	}
 

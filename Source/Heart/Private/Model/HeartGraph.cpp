@@ -176,8 +176,7 @@ TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() cons
 
 const UHeartGraphSchema* UHeartGraph::GetSchema() const
 {
-	// Always return the schema for the CDO
-	return GetSchemaStatic<UHeartGraphSchema>(GetClass());
+	return UHeartGraphSchema::Get(GetClass());
 }
 
 const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const
@@ -440,7 +439,10 @@ void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference Pin)
 		return;
 	}
 
-	for (const FHeartGraphPinReference& Link : ANode->GetLinks(Pin.PinGuid).Links)
+	const FHeartGraphPinConnections& Connections = ANode->GetLinks(Pin.PinGuid);
+	if (Connections.Links.IsEmpty()) return;
+
+	for (const FHeartGraphPinReference& Link : Connections.Links)
 	{
 		DisconnectPins(Pin, Link);
 	}

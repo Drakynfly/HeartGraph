@@ -69,4 +69,14 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math")
 	static int32 LevenshteinDistance(const FString& A, const FString& B);
+
+
+	/*------------------------
+			FONT UTILS
+	------------------------*/
+
+	static bool FontSupportsChar(const UFont* Font, TCHAR Char);
+
+	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math")
+	static bool FontSupportsString(const UFont* Font, const FString& String);
 };

@@ -36,6 +36,8 @@ public:
 protected:
 	virtual void PostInitNode();
 
+	virtual void SetNodeSelectedFromGraph(bool Selected);
+
 public:
 	UHeartGraphNode* GetGraphNode() const { return GraphNode.Get(); }
 	UHeartGraphCanvas* GetCanvas() const { return GraphCanvas.Get(); }

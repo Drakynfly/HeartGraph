@@ -38,15 +38,32 @@ struct FHeartDragIntoViewSettings
 	bool EnableDragIntoView = false;
 
 	// Animate drag into view
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
 	bool InterpDragIntoView = false;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
 	float DragMultiplier = 0.1;
 
 	// Drag-into-view input is clamped to this magnitude.
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
 	float DragIntoViewClamp = 10;
+};
+
+USTRUCT(BlueprintType)
+struct FHeartPanToSelectionSettings
+{
+	GENERATED_BODY()
+
+	// Automatically pan the graph view to center the selected nodes.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartPanToSelectionSettings")
+	bool EnablePanToSelection = false;
+
+	// Automatically adjust zoom to focus on the selected nodes.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartPanToSelectionSettings")
+	bool EnableZoomToSelection = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartPanToSelectionSettings", meta = (EditCondition = "EnableZoomToSelection"))
+	float ZoomDistance = 1.f;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGraphViewChanged);
@@ -102,6 +119,8 @@ protected:
 	void UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* CanvasNode);
 
 	void UpdateAllCanvasNodesZoom();
+
+	void UpdateAfterSelectionChanged();
 
 	void AddNodeToDisplay(UHeartGraphNode* Node);
 
@@ -282,6 +301,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FHeartDragIntoViewSettings DragIntoViewSettings;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
+	FHeartPanToSelectionSettings PanToSelectionSettings;
 
 	// @todo temp until everything is moved over to use connection widgets
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")

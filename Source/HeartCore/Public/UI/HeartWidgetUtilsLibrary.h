@@ -64,6 +64,12 @@ class HEARTCORE_API UHeartWidgetUtilsLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
+	static FVector2D UINavigationToVector(EUINavigation Navigation);
+
+	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
+	static int32 FindClosestToDirection(const TArray<FVector2D>& Locations, FVector2D From, FVector2D Direction, float DotRange = 0.5);
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static FVector2D GetGeometryCenter(const FGeometry& Geometry);
 

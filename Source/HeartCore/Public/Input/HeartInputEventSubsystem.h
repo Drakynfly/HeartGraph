@@ -9,22 +9,25 @@ class FHeartCoreInputPreprocessor;
 UENUM(BlueprintType)
 enum class EHeartInputEventType : uint8
 {
-	MouseButtonDown,
-	MouseButtonUp,
+	ButtonDown,
+	ButtonUp,
 };
 
-DECLARE_DYNAMIC_DELEGATE_OneParam(FHeartInputEvent, const FPointerEvent&, MouseEvent);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FHeartKeyEvent, const FKeyEvent&, KeyEvent);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FHeartMouseEvent, const FPointerEvent&, PointerEvent);
 
 namespace Heart::Input
 {
 	struct FEventCallback
 	{
-		const FHeartInputEvent Callback;
+		const FHeartKeyEvent KeyCallback;
+		const FHeartMouseEvent MouseCallback;
 		const bool Once;
 
 		friend bool operator==(const FEventCallback& Lhs, const FEventCallback& Rhs)
 		{
-			return Lhs.Callback == Rhs.Callback;
+			return Lhs.KeyCallback == Rhs.KeyCallback &&
+				Lhs.MouseCallback == Rhs.MouseCallback;
 		}
 
 		friend bool operator!=(const FEventCallback& Lhs, const FEventCallback& Rhs)
@@ -50,6 +53,12 @@ public:
 	virtual void Deinitialize() override;
 
 protected:
+	/** Keyboard button press */
+	bool HandleKeyDownEvent(const FSlateApplication& SlateApp, const FKeyEvent& KeyEvent);
+
+	/** Keyboard button release */
+	bool HandleKeyUpEvent(const FSlateApplication& SlateApp, const FKeyEvent& KeyEvent);
+
 	/** Mouse button press */
 	bool HandleMouseButtonDownEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent);
 
@@ -60,11 +69,18 @@ protected:
 
 	void UnbindFromInputEvent(EHeartInputEventType EventType, const Heart::Input::FEventCallback& EventCallback);
 
-	UFUNCTION(BlueprintCallable)
-	void BindToInputEvent(EHeartInputEventType EventType, const FHeartInputEvent& EventCallback, bool Once);
+public:
+	UFUNCTION(BlueprintCallable, Category = "Heart|InputEventSubsystem")
+	void BindToKeyEvent(EHeartInputEventType EventType, const FHeartKeyEvent& Callback, bool Once);
 
-	UFUNCTION(BlueprintCallable)
-	void UnbindFromInputEvent(EHeartInputEventType EventType, const FHeartInputEvent& EventCallback);
+	UFUNCTION(BlueprintCallable, Category = "Heart|InputEventSubsystem")
+	void UnbindFromKeyEvent(EHeartInputEventType EventType, const FHeartKeyEvent& Callback);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|InputEventSubsystem")
+	void BindToMouseEvent(EHeartInputEventType EventType, const FHeartMouseEvent& Callback, bool Once);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|InputEventSubsystem")
+	void UnbindFromMouseEvent(EHeartInputEventType EventType, const FHeartMouseEvent& Callback);
 
 private:
 	TSharedPtr<FHeartCoreInputPreprocessor> HeartInputPreprocessor;
