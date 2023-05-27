@@ -4,6 +4,12 @@
 
 #define LOCTEXT_NAMESPACE "BloodBlueprintLibrary"
 
+void UBloodBlueprintLibrary::ReadProperty(const UObject*, FName Property, uint8& Value)
+{
+	// Does not function. Stub for execPropertyToBlood
+	check(0);
+}
+
 FBloodValue UBloodBlueprintLibrary::PropertyToBlood(const uint8&)
 {
 	// Does not function. Stub for execPropertyToBlood
@@ -29,6 +35,50 @@ bool UBloodBlueprintLibrary::AssignBloodToProperty(uint8&, const FBloodValue&)
 	// Does not function. Stub for execBloodToProperty
 	check(0);
 	return false;
+}
+
+DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
+{
+	P_GET_OBJECT(UObject, Object);
+	P_GET_PROPERTY(FNameProperty, PropertyName);
+
+	Stack.MostRecentPropertyAddress = nullptr;
+	Stack.MostRecentPropertyContainer = nullptr;
+	Stack.StepCompiledIn<FProperty>(nullptr);
+
+	const FProperty* ValueProp = Stack.MostRecentProperty;
+
+	P_FINISH;
+
+	if (!IsValid(Object))
+	{
+		FBlueprintExceptionInfo ExceptionInfo(
+			EBlueprintExceptionType::AbortExecution,
+			LOCTEXT("execReadProperty_MakeInvalidObjectWarning", "Failed to resolve the Object for Read Property")
+		);
+
+		FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
+		return;
+	}
+
+	if (!ValueProp)
+	{
+		FBlueprintExceptionInfo ExceptionInfo(
+			EBlueprintExceptionType::AbortExecution,
+			LOCTEXT("execReadProperty_MakeInvalidValueWarning", "Failed to resolve the output Value for Read Property")
+		);
+
+		FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
+		return;
+	}
+
+	P_NATIVE_BEGIN;
+	if (const FProperty* Property = Object->GetClass()->FindPropertyByName(PropertyName))
+	{
+		const FBloodValue BloodValue = Blood::ReadFromFProperty(Object, Property);
+		ValueProp->CopyCompleteValueToScriptVM(Object, BloodValue.Data.GetMemory());
+	}
+	P_NATIVE_END;
 }
 
 DEFINE_FUNCTION(UBloodBlueprintLibrary::execPropertyToBlood)
