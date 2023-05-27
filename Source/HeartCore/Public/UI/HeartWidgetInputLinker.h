@@ -75,7 +75,11 @@ namespace Heart::Input
 		{
 			if (Test->Implements<UHeartWidgetInputLinkerRedirector>())
 			{
-				return IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test);
+				// In some cases, a widget may implement the interface but have linking disabled, and return nullptr
+				if (UHeartWidgetInputLinker* Linker = IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test))
+				{
+					return Linker;
+				}
 			}
 		}
 

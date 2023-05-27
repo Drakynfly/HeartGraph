@@ -10,7 +10,7 @@ class UHeartDragDropOperation;
 /**
  *
  */
-UCLASS()
+UCLASS(Abstract)
 class HEARTCORE_API UHeartWidgetInputBinding_DragDropOperationBase : public UHeartWidgetInputBindingBase
 {
 	GENERATED_BODY()

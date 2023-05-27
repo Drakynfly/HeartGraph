@@ -236,6 +236,9 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 		if (DragDropTrigger.Callback.IsBound())
 		{
 			UHeartDragDropOperation* DragDropOperation = DragDropTrigger.Callback.Execute(Widget);
+
+			if (!IsValid(DragDropOperation)) continue;
+
 			DragDropOperation->SummonedBy = Widget;
 
 			if (Widget->Implements<UHeartUMGContextObject>())

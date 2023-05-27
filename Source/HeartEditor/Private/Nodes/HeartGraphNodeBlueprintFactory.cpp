@@ -92,8 +92,8 @@ public:
 				]
 		];
 
-			MakeParentClassPicker();
-		}
+		MakeParentClassPicker();
+	}
 
 	/** Sets properties for the supplied HeartGraphNodeBlueprintFactory */
 	bool ConfigureProperties(const TWeakObjectPtr<UHeartGraphNodeBlueprintFactory> InHeartGraphNodeBlueprintFactory)

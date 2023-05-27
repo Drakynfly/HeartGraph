@@ -88,8 +88,8 @@ public:
 				]
 		];
 
-			MakeParentClassPicker();
-		}
+		MakeParentClassPicker();
+	}
 
 	/** Sets properties for the supplied UHeartWidgetInputHandlerAssetFactory */
 	bool ConfigureProperties(const TWeakObjectPtr<UHeartWidgetInputHandlerAssetFactory> InHeartWidgetInputHandlerAssetFactory)

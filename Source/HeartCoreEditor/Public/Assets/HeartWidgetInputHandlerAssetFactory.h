@@ -13,13 +13,13 @@ class UHeartWidgetInputHandlerAssetFactory : public UFactory
 public:
 	UHeartWidgetInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer);
 
-	// The class of the created asset to create
-	UPROPERTY(EditAnywhere, Category = "HeartWidgetInputHandlerAssetFactory")
-	TSubclassOf<class UHeartWidgetInputHandlerAsset> AssetClass;
-
 	// UFactory
 	virtual bool ConfigureProperties() override;
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext) override;
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
 	// --
+
+	// The class of the created asset to create
+	UPROPERTY(EditAnywhere, Category = "HeartWidgetInputHandlerAssetFactory")
+	TSubclassOf<class UHeartWidgetInputHandlerAsset> AssetClass;
 };
