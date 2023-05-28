@@ -22,14 +22,14 @@ public:
 
 protected:
 	// Binding assets applied by default to linker
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "InputBindingConfig")
 	TArray<TObjectPtr<UHeartWidgetInputBindingAsset>> BindingAssets;
 
 	// Class of linker to spawn
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "InputBindingConfig")
 	TSubclassOf<UHeartWidgetInputLinker> DefaultLinkerClass = UHeartWidgetInputLinker::StaticClass();
 
-	UPROPERTY(BlueprintReadOnly, meta = (NoResetToDefault))
+	UPROPERTY(BlueprintReadOnly, meta = (NoResetToDefault), Category = "InputBindingContainer")
 	TObjectPtr<UHeartWidgetInputLinker> Linker = nullptr;
 
 	UPROPERTY()

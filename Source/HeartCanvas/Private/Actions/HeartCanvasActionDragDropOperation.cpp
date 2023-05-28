@@ -4,7 +4,9 @@
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
+#include "UI/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
+#include "UMG/HeartGraphWidgetBase.h"
 
 bool UHeartCanvasActionDragDropOperation::SetupDragDropOperation()
 {
@@ -17,10 +19,23 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 
 	if (IsValid(Action))
 	{
-		FHeartInputActivation Activation;
-		Activation.ActivationValue = 0;
-		Action->Execute(GetHoveredWidget(), Activation, Payload);
+		Action->Execute(GetHoveredWidget(), FHeartInputActivation(PointerEvent), Payload);
 	}
+}
+
+bool UHeartWidgetInputBinding_DragDropOperation_Action::PassCondition(const UWidget* TestWidget) const
+{
+	bool Failed = !Super::PassCondition(TestWidget);
+
+	if (IsValid(ActionClass))
+	{
+		if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(TestWidget))
+		{
+			Failed |= !ActionClass.GetDefaultObject()->CanExecuteOnWidget(HeartWidget);
+		}
+	}
+
+	return !Failed;
 }
 
 UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const

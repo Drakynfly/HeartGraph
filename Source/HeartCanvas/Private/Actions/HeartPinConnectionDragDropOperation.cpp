@@ -8,6 +8,11 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "View/PinConnectionStatusInterface.h"
 
+bool UHeartPinConnectionDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
+{
+	return Widget && Widget->IsA<UHeartGraphCanvasPin>();
+}
+
 bool UHeartPinConnectionDragDropOperation::SetupDragDropOperation()
 {
 	if (UHeartGraphCanvasPin* CanvasPin = Cast<UHeartGraphCanvasPin>(SummonedBy))

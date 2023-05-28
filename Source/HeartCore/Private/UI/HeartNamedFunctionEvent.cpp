@@ -2,6 +2,8 @@
 
 #include "UI/HeartNamedFunctionEvent.h"
 
+#include "Components/Widget.h"
+
 FReply UHeartNamedFunctionEvent::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
 {
 	if (IsValid(Widget))
@@ -9,12 +11,10 @@ FReply UHeartNamedFunctionEvent::TriggerEvent(UWidget* Widget, const FHeartInput
 		const FName FunctionFName(*FunctionName);
 
 		UFunction* const Func = Widget->FindFunction(FunctionFName);
-		if (Func && (Func->ParmsSize > 0))
+		if (Func && Func->ParmsSize > 0)
 		{
-			// User passed in a valid function, but one that takes parameters
-			// FTimerDynamicDelegate expects zero parameters and will choke on execution if it tries
-			// to execute a mismatched function
-			UE_LOG(LogBlueprintUserMessages, Warning, TEXT("AddNamedFunction passed a function (%s) that expects parameters."), *FunctionName);
+			// Passed in a valid function, but one that takes parameters
+			UE_LOG(LogBlueprintUserMessages, Warning, TEXT("NamedFunctionEvent passed a function (%s) that expects parameters."), *FunctionName);
 			return FReply::Unhandled();
 		}
 

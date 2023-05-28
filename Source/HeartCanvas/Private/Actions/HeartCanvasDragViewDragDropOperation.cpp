@@ -5,6 +5,11 @@
 
 #include "Blueprint/SlateBlueprintLibrary.h"
 
+bool UHeartCanvasDragViewDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
+{
+	return Widget && Widget->IsA<UHeartGraphCanvas>();
+}
+
 bool UHeartCanvasDragViewDragDropOperation::SetupDragDropOperation()
 {
 	if (UHeartGraphCanvas* SummonedByAsCanvas = Cast<UHeartGraphCanvas>(SummonedBy))

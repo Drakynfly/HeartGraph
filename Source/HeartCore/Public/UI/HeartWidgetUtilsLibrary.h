@@ -2,10 +2,13 @@
 
 #pragma once
 
+#include "HeartWidgetInputBindingAsset.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartWidgetUtilsLibrary.generated.h"
 
+class UHeartWidgetInputLinker;
+struct FHeartInputActivation;
 class UHeartWidgetInputBindingAsset;
 
 namespace Heart::Input
@@ -109,16 +112,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static TArray<struct FHeartManualInputQueryResult> GetActionsForWidget(const UWidget* Widget);
 
-	/**
-	 * Trigger a manually-keyed action for a widget. This only works if either the widget, or one of its parents,
-	 * implements IHeartWidgetInputLinkerRedirector.
-	 */
+	// Try to find the Input Linker for a widget.
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static bool TriggerManualInput(UWidget* Widget, FName Key);
+	static UHeartWidgetInputLinker* GetWidgetInputLinker(UWidget* Widget);
+
+	//UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
+	//static FHeartWidgetInputBinding MakeWidgetInputBinding(UHeartWidgetInputHandlerAsset* InputHandler, UHeartWidgetInputTrigger* Trigger);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static bool BindInputsToWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset);
+	static bool AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static bool UnbindInputsFromWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset);
+	static bool RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset);
 };

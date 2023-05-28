@@ -4,6 +4,15 @@
 #include "Blueprint/UserWidget.h"
 #include "UI/HeartDragDropOperation.h"
 
+bool UHeartWidgetInputBinding_DragDropOperation::PassCondition(const UWidget* TestWidget) const
+{
+	bool Failed = !Super::PassCondition(TestWidget);
+
+	Failed |= !GetDefault<UHeartDragDropOperation>(OperationClass)->CanRunOnWidget(TestWidget);
+
+	return !Failed;
+}
+
 UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation::BeginDDO(UWidget* Widget) const
 {
 	auto&& NewDDO = NewObject<UHeartDragDropOperation>(GetTransientPackage(), OperationClass);

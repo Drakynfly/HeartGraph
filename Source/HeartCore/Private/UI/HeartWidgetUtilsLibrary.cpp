@@ -164,45 +164,29 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidg
 	return ActionList;
 }
 
-bool UHeartWidgetUtilsLibrary::TriggerManualInput(UWidget* Widget, const FName Key)
+UHeartWidgetInputLinker* UHeartWidgetUtilsLibrary::GetWidgetInputLinker(UWidget* Widget)
 {
-	if (!IsValid(Widget) || Key.IsNone())
-	{
-		return false;
-	}
-
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
-
-	if (IsValid(Linker))
-	{
-		return Linker->HandleManualInput(Widget, Key, FHeartInputActivation({1.f})).IsEventHandled();
-	}
-
-	return false;
+	return Heart::Input::FindLinkerForWidget(Widget);
 }
 
-bool UHeartWidgetUtilsLibrary::BindInputsToWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset)
+bool UHeartWidgetUtilsLibrary::AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset)
 {
-	if (!IsValid(Widget) || IsValid(BindingAsset))
+	if (!IsValid(Linker) || IsValid(BindingAsset))
 	{
 		return false;
 	}
 
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
-
-	BindingAsset->BindLinker(Linker);
+	Linker->AddBindings(BindingAsset->BindingData);
 	return true;
 }
 
-bool UHeartWidgetUtilsLibrary::UnbindInputsFromWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset)
+bool UHeartWidgetUtilsLibrary::RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset)
 {
-	if (!IsValid(Widget) || IsValid(BindingAsset))
+	if (!IsValid(Linker) || IsValid(BindingAsset))
 	{
 		return false;
 	}
 
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
-
-	BindingAsset->UnbindLinker(Linker);
+	Linker->RemoveBindings(BindingAsset->BindingData);
 	return true;
 }

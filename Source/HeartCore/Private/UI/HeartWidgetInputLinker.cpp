@@ -1,17 +1,47 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetInputLinker.h"
+
 #include "Components/Widget.h"
+#include "HeartCorePrivate.h"
+
 #include "UI/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
+#include "UI/HeartWidgetInputBindingAsset.h"
+#include "UI/HeartWidgetInputHandlerAsset.h"
+
+DECLARE_CYCLE_STAT(TEXT("HandleOnMouseWheel"),		STAT_HandleOnMouseWheel, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonDown"),	STAT_HandleOnMouseButtonDown, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonUp"),	STAT_HandleOnMouseButtonUp, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleOnKeyDown"),			STAT_HandleOnKeyDown, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleOnKeyUp"),			STAT_HandleOnKeyUp, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleOnDragDetected"),	STAT_HandleOnDragDetected, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleNativeOnDragOver"),	STAT_HandleNativeOnDragOver, STATGROUP_HeartCore);
+DECLARE_CYCLE_STAT(TEXT("HandleNativeOnDrop"),		STAT_HandleNativeOnDrop, STATGROUP_HeartCore);
+
+
+DECLARE_CYCLE_STAT(TEXT("HandleManualInput"), STAT_HandleManualInput, STATGROUP_HeartCore);
+
 
 using namespace Heart::Input;
 
 FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseWheel)
+
 	FHeartWidgetInputTrip MouseWheelAxisTrip;
 	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis;
 	MouseWheelAxisTrip.Type = Press; // Mouse wheel events must always use the 'Press' type
+
+	FPointerEvent ActivationEvent(
+		PointerEvent.GetUserIndex(),
+		PointerEvent.GetPointerIndex(),
+		PointerEvent.GetScreenSpacePosition(),
+		PointerEvent.GetLastScreenSpacePosition(),
+		PointerEvent.GetPressedButtons(),
+		EKeys::MouseWheelAxis,
+		PointerEvent.GetWheelDelta(),
+		PointerEvent.GetModifierKeys());
 
 	TArray<FConditionalInputCallback> Callbacks;
 	InputCallbackMappings.MultiFind(MouseWheelAxisTrip, Callbacks);
@@ -27,9 +57,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 
 		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
 		{
-			FHeartInputActivation Activation;
-			Activation.ActivationValue = PointerEvent.GetWheelDelta();
-			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, FHeartInputActivation(ActivationEvent));
 
 			if (ConditionalInputCallback.Layer == Event)
 			{
@@ -46,6 +74,8 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 
 FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonDown)
+
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
 	Trip.Type = Press;
@@ -64,9 +94,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
 		{
-			FHeartInputActivation Activation;
-			Activation.ActivationValue = 1;
-			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, FHeartInputActivation(PointerEvent));
 
 			if (ConditionalInputCallback.Layer == Event)
 			{
@@ -113,6 +141,8 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonUp)
+
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
 	Trip.Type = Release;
@@ -131,9 +161,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 
 		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
 		{
-			FHeartInputActivation Activation;
-			Activation.ActivationValue = 0;
-			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, FHeartInputActivation(PointerEvent));
 
 			if (ConditionalInputCallback.Layer == Event)
 			{
@@ -150,6 +178,8 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 
 FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyDown)
+
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
 	Trip.Type = Press;
@@ -168,9 +198,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 
 		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
 		{
-			FHeartInputActivation Activation;
-			Activation.ActivationValue = 1;
-			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, FHeartInputActivation(KeyEvent));
 
 			if (ConditionalInputCallback.Layer == Event)
 			{
@@ -187,6 +215,8 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 
 FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyUp)
+
 	FHeartWidgetInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
 	Trip.Type = Release;
@@ -205,9 +235,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 
 		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
 		{
-			FHeartInputActivation Activation;
-			Activation.ActivationValue = 0;
-			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, FHeartInputActivation(KeyEvent));
 
 			if (ConditionalInputCallback.Layer == Event)
 			{
@@ -224,6 +252,8 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 
 UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleOnDragDetected)
+
 	FHeartWidgetInputTrip Trip;
 	Trip.Type = Press;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
@@ -233,7 +263,14 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 	DropDropTriggerArray.Sort();
 	for (auto&& DragDropTrigger : DropDropTriggerArray)
 	{
-		if (DragDropTrigger.Callback.IsBound())
+		bool PassedCondition = true;
+
+		if (DragDropTrigger.Condition.IsBound())
+		{
+			PassedCondition = DragDropTrigger.Condition.Execute(Widget);
+		}
+
+		if (PassedCondition && DragDropTrigger.Callback.IsBound())
 		{
 			UHeartDragDropOperation* DragDropOperation = DragDropTrigger.Callback.Execute(Widget);
 
@@ -263,6 +300,8 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 
 bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDragOver)
+
 	if (auto&& HeartDDO = Cast<UHeartDragDropOperation>(InOperation))
 	{
 		return HeartDDO->OnHoverWidget(Widget);
@@ -274,6 +313,8 @@ bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FGeo
 bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 												 UDragDropOperation* InOperation)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
+
 	if (auto&& HeartDDO = Cast<UHeartDragDropOperation>(InOperation))
 	{
 		return HeartDDO->CanDropOnWidget(Widget);
@@ -300,8 +341,10 @@ void UHeartWidgetInputLinker::HandleNativeOnDragCancelled(UWidget* Widget, const
 	// Nothing here yet
 }
 
-FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, FHeartInputActivation Activation)
+FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, const FHeartManualEvent& Activation)
 {
+	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
+
 	FHeartWidgetInputTrip Trip;
 	Trip.Type = Manual;
 	Trip.CustomKey = Key;
@@ -320,7 +363,7 @@ FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeom
 
 		if (PassedCondition && ConditionalInputCallback.Callback.IsBound())
 		{
-			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, Activation);
+			FReply Reply = ConditionalInputCallback.Callback.Execute(Widget, FHeartInputActivation(Activation));
 
 			if (ConditionalInputCallback.Layer == Event)
 			{
@@ -371,20 +414,54 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetInputLinker::QueryManualTrigger
 
 void UHeartWidgetInputLinker::BindInputCallback(const FHeartWidgetInputTrip& Trip, const FConditionalInputCallback& InputCallback)
 {
-	InputCallbackMappings.Add(Trip, InputCallback);
+	if (ensure(Trip.IsValid()))
+	{
+		InputCallbackMappings.Add(Trip, InputCallback);
+	}
 }
 
 void UHeartWidgetInputLinker::UnbindInputCallback(const FHeartWidgetInputTrip& Trip)
 {
 	InputCallbackMappings.Remove(Trip);
+
 }
 
 void UHeartWidgetInputLinker::BindToOnDragDetected(const FHeartWidgetInputTrip& Trip, const FConditionalDragDropTrigger& DragDropTrigger)
 {
-	DragDropTriggers.Add(Trip, DragDropTrigger);
+	if (ensure(Trip.IsValid()))
+	{
+		DragDropTriggers.Add(Trip, DragDropTrigger);
+	}
 }
 
 void UHeartWidgetInputLinker::UnbindToOnDragDetected(const FHeartWidgetInputTrip& Trip)
 {
 	DragDropTriggers.Remove(Trip);
+}
+
+void UHeartWidgetInputLinker::AddBindings(const TArray<FHeartWidgetInputBinding>& Bindings)
+{
+	for (auto&& Binding : Bindings)
+	{
+		if (!IsValid(Binding.InputHandler)) continue;
+
+		Binding.InputHandler->Bind(this, Binding.Triggers);
+	}
+}
+
+void UHeartWidgetInputLinker::RemoveBindings(const TArray<FHeartWidgetInputBinding>& Bindings)
+{
+	for (auto&& Binding : Bindings)
+	{
+		if (!IsValid(Binding.InputHandler)) continue;
+
+		Binding.InputHandler->Unbind(this, Binding.Triggers);
+	}
+}
+
+bool UHeartWidgetInputLinker::TriggerManualInput(UWidget* Widget, const FName Key, const FHeartManualEvent& Activation)
+{
+	if (!IsValid(Widget) || Key.IsNone()) return false;
+
+	return HandleManualInput(Widget, Key, Activation).IsEventHandled();
 }

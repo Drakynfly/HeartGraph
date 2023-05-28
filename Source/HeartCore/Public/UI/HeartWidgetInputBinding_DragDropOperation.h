@@ -17,6 +17,7 @@ class HEARTCORE_API UHeartWidgetInputBinding_DragDropOperation : public UHeartWi
 	GENERATED_BODY()
 
 protected:
+	virtual bool PassCondition(const UWidget* TestWidget) const override;
 	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
 
 protected:

@@ -9,6 +9,11 @@
 
 #include "Components/CanvasPanelSlot.h"
 
+bool UHeartCanvasNodeMoveDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
+{
+	return Widget && Widget->IsA<UHeartGraphCanvasNode>();
+}
+
 bool UHeartCanvasNodeMoveDragDropOperation::SetupDragDropOperation()
 {
 	if (UHeartGraphCanvasNode* CreatedByNode = Cast<UHeartGraphCanvasNode>(SummonedBy))

@@ -33,6 +33,7 @@ class HEARTCANVAS_API UHeartWidgetInputBinding_DragDropOperation_Action : public
 	GENERATED_BODY()
 
 protected:
+	virtual bool PassCondition(const UWidget* TestWidget) const override;
 	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))

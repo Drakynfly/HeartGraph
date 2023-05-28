@@ -6,6 +6,7 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "ModelView/Actions/HeartGraphAction.h"
+#include "UI/HeartInputActivation.h"
 #include "UObject/ObjectSaveContext.h"
 
 UHeartGraphSchema::UHeartGraphSchema()
@@ -51,8 +52,7 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 #if WITH_EDITOR
 	if (IsValid(EditorPreSaveAction))
 	{
-		FHeartInputActivation Activation;
-		UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, Activation);
+		UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
 	}
 #endif
 }

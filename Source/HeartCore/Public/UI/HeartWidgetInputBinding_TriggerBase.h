@@ -23,6 +23,6 @@ protected:
 	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const;
 
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Trigger")
 	bool HandleInput = true;
 };

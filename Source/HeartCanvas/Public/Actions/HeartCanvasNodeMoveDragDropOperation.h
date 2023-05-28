@@ -14,6 +14,8 @@ class HEARTCANVAS_API UHeartCanvasNodeMoveDragDropOperation : public UHeartCanva
 	GENERATED_BODY()
 
 public:
+	virtual bool CanRunOnWidget(const UWidget* Widget) const override;
+
 	virtual bool SetupDragDropOperation() override;
 
 	virtual void Dragged_Implementation(const FPointerEvent& PointerEvent) override;
