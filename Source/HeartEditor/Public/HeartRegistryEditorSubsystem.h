@@ -37,14 +37,8 @@ public:
 	UClass* GetAssignedEdGraphNodeClass(const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const;
 
 protected:
-	void BindToRuntimeSubsystem();
-	void SubscribeToAssetChanges();
-
 	void FetchAssetRegistryAssets();
 
-	void OnFilesLoaded();
-	void OnAssetAdded(const FAssetData& AssetData);
-	void OnAssetRemoved(const FAssetData& AssetData);
 	void OnHotReload(EReloadCompleteReason ReloadCompleteReason);
 	void OnBlueprintPreCompile(UBlueprint* Blueprint);
 	void OnBlueprintCompiled();

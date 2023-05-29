@@ -33,12 +33,17 @@ class HEART_API UHeartRegistryRuntimeSubsystem : public UEngineSubsystem
 public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	FHeartRegistryEventNative& GetPostRegistryAddedNative() { return PostRegistryAddedNative; }
 	FHeartRegistryEventNative& GetPreRegistryRemovedNative() { return PreRegistryRemovedNative; }
 	FHeartRegistryEventNative& GetOnAnyRegistryChangedNative() { return OnAnyRegistryChangedNative; }
 
 protected:
+	void OnFilesLoaded();
+	void OnAssetAdded(const FAssetData& AssetData);
+	void OnAssetRemoved(const FAssetData& AssetData);
+
 	void FetchAssetRegistryAssets();
 
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph> Class);

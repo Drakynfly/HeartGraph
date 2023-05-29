@@ -27,13 +27,14 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 {
 	Super::Initialize(Collection);
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartNodeRegistrySubsystem Initialized"))
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem Initialized"))
 
-	// We can't cache blueprints in the editor during Initialize because they might not be compiled yet.
-	// Instead, the HeartRegistryEditorSubsystem will load for us.
-#if !WITH_EDITOR
-	FetchAssetRegistryAssets();
-#endif
+	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+
+	AssetRegistry.Get().WaitForCompletion();
+	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
+	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
+	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
 
 	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
 	{
@@ -41,8 +42,64 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 	}
 }
 
+void UHeartRegistryRuntimeSubsystem::Deinitialize()
+{
+	if (FModuleManager::Get().IsModuleLoaded(AssetRegistryConstants::ModuleName))
+	{
+		const FAssetRegistryModule& AssetRegistry = FModuleManager::GetModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+		AssetRegistry.Get().OnFilesLoaded().RemoveAll(this);
+		AssetRegistry.Get().OnAssetAdded().RemoveAll(this);
+		AssetRegistry.Get().OnAssetRemoved().RemoveAll(this);
+	}
+}
+
+void UHeartRegistryRuntimeSubsystem::OnFilesLoaded()
+{
+	FetchAssetRegistryAssets();
+}
+
+void UHeartRegistryRuntimeSubsystem::OnAssetAdded(const FAssetData& AssetData)
+{
+	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+
+	// We can't try to load assets while they are still loading in. Try again later.
+	if (AssetRegistryModule.Get().IsLoadingAssets())
+	{
+		return;
+	}
+
+	if (const UClass* AssetClass = AssetData.GetClass())
+	{
+		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
+		{
+			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
+			{
+				AutoAddRegistrar(NewRegistrar);
+			}
+		}
+	}
+}
+
+void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
+{
+	const UClass* Class = AssetData.GetClass();
+
+	if (Class && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
+	{
+		if (auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
+		{
+			if (IsValid(RemovedRegistrar))
+			{
+				AutoRemoveRegistrar(RemovedRegistrar);
+			}
+		}
+	}
+}
+
 void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 {
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FetchAssetRegistryAssets)
+
 	// @todo this is a hack to prevent this function from being recursively triggered. I'd like a cleaner solution, but this'll do...
 	static bool IsFetchingRegistryAssets = false;
 	if (IsFetchingRegistryAssets) return;
@@ -57,6 +114,9 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 
 	TArray<FAssetData> FoundRegistrarAssets;
 	AssetRegistryModule.Get().GetAssets(RegistrarFilter, FoundRegistrarAssets);
+
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets found '%i' registrars"), FoundRegistrarAssets.Num())
+
 	for (const FAssetData& RegistrarAsset : FoundRegistrarAssets)
 	{
 		UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets adding registrar '%s'"), *RegistrarAsset.GetFullName())

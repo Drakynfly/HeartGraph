@@ -14,8 +14,21 @@ void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collect
 {
 	Super::Initialize(Collection);
 
-	BindToRuntimeSubsystem();
-	SubscribeToAssetChanges();
+	if (auto&& RuntimeSS = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	{
+		RuntimeSS->GetPostRegistryAddedNative().AddUObject(this, &ThisClass::PostRegistryRemoved);
+		RuntimeSS->GetPreRegistryRemovedNative().AddUObject(this, &ThisClass::PreRegistryAdded);
+		RuntimeSS->GetOnAnyRegistryChangedNative().AddUObject(this, &ThisClass::OnAnyRegistryChanged);
+	}
+
+	FCoreUObjectDelegates::ReloadCompleteDelegate.AddUObject(this, &ThisClass::OnHotReload);
+
+	if (GEditor)
+	{
+		GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
+		GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
+	}
+
 	FetchAssetRegistryAssets();
 }
 
@@ -27,14 +40,6 @@ void UHeartRegistryEditorSubsystem::Deinitialize()
 		RuntimeSS->GetPostRegistryAddedNative().RemoveAll(this);
 		RuntimeSS->GetPreRegistryRemovedNative().RemoveAll(this);
 		RuntimeSS->GetOnAnyRegistryChangedNative().RemoveAll(this);
-	}
-
-	if (FModuleManager::Get().IsModuleLoaded(AssetRegistryConstants::ModuleName))
-	{
-		const FAssetRegistryModule& AssetRegistry = FModuleManager::GetModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-		AssetRegistry.Get().OnFilesLoaded().RemoveAll(this);
-		AssetRegistry.Get().OnAssetAdded().RemoveAll(this);
-		AssetRegistry.Get().OnAssetRemoved().RemoveAll(this);
 	}
 
 	FCoreUObjectDelegates::ReloadCompleteDelegate.RemoveAll(this);
@@ -72,76 +77,6 @@ UClass* UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 	return HeartEditorModule.GetEdGraphClass(HeartGraphNodeClass);
-}
-
-void UHeartRegistryEditorSubsystem::BindToRuntimeSubsystem()
-{
-	if (auto&& RuntimeSS = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
-	{
-		RuntimeSS->GetPostRegistryAddedNative().AddUObject(this, &ThisClass::PostRegistryRemoved);
-		RuntimeSS->GetPreRegistryRemovedNative().AddUObject(this, &ThisClass::PreRegistryAdded);
-		RuntimeSS->GetOnAnyRegistryChangedNative().AddUObject(this, &ThisClass::OnAnyRegistryChanged);
-	}
-}
-
-void UHeartRegistryEditorSubsystem::SubscribeToAssetChanges()
-{
-	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-
-	AssetRegistry.Get().WaitForCompletion();
-	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
-	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
-	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
-
-	FCoreUObjectDelegates::ReloadCompleteDelegate.AddUObject(this, &ThisClass::OnHotReload);
-
-	if (GEditor)
-	{
-		GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
-		GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
-	}
-}
-
-void UHeartRegistryEditorSubsystem::OnFilesLoaded()
-{
-	FetchAssetRegistryAssets();
-}
-
-void UHeartRegistryEditorSubsystem::OnAssetAdded(const FAssetData& AssetData)
-{
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-
-	// We can't try to load assets while they are still loading in. Try again later.
-	if (AssetRegistryModule.Get().IsLoadingAssets())
-	{
-		return;
-	}
-
-	if (const UClass* AssetClass = AssetData.GetClass())
-	{
-		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
-		{
-			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
-			{
-				GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->AutoAddRegistrar(NewRegistrar);
-			}
-		}
-	}
-}
-
-void UHeartRegistryEditorSubsystem::OnAssetRemoved(const FAssetData& AssetData)
-{
-	const UClass* Class = AssetData.GetClass();
-
-	if (Class && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
-	{
-		auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset());
-
-		if (IsValid(RemovedRegistrar))
-		{
-			GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->AutoRemoveRegistrar(RemovedRegistrar);
-		}
-	}
 }
 
 void UHeartRegistryEditorSubsystem::OnHotReload(EReloadCompleteReason ReloadCompleteReason)
@@ -187,7 +122,7 @@ void UHeartRegistryEditorSubsystem::OnAnyRegistryChanged(UHeartGraphNodeRegistry
 
 void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
 {
-	auto RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+	auto&& RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 
 	// Flush all registries so it won't disregard re-added registrars.
 	for (auto&& Registry : RuntimeSubsystem->Registries)
