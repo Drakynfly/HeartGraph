@@ -98,11 +98,11 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 
 void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 {
-	QUICK_SCOPE_CYCLE_COUNTER(STAT_FetchAssetRegistryAssets)
-
 	// @todo this is a hack to prevent this function from being recursively triggered. I'd like a cleaner solution, but this'll do...
 	static bool IsFetchingRegistryAssets = false;
 	if (IsFetchingRegistryAssets) return;
+
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FetchAssetRegistryAssets)
 
 	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
@@ -119,8 +119,6 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 
 	for (const FAssetData& RegistrarAsset : FoundRegistrarAssets)
 	{
-		UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets adding registrar '%s'"), *RegistrarAsset.GetFullName())
-
 		if (auto&& Registrar = Cast<UGraphNodeRegistrar>(RegistrarAsset.GetAsset()))
 		{
 			AutoAddRegistrar(Registrar);

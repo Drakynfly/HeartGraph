@@ -39,9 +39,11 @@ public:
 protected:
 	void FetchAssetRegistryAssets();
 
+	bool BlueprintImplementsHeartVisualizerInterface(const UBlueprint* Blueprint) const;
+
 	void OnHotReload(EReloadCompleteReason ReloadCompleteReason);
 	void OnBlueprintPreCompile(UBlueprint* Blueprint);
-	void OnBlueprintCompiled();
+	void OnBlueprintCompiled(UBlueprint* Blueprint);
 
 	void PreRegistryAdded(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
 	void PostRegistryRemoved(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
@@ -52,5 +54,5 @@ public:
 	FHeartRegistryEditorPaletteRefresh OnRefreshPalettes;
 
 private:
-	int32 WaitingForBlueprintToCompile;
+	TSet<TWeakObjectPtr<UBlueprint>> WaitingForCompile;
 };

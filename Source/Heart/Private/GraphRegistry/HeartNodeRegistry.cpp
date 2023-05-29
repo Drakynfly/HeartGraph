@@ -562,6 +562,8 @@ void UHeartGraphNodeRegistry::AddRegistrar(UGraphNodeRegistrar* Registrar)
 		return;
 	}
 
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartGraphNodeRegistry adding registrar '%s'"), *Registrar->GetName())
+
 	AddRegistrationList(Registrar->Registration, true);
 
 	ContainedRegistrars.Add(Registrar);
@@ -580,6 +582,8 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(UGraphNodeRegistrar* Registrar)
 		//UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Tried to remove Registrar that wasn't registered!"));
 		return;
 	}
+
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartGraphNodeRegistry removing registrar '%s'"), *Registrar->GetName())
 
 	RemoveRegistrationList(Registrar->Registration, true);
 

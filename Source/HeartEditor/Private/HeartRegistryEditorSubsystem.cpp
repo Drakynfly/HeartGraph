@@ -3,12 +3,11 @@
 #include "HeartRegistryEditorSubsystem.h"
 
 #include "HeartEditorModule.h"
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "General/HeartGeneralUtils.h"
-#include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
 #include "Nodes/HeartEdGraphNode.h"
+#include "View/HeartVisualizerInterfaces.h"
 
 void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -26,7 +25,6 @@ void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collect
 	if (GEditor)
 	{
 		GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
-		GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
 	}
 
 	FetchAssetRegistryAssets();
@@ -47,7 +45,6 @@ void UHeartRegistryEditorSubsystem::Deinitialize()
 	if (GEditor)
 	{
 		GEditor->OnBlueprintPreCompile().RemoveAll(this);
-		GEditor->OnBlueprintCompiled().RemoveAll(this);
 	}
 
 	Super::Deinitialize();
@@ -79,6 +76,40 @@ UClass* UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(
 	return HeartEditorModule.GetEdGraphClass(HeartGraphNodeClass);
 }
 
+void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
+{
+	auto&& RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	// Flush all registries so it won't disregard re-added registrars.
+	for (auto&& Registry : RuntimeSubsystem->Registries)
+	{
+		Registry.Value->DeregisterAll();
+	}
+
+	RuntimeSubsystem->FetchAssetRegistryAssets();
+
+	OnRefreshPalettes.Broadcast();
+}
+
+bool UHeartRegistryEditorSubsystem::BlueprintImplementsHeartVisualizerInterface(const UBlueprint* Blueprint) const
+{
+	static const TArray<TObjectPtr<UClass>> HeartVisualizerInterfaces{
+		UGraphNodeVisualizerInterface::StaticClass(),
+		UGraphPinVisualizerInterface::StaticClass(),
+		UGraphConnectionVisualizerInterface::StaticClass()
+	};
+
+	for (auto&& HeartVisualizerInterface : HeartVisualizerInterfaces)
+	{
+		if (Blueprint->GeneratedClass->ImplementsInterface(HeartVisualizerInterface))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void UHeartRegistryEditorSubsystem::OnHotReload(EReloadCompleteReason ReloadCompleteReason)
 {
 	FetchAssetRegistryAssets();
@@ -87,20 +118,27 @@ void UHeartRegistryEditorSubsystem::OnHotReload(EReloadCompleteReason ReloadComp
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void UHeartRegistryEditorSubsystem::OnBlueprintPreCompile(UBlueprint* Blueprint)
 {
-	if (Blueprint && Blueprint->GeneratedClass &&
-		Blueprint->GeneratedClass->IsChildOf(UHeartGraphNode::StaticClass()))
+	if (!ensure(Blueprint && Blueprint->GeneratedClass))
 	{
-		WaitingForBlueprintToCompile++;
+		return;
+	}
+
+	if (Blueprint->GeneratedClass->IsChildOf(UHeartGraphNode::StaticClass()) ||
+		BlueprintImplementsHeartVisualizerInterface(Blueprint))
+	{
+		Blueprint->OnCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
+		WaitingForCompile.Add(Blueprint);
 	}
 }
 
-void UHeartRegistryEditorSubsystem::OnBlueprintCompiled()
+void UHeartRegistryEditorSubsystem::OnBlueprintCompiled(UBlueprint* Blueprint)
 {
-	WaitingForBlueprintToCompile--;
+	Blueprint->OnCompiled().RemoveAll(this);
 
-	if (WaitingForBlueprintToCompile <= 0)
+	WaitingForCompile.Remove(Blueprint);
+
+	if (WaitingForCompile.IsEmpty())
 	{
-		WaitingForBlueprintToCompile = 0;
 		FetchAssetRegistryAssets();
 	}
 }
@@ -117,20 +155,5 @@ void UHeartRegistryEditorSubsystem::PostRegistryRemoved(UHeartGraphNodeRegistry*
 
 void UHeartRegistryEditorSubsystem::OnAnyRegistryChanged(UHeartGraphNodeRegistry* HeartGraphNodeRegistry)
 {
-	OnRefreshPalettes.Broadcast();
-}
-
-void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
-{
-	auto&& RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-
-	// Flush all registries so it won't disregard re-added registrars.
-	for (auto&& Registry : RuntimeSubsystem->Registries)
-	{
-		Registry.Value->DeregisterAll();
-	}
-
-	RuntimeSubsystem->FetchAssetRegistryAssets();
-
 	OnRefreshPalettes.Broadcast();
 }
