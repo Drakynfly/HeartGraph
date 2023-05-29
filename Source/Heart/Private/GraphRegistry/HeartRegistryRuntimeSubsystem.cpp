@@ -31,7 +31,6 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 
 	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
-	AssetRegistry.Get().WaitForCompletion();
 	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
 	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
 	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
@@ -55,6 +54,8 @@ void UHeartRegistryRuntimeSubsystem::Deinitialize()
 
 void UHeartRegistryRuntimeSubsystem::OnFilesLoaded()
 {
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnFilesLoaded"))
+
 	FetchAssetRegistryAssets();
 }
 
@@ -72,6 +73,8 @@ void UHeartRegistryRuntimeSubsystem::OnAssetAdded(const FAssetData& AssetData)
 	{
 		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 		{
+			UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetAdded detected GraphNodeRegistrar"))
+
 			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
 			{
 				AutoAddRegistrar(NewRegistrar);
@@ -86,6 +89,8 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 
 	if (Class && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 	{
+		UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetRemoved detected GraphNodeRegistrar"))
+
 		if (auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
 		{
 			if (IsValid(RemovedRegistrar))
