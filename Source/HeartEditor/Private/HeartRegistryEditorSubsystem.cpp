@@ -115,10 +115,9 @@ void UHeartRegistryEditorSubsystem::OnHotReload(EReloadCompleteReason ReloadComp
 	FetchAssetRegistryAssets();
 }
 
-// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void UHeartRegistryEditorSubsystem::OnBlueprintPreCompile(UBlueprint* Blueprint)
 {
-	if (!ensure(Blueprint && Blueprint->GeneratedClass))
+	if (!(Blueprint && Blueprint->GeneratedClass))
 	{
 		return;
 	}
