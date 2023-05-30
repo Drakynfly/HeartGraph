@@ -16,6 +16,7 @@
 #include "EdGraphUtilities.h"
 #include "EdGraph/EdGraphNode.h"
 #include "Editor.h"
+#include "EditorClassUtils.h"
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditor.h"
 #include "GraphEditorActions.h"
@@ -137,6 +138,30 @@ void FHeartGraphAssetEditor::UnregisterTabSpawners(const TSharedRef<class FTabMa
 	InTabManager->UnregisterTabSpawner(Heart::Editor::GraphTab);
 	InTabManager->UnregisterTabSpawner(Heart::Editor::DetailsTab);
 	InTabManager->UnregisterTabSpawner(Heart::Editor::PaletteTab);
+}
+
+void FHeartGraphAssetEditor::PostRegenerateMenusAndToolbars()
+{
+	// Provide a hyperlink to view our class
+	const TSharedRef<SHorizontalBox> MenuOverlayBox = SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(LOCTEXT("HeartGraphAssetEditor_AssetType", "Asset Type: "))
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		.Padding(0.0f, 0.0f, 8.0f, 0.0f)
+		[
+			FEditorClassUtils::GetSourceLink(HeartGraph->GetClass())
+		];
+
+	SetMenuOverlay(MenuOverlayBox);
 }
 
 TSharedRef<FTabManager::FLayout> FHeartGraphAssetEditor::GenerateLayout() const

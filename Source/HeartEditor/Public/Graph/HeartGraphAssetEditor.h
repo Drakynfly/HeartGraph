@@ -62,6 +62,9 @@ public:
 	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
 	// --
 
+	/** FAssetEditorToolkit interface */
+	virtual void PostRegenerateMenusAndToolbars() override;
+
 private:
 	TSharedRef<FTabManager::FLayout> GenerateLayout() const;
 
