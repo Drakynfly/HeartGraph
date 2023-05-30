@@ -35,6 +35,8 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 
+	void LoadFallbackRegistrar();
+
 	FHeartRegistryEventNative& GetPostRegistryAddedNative() { return PostRegistryAddedNative; }
 	FHeartRegistryEventNative& GetPreRegistryRemovedNative() { return PreRegistryRemovedNative; }
 	FHeartRegistryEventNative& GetOnAnyRegistryChangedNative() { return OnAnyRegistryChangedNative; }

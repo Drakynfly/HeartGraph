@@ -35,10 +35,7 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
 	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
 
-	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
-	{
-		FallbackRegistrar = Cast<UGraphNodeRegistrar>(Settings->FallbackVisualizerRegistrar.TryLoad());
-	}
+	LoadFallbackRegistrar();
 }
 
 void UHeartRegistryRuntimeSubsystem::Deinitialize()
@@ -49,6 +46,14 @@ void UHeartRegistryRuntimeSubsystem::Deinitialize()
 		AssetRegistry.Get().OnFilesLoaded().RemoveAll(this);
 		AssetRegistry.Get().OnAssetAdded().RemoveAll(this);
 		AssetRegistry.Get().OnAssetRemoved().RemoveAll(this);
+	}
+}
+
+void UHeartRegistryRuntimeSubsystem::LoadFallbackRegistrar()
+{
+	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
+	{
+		FallbackRegistrar = Cast<UGraphNodeRegistrar>(Settings->FallbackVisualizerRegistrar.TryLoad());
 	}
 }
 

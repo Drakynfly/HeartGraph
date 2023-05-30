@@ -14,6 +14,10 @@ class HEART_API UHeartGraphSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+
 	//~ Begin UDeveloperSettings
 	virtual FName GetCategoryName() const override { return FName("Plugins"); }
 	//~ End UDeveloperSettings
