@@ -1,34 +1,39 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartEditorModule.h"
+#include "HeartEditorShared.h"
 #include "HeartEditorStyle.h"
 
-#include "Modules/ModuleManager.h"
+#include "Engine/AssetManager.h"
+#include "Engine/AssetManagerSettings.h"
 #include "GameplayTagsEditorModule.h"
+#include "Interfaces/IPluginManager.h"
+#include "Logging/MessageLog.h"
+#include "Modules/ModuleManager.h"
 
-//#include "Asset/HeartAssetIndexer.h"
+//#include "Graph/HeartGraphIndexer.h"
 
 #include "Model/HeartGraphNode.h"
-
-#include "UI/HeartWidgetInputBindingAsset.h"
+#include "ModelView/HeartGraphSchema.h"
 
 #include "GraphRegistry/HeartRegistrationClasses.h"
-
-#include "Customizations/ItemsArrayCustomization.h"
+#include "GraphRegistry/GraphNodeRegistrar.h"
 
 #include "Graph/Widgets/Nodes/SHeartGraphNodeBase.h"
 #include "Graph/Widgets/Nodes/SHeartGraphNode_Horizontal.h"
+#include "Graph/Widgets/Nodes/SHeartGraphNode_Vertical.h"
 
 #include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
 
+#include "Customizations/ItemsArrayCustomization.h"
 #include "Nodes/HeartGraphNodeCustomization.h"
 #include "Graph/HeartGraphSchemaCustomization.h"
+
+#include "UI/HeartWidgetInputBindingAsset.h"
 
 // @todo temp includes
 #include "AssetToolsModule.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
-#include "Graph/Widgets/Nodes/SHeartGraphNode_Vertical.h"
-#include "ModelView/HeartGraphSchema.h"
 
 
 static const FName PropertyEditorModuleName("PropertyEditor");
@@ -95,6 +100,10 @@ void FHeartEditorModule::StartupModule()
 		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Vertical>));
 
 	ModulesChangedHandle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FHeartEditorModule::ModulesChangesCallback);
+
+	// Register to get a warning on startup if settings aren't configured correctly
+	UAssetManager::CallOrRegister_OnAssetManagerCreated(
+		FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FHeartEditorModule::OnAssetManagerCreated));
 }
 
 void FHeartEditorModule::ShutdownModule()
@@ -244,6 +253,59 @@ void FHeartEditorModule::RegisterAssetIndexers() const
 {
 	// @todo
 	//IAssetSearchModule::Get().RegisterAssetIndexer(UHeartGraph::StaticClass(), MakeUnique<FHeartAssetIndexer>());
+}
+
+void FHeartEditorModule::OnAssetManagerCreated()
+{
+	// Make sure the project has a asset manager configuration for Registrars or we won't be able to load them at runtime
+	const FPrimaryAssetId DummyGraphNodeRegistrarAssetId(UGraphNodeRegistrar::StaticClass()->GetFName(), NAME_None);
+	const FPrimaryAssetRules GameDataRules = UAssetManager::Get().GetPrimaryAssetRules(DummyGraphNodeRegistrarAssetId);
+	if (GameDataRules.IsDefault())
+	{
+		FMessageLog("LoadErrors").Error()
+			->AddToken(FTextToken::Create(FText::Format(
+				LOCTEXT("MissingRuleForGraphNodeRegistrar", "Asset Manager does not have a rule for assets of type {0}. They will not be discoverable at runtime!"),
+				FText::FromName(UGraphNodeRegistrar::StaticClass()->GetFName()))))
+			->AddToken(FActionToken::Create(
+				LOCTEXT("AddRuleForGraphNodeRegistrar", "Add entry to PrimaryAssetTypesToScan?"), FText(),
+				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::AddRegistrarPrimaryAssetRule), true));
+	}
+}
+
+void FHeartEditorModule::AddRegistrarPrimaryAssetRule()
+{
+	UAssetManagerSettings* Settings = GetMutableDefault<UAssetManagerSettings>();
+
+	const FString& ConfigFileName = Settings->GetDefaultConfigFilename();
+
+	// Check out the ini or make it writable
+	if (Heart::EditorShared::CheckOutFile(ConfigFileName, true))
+	{
+		// Add the rule to project settings
+		FPrimaryAssetTypeInfo NewTypeInfo(
+			UGraphNodeRegistrar::StaticClass()->GetFName(),
+			UGraphNodeRegistrar::StaticClass(),
+			false,
+			false);
+		NewTypeInfo.Rules.CookRule = EPrimaryAssetCookRule::AlwaysCook;
+
+		NewTypeInfo.GetDirectories().Add(FDirectoryPath{"/Game"});
+
+		// If this project has the DemoContent plugin installed, automatically include that root too.
+		if (IPluginManager::Get().FindPlugin("HeartDemoContent"))
+		{
+			NewTypeInfo.GetDirectories().Add(FDirectoryPath{"/HeartDemoContent"});
+		}
+
+		Settings->Modify(true);
+
+		Settings->PrimaryAssetTypesToScan.Add(NewTypeInfo);
+
+ 		Settings->PostEditChange();
+		Settings->TryUpdateDefaultConfigFile();
+
+		UAssetManager::Get().ReinitializeFromConfig();
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

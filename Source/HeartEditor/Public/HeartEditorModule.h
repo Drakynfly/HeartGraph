@@ -2,11 +2,11 @@
 
 #pragma once
 
-// @todo this include is temp
-#include "AssetTypeCategories.h"
-
 #include "Modules/ModuleInterface.h"
 #include "Toolkits/IToolkit.h"
+
+// @todo this include is temp
+#include "AssetTypeCategories.h"
 
 class UHeartGraphNode;
 class UHeartEdGraphNode;
@@ -37,6 +37,9 @@ private:
 
     void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
     void RegisterAssetIndexers() const;
+
+    void OnAssetManagerCreated();
+    void AddRegistrarPrimaryAssetRule();
 
     /** Property Customizations; Cached so they can be unregistered */
     TSet<FName> PropertyCustomizations;

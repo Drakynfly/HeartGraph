@@ -1,8 +1,10 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "HeartCoreEditor.h"
+#include "HeartCoreEditorModule.h"
 
-#define LOCTEXT_NAMESPACE "FHeartCoreEditorModule"
+DEFINE_LOG_CATEGORY(LogHeartCoreEditor);
+
+#define LOCTEXT_NAMESPACE "HeartCoreEditorModule"
 
 void FHeartCoreEditorModule::StartupModule()
 {

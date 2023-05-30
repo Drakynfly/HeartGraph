@@ -26,7 +26,8 @@ public class HeartCoreEditor : ModuleRules
                 "PropertyEditor",
                 "Slate",
                 "SlateCore",
-                "UnrealEd"
+                "SharedSettingsWidgets",
+                "UnrealEd",
             }
         );
     }
