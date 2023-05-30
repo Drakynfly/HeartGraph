@@ -4,7 +4,7 @@ Supports versions 5.1 and 5.2.
 
 ## Modules
 ### Heart
-The core of HeartGraph. Defines the core types used to build a graph: `UHeartGraph`, `UHeartGraphNode`, and `UHeartGraphPin`, as well as a registry subsystem that ties them together.
+The core of HeartGraph. Defines the core types used to build a graph: `UHeartGraph`, `UHeartGraphNode`, and `UHeartGraphSchema`, as well as a registry subsystem that ties them together.
 
 ### Blood
 What flows through a heart? Blood, of course. Blood is the data shuttler for heart graphs, a variant data type system, designed for interoperability with FProperties, as well as quick, efficient access from both c++ and BP.
