@@ -40,6 +40,7 @@ private:
 
     void OnAssetManagerCreated();
     void AddRegistrarPrimaryAssetRule();
+    void DisableGraphNodeRegistrarError();
 
     /** Property Customizations; Cached so they can be unregistered */
     TSet<FName> PropertyCustomizations;

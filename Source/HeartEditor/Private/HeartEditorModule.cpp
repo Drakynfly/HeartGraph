@@ -13,6 +13,8 @@
 
 //#include "Graph/HeartGraphIndexer.h"
 
+#include "HeartGraphSettings.h"
+
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
 
@@ -260,7 +262,7 @@ void FHeartEditorModule::OnAssetManagerCreated()
 	// Make sure the project has a asset manager configuration for Registrars or we won't be able to load them at runtime
 	const FPrimaryAssetId DummyGraphNodeRegistrarAssetId(UGraphNodeRegistrar::StaticClass()->GetFName(), NAME_None);
 	const FPrimaryAssetRules GameDataRules = UAssetManager::Get().GetPrimaryAssetRules(DummyGraphNodeRegistrarAssetId);
-	if (GameDataRules.IsDefault())
+	if (GameDataRules.IsDefault() && !GetDefault<UHeartGraphSettings>()->DisableAssetRegistryError)
 	{
 		FMessageLog("LoadErrors").Error()
 			->AddToken(FTextToken::Create(FText::Format(
@@ -268,7 +270,10 @@ void FHeartEditorModule::OnAssetManagerCreated()
 				FText::FromName(UGraphNodeRegistrar::StaticClass()->GetFName()))))
 			->AddToken(FActionToken::Create(
 				LOCTEXT("AddRuleForGraphNodeRegistrar", "Add entry to PrimaryAssetTypesToScan?"), FText(),
-				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::AddRegistrarPrimaryAssetRule), true));
+				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::AddRegistrarPrimaryAssetRule), true))
+			->AddToken(FActionToken::Create(
+				LOCTEXT("DisableGraphNodeRegistrarError", "Disable this error, "), FText(),
+				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::DisableGraphNodeRegistrarError), true));
 	}
 }
 
@@ -305,6 +310,24 @@ void FHeartEditorModule::AddRegistrarPrimaryAssetRule()
 		Settings->TryUpdateDefaultConfigFile();
 
 		UAssetManager::Get().ReinitializeFromConfig();
+	}
+}
+
+void FHeartEditorModule::DisableGraphNodeRegistrarError()
+{
+	UHeartGraphSettings* Settings = GetMutableDefault<UHeartGraphSettings>();
+
+	const FString& ConfigFileName = Settings->GetDefaultConfigFilename();
+
+	// Check out the ini or make it writable
+	if (Heart::EditorShared::CheckOutFile(ConfigFileName, true))
+	{
+		Settings->Modify(true);
+
+		Settings->DisableAssetRegistryError = true;
+
+		Settings->PostEditChange();
+		Settings->TryUpdateDefaultConfigFile();
 	}
 }
 
