@@ -36,6 +36,8 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
 
 	LoadFallbackRegistrar();
+
+	FetchAssetRegistryAssets();
 }
 
 void UHeartRegistryRuntimeSubsystem::Deinitialize()
