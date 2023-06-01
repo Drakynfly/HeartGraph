@@ -4,7 +4,7 @@ Supports versions 5.1 and 5.2.
 
 ## Modules
 ### Heart
-The core of HeartGraph. Defines the core types used to build a graph: `UHeartGraph`, `UHeartGraphNode`, and `UHeartGraphPin`, as well as a registry subsystem that ties them together.
+The core of HeartGraph. Defines the core types used to build a graph: `UHeartGraph`, `UHeartGraphNode`, and `UHeartGraphSchema`, as well as a registry subsystem that ties them together.
 
 ### Blood
 What flows through a heart? Blood, of course. Blood is the data shuttler for heart graphs, a variant data type system, designed for interoperability with FProperties, as well as quick, efficient access from both c++ and BP.
@@ -50,7 +50,7 @@ HeartCanvas specifically *doesn't* use CommonUI, as it's methods for defining UI
 ## Links
 Docs:         https://heart-1.gitbook.io/heart-plugin/
 
-Demo Project: https://github.com/Drakynfly/HeartGraphDemo
+Demo Project: https://github.com/Drakynfly/HeartDemoProject / https://github.com/Drakynfly/HeartDemoContent
 
 Discord:      [![Discord](https://img.shields.io/discord/996247217314738286.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/AAk9yNwKk8) (Drakynfly's Plugins)
 
