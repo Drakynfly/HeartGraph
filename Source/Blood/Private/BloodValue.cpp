@@ -2,121 +2,10 @@
 
 #include "BloodValue.h"
 
+#include "BloodPrecomputedMaps.h"
+
 namespace Blood::Impl
 {
-	using FFPropertyReadFunc = TFunctionRef<FBloodValue(const FProperty* ValueProp, const uint8* ValuePtr)>;
-
-	template <typename T>
-	struct TReaderLambdaGen
-	{
-		static FFPropertyReadFunc Make()
-		{
-			return [](const FProperty* ValueProp, const uint8* ValuePtr)
-				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(TDataConverter<typename T::TCppType>::Type(), ValuePtr);
-					return OutValue;
-				};
-		}
-	};
-
-	template<>
-	struct TReaderLambdaGen<FClassProperty>
-	{
-		static FFPropertyReadFunc Make()
-		{
-			return [](const FProperty* ValueProp, const uint8* ValuePtr)
-				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(FBloodClass::StaticStruct(), ValuePtr);
-					return OutValue;
-				};
-		}
-	};
-
-	template<>
-	struct TReaderLambdaGen<FSoftClassProperty>
-	{
-		static FFPropertyReadFunc Make()
-		{
-			return [](const FProperty* ValueProp, const uint8* ValuePtr)
-				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(FBloodSoftClass::StaticStruct(), ValuePtr);
-					return OutValue;
-				};
-		}
-	};
-
-	template<>
-	struct TReaderLambdaGen<FObjectProperty>
-	{
-		static FFPropertyReadFunc Make()
-		{
-			return [](const FProperty* ValueProp, const uint8* ValuePtr)
-				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(FBloodObject::StaticStruct(), ValuePtr);
-					return OutValue;
-				};
-		}
-	};
-
-	template<>
-	struct TReaderLambdaGen<FSoftObjectProperty>
-	{
-		static FFPropertyReadFunc Make()
-		{
-			return [](const FProperty* ValueProp, const uint8* ValuePtr)
-				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(FBloodSoftObject::StaticStruct(), ValuePtr);
-					return OutValue;
-				};
-		}
-	};
-
-	template<>
-	struct TReaderLambdaGen<FStructProperty>
-	{
-		static FFPropertyReadFunc Make()
-		{
-			return [](const FProperty* ValueProp, const uint8* ValuePtr)
-				{
-					FBloodValue OutValue;
-					if (const FStructProperty* StructProp = CastField<FStructProperty>(ValueProp))
-					{
-						OutValue.Data.InitializeAs(StructProp->Struct, ValuePtr);
-					}
-					return OutValue;
-				};
-		}
-	};
-
-	struct FStaticFieldMaps
-	{
-#define DEF_READER_LAMBDA(TypeName) { F##TypeName##Property::StaticClass(), TReaderLambdaGen<F##TypeName##Property>::Make() },
-		TMap<const FFieldClass*, FFPropertyReadFunc> ReaderMap = {
-			DEF_READER_LAMBDA(Bool)
-			DEF_READER_LAMBDA(Byte)
-			DEF_READER_LAMBDA(Int)
-			DEF_READER_LAMBDA(Int64)
-			DEF_READER_LAMBDA(Float)
-			DEF_READER_LAMBDA(Double)
-			DEF_READER_LAMBDA(Name)
-			DEF_READER_LAMBDA(Str)
-			DEF_READER_LAMBDA(Text)
-			DEF_READER_LAMBDA(Class)
-			DEF_READER_LAMBDA(SoftClass)
-			DEF_READER_LAMBDA(Object)
-			DEF_READER_LAMBDA(SoftObject)
-			DEF_READER_LAMBDA(Struct)
-		};
-#undef DEF_READER_LAMBDA
-	};
-
-	static FStaticFieldMaps StaticFieldMaps;
-
 	TObjectPtr<UField> FPropertyHelpers::GetFPropertyFieldTypeImpl(const FProperty* Prop)
 	{
 		#define TRY_BIND_VALUE(type, actual)\
@@ -234,7 +123,7 @@ namespace Blood::Impl
 		check(ValuePtr);
 
 		const FFieldClass* FieldClass = ValueProp->GetClass();
-		if (const FFPropertyReadFunc* StaticLambda = StaticFieldMaps.ReaderMap.Find(FieldClass))
+		if (const FFPropertyReadFunc* StaticLambda = FPrecomputedMaps::Get().ReaderMap.Find(FieldClass))
 		{
 			return (*StaticLambda)(ValueProp, ValuePtr);
 		}
