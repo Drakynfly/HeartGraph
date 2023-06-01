@@ -121,7 +121,7 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 	IsFetchingRegistryAssets = true;
 
 	FARFilter RegistrarFilter;
-	RegistrarFilter.ClassPaths.Add(UGraphNodeRegistrar::StaticClass()->GetClassPathName());
+	RegistrarFilter.ClassNames.Add(UGraphNodeRegistrar::StaticClass()->GetFName());
 	RegistrarFilter.bRecursiveClasses = true;
 
 	TArray<FAssetData> FoundRegistrarAssets;

@@ -30,6 +30,7 @@ public:
 	/** IHeartWidgetInputLinkerRedirector */
 
 	/** IHeartGraphNodeInterface */
+	UFUNCTION()
 	virtual UHeartGraphNode* GetHeartGraphNode() const override;
 	/** IHeartGraphNodeInterface */
 

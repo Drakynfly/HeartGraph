@@ -231,6 +231,16 @@ void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid Node, const FVector
 	}
 }
 
+FVector UHeartGraphCanvas::GetNodeLocation3D(FHeartNodeGuid Node) const
+{
+	return FVector(IHeartNodeLocationAccessor::GetNodeLocation(Node), 0.f);
+}
+
+void UHeartGraphCanvas::SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location)
+{
+	IHeartNodeLocationAccessor::SetNodeLocation(Node, FVector2D(Location));
+}
+
 void UHeartGraphCanvas::Reset()
 {
 	for (auto&& DisplayedNode : DisplayedNodes)

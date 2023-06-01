@@ -43,7 +43,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 	P_GET_PROPERTY(FNameProperty, PropertyName);
 
 	Stack.MostRecentPropertyAddress = nullptr;
-	Stack.MostRecentPropertyContainer = nullptr;
+	Stack.MostRecentProperty = nullptr;
 	Stack.StepCompiledIn<FProperty>(nullptr);
 
 	const FProperty* ValueProp = Stack.MostRecentProperty;
@@ -53,7 +53,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 	if (!IsValid(Object))
 	{
 		FBlueprintExceptionInfo ExceptionInfo(
-			EBlueprintExceptionType::AbortExecution,
+			EBlueprintExceptionType::NonFatalError,
 			LOCTEXT("execReadProperty_MakeInvalidObjectWarning", "Failed to resolve the Object for Read Property")
 		);
 
@@ -64,7 +64,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 	if (!ValueProp)
 	{
 		FBlueprintExceptionInfo ExceptionInfo(
-			EBlueprintExceptionType::AbortExecution,
+			EBlueprintExceptionType::NonFatalError,
 			LOCTEXT("execReadProperty_MakeInvalidValueWarning", "Failed to resolve the output Value for Read Property")
 		);
 
@@ -84,7 +84,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 DEFINE_FUNCTION(UBloodBlueprintLibrary::execPropertyToBlood)
 {
 	Stack.MostRecentPropertyAddress = nullptr;
-	Stack.MostRecentPropertyContainer = nullptr;
+	Stack.MostRecentProperty = nullptr;
 	Stack.StepCompiledIn<FProperty>(nullptr);
 
 	const FProperty* ValueProp = Stack.MostRecentProperty;
@@ -95,7 +95,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execPropertyToBlood)
 	if (!ValueProp || !ValuePtr)
 	{
 		FBlueprintExceptionInfo ExceptionInfo(
-			EBlueprintExceptionType::AbortExecution,
+			EBlueprintExceptionType::NonFatalError,
 			LOCTEXT("execPropertyToBlood_MakeInvalidValueWarning", "Failed to resolve the Property for Property to Blood")
 		);
 
@@ -118,7 +118,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execBloodToProperty)
 	P_GET_STRUCT_REF(FBloodValue, Value)
 
 	Stack.MostRecentPropertyAddress = nullptr;
-	Stack.MostRecentPropertyContainer = nullptr;
+	Stack.MostRecentProperty = nullptr;
 	Stack.StepCompiledIn<FProperty>(nullptr);
 
 	const FProperty* ValueProp = Stack.MostRecentProperty;
@@ -129,7 +129,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execBloodToProperty)
 	if (!ValueProp || !ValuePtr)
 	{
 		FBlueprintExceptionInfo ExceptionInfo(
-			EBlueprintExceptionType::AbortExecution,
+			EBlueprintExceptionType::NonFatalError,
 			LOCTEXT("execBloodToProperty_MakeInvalidValueWarning", "Failed to resolve the Property for Blood to Property")
 		);
 
@@ -148,7 +148,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 	P_GET_STRUCT_REF(FBloodValue, Value)
 
 	Stack.MostRecentPropertyAddress = nullptr;
-	Stack.MostRecentPropertyContainer = nullptr;
+	Stack.MostRecentProperty = nullptr;
 	Stack.StepCompiledIn<FProperty>(nullptr);
 
 	const FProperty* ValueProp = Stack.MostRecentProperty;
@@ -159,7 +159,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 	if (!ValueProp || !ValuePtr)
 	{
 		FBlueprintExceptionInfo ExceptionInfo(
-			EBlueprintExceptionType::AbortExecution,
+			EBlueprintExceptionType::NonFatalError,
 			LOCTEXT("execAssignPropertyToBlood_MakeInvalidValueWarning", "Failed to resolve the Property for Assign Property to Blood")
 		);
 
@@ -182,7 +182,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignBloodToProperty)
 {
 	Stack.MostRecentPropertyAddress = nullptr;
-	Stack.MostRecentPropertyContainer = nullptr;
+	Stack.MostRecentProperty = nullptr;
 	Stack.StepCompiledIn<FProperty>(nullptr);
 
 	const FProperty* ValueProp = Stack.MostRecentProperty;
@@ -195,7 +195,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignBloodToProperty)
 	if (!ValueProp || !ValuePtr)
 	{
 		FBlueprintExceptionInfo ExceptionInfo(
-			EBlueprintExceptionType::AbortExecution,
+			EBlueprintExceptionType::NonFatalError,
 			LOCTEXT("execAssignBloodToProperty_MakeInvalidValueWarning", "Failed to resolve the Property for Assign Blood to Property")
 		);
 

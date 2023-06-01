@@ -44,7 +44,7 @@ public:
 		[
 			SNew(SBorder)
 				.Visibility(EVisibility::Visible)
-				.BorderImage(FAppStyle::GetBrush("Menu.Background"))
+				.BorderImage(FAppStyle::Get().GetBrush("Menu.Background"))
 				[
 					SNew(SBox)
 						.Visibility(EVisibility::Visible)
@@ -55,7 +55,7 @@ public:
 								.FillHeight(1)
 								[
 									SNew(SBorder)
-										.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+										.BorderImage(FAppStyle::Get().GetBrush("ToolPanel.GroupBorder"))
 										.Content()
 										[
 											SAssignNew(ParentClassContainer, SVerticalBox)
@@ -68,14 +68,14 @@ public:
 								.Padding(8)
 								[
 									SNew(SUniformGridPanel)
-										.SlotPadding(FAppStyle::GetMargin("StandardDialog.SlotPadding"))
-										.MinDesiredSlotWidth(FAppStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
-										.MinDesiredSlotHeight(FAppStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
+										.SlotPadding(FAppStyle::Get().GetMargin("StandardDialog.SlotPadding"))
+										.MinDesiredSlotWidth(FAppStyle::Get().GetFloat("StandardDialog.MinDesiredSlotWidth"))
+										.MinDesiredSlotHeight(FAppStyle::Get().GetFloat("StandardDialog.MinDesiredSlotHeight"))
 										+ SUniformGridPanel::Slot(0, 0)
 											[
 												SNew(SButton)
 													.HAlign(HAlign_Center)
-													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
+													.ContentPadding(FAppStyle::Get().GetMargin("StandardDialog.ContentPadding"))
 													.OnClicked(this, &SHeartGraphBlueprintCreateDialog::OkClicked)
 													.Text(LOCTEXT("CreateHeartGraphBlueprintOk", "OK"))
 											]
@@ -83,7 +83,7 @@ public:
 											[
 												SNew(SButton)
 													.HAlign(HAlign_Center)
-													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
+													.ContentPadding(FAppStyle::Get().GetMargin("StandardDialog.ContentPadding"))
 													.OnClicked(this, &SHeartGraphBlueprintCreateDialog::CancelClicked)
 													.Text(LOCTEXT("CreateHeartGraphBlueprintCancel", "Cancel"))
 											]

@@ -6,7 +6,7 @@
 UHeartGraphCanvasPanel::UHeartGraphCanvasPanel()
 {
 	// Canvas graph panels should always intercept input
-	SetVisibilityInternal(ESlateVisibility::Visible);
+	Visibility = ESlateVisibility::Visible;
 
 	// Canvas nodes should be clipped to the canvas
 	SetClipping(EWidgetClipping::ClipToBoundsAlways);

@@ -6,7 +6,7 @@ namespace Nodesoup
 {
     void Circle(TArray<FVector2D>& Positions)
     {
-        const double Angle = UE_TWO_PI / Positions.Num();
+        const double Angle = TWO_PI / Positions.Num();
         for (int32 i = 0; i < Positions.Num(); i++)
         {
             Positions[i].X = FMath::Cos(i * Angle);

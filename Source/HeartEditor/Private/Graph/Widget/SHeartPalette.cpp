@@ -47,7 +47,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 	}
 
 	// Find icons
-	const FSlateBrush* IconBrush = FAppStyle::GetBrush(TEXT("NoBrush"));
+	const FSlateBrush* IconBrush = FAppStyle::Get().GetBrush(TEXT("NoBrush"));
 	const FSlateColor IconColor = FSlateColor::UseForeground();
 	const FText IconToolTip = GraphAction->GetTooltipDescription();
 	constexpr bool bIsReadOnly = false;
@@ -120,7 +120,7 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 	[
 		SNew(SBorder)
 			.Padding(2.0f)
-			.BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+			.BorderImage(FAppStyle::Get().GetBrush("ToolPanel.GroupBorder"))
 			[
 				SNew(SVerticalBox)
 				+ SVerticalBox::Slot() // Filter UI

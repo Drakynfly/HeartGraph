@@ -20,7 +20,7 @@ void SHeartGraphNode_Horizontal::Construct(const FArguments& InArgs, UHeartEdGra
 TSharedRef<SWidget> SHeartGraphNode_Horizontal::CreateNodeContentArea()
 {
 	return SNew(SBorder)
-		.BorderImage(FAppStyle::GetBrush("NoBorder"))
+		.BorderImage(FAppStyle::Get().GetBrush("NoBorder"))
 		.HAlign(HAlign_Fill)
 		.VAlign(VAlign_Fill)
 		[

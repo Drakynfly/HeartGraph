@@ -3,10 +3,12 @@
 #pragma once
 
 #include "UObject/Object.h"
+
+#include "UI/HeartInputActivation.h"
+
 #include "HeartGraphActionBase.generated.h"
 
 struct FHeartManualEvent;
-struct FHeartInputActivation;
 
 /**
  *

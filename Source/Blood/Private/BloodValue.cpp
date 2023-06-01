@@ -96,7 +96,7 @@ namespace Blood::Impl
 		TRY_BIND_TYPE(Text)
 
 		TRY_BIND_TYPE_CLASS(SoftClass, FSoftObjectPtr(Value.GetValue<TSoftClassPtr<>>().ToSoftObjectPath()));
-		TRY_BIND_TYPE_CLASS(Class, Value.GetValue<FClassProperty::TCppType>());
+		TRY_BIND_TYPE_CLASS(Class, Value.GetValue<TObjectPtr<UObject>>());
 		TRY_BIND_TYPE_CLASS(SoftObject, FSoftObjectPtr(Value.GetValue<TSoftObjectPtr<>>().ToSoftObjectPath()));
 		TRY_BIND_TYPE_CLASS(Object, Value.GetValue<TObjectPtr<UObject>>());
 

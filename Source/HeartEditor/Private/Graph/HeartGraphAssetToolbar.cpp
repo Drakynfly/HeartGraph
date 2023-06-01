@@ -36,7 +36,7 @@ void SHeartGraphAssetBreadcrumb::Construct(const FArguments& InArgs, const TWeak
 		.OnCrumbClicked(this, &SHeartGraphAssetBreadcrumb::OnCrumbClicked)
 		.Visibility_Static(&FHeartGraphAssetEditor::GetDebuggerVisibility)
 		.ButtonStyle(FAppStyle::Get(), "FlatButton")
-		.DelimiterImage(FAppStyle::GetBrush("Sequencer.BreadcrumbIcon"))
+		.DelimiterImage(FAppStyle::Get().GetBrush("Sequencer.BreadcrumbIcon"))
 		.PersistentBreadcrumbs(true)
 		.TextStyle(FAppStyle::Get(), "Sequencer.BreadcrumbText");
 

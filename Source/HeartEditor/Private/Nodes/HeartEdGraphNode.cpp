@@ -191,7 +191,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 		if (!IsValid(LinkedNode))
 		{
 			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
-				*HeartGraphNode.GetName())
+				*HeartGraphNode->GetName())
 			continue;
 		}
 
@@ -199,7 +199,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 		if (!LinkedPin.IsValid())
 		{
 			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
-				*HeartGraphNode.GetName(), *LinkedNode->GetName())
+				*HeartGraphNode->GetName(), *LinkedNode->GetName())
 			continue;
 		}
 

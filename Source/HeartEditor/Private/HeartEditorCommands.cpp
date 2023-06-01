@@ -61,7 +61,7 @@ void FHeartSpawnNodeCommands::RegisterCommands()
 		FString ClassName;
 		if (FParse::Value(*NodeSpawns[i], TEXT("Class="), ClassName))
 		{
-		    UClass* FoundClass = FindFirstObject<UClass>(*ClassName, EFindFirstObjectOptions::ExactClass, ELogVerbosity::Warning, TEXT("looking for SpawnNodes"));
+		    UClass* FoundClass = LoadObject<UClass>(ANY_PACKAGE, *ClassName);
 			if (FoundClass && FoundClass->IsChildOf(UHeartGraphNode::StaticClass()))
 			{
 				NodeClass = FoundClass;

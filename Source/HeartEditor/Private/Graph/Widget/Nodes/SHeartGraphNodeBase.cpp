@@ -51,11 +51,6 @@ void SHeartGraphNodeBase::GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FG
 	}
 }
 
-const FSlateBrush* SHeartGraphNodeBase::GetShadowBrush(bool bSelected) const
-{
-	return SGraphNode::GetShadowBrush(bSelected);
-}
-
 void SHeartGraphNodeBase::GetOverlayBrushes(bool bSelected, const FVector2D WidgetSize, TArray<FOverlayBrushInfo>& Brushes) const
 {
 	// Node breakpoint
@@ -129,7 +124,7 @@ void SHeartGraphNodeBase::UpdateErrorInfo()
 		if (HeartGraphNode->GetClass()->HasAnyClassFlags(CLASS_Deprecated))
 		{
 			ErrorMsg = FString(TEXT(" DEPRECATED! "));
-			ErrorColor = FAppStyle::GetColor("ErrorReporting.WarningBackgroundColor");
+			ErrorColor = FAppStyle::Get().GetColor("ErrorReporting.WarningBackgroundColor");
 			return;
 		}
 	}
@@ -210,7 +205,7 @@ TSharedPtr<SWidget> SHeartGraphNodeBase::CreateAddInputButton()
 		. Padding( 0,0,7,0 )
 		[
 			SNew(SImage)
-			.Image(FAppStyle::GetBrush(TEXT("Icons.PlusCircle")))
+			.Image(FAppStyle::Get().GetBrush(TEXT("Icons.PlusCircle")))
 		]
 		+ SHorizontalBox::Slot()
 		.AutoWidth()
@@ -245,7 +240,7 @@ TSharedPtr<SWidget> SHeartGraphNodeBase::CreateAddOutputButton()
 		.Padding(7,0,0,0)
 		[
 			SNew(SImage)
-			.Image(FAppStyle::GetBrush(TEXT("Icons.PlusCircle")))
+			.Image(FAppStyle::Get().GetBrush(TEXT("Icons.PlusCircle")))
 		];
 	}
 

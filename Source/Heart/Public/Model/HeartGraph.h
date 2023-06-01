@@ -95,6 +95,7 @@ public:
 	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
 
 	//* IHeartGraphInterface */
+	UFUNCTION()
 	virtual UHeartGraph* GetHeartGraph() const override final;
 	//* IHeartGraphInterface */
 

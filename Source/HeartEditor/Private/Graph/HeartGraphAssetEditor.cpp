@@ -158,7 +158,7 @@ void FHeartGraphAssetEditor::PostRegenerateMenusAndToolbars()
 		.VAlign(VAlign_Center)
 		.Padding(0.0f, 0.0f, 8.0f, 0.0f)
 		[
-			FEditorClassUtils::GetSourceLink(HeartGraph->GetClass())
+			FEditorClassUtils::GetSourceLink(HeartGraph->GetClass(), HeartGraph)
 		];
 
 	SetMenuOverlay(MenuOverlayBox);

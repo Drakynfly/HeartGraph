@@ -103,10 +103,19 @@ class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartNodeLocat
 
 public:
 	/* IHeartNodeLocationAccessor */
+	UFUNCTION()
 	virtual UHeartGraph* GetHeartGraph() const override;
+
+	UFUNCTION()
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override final;
+
+	UFUNCTION()
 	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override final;
+
+	UFUNCTION()
 	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const override final;
+
+	UFUNCTION()
 	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location) override final;
 	/* IHeartNodeLocationAccessor */
 

@@ -46,7 +46,7 @@ struct HEART_API FHeartTreeNode
 	UPROPERTY(BlueprintReadOnly)
 	FHeartNodeGuid Node;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BaseStruct = "/Script/Heart.HeartTreeNode"))
+	UPROPERTY(meta = (BaseStruct = "/Script/Heart.HeartTreeNode"))
 	TArray<FInstancedStruct> Children;
 };
 

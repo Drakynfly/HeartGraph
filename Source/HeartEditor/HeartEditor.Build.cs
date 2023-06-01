@@ -31,6 +31,7 @@ public class HeartEditor : ModuleRules
                 "Core",
                 "CoreUObject",
                 "EditorFramework",  // For FToolkitManager
+                "EditorStyle",
                 "Engine",
                 "GraphEditor",      // For SGraphPalette
                 "InputCore",

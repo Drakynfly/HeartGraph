@@ -93,12 +93,22 @@ public:
 	/** IHeartWidgetInputLinkerRedirector */
 
 	/** IHeartGraphInterface */
+	UFUNCTION()
 	virtual UHeartGraph* GetHeartGraph() const override;
 	/** IHeartGraphInterface */
 
 	/** IHeartNodeLocationAccessor */
+	UFUNCTION()
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override;
+
+	UFUNCTION()
 	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override;
+
+	UFUNCTION()
+	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const override;
+
+	UFUNCTION()
+	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location) override;
 	/** IHeartNodeLocationAccessor */
 
 
