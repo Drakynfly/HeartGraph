@@ -34,7 +34,7 @@
 #include "AssetToolsModule.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
 
-
+static const FName AssetToolsModuleName("AssetTools");
 static const FName PropertyEditorModuleName("PropertyEditor");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
@@ -47,7 +47,7 @@ void FHeartEditorModule::StartupModule()
 {
 	FHeartEditorStyle::Initialize();
 
-	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>(AssetToolsModuleName).Get();
 
 	FText AssetCategoryText = LOCTEXT("HeartAssetCategory", "Heart");
 
@@ -95,9 +95,9 @@ void FHeartEditorModule::ShutdownModule()
 {
 	FHeartEditorStyle::Shutdown();
 
-	if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+	if (FModuleManager::Get().IsModuleLoaded(AssetToolsModuleName))
 	{
-		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>(AssetToolsModuleName).Get();
 		for (auto&& TypeActions : RegisteredAssetActions)
 		{
 			AssetTools.UnregisterAssetTypeActions(TypeActions);
@@ -260,12 +260,6 @@ void FHeartEditorModule::AddRegistrarPrimaryAssetRule()
 		NewTypeInfo.Rules.CookRule = EPrimaryAssetCookRule::AlwaysCook;
 
 		NewTypeInfo.GetDirectories().Add(FDirectoryPath{"/Game"});
-
-		// If this project has the DemoContent plugin installed, automatically include that root too.
-		if (IPluginManager::Get().FindPlugin("HeartDemoContent"))
-		{
-			NewTypeInfo.GetDirectories().Add(FDirectoryPath{"/HeartDemoContent"});
-		}
 
 		Settings->Modify(true);
 
