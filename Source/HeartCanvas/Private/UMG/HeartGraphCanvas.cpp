@@ -6,6 +6,8 @@
 #include "UMG/HeartGraphCanvasPin.h"
 #include "UMG/HeartGraphCanvasConnection.h"
 
+#include "HeartCanvasPrivate.h"
+
 #include "HeartCanvasConnectionVisualizer.h"
 #include "ModelView/HeartGraphSchema.h"
 #include "Model/HeartGraph.h"
@@ -17,6 +19,9 @@
 
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+
+DECLARE_CYCLE_STAT(TEXT("CanvasTick"),	STAT_CanvasTick, STATGROUP_HeartCanvas);
+DECLARE_CYCLE_STAT(TEXT("CanvasPaint"),	STAT_CanvasPaint, STATGROUP_HeartCanvas);
 
 DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
 
@@ -56,6 +61,8 @@ void UHeartGraphCanvas::NativeConstruct()
 
 void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
 {
+	SCOPE_CYCLE_COUNTER(STAT_CanvasTick)
+
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
 	if (TargetView.Z != View.Z)
@@ -80,6 +87,8 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
                                      const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, const int32 LayerId,
                                      const FWidgetStyle& InWidgetStyle, const bool bParentEnabled) const
 {
+	SCOPE_CYCLE_COUNTER(STAT_CanvasPaint)
+
 	auto SuperLayerID = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
 	                          bParentEnabled);
 

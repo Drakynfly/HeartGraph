@@ -5,6 +5,8 @@
 #include "HeartWidgetInputBinding_TriggerBase.h"
 #include "HeartWidgetInputHandlerScript.generated.h"
 
+struct FEventReply;
+
 /**
  *
  */

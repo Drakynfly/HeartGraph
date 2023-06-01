@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "HeartWidgetInputBindingAsset.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartWidgetUtilsLibrary.generated.h"

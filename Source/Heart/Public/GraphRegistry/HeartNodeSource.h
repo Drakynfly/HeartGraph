@@ -5,7 +5,7 @@
 #include "HeartNodeSource.generated.h"
 
 /**
- * A source object is a UObject from which a Heart node can be made. These are usually UClasses, but not always.
+ * A node source is a UObject from which a Heart node can be made. These are usually UClasses, but not always.
  */
 USTRUCT(BlueprintType, meta = (DisableSplitPin))
 struct FHeartNodeSource

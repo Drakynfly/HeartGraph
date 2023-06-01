@@ -207,6 +207,7 @@ public:
 		return RemoveExtension(ExtensionType::StaticClass());
 	}
 
+
 	/*----------------------------
 			NODE EDITING
 	----------------------------*/
