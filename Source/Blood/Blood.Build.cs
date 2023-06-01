@@ -8,6 +8,7 @@ public class Blood : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+        // IDK, something about this module is broken, and if Unity is enabled it blows up :?
         bUseUnity = false;
 
         PublicDependencyModuleNames.AddRange(

@@ -34,9 +34,6 @@ private:
     void RegisterPropertyCustomizations();
     void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance& DetailLayout);
 
-    void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
-    void RegisterAssetIndexers() const;
-
     void OnAssetManagerCreated();
     void AddRegistrarPrimaryAssetRule();
     void DisableGraphNodeRegistrarError();

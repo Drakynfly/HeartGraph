@@ -11,8 +11,6 @@
 #include "Logging/MessageLog.h"
 #include "Modules/ModuleManager.h"
 
-//#include "Graph/HeartGraphIndexer.h"
-
 #include "HeartGraphSettings.h"
 
 #include "Model/HeartGraphNode.h"
@@ -38,7 +36,6 @@
 
 
 static const FName PropertyEditorModuleName("PropertyEditor");
-static const FName AssetSearchModuleName("AssetSearch");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
 
@@ -83,19 +80,11 @@ void FHeartEditorModule::StartupModule()
 	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 	PropertyModule.NotifyCustomizationModuleChanged();
 
-	// register asset indexers
-	if (FModuleManager::Get().IsModuleLoaded(AssetSearchModuleName))
-	{
-		RegisterAssetIndexers();
-	}
-
 	RegisterSlateEditorWidget("Horizontal",
 		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Horizontal>));
 
 	RegisterSlateEditorWidget("Vertical",
 		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Vertical>));
-
-	ModulesChangedHandle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FHeartEditorModule::ModulesChangesCallback);
 
 	// Register to get a warning on startup if settings aren't configured correctly
 	UAssetManager::CallOrRegister_OnAssetManagerCreated(
@@ -106,20 +95,16 @@ void FHeartEditorModule::ShutdownModule()
 {
 	FHeartEditorStyle::Shutdown();
 
-	// @TODO BEGIN TEMP STUFF
+	if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
 	{
-		if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+		for (auto&& TypeActions : RegisteredAssetActions)
 		{
-			IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
-			for (auto&& TypeActions : RegisteredAssetActions)
-			{
-				AssetTools.UnregisterAssetTypeActions(TypeActions);
-			}
+			AssetTools.UnregisterAssetTypeActions(TypeActions);
 		}
-
-		RegisteredAssetActions.Empty();
 	}
-	// @TODO END TEMP STUFF
+
+	RegisteredAssetActions.Empty();
 
 	// Unregister customizations
 	if (FModuleManager::Get().IsModuleLoaded(PropertyEditorModuleName))
@@ -235,20 +220,6 @@ void FHeartEditorModule::RegisterCustomClassLayout(const TSubclassOf<UObject> Cl
 		FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 		PropertyModule.RegisterCustomClassLayout(Class->GetFName(), DetailLayout);
 	}
-}
-
-void FHeartEditorModule::ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange)
-{
-	if (ReasonForChange == EModuleChangeReason::ModuleLoaded && ModuleName == AssetSearchModuleName)
-	{
-		RegisterAssetIndexers();
-	}
-}
-
-void FHeartEditorModule::RegisterAssetIndexers() const
-{
-	// @todo
-	//IAssetSearchModule::Get().RegisterAssetIndexer(UHeartGraph::StaticClass(), MakeUnique<FHeartAssetIndexer>());
 }
 
 void FHeartEditorModule::OnAssetManagerCreated()
