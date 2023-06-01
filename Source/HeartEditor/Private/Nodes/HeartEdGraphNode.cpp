@@ -1081,4 +1081,4 @@ void UHeartEdGraphNode::ResetBreakpoints()
 	}
 }
 
-#undef LOCTEXT_NA
+#undef LOCTEXT_NAMESPACE
