@@ -359,7 +359,7 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	return Removed > 0;
 }
 
-bool UHeartGraph::ConnectPins(const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB)
+bool UHeartGraph::ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
 {
 	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
 	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
@@ -389,7 +389,7 @@ bool UHeartGraph::ConnectPins(const FHeartGraphPinReference PinA, const FHeartGr
 	return true;
 }
 
-bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB)
+bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
 {
 	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
 	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
@@ -430,7 +430,7 @@ bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference PinA, const FHear
 	return true;
 }
 
-void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference Pin)
+void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
 {
 	UHeartGraphNode* ANode = GetNode(Pin.NodeGuid);
 
@@ -439,7 +439,7 @@ void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference Pin)
 		return;
 	}
 
-	const FHeartGraphPinConnections& Connections = ANode->GetLinks(Pin.PinGuid);
+	const FHeartGraphPinConnections Connections = ANode->GetLinks(Pin.PinGuid);
 	if (Connections.Links.IsEmpty()) return;
 
 	for (const FHeartGraphPinReference& Link : Connections.Links)

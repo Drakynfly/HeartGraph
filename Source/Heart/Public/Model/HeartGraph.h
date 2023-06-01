@@ -272,11 +272,11 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	bool ConnectPins(FHeartGraphPinReference PinA, FHeartGraphPinReference PinB);
+	bool ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 
-	bool DisconnectPins(FHeartGraphPinReference PinA, FHeartGraphPinReference PinB);
+	bool DisconnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 
-	void DisconnectAllPins(FHeartGraphPinReference Pin);
+	void DisconnectAllPins(const FHeartGraphPinReference& Pin);
 
 
 #if WITH_EDITORONLY_DATA
