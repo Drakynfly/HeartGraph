@@ -7,7 +7,7 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Widgets/Notifications/SNotificationList.h"
 
-#define LOCTEXT_NAMESPACE "AssetDefinition_HeartGraph"
+#define LOCTEXT_NAMESPACE "Heart::EditorShared"
 
 namespace Heart::EditorShared
 {
