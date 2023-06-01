@@ -7,6 +7,7 @@
 class FHeartGraphAssetEditor;
 
 /** Widget displaying a single item  */
+// @todo, double-clicking on this should open up the node BP
 class HEARTEDITOR_API SHeartPaletteItem : public SGraphPaletteItem
 {
 public:
@@ -31,13 +32,13 @@ public:
 	virtual ~SHeartPalette() override;
 
 protected:
-	void Refresh();
-	void UpdateCategoryNames();
-
 	// SGraphPalette
 	virtual TSharedRef<SWidget> OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData) override;
 	virtual void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override;
-	// --
+	// SGraphPalette
+
+	void Refresh();
+	void UpdateCategoryNames();
 
 	FString GetFilterCategoryName() const;
 	void CategorySelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);

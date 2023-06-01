@@ -39,7 +39,7 @@ struct BLOOD_API FBloodProperty
 #if WITH_EDITOR
 	FEdGraphPinType ToEdGraphPin() const
 	{
-		return FEdGraphPinType(TEXT("struct"), NAME_None, FieldType, ContainerType, false, FEdGraphTerminalType());
+		return FEdGraphPinType("struct", NAME_None, FieldType, ContainerType, false, FEdGraphTerminalType());
 	}
 #endif
 
@@ -190,7 +190,10 @@ namespace Blood
 		FBloodProperty OutProp;
 
 		OutProp.PropName = Prop->GetFName();
+
+#if WITH_EDITOR
 		OutProp.ToolTip = Prop->GetToolTipText();
+#endif
 
 		if (auto&& ArrayProp = CastField<FArrayProperty>(Prop))
 		{

@@ -13,6 +13,7 @@ class HEARTCANVAS_API UHeartPinConnectionDragDropOperation : public UHeartCanvas
 	GENERATED_BODY()
 
 public:
+	virtual bool CanRunOnWidget(const UWidget* Widget) const override;
 	virtual bool SetupDragDropOperation() override;
 	virtual bool CanDropOnWidget(UWidget* Widget) override;
 

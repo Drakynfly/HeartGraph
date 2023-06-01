@@ -2,23 +2,26 @@
 
 #pragma once
 
-#include "HeartGraph.h"
-#include "HeartGraphPin.h"
-#include "HeartGraphPinType.h"
 #include "UObject/Object.h"
+
+#include "HeartGraphNodeInterface.h"
+#include "HeartGraphPinDesc.h"
+#include "HeartGraphPinTag.h"
+#include "HeartGraphPinReference.h"
+#include "GraphRegistry/HeartNodeSource.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartPinDirection.h"
+
 #include "HeartGraphNode.generated.h"
 
+struct FHeartGraphNodeMessage;
 class UHeartGraph;
-class UHeartGraphPin;
 class UHeartGraphCanvas;
 class UHeartGraphNode;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, UHeartGraphPin*, Pin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, FHeartPinGuid, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNodeRefreshRequested, UHeartGraphNode*, Node);
 
 UENUM(BlueprintType)
 enum class EHeartNodeNameContext : uint8
@@ -33,19 +36,12 @@ enum class EHeartNodeNameContext : uint8
 	Palette,
 };
 
-/**
- * Class data for UHeartGraph
- */
+// @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
+// If/when Epic fixes that, these properties should be moved back into the sparse class struct below
 USTRUCT()
-struct FHeartGraphNodeSparseClassData
+struct FHeartGraphNodeEditorDataTemp
 {
 	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TMap<FName, FHeartGraphPinType> DefaultInputs;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Pins")
-	TMap<FName, FHeartGraphPinType> DefaultOutputs;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
@@ -56,16 +52,57 @@ struct FHeartGraphNodeSparseClassData
 	bool CanCreateInEditor = false;
 
 	// BP properties that trigger reconstruction of SGraphNodes
+	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	TArray<FName> PropertiesTriggeringNodeReconstruction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FName EditorSlateStyle;
 #endif
+};
+
+/**
+ * Class data for UHeartGraphNode
+ */
+USTRUCT()
+struct FHeartGraphNodeSparseClassData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	TArray<FHeartGraphPinDesc> DefaultPins;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	uint8 DefaultInstancedInputs = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Pins")
+	uint8 DefaultInstancedOutputs = 0;
+
+	/*
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
+	bool OverrideCanCreateInEditor = false;
+
+	// Can this node be created by the editor even if it cannot be created otherwise.
+	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
+	bool CanCreateInEditor = false;
+
+	// BP properties that trigger reconstruction of SGraphNodes
+	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	TArray<FName> PropertiesTriggeringNodeReconstruction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FName EditorSlateStyle;
+#endif
+	*/
 };
 
 /**
  *
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, SparseClassDataTypes = "HeartGraphNodeSparseClassData")
-class HEART_API UHeartGraphNode : public UObject
+class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 
@@ -74,6 +111,8 @@ class HEART_API UHeartGraphNode : public UObject
 	friend class UHeartEdGraphNode;
 
 public:
+	UHeartGraphNode();
+
 	virtual UWorld* GetWorld() const override;
 
 	virtual void PostLoad() override;
@@ -81,7 +120,12 @@ public:
 #if WITH_EDITOR
 	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
+
+	/** IHeartGraphNodeInterface */
+	virtual UHeartGraphNode* GetHeartGraphNode() const override final;
+	/** IHeartGraphNodeInterface */
 
 
 	/*----------------------------
@@ -89,15 +133,10 @@ public:
 	----------------------------*/
 
 	template<EHeartNodeNameContext Context>
-	FText GetDefaultNodeTitle(const UClass* NodeClass) const
-	{
-		static_assert(Context != EHeartNodeNameContext::NodeInstance, TEXT("NodeInstance is not allowed in GetDefaultNodeTitle"));
-		if (!IsValid(NodeClass)) return FText();
-		return GetNodeTitle(NodeClass->GetDefaultObject(), Context);
-	}
+	FText GetDefaultNodeTitle(FHeartNodeSource NodeSource) const;
 
-	FText GetDefaultNodeCategory(const UClass* NodeClass) const;
-	FText GetDefaultNodeTooltip(const UClass* NodeClass) const;
+	FText GetDefaultNodeCategory(FHeartNodeSource NodeSource) const;
+	FText GetDefaultNodeTooltip(FHeartNodeSource NodeSource) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetNodeTitle(const UObject* Node, EHeartNodeNameContext Context) const;
@@ -109,10 +148,19 @@ public:
 	FText GetNodeToolTip(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	bool GetDynamicTitleColor(FLinearColor& LinearColor);
+	FLinearColor GetNodeTitleColor(const UObject* Node);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
+	void GetNodeMessages(TArray<FHeartGraphNodeMessage>& Messages) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FText GetInstanceTitle() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	uint8 GetInstancedInputNum() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	uint8 GetInstancedOutputNum() const;
 
 
 	/*----------------------------
@@ -132,7 +180,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UObject* GetNodeObject() const { return NodeObject; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeterminesOutputType = Class))
 	UObject* GetNodeObjectTyped(TSubclassOf<UObject> Class) const { return NodeObject; }
 
 	template <typename THeartGraph>
@@ -146,7 +194,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraph* GetGraph() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DeprecatedFunction))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return GetGraph(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
@@ -156,46 +204,32 @@ public:
 	FVector2D GetLocation() const { return Location; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* GetPin(const FHeartPinGuid& PinGuid);
+	FHeartGraphPinDesc GetPinDesc(FHeartPinGuid Pin) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* GetPinByName(const FName& Name);
+	FHeartGraphPinReference GetPinReference(FHeartPinGuid Pin) const;
 
-	template <typename THeartGraphPin = UHeartGraphPin>
-	TArray<THeartGraphPin*> GetPinsOfDirection(EHeartPinDirection Direction) const
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		auto&& DirectedPins = GetPinsOfDirectionByClass(Direction, THeartGraphPin::StaticClass());
-		return *reinterpret_cast<TArray<THeartGraphPin*>*>(&DirectedPins);
-	}
-
-	template <typename THeartGraphPin = UHeartGraphPin>
-	TArray<THeartGraphPin*> GetInputPins() const { return GetPinsOfDirection<THeartGraphPin>(EHeartPinDirection::Input); }
-
-	template <typename THeartGraphPin = UHeartGraphPin>
-	TArray<THeartGraphPin*> GetOutputPins() const { return GetPinsOfDirection<THeartGraphPin>(EHeartPinDirection::Output); }
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	FHeartPinGuid GetPinByName(const FName& Name) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	TArray<UHeartGraphPin*> GetPinsOfDirection(EHeartPinDirection Direction) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphPin*> GetPinsOfDirectionByClass(EHeartPinDirection Direction, TSubclassOf<UHeartGraphPin> Class) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphPin*> GetInputPins(TSubclassOf<UHeartGraphPin> Class) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	TArray<UHeartGraphPin*> GetOutputPins(TSubclassOf<UHeartGraphPin> Class) const;
+	TArray<FHeartPinGuid> GetPinsOfDirection(EHeartPinDirection Direction) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	uint8 GetUserInputNum() const;
+	TArray<FHeartPinGuid> GetInputPins() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	uint8 GetUserOutputNum() const;
+	TArray<FHeartPinGuid> GetOutputPins() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphNode")
+	TArray<FHeartGraphPinDesc> GetDynamicPins() const;
 
 	// Declare the pin typed used for instanced pins. Overriding this is required for User Input/Output to work.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
-	FHeartGraphPinType GetInstancedPinType();
+	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TSet<UHeartGraphNode*> GetConnectedGraphNodes() const;
 
 
 	/*----------------------------
@@ -234,20 +268,8 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(EHeartPinDirection Direction, const FHeartGraphPinType& Type)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		return Cast<THeartGraphPin>(CreatePin(THeartGraphPin::StaticClass(), Direction, Type));
-	}
-
-	template <typename THeartGraphPin>
-	THeartGraphPin* CreatePin(const TSubclassOf<UHeartGraphPin> Class, const FName Name, const EHeartPinDirection Direction, const FHeartGraphPinType& Type)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphPin, UHeartGraphPin>::IsDerived, "The pin class must derive from UHeartGraphPin");
-		check(Class->IsChildOf<THeartGraphPin>());
-		return Cast<THeartGraphPin>(CreatePinOfClass(Class, Name, Direction, Type));
-	}
+	FHeartGraphPinConnections& GetLinks(FHeartPinGuid Pin);
+	FHeartGraphPinConnections GetLinks(FHeartPinGuid Pin) const;
 
 	// Get all pins that match the predicate.
 	template <typename Predicate>
@@ -262,40 +284,33 @@ public:
 	int32 RemovePinsByPredicate(EHeartPinDirection Direction, Predicate Pred);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* CreatePin(FName Name, EHeartPinDirection Direction, const FHeartGraphPinType Type);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = Class))
-	UHeartGraphPin* CreatePinOfClass(TSubclassOf<UHeartGraphPin> Class, FName Name, EHeartPinDirection Direction, const FHeartGraphPinType Type);
+	FHeartPinGuid AddPin(const FHeartGraphPinDesc& Desc);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	void AddPin(UHeartGraphPin* Pin);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	bool RemovePin(UHeartGraphPin* Pin);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	bool RemovePinByGuid(FHeartPinGuid Pin);
+	bool RemovePin(FHeartPinGuid Pin);
 
 	// Add a numbered instance pin
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphPin* AddInstancePin(EHeartPinDirection Direction);
+	FHeartPinGuid AddInstancePin(EHeartPinDirection Direction);
 
 	// Remove the last numbered instance pin
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void RemoveInstancePin(EHeartPinDirection Direction);
 
-	virtual void NotifyPinConnectionsChanged(UHeartGraphPin* Pin);
+	virtual void NotifyPinConnectionsChanged(FHeartPinGuid Pin);
 
 protected:
 	// Called by the owning graph when we are created.
 	virtual void OnCreate();
+
+	void ReconstructPins();
 
 	// Called by the owning graph when we are created.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Create")
 	void BP_OnCreate();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Connections Changed")
-	void BP_OnConnectionsChanged(UHeartGraphPin* Pin);
+	void BP_OnConnectionsChanged(FHeartPinGuid Pin);
 
 public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
@@ -308,8 +323,18 @@ public:
 	FOnGraphNodeLocationChanged OnNodeLocationChanged;
 
 #if WITH_EDITORONLY_DATA
-	UPROPERTY(Transient)
+protected:
+	DECLARE_DELEGATE(FOnNodeRefreshRequested)
 	FOnNodeRefreshRequested OnReconstructionRequested;
+
+	// @todo temp while sparse struct is broken, see above comment on this
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	FHeartGraphNodeEditorDataTemp EditorData;
+public:
+	auto GetOverrideCanCreateInEditor() const { return EditorData.OverrideCanCreateInEditor; }
+	auto GetCanCreateInEditor() const { return EditorData.CanCreateInEditor; }
+	auto GetPropertiesTriggeringNodeReconstruction() const { return EditorData.PropertiesTriggeringNodeReconstruction; }
+	auto GetEditorSlateStyle() const { return EditorData.EditorSlateStyle; }
 #endif
 
 protected:
@@ -324,11 +349,20 @@ protected:
 	FVector2D Location;
 
 	UPROPERTY(BlueprintReadOnly)
-	TMap<FHeartPinGuid, TObjectPtr<UHeartGraphPin>> Pins;
+	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
+
+	UPROPERTY(BlueprintReadOnly)
+	uint8 InstancedInputs = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	uint8 InstancedOutputs = 0;
 
 private:
 #if WITH_EDITORONLY_DATA
-	// Always castable to UHeartEdGraphNode
+	// If valid, always castable to UHeartEdGraphNode. Not set for nodes created during runtime, even in PIE.
 	UPROPERTY()
 	TObjectPtr<UEdGraphNode> HeartEdGraphNode;
 #endif
@@ -339,16 +373,24 @@ private:
 		TEMPLATE IMPL.
 ----------------------------*/
 
+template <EHeartNodeNameContext Context>
+FText UHeartGraphNode::GetDefaultNodeTitle(const FHeartNodeSource NodeSource) const
+{
+	static_assert(Context != EHeartNodeNameContext::NodeInstance, TEXT("NodeInstance is not allowed for GetDefaultNodeTitle"));
+	if (!NodeSource.IsValid()) return FText();
+	return GetNodeTitle(NodeSource.GetDefaultObject(), Context);
+}
+
 template <typename Predicate>
 TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
 {
 	TArray<FHeartPinGuid> MatchedPins;
 
-	for (auto&& PinPair : Pins)
+	for (const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& PinPair : PinDescriptions)
 	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value->GetDirection()))
+		if (EnumHasAnyFlags(Direction, PinPair.Value.Direction))
 		{
-			if (Pred(PinPair.Value))
+			if (Pred(PinPair))
 			{
 				MatchedPins.Add(PinPair.Key);
 			}
@@ -363,11 +405,11 @@ int32 UHeartGraphNode::CountPinsByPredicate(const EHeartPinDirection Direction, 
 {
 	int32 PinCount = 0;
 
-	for (auto&& PinPair : Pins)
+	for (auto&& PinPair : PinDescriptions)
 	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value->GetDirection()))
+		if (EnumHasAnyFlags(Direction, PinPair.Value.Direction))
 		{
-			if (Pred(PinPair.Value))
+			if (Pred(PinPair))
 			{
 				PinCount++;
 			}
@@ -384,7 +426,7 @@ int32 UHeartGraphNode::RemovePinsByPredicate(const EHeartPinDirection Direction,
 
 	for (auto&& ToRemove : PinsToRemove)
 	{
-		Pins.Remove(ToRemove);
+		RemovePin(ToRemove);
 	}
 
 	return PinsToRemove.Num();

@@ -1,14 +1,21 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/Actions/HeartPinAction_Disconnect.h"
-#include "Model/HeartGraphPin.h"
+
+#include "Model/HeartGraph.h"
+#include "Model/HeartGraphPinInterface.h"
+
+#include "Model/HeartGraphNode.h"
 
 bool UHeartPinAction_Disconnect::CanExecute(const UObject* Object) const
 {
-	return Object->IsA<UHeartGraphPin>();
+	return Object->Implements<UHeartGraphPinInterface>();
 }
 
-void UHeartPinAction_Disconnect::ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
+void UHeartPinAction_Disconnect::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
-	Pin->DisconnectFromAll(true);
+	if (const UHeartGraphNode* Node = Pin->GetHeartGraphNode())
+	{
+		Node->GetGraph()->DisconnectAllPins({Node->GetGuid(), Pin->GetPinGuid()});
+	}
 }

@@ -2,6 +2,7 @@
 
 #include "ModelView/HeartNodeLocationAccessor.h"
 
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 
@@ -97,7 +98,7 @@ FVector UHeartNodeLocationModifierStack::ProxyToLocation3D(const FVector& Proxy)
 	return Location;
 }
 
-const UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph() const
+UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph() const
 {
 	return ProxiedObject->GetHeartGraph();
 }

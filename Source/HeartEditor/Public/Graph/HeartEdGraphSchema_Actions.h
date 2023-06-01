@@ -5,7 +5,6 @@
 #include "EdGraph/EdGraphSchema.h"
 
 #include "Model/HeartGraphNode.h"
-#include "Nodes/HeartEdGraphNode.h"
 #include "HeartEdGraphSchema_Actions.generated.h"
 
 /** Action to add a node to the graph */
@@ -14,9 +13,21 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
-	UClass* NodeClass;
+	FHeartGraphSchemaAction_NewNode() {}
 
+	FHeartGraphSchemaAction_NewNode(const UClass* Node)
+	  :  NodeSource(Node) {}
+
+	FHeartGraphSchemaAction_NewNode(const FHeartNodeSource NodeSource, const UHeartGraphNode* GraphNode)
+	  : FEdGraphSchemaAction(
+			GraphNode->GetDefaultNodeCategory(NodeSource),
+			GraphNode->GetDefaultNodeTitle<EHeartNodeNameContext::Palette>(NodeSource),
+			GraphNode->GetDefaultNodeTooltip(NodeSource),
+			0, // Grouping
+			FText::FromString(NodeSource.ThisClass()->GetMetaData("Keywords"))),
+		NodeSource(NodeSource) {}
+
+	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
 		static FName Type("FHeartGraphSchemaAction_NewNode");
@@ -24,34 +35,16 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	}
 
 	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
-
-	FHeartGraphSchemaAction_NewNode()
-		: FEdGraphSchemaAction()
-		, NodeClass(nullptr)
-	{
-	}
-
-	FHeartGraphSchemaAction_NewNode(UClass* Node)
-		: FEdGraphSchemaAction()
-		, NodeClass(Node)
-	{
-	}
-
-	FHeartGraphSchemaAction_NewNode(UClass* NodeClass, const UHeartGraphNode* GraphNode)
-	: FEdGraphSchemaAction(
-		GraphNode->GetDefaultNodeCategory(NodeClass),
-		GraphNode->GetDefaultNodeTitle<EHeartNodeNameContext::Palette>(NodeClass),
-		GraphNode->GetDefaultNodeTooltip(NodeClass),
-		0, FText::FromString(NodeClass->GetMetaData("Keywords")))
-	, NodeClass(NodeClass)
-	{
-	}
-
+	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	// FEdGraphSchemaAction
-	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
-	// --
 
-	static UHeartEdGraphNode* CreateNode(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const UClass* NodeClass, const FVector2D Location, const bool bSelectNewNode = true);
+	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeSource NodeSource, const FVector2D Location, const bool bSelectNewNode = true);
+
+	const UClass* GetNodeClass() const { return NodeSource.As<UClass>(); }
+
+private:
+	UPROPERTY()
+	FHeartNodeSource NodeSource;
 };
 
 /** Action to paste clipboard contents into the graph */
@@ -60,19 +53,21 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_Paste : public FEdGraphSchemaActi
 {
 	GENERATED_BODY()
 
-	FHeartGraphSchemaAction_Paste()
-		: FEdGraphSchemaAction()
-	{
-	}
+	FHeartGraphSchemaAction_Paste() {}
 
 	FHeartGraphSchemaAction_Paste(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
-		: FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
-	{
-	}
+	  : FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping) {}
 
 	// FEdGraphSchemaAction
+	static FName StaticGetTypeId()
+    {
+    	static FName Type("FHeartGraphSchemaAction_Paste");
+    	return Type;
+    }
+
+    virtual FName GetTypeId() const override { return StaticGetTypeId(); }
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
-	// --
+	// FEdGraphSchemaAction
 };
 
 /** Action to create new comment */
@@ -81,7 +76,12 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewComment : public FEdGraphSchem
 {
 	GENERATED_BODY()
 
-	// Simple type info
+	FHeartGraphSchemaAction_NewComment() {}
+
+	FHeartGraphSchemaAction_NewComment(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
+	  : FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping) {}
+
+	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
 		static FName Type("FHeartGraphSchemaAction_NewComment");
@@ -89,18 +89,6 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewComment : public FEdGraphSchem
 	}
 
 	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
-
-	FHeartGraphSchemaAction_NewComment()
-		: FEdGraphSchemaAction()
-	{
-	}
-
-	FHeartGraphSchemaAction_NewComment(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
-		: FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping)
-	{
-	}
-
-	// FEdGraphSchemaAction
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
-	// --
+	// FEdGraphSchemaAction
 };

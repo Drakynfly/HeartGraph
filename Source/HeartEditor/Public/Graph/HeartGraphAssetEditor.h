@@ -9,40 +9,24 @@
 #include "Toolkits/IToolkitHost.h"
 #include "UObject/GCObject.h"
 
-class SHeartPalette;
-class UHeartGraph;
-class UHeartEdGraphNode;
+struct FPropertyChangedEvent;
 
 class IDetailsView;
 class SDockableTab;
 class SGraphEditor;
 class UEdGraphNode;
-struct FSlateBrush;
-struct FPropertyChangedEvent;
+
+class SHeartPalette;
+class UHeartGraph;
+class UHeartEdGraphNode;
+
+namespace Heart::Editor::Public
+{
+	HEARTEDITOR_API FName GetPaletteTabID();
+}
 
 class HEARTEDITOR_API FHeartGraphAssetEditor : public FAssetEditorToolkit, public FEditorUndoClient, public FGCObject, public FNotifyHook
 {
-protected:
-	/** The HeartGraph asset being inspected */
-	UHeartGraph* HeartGraph;
-
-	TSharedPtr<class FHeartGraphAssetToolbar> AssetToolbar;
-
-	TSharedPtr<SGraphEditor> FocusedGraphEditor;
-	TSharedPtr<class IDetailsView> DetailsView_Graph;
-	TSharedPtr<class IDetailsView> DetailsView_Object;
-	TSharedPtr<class SHeartPalette> Palette;
-
-public:
-	/**	The tab ids for all the tabs used */
-	static const FName DetailsTab;
-	static const FName GraphTab;
-	static const FName PaletteTab;
-
-private:
-	/** The current UI selection state of this editor */
-	FName CurrentUISelection;
-
 public:
 	FHeartGraphAssetEditor();
 	virtual ~FHeartGraphAssetEditor() override;
@@ -78,7 +62,12 @@ public:
 	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
 	// --
 
+	/** FAssetEditorToolkit interface */
+	virtual void PostRegenerateMenusAndToolbars() override;
+
 private:
+	TSharedRef<FTabManager::FLayout> GenerateLayout() const;
+
 	TSharedRef<SDockTab> SpawnTab_Details(const FSpawnTabArgs& Args) const;
 	TSharedRef<SDockTab> SpawnTab_GraphCanvas(const FSpawnTabArgs& Args) const;
 	TSharedRef<SDockTab> SpawnTab_Palette(const FSpawnTabArgs& Args) const;
@@ -135,6 +124,8 @@ public:
 protected:
 	virtual void SelectAllNodes() const;
 	virtual bool CanSelectAllNodes() const;
+
+	virtual void DeleteNode(UEdGraphNode* Node);
 
 	virtual void DeleteSelectedNodes();
 	virtual void DeleteSelectedDuplicableNodes();
@@ -204,4 +195,19 @@ private:
 
 	void JumpToNodeObjectDefinition() const;
 	bool CanJumpToNodeObjectDefinition() const;
+
+protected:
+	/** The HeartGraph asset being inspected */
+	TObjectPtr<UHeartGraph> HeartGraph;
+
+	TSharedPtr<class FHeartGraphAssetToolbar> AssetToolbar;
+
+	TSharedPtr<SGraphEditor> FocusedGraphEditor;
+	TSharedPtr<IDetailsView> DetailsView_Graph;
+	TSharedPtr<IDetailsView> DetailsView_Object;
+	TSharedPtr<class SHeartPalette> Palette;
+
+private:
+	/** The current UI selection state of this editor */
+	FName CurrentUISelection;
 };

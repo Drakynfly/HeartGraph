@@ -2,12 +2,14 @@
 
 #pragma once
 
+class UHeartGraph;
 class FHeartGraphAssetEditor;
 
-class HEARTEDITOR_API FHeartGraphUtils
+namespace Heart::GraphUtils
 {
-public:
-	FHeartGraphUtils() {}
+	void JumpToClassDefinition(const UClass* Class);
 
-	static TSharedPtr<FHeartGraphAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn);
-};
+	TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
+
+	TSharedPtr<FHeartGraphAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn);
+}

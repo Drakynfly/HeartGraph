@@ -7,7 +7,7 @@ TSubclassOf<UUserWidget> UHeartWidgetFactory_Class::FindWidgetClassForData_Imple
 	if (auto&& StartingClass = Cast<UClass>(Data))
 	{
 		// Starting with the current class, work backwards to see if there are any construction rules for this class.
-		for (const UClass* Class = StartingClass; Class; Class = GetActualSuperClass(Class))
+		for (const UClass* Class = StartingClass; Class; Class = Class->GetSuperClass())
 		{
 			TSoftClassPtr<UObject> ClassPtr(Class);
 			if (const TSubclassOf<UUserWidget> EntryWidgetClassPtr = EntryWidgetForClass.FindRef(ClassPtr))
@@ -18,9 +18,4 @@ TSubclassOf<UUserWidget> UHeartWidgetFactory_Class::FindWidgetClassForData_Imple
 	}
 
 	return TSubclassOf<UUserWidget>();
-}
-
-UClass* UHeartWidgetFactory_Class::GetActualSuperClass(const UClass* Class) const
-{
-	return Class->ClassGeneratedBy ? Cast<UBlueprint>(Class->ClassGeneratedBy)->ParentClass : Class->GetSuperClass();
 }

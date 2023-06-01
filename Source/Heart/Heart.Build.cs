@@ -14,6 +14,7 @@ public class Heart : ModuleRules
 			{
 				"Core",
 				"DeveloperSettings",
+				"GameplayTags",
 				"InputCore",
 				"StructUtils"
 			});
@@ -32,14 +33,5 @@ public class Heart : ModuleRules
 				"Engine",
 				"AssetRegistry"
 			});
-
-		if (Target.bBuildEditor)
-		{
-			PrivateDependencyModuleNames.AddRange(
-				new []
-				{
-					"UnrealEd"
-				});
-		}
 	}
 }

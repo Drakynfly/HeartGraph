@@ -5,6 +5,61 @@
 #include "UI/HeartWidgetInputBindingAsset.h"
 #include "UI/HeartWidgetInputLinker.h"
 
+namespace Heart::UI
+{
+	namespace Vectors
+	{
+		// UI directions
+		static const FVector2D Left	( 1.0,  0.0);
+		static const FVector2D Right(-1.0,  0.0);
+		static const FVector2D Up	( 0.0,  1.0);
+		static const FVector2D Down	( 0.0, -1.0);
+	}
+}
+
+FVector2D UHeartWidgetUtilsLibrary::UINavigationToVector(const EUINavigation Navigation)
+{
+	switch (Navigation) {
+	case EUINavigation::Left: return Heart::UI::Vectors::Left;
+	case EUINavigation::Right: return Heart::UI::Vectors::Right;
+	case EUINavigation::Up: return Heart::UI::Vectors::Up;
+	case EUINavigation::Down: return Heart::UI::Vectors::Down;
+	case EUINavigation::Next:
+	case EUINavigation::Previous:
+	case EUINavigation::Num:
+	case EUINavigation::Invalid:
+	default: return FVector2D::ZeroVector;
+	}
+}
+
+int32 UHeartWidgetUtilsLibrary::FindClosestToDirection(const TArray<FVector2D>& Locations, const FVector2D From,
+													   const FVector2D Direction, const float DotRange)
+{
+	int32 Closest = INDEX_NONE;
+	double BestScore = 0;
+
+	for (int32 i = 0; i < Locations.Num(); ++i)
+	{
+		FVector2D Offset = From - Locations[i];
+
+		// Angle between direction and target
+		const float Dot = Offset.GetSafeNormal() | Direction;
+
+		if (Dot > DotRange)
+		{
+			const double Distance = FVector2D::Distance(From, Locations[i]);
+
+			if (Distance > BestScore)
+			{
+				BestScore = Distance;
+				Closest = i;
+			}
+		}
+	}
+
+	return Closest;
+}
+
 FVector2D UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
 {
 	return Geometry.GetLocalSize() * 0.5;
@@ -109,45 +164,29 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidg
 	return ActionList;
 }
 
-bool UHeartWidgetUtilsLibrary::TriggerManualInput(UWidget* Widget, const FName Key)
+UHeartWidgetInputLinker* UHeartWidgetUtilsLibrary::GetWidgetInputLinker(UWidget* Widget)
 {
-	if (!IsValid(Widget) || Key.IsNone())
-	{
-		return false;
-	}
-
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
-
-	if (IsValid(Linker))
-	{
-		return Linker->HandleManualInput(Widget, Key, FHeartInputActivation({1.f})).IsEventHandled();
-	}
-
-	return false;
+	return Heart::Input::FindLinkerForWidget(Widget);
 }
 
-bool UHeartWidgetUtilsLibrary::BindInputsToWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset)
+bool UHeartWidgetUtilsLibrary::AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset)
 {
-	if (!IsValid(Widget) || IsValid(BindingAsset))
+	if (!IsValid(Linker) || IsValid(BindingAsset))
 	{
 		return false;
 	}
 
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
-
-	BindingAsset->BindLinker(Linker);
+	Linker->AddBindings(BindingAsset->BindingData);
 	return true;
 }
 
-bool UHeartWidgetUtilsLibrary::UnbindInputsFromWidget(UWidget* Widget, UHeartWidgetInputBindingAsset* BindingAsset)
+bool UHeartWidgetUtilsLibrary::RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset)
 {
-	if (!IsValid(Widget) || IsValid(BindingAsset))
+	if (!IsValid(Linker) || IsValid(BindingAsset))
 	{
 		return false;
 	}
 
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
-
-	BindingAsset->UnbindLinker(Linker);
+	Linker->RemoveBindings(BindingAsset->BindingData);
 	return true;
 }

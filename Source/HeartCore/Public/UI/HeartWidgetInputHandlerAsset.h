@@ -8,7 +8,6 @@
 
 class UWidget;
 class UHeartWidgetInputLinker;
-class UHeartWidgetInputCondition;
 
 /**
  *
@@ -24,9 +23,4 @@ public:
 
 	virtual bool Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const { return false; }
 	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const { return false; }
-
-protected:
-	// Optionally set condition
-	UPROPERTY(EditAnywhere, Instanced, meta = (DisplayPriority = 100), meta = (NoResetToDefault))
-	TObjectPtr<UHeartWidgetInputCondition> Condition;
 };

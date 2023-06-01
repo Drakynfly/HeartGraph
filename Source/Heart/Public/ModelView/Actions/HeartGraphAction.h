@@ -7,7 +7,7 @@
 
 class UHeartGraph;
 class UHeartGraphNode;
-class UHeartGraphPin;
+class IHeartGraphPinInterface;
 
 /**
  *
@@ -20,6 +20,7 @@ class HEART_API UHeartGraphAction : public UHeartGraphActionBase
 public:
 	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
 
+protected:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 
@@ -27,7 +28,7 @@ public:
 	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|PinAction")
-	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) {}
+	virtual void ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject) {}
 };
 
 // @todo blueprintbase should be hyphenated
@@ -41,7 +42,7 @@ public:
 	virtual bool CanExecute(const UObject* Object) const override;
 	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
-	virtual void ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual void ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Get Description"))
@@ -57,5 +58,5 @@ protected:
 	void BP_ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) const;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Pin"))
-	void BP_ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) const;
+	void BP_ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject) const;
 };

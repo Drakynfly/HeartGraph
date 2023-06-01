@@ -16,6 +16,8 @@ class HEARTCORE_API UHeartDragDropOperation : public UDragDropOperation
 	GENERATED_BODY()
 
 public:
+	virtual bool CanRunOnWidget(const UWidget* Widget) const { return true; }
+
 	virtual bool SetupDragDropOperation() PURE_VIRTUAL(UHeartDragDropOperation::SetupDragDropOperation, return false; )
 
 	virtual bool CanDropOnWidget(UWidget* Widget) { return true; }

@@ -22,8 +22,8 @@ struct FHeartWidgetInputTrigger_KeyDown : public FHeartWidgetInputTrigger
 
 	virtual TArray<FHeartWidgetInputTrip> CreateTrips() const override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FKey Key;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
+	TSet<FKey> Keys;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Up"))
@@ -33,8 +33,8 @@ struct FHeartWidgetInputTrigger_KeyUp : public FHeartWidgetInputTrigger
 
 	virtual TArray<FHeartWidgetInputTrip> CreateTrips() const override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FKey Key;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyUp")
+	TSet<FKey> Keys;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Manual"))
@@ -44,6 +44,6 @@ struct FHeartWidgetInputTrigger_Manual : public FHeartWidgetInputTrigger
 
 	virtual TArray<FHeartWidgetInputTrip> CreateTrips() const override;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Manual")
 	TSet<FName> Keys;
 };

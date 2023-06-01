@@ -1,6 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartNodeSortingLibrary.h"
+
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::SortNodes(const TArray<UHeartGraphNode*>& Nodes,
@@ -102,11 +104,11 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(
 void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphNode*>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
 {
 	// Find all nodes that have no pins connections in the specified direction
-	TArray<UHeartGraphNode*> RootNodes =  Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
+	TArray<UHeartGraphNode*> RootNodes = Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
 	{
-		return Node->CountPinsByPredicate(Args.Direction, [](const UHeartGraphPin* Pin)
+		return Node->CountPinsByPredicate(Args.Direction, [Node](const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& Pin)
 		{
-			return Pin->IsConnected();
+			return !Node->GetLinks(Pin.Key).Links.IsEmpty();
 		}) == 0;
 	});
 
@@ -121,10 +123,10 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 		auto&& Pins = Node->GetPinsOfDirection(InverseDirection);
 		for (auto&& Pin : Pins)
 		{
-			auto&& ConnectedPins = Pin->GetAllConnections();
+			auto&& ConnectedPins = Node->GetLinks(Pin).Links;
 			for (auto&& ConnectedPin : ConnectedPins)
 			{
-				if (auto&& ConnectedNode = ConnectedPin->GetNode())
+				if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
 				{
 					OutTreeNode.Children.Add(FInstancedStruct::Make(BuildTreeNode(ConnectedNode)));
 				}

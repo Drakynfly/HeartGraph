@@ -15,7 +15,7 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
         {
         	if (!IsValid(BindingAsset)) continue;
 
-			BindingAsset->UnbindLinker(Linker);
+			Linker->RemoveBindings(BindingAsset->BindingData);
         }
 
 		Linker = nullptr;
@@ -30,7 +30,7 @@ void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 		{
 			if (!IsValid(BindingAsset)) continue;
 
-			BindingAsset->BindLinker(Linker);
+			Linker->AddBindings(BindingAsset->BindingData);
 		}
 	}
 }

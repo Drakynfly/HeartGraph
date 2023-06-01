@@ -101,4 +101,18 @@ namespace Blood
 		const uint8* ValuePtr = Prop->ContainerPtrToValuePtr<uint8>(Container);
 		return Impl::FPropertyHelpers::ReadFromFPropertyValuePtr(Prop, ValuePtr);
 	}
+
+	// Read the value of the UPROPERTY by its name from an object. Works for both Blueprint Properties and Native UPROPS
+	template <typename T>
+	static T ReadUProperty(UObject* Container, const FName& PropName)
+	{
+		T Value;
+		if (const FProperty* Property = Container->GetClass()->FindPropertyByName(PropName))
+		{
+			const FBloodValue BloodValue = ReadFromFProperty(Container, Property);
+			Value = BloodValue.GetValue<T>();
+		}
+
+		return Value;
+	}
 }

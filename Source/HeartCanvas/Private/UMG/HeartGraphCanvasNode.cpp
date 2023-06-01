@@ -7,20 +7,55 @@
 
 #include "Model/HeartGraph.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "UMG/HeartGraphCanvasConnection.h"
+
+void UHeartGraphCanvasNode::NativeDestruct()
+{
+	if (GraphNode.IsValid())
+	{
+		GraphNode->OnPinConnectionsChanged.RemoveAll(this);
+	}
+
+	Super::NativeDestruct();
+}
 
 UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() const
 {
 	return Execute_ResolveLinker(GraphCanvas.Get());
 }
 
-void UHeartGraphCanvasNode::SetNodeSelected(const bool Selected)
+UHeartGraphNode* UHeartGraphCanvasNode::GetHeartGraphNode() const
+{
+	return GraphNode.Get();
+}
+
+void UHeartGraphCanvasNode::PostInitNode()
+{
+	if (GraphNode.IsValid())
+	{
+		GraphNode->OnPinConnectionsChanged.AddDynamic(this, &ThisClass::RebuildPinConnections);
+	}
+}
+
+void UHeartGraphCanvasNode::SetNodeSelectedFromGraph(const bool Selected)
 {
 	if (NodeSelected != Selected)
 	{
 		NodeSelected = Selected;
 		OnNodeSelectionChanged();
+	}
+}
+
+void UHeartGraphCanvasNode::SetNodeSelected(const bool Selected)
+{
+	if (Selected)
+	{
+		GraphCanvas->SelectNode(GraphNode->GetGuid());
+	}
+	else
+	{
+		GraphCanvas->UnselectNode(GraphNode->GetGuid());
 	}
 }
 
@@ -33,7 +68,7 @@ void UHeartGraphCanvasNode::RebuildAllPinConnections()
 	}
 }
 
-void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
+void UHeartGraphCanvasNode::RebuildPinConnections(FHeartPinGuid Pin)
 {
 	for (auto&& ConnectionWidget : ConnectionWidgets)
 	{
@@ -61,7 +96,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
 	auto&& ThisPin = PinWidgets.FindByPredicate(
 		[Pin](const TObjectPtr<UHeartGraphCanvasPin>& PinWidget)
 		{
-			return PinWidget->GetPin() == Pin;
+			return PinWidget->GetPinGuid() == Pin;
 		});
 
 	if (!ThisPin)
@@ -69,20 +104,24 @@ void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
 		return;
 	}
 
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
+	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
-	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(CanvasGraphClass);
 
-	TArray<UHeartGraphPin*> Connections = Pin->GetAllConnections();
-	for (auto&& Connection : Connections)
+	const FHeartGraphPinDesc ThisDesc = GetGraphNode()->GetPinDesc(Pin);
+
+	TSet<FHeartGraphPinReference> Connections = GetGraphNode()->GetLinks(Pin).Links;
+	for (const FHeartGraphPinReference& Connection : Connections)
 	{
-		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(Pin->GetClass(), Connection->GetClass(), UWidget::StaticClass());
+		const FHeartGraphPinDesc ConnectionDesc = GetGraphNode()->GetPinDesc(Connection.PinGuid);
+
+		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(ThisDesc, ConnectionDesc, UWidget::StaticClass());
 		if (!IsValid(ConnectionVisualizer))
 		{
 			continue;
 		}
 
-		UHeartGraphCanvasNode* ConnectedNode = GraphCanvas->GetCanvasNode(Connection->GetNode()->GetGuid());
+		UHeartGraphCanvasNode* ConnectedNode = GraphCanvas->GetCanvasNode(Connection.NodeGuid);
 		if (!ConnectedNode)
 		{
 			continue;
@@ -91,7 +130,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
 		auto&& ConnectedPin = ConnectedNode->PinWidgets.FindByPredicate(
 			[this, Connection](const TObjectPtr<UHeartGraphCanvasPin>& PinWidget)
 			{
-				return PinWidget->GraphPin == Connection;
+				return PinWidget->GraphPin == Connection.PinGuid;
 			});
 
 		if (!ConnectedPin)
@@ -110,11 +149,11 @@ void UHeartGraphCanvasNode::RebuildPinConnections(UHeartGraphPin* Pin)
 	}
 }
 
-UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid& Guid) const
+UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid Guid) const
 {
 	for (auto&& PinWidget : PinWidgets)
 	{
-		if (PinWidget->GetPin()->GetGuid() == Guid)
+		if (PinWidget->GetPinGuid() == Guid)
 		{
 			return PinWidget;
 		}
@@ -123,28 +162,23 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid& G
 	return nullptr;
 }
 
-UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin)
+UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid Pin)
 {
-	check(Pin);
+	const FHeartGraphPinDesc Desc = GraphNode->GetPinDesc(Pin);
 
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
-	auto&& CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
+	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+	UClass* CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
-	auto&& PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Pin->GetClass(), UWidget::StaticClass());
+	UClass* PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Desc, UHeartGraphCanvasPin::StaticClass());
 
-	if (PinVisualizer->IsChildOf<UHeartGraphCanvasPin>())
+	if (IsValid(PinVisualizer))
 	{
 		if (auto&& PinWidget = CreateWidget<UHeartGraphCanvasPin>(this, PinVisualizer))
 		{
 			PinWidget->GraphCanvasNode = this;
 			PinWidget->GraphPin = Pin;
+			PinWidget->PinDescription = Desc;
 			PinWidgets.Add(PinWidget);
-
-			if (Pin->GetDirection() == EHeartPinDirection::Output)
-			{
-				Pin->OnPinConnectionsChanged.AddDynamic(this, &ThisClass::RebuildPinConnections);
-			}
-
 			return PinWidget;
 		}
 	}
@@ -154,11 +188,6 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(UHeartGraphPin* Pin
 
 void UHeartGraphCanvasNode::DestroyPinWidget(UHeartGraphCanvasPin* PinWidget)
 {
-	if (auto&& Pin = PinWidget->GetPin())
-	{
-		Pin->OnPinConnectionsChanged.RemoveAll(this);
-	}
-
 	ConnectionWidgets.RemoveAll(
 		[PinWidget](const TObjectPtr<UHeartGraphCanvasConnection>& ConnectionWidget)
 		{

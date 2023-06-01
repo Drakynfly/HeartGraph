@@ -4,13 +4,13 @@
 
 namespace Heart::Math
 {
-	FORCEINLINE FVector2D SaveDivide(const FVector2D& A, const double& Scale)
+	FORCEINLINE FVector2D SafeDivide(const FVector2D& A, const double& Scale)
 	{
 		const double RScale = Scale != 0.0f ? 1.f/Scale : 1.f;
 		return FVector2D(A.X * RScale, A.Y * RScale);
 	}
 
-	FORCEINLINE FVector2D SaveDivide(const FVector2D& A, const FVector2D& B)
+	FORCEINLINE FVector2D SafeDivide(const FVector2D& A, const FVector2D& B)
 	{
 		return { (B.X != 0.0f) ? (A.X / B.X) : 0.0f, (B.Y != 0.0f) ? (A.Y / B.Y) : 0.0f };
 	}

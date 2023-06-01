@@ -23,11 +23,23 @@ class HEARTCANVAS_API UHeartGraphCanvasNode : public UHeartGraphWidgetBase, publ
 	friend UHeartGraphCanvas;
 
 public:
+	virtual void NativeDestruct() override;
+
 	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
+	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 	/** IHeartWidgetInputLinkerRedirector */
 
-	UHeartGraphNode* GetNode() const { return GraphNode.Get(); }
+	/** IHeartGraphNodeInterface */
+	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	/** IHeartGraphNodeInterface */
+
+protected:
+	virtual void PostInitNode();
+
+	virtual void SetNodeSelectedFromGraph(bool Selected);
+
+public:
+	UHeartGraphNode* GetGraphNode() const { return GraphNode.Get(); }
 	UHeartGraphCanvas* GetCanvas() const { return GraphCanvas.Get(); }
 	bool IsNodeSelected() const { return NodeSelected; }
 
@@ -36,19 +48,19 @@ public:
 	void RebuildAllPinConnections();
 
 	UFUNCTION()
-	void RebuildPinConnections(UHeartGraphPin* Pin);
+	void RebuildPinConnections(FHeartPinGuid Pin);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, meta = (DeterminesOutputType = Class, DeprecatedFunction))
 	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GraphNode.Get(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
-	UHeartGraphCanvasPin* GetPinWidget(const FHeartPinGuid& Guid) const;
+	UHeartGraphCanvasPin* GetPinWidget(FHeartPinGuid Pin) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphCanvasNode")
 	TArray<UHeartGraphCanvasPin*> GetPinWidgets() const { return PinWidgets; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
-	UHeartGraphCanvasPin* CreatePinWidget(UHeartGraphPin* Pin);
+	UHeartGraphCanvasPin* CreatePinWidget(FHeartPinGuid Pin);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
 	void DestroyPinWidget(UHeartGraphCanvasPin* PinWidget);
@@ -77,5 +89,5 @@ protected:
 	TArray<TObjectPtr<UHeartGraphCanvasConnection>> ConnectionWidgets;
 
 	UPROPERTY(BlueprintReadOnly, Category = "State")
-	bool NodeSelected;
+	bool NodeSelected = false;
 };

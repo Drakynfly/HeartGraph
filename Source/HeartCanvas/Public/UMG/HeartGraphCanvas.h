@@ -38,15 +38,32 @@ struct FHeartDragIntoViewSettings
 	bool EnableDragIntoView = false;
 
 	// Animate drag into view
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
 	bool InterpDragIntoView = false;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
 	float DragMultiplier = 0.1;
 
 	// Drag-into-view input is clamped to this magnitude.
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
 	float DragIntoViewClamp = 10;
+};
+
+USTRUCT(BlueprintType)
+struct FHeartPanToSelectionSettings
+{
+	GENERATED_BODY()
+
+	// Automatically pan the graph view to center the selected nodes.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartPanToSelectionSettings")
+	bool EnablePanToSelection = false;
+
+	// Automatically adjust zoom to focus on the selected nodes.
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartPanToSelectionSettings")
+	bool EnableZoomToSelection = false;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartPanToSelectionSettings", meta = (EditCondition = "EnableZoomToSelection"))
+	float ZoomDistance = 1.f;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGraphViewChanged);
@@ -75,8 +92,11 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
 	/** IHeartWidgetInputLinkerRedirector */
 
+	/** IHeartGraphInterface */
+	virtual UHeartGraph* GetHeartGraph() const override;
+	/** IHeartGraphInterface */
+
 	/** IHeartNodeLocationAccessor */
-	virtual const UHeartGraph* GetHeartGraph() const override;
 	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override;
 	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override;
 	/** IHeartNodeLocationAccessor */
@@ -85,7 +105,7 @@ public:
 	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing so we can draw the preview link
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);
 
-	void AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
+	UCanvasPanelSlot* AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
 
 protected:
 	bool IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
@@ -100,6 +120,8 @@ protected:
 
 	void UpdateAllCanvasNodesZoom();
 
+	void UpdateAfterSelectionChanged();
+
 	void AddNodeToDisplay(UHeartGraphNode* Node);
 
 	void SetViewOffset(const FVector2D& Value);
@@ -107,6 +129,13 @@ protected:
 
 	void SetZoom(const double& Value);
 	void AddToZoom(const double& Value);
+
+	/**
+	 * Get the class used to display a node on the Canvas Graph. This has a default implementation that fetches a
+	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
+	TSubclassOf<UHeartGraphCanvasNode> GetVisualClassForNode(const UHeartGraphNode* Node) const;
 
 	UFUNCTION()
 	void OnNodeAddedToGraph(UHeartGraphNode* Node);
@@ -132,7 +161,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	UHeartGraph* GetGraph() const { return DisplayedGraph.Get(); }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, meta = (DeterminesOutputType = Class, DeprecatedFunction, DeprecatedMessage = "Please use version in utils library instead"))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return DisplayedGraph.Get(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
@@ -221,23 +250,18 @@ public:
 	FOnGraphViewChanged OnGraphViewChanged;
 
 protected:
-	/** The canvas to draw context menus, or other extra popups on. */
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, DisplayName = "CANVAS_Popups"), Category = "Widgets")
-	TObjectPtr<UHeartGraphCanvasPanel> PopupsCanvas;
-
-	/** The canvas to draw nodes on. */
+	/** The canvas to draw widgets on. */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Nodes"), Category = "Widgets")
 	TObjectPtr<UHeartGraphCanvasPanel> NodeCanvas;
-
-	/** The canvas to draw node connections on. */
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, DisplayName = "CANVAS_Connections"), Category = "Widgets")
-	TObjectPtr<UHeartGraphCanvasPanel> ConnectionCanvas;
 
 	UPROPERTY()
 	TWeakObjectPtr<UHeartGraph> DisplayedGraph;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphCanvasNode>> DisplayedNodes;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
+	TArray<TObjectPtr<UWidget>> Popups;
 
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
@@ -277,6 +301,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FHeartDragIntoViewSettings DragIntoViewSettings;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
+	FHeartPanToSelectionSettings PanToSelectionSettings;
 
 	// @todo temp until everything is moved over to use connection widgets
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")

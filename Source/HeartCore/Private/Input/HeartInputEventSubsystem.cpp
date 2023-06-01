@@ -22,17 +22,66 @@ void UHeartInputEventSubsystem::Deinitialize()
 	HeartInputPreprocessor.Reset();
 }
 
-bool UHeartInputEventSubsystem::HandleMouseButtonDownEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
+bool UHeartInputEventSubsystem::HandleKeyDownEvent(const FSlateApplication& SlateApp, const FKeyEvent& KeyEvent)
 {
 	TArray<Heart::Input::FEventCallback> Delegates;
-	Callbacks.MultiFind(EHeartInputEventType::MouseButtonDown, Delegates);
+	Callbacks.MultiFind(EHeartInputEventType::ButtonDown, Delegates);
 
 	for (auto&& Delegate : Delegates)
 	{
-		if (!Delegate.Callback.ExecuteIfBound(MouseEvent) || Delegate.Once)
+		if (Delegate.KeyCallback.IsBound())
 		{
-			// Cleanup
-			UnbindFromInputEvent(EHeartInputEventType::MouseButtonDown, Delegate);
+			Delegate.KeyCallback.Execute(KeyEvent);
+
+			if (Delegate.Once)
+			{
+				// Cleanup
+				UnbindFromInputEvent(EHeartInputEventType::ButtonDown, Delegate);
+			}
+		}
+	}
+
+	return false;
+}
+
+bool UHeartInputEventSubsystem::HandleKeyUpEvent(const FSlateApplication& SlateApp, const FKeyEvent& KeyEvent)
+{
+	TArray<Heart::Input::FEventCallback> Delegates;
+	Callbacks.MultiFind(EHeartInputEventType::ButtonUp, Delegates);
+
+	for (auto&& Delegate : Delegates)
+	{
+		if (Delegate.KeyCallback.IsBound())
+		{
+			Delegate.KeyCallback.Execute(KeyEvent);
+
+			if (Delegate.Once)
+			{
+				// Cleanup
+				UnbindFromInputEvent(EHeartInputEventType::ButtonDown, Delegate);
+			}
+		}
+	}
+
+	return false;
+}
+
+bool UHeartInputEventSubsystem::HandleMouseButtonDownEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
+{
+	TArray<Heart::Input::FEventCallback> Delegates;
+	Callbacks.MultiFind(EHeartInputEventType::ButtonDown, Delegates);
+
+	for (auto&& Delegate : Delegates)
+	{
+		if (Delegate.MouseCallback.IsBound())
+		{
+			Delegate.MouseCallback.Execute(MouseEvent);
+
+			if (Delegate.Once)
+			{
+				// Cleanup
+				UnbindFromInputEvent(EHeartInputEventType::ButtonDown, Delegate);
+			}
 		}
 	}
 
@@ -42,14 +91,19 @@ bool UHeartInputEventSubsystem::HandleMouseButtonDownEvent(FSlateApplication& Sl
 bool UHeartInputEventSubsystem::HandleMouseButtonUpEvent(FSlateApplication& SlateApp, const FPointerEvent& MouseEvent)
 {
 	TArray<Heart::Input::FEventCallback> Delegates;
-	Callbacks.MultiFind(EHeartInputEventType::MouseButtonUp, Delegates);
+	Callbacks.MultiFind(EHeartInputEventType::ButtonUp, Delegates);
 
 	for (auto&& Delegate : Delegates)
 	{
-		if (!Delegate.Callback.ExecuteIfBound(MouseEvent) || Delegate.Once)
+		if (Delegate.MouseCallback.IsBound())
 		{
-			// Cleanup
-			UnbindFromInputEvent(EHeartInputEventType::MouseButtonUp, Delegate);
+			Delegate.MouseCallback.Execute(MouseEvent);
+
+			if (Delegate.Once)
+			{
+				// Cleanup
+				UnbindFromInputEvent(EHeartInputEventType::ButtonDown, Delegate);
+			}
 		}
 	}
 
@@ -68,14 +122,25 @@ void UHeartInputEventSubsystem::UnbindFromInputEvent(const EHeartInputEventType 
 	Callbacks.RemoveSingle(EventType, EventCallback);
 }
 
-void UHeartInputEventSubsystem::BindToInputEvent(const EHeartInputEventType EventType,
-												 const FHeartInputEvent& EventCallback, const bool Once)
+void UHeartInputEventSubsystem::BindToKeyEvent(const EHeartInputEventType EventType, const FHeartKeyEvent& Callback,
+											   const bool Once)
 {
-	BindToInputEvent(EventType, Heart::Input::FEventCallback{EventCallback, Once});
+	BindToInputEvent(EventType, Heart::Input::FEventCallback{Callback, {}, Once});
 }
 
-void UHeartInputEventSubsystem::UnbindFromInputEvent(const EHeartInputEventType EventType,
-                                                     const FHeartInputEvent& EventCallback)
+void UHeartInputEventSubsystem::UnbindFromKeyEvent(const EHeartInputEventType EventType, const FHeartKeyEvent& Callback)
 {
-	UnbindFromInputEvent(EventType, Heart::Input::FEventCallback{EventCallback});
+	UnbindFromInputEvent(EventType, Heart::Input::FEventCallback{Callback, {}});
+}
+
+void UHeartInputEventSubsystem::BindToMouseEvent(const EHeartInputEventType EventType,
+												 const FHeartMouseEvent& Callback, const bool Once)
+{
+	BindToInputEvent(EventType, Heart::Input::FEventCallback{{}, Callback, Once});
+}
+
+void UHeartInputEventSubsystem::UnbindFromMouseEvent(const EHeartInputEventType EventType,
+                                                     const FHeartMouseEvent& Callback)
+{
+	UnbindFromInputEvent(EventType, Heart::Input::FEventCallback{{}, Callback});
 }

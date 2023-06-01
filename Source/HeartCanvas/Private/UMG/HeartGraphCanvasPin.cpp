@@ -2,15 +2,31 @@
 
 #include "UMG/HeartGraphCanvasPin.h"
 #include "UMG/HeartGraphCanvasNode.h"
+#include "Model/HeartGraphNode.h"
 
 UHeartWidgetInputLinker* UHeartGraphCanvasPin::ResolveLinker_Implementation() const
 {
 	return Execute_ResolveLinker(GraphCanvasNode.Get());
 }
 
-void UHeartGraphCanvasPin::SetIsPreviewConnectionTarget(const bool Value, bool CanConnect)
+UHeartGraphNode* UHeartGraphCanvasPin::GetHeartGraphNode() const
 {
-	DisplayPreviewConnectionTarget(Value, CanConnect);
+	return GraphCanvasNode.IsValid() ? GraphCanvasNode->GetGraphNode() : nullptr;
+}
+
+FHeartPinGuid UHeartGraphCanvasPin::GetPinGuid() const
+{
+	return GraphPin;
+}
+
+void UHeartGraphCanvasPin::SetIsPreviewConnectionTarget(const bool IsTarget, const bool CanConnect)
+{
+	DisplayPreviewConnectionTarget(IsTarget, CanConnect);
+}
+
+FHeartGraphPinReference UHeartGraphCanvasPin::GetPinReference() const
+{
+	return { GraphCanvasNode->GetGraphNode()->GetGuid(), GraphPin };
 }
 
 UHeartGraphCanvas* UHeartGraphCanvasPin::GetCanvas() const

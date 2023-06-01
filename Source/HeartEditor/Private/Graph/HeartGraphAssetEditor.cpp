@@ -16,15 +16,14 @@
 #include "EdGraphUtilities.h"
 #include "EdGraph/EdGraphNode.h"
 #include "Editor.h"
+#include "EditorClassUtils.h"
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditor.h"
 #include "GraphEditorActions.h"
 #include "HeartEditorModule.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
-#include "Kismet2/BlueprintEditorUtils.h"
 #include "Kismet2/DebuggerCommands.h"
-#include "LevelEditor.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 #include "ScopedTransaction.h"
@@ -34,9 +33,20 @@
 
 #define LOCTEXT_NAMESPACE "HeartAssetEditor"
 
-const FName FHeartGraphAssetEditor::DetailsTab(TEXT("Details"));
-const FName FHeartGraphAssetEditor::GraphTab(TEXT("Graph"));
-const FName FHeartGraphAssetEditor::PaletteTab(TEXT("Palette"));
+namespace Heart::Editor
+{
+	static const FName AppIdentifier(TEXTVIEW("HeartEditorApp"));
+
+	/**	The tab ids for all the tabs used */
+	static const FName DetailsTab(TEXTVIEW("Details"));
+	static const FName GraphTab(TEXTVIEW("Graph"));
+	static const FName PaletteTab(TEXTVIEW("Palette"));
+
+	FName Public::GetPaletteTabID()
+	{
+		return PaletteTab;
+	}
+}
 
 FHeartGraphAssetEditor::FHeartGraphAssetEditor()
 	: HeartGraph(nullptr)
@@ -105,17 +115,17 @@ void FHeartGraphAssetEditor::RegisterTabSpawners(const TSharedRef<class FTabMana
 
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
-	InTabManager->RegisterTabSpawner(GraphTab, FOnSpawnTab::CreateSP(this, &FHeartGraphAssetEditor::SpawnTab_GraphCanvas))
+	InTabManager->RegisterTabSpawner(Heart::Editor::GraphTab, FOnSpawnTab::CreateSP(this, &FHeartGraphAssetEditor::SpawnTab_GraphCanvas))
 				.SetDisplayName(LOCTEXT("GraphTab", "Viewport"))
 				.SetGroup(WorkspaceMenuCategoryRef)
 				.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "GraphEditor.EventGraph_16x"));
 
-	InTabManager->RegisterTabSpawner(DetailsTab, FOnSpawnTab::CreateSP(this, &FHeartGraphAssetEditor::SpawnTab_Details))
+	InTabManager->RegisterTabSpawner(Heart::Editor::DetailsTab, FOnSpawnTab::CreateSP(this, &FHeartGraphAssetEditor::SpawnTab_Details))
 				.SetDisplayName(LOCTEXT("DetailsTab", "Details"))
 				.SetGroup(WorkspaceMenuCategoryRef)
 				.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Details"));
 
-	InTabManager->RegisterTabSpawner(PaletteTab, FOnSpawnTab::CreateSP(this, &FHeartGraphAssetEditor::SpawnTab_Palette))
+	InTabManager->RegisterTabSpawner(Heart::Editor::PaletteTab, FOnSpawnTab::CreateSP(this, &FHeartGraphAssetEditor::SpawnTab_Palette))
 				.SetDisplayName(LOCTEXT("PaletteTab", "Palette"))
 				.SetGroup(WorkspaceMenuCategoryRef)
 				.SetIcon(FSlateIcon(FAppStyle::GetAppStyleSetName(), "Kismet.Tabs.Palette"));
@@ -125,14 +135,65 @@ void FHeartGraphAssetEditor::UnregisterTabSpawners(const TSharedRef<class FTabMa
 {
 	FAssetEditorToolkit::UnregisterTabSpawners(InTabManager);
 
-	InTabManager->UnregisterTabSpawner(GraphTab);
-	InTabManager->UnregisterTabSpawner(DetailsTab);
-	InTabManager->UnregisterTabSpawner(PaletteTab);
+	InTabManager->UnregisterTabSpawner(Heart::Editor::GraphTab);
+	InTabManager->UnregisterTabSpawner(Heart::Editor::DetailsTab);
+	InTabManager->UnregisterTabSpawner(Heart::Editor::PaletteTab);
+}
+
+void FHeartGraphAssetEditor::PostRegenerateMenusAndToolbars()
+{
+	// Provide a hyperlink to view our class
+	const TSharedRef<SHorizontalBox> MenuOverlayBox = SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		[
+			SNew(STextBlock)
+			.ColorAndOpacity(FSlateColor::UseSubduedForeground())
+			.ShadowOffset(FVector2D::UnitVector)
+			.Text(LOCTEXT("HeartGraphAssetEditor_AssetType", "Asset Type: "))
+		]
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.VAlign(VAlign_Center)
+		.Padding(0.0f, 0.0f, 8.0f, 0.0f)
+		[
+			FEditorClassUtils::GetSourceLink(HeartGraph->GetClass())
+		];
+
+	SetMenuOverlay(MenuOverlayBox);
+}
+
+TSharedRef<FTabManager::FLayout> FHeartGraphAssetEditor::GenerateLayout() const
+{
+	return FTabManager::NewLayout("HeartAssetEditor_Layout_v1")
+		->AddArea
+		(
+			FTabManager::NewPrimaryArea()->SetOrientation(Orient_Horizontal)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.225f)
+					->AddTab(Heart::Editor::DetailsTab, ETabState::OpenedTab)
+				)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.65f)
+					->AddTab(Heart::Editor::GraphTab, ETabState::OpenedTab)->SetHideTabWell(true)
+				)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.125f)
+					->AddTab(Heart::Editor::PaletteTab, ETabState::OpenedTab)
+				)
+		);
 }
 
 TSharedRef<SDockTab> FHeartGraphAssetEditor::SpawnTab_Details(const FSpawnTabArgs& Args) const
 {
-	check(Args.GetTabId() == DetailsTab);
+	check(Args.GetTabId() == Heart::Editor::DetailsTab);
 
 	return SNew(SDockTab)
 		.Label(LOCTEXT("HeartDetailsTitle", "Details"))
@@ -152,7 +213,7 @@ TSharedRef<SDockTab> FHeartGraphAssetEditor::SpawnTab_Details(const FSpawnTabArg
 
 TSharedRef<SDockTab> FHeartGraphAssetEditor::SpawnTab_GraphCanvas(const FSpawnTabArgs& Args) const
 {
-	check(Args.GetTabId() == GraphTab);
+	check(Args.GetTabId() == Heart::Editor::GraphTab);
 
 	TSharedRef<SDockTab> SpawnedTab = SNew(SDockTab)
 		.Label(LOCTEXT("HeartGraphTitle", "Graph"));
@@ -167,7 +228,7 @@ TSharedRef<SDockTab> FHeartGraphAssetEditor::SpawnTab_GraphCanvas(const FSpawnTa
 
 TSharedRef<SDockTab> FHeartGraphAssetEditor::SpawnTab_Palette(const FSpawnTabArgs& Args) const
 {
-	check(Args.GetTabId() == PaletteTab);
+	check(Args.GetTabId() == Heart::Editor::PaletteTab);
 
 	return SNew(SDockTab)
 		.Label(LOCTEXT("HeartPaletteTitle", "Palette"))
@@ -184,41 +245,16 @@ void FHeartGraphAssetEditor::InitHeartGraphAssetEditor(const EToolkitMode::Type 
 	HeartGraph->SetFlags(RF_Transactional);
 	GEditor->RegisterForUndo(this);
 
-	UHeartEdGraphSchema::SubscribeToAssetChanges();
-
 	BindToolbarCommands();
 	CreateToolbar();
 
 	BindGraphCommands();
 	CreateWidgets();
 
-	const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = FTabManager::NewLayout("HeartAssetEditor_Layout_v1")
-		->AddArea
-		(
-			FTabManager::NewPrimaryArea()->SetOrientation(Orient_Horizontal)
-				->Split
-				(
-					FTabManager::NewStack()
-					->SetSizeCoefficient(0.225f)
-					->AddTab(DetailsTab, ETabState::OpenedTab)
-				)
-				->Split
-				(
-					FTabManager::NewStack()
-					->SetSizeCoefficient(0.65f)
-					->AddTab(GraphTab, ETabState::OpenedTab)->SetHideTabWell(true)
-				)
-				->Split
-				(
-					FTabManager::NewStack()
-					->SetSizeCoefficient(0.125f)
-					->AddTab(PaletteTab, ETabState::OpenedTab)
-				)
-		);
-
 	constexpr bool bCreateDefaultStandaloneMenu = true;
 	constexpr bool bCreateDefaultToolbar = true;
-	InitAssetEditor(Mode, InitToolkitHost, TEXT("HeartEditorApp"), StandaloneDefaultLayout, bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, ObjectToEdit, false);
+	InitAssetEditor(Mode, InitToolkitHost, Heart::Editor::AppIdentifier, GenerateLayout(),
+		bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, HeartGraph, false);
 
 	RegenerateMenusAndToolbars();
 }
@@ -258,6 +294,20 @@ void FHeartGraphAssetEditor::BindToolbarCommands()
 
 void FHeartGraphAssetEditor::RefreshAsset()
 {
+	if (!HeartGraph->GetEdGraph())
+	{
+		UE_LOG(LogHeartEditor, Warning, TEXT("Asset: '%s' missing EdGraph! Creating new in Refresh Asset."), *HeartGraph->GetName())
+		UHeartEdGraph::CreateGraph(HeartGraph);
+
+		RemoveEditingObject(HeartGraph);
+
+		// Reinitialize the Asset Editor
+		constexpr bool bCreateDefaultStandaloneMenu = true;
+		constexpr bool bCreateDefaultToolbar = true;
+		InitAssetEditor(ToolkitMode, ToolkitHost.Pin(), Heart::Editor::AppIdentifier, GenerateLayout(),
+			bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, HeartGraph, false);
+	}
+
 	/*
 	TArray<UHeartGraphNode*> HeartGraphNodes;
 	HeartGraph->GetNodeArray(HeartGraphNodes);
@@ -517,11 +567,11 @@ void FHeartGraphAssetEditor::SetUISelectionState(const FName SelectionOwner)
 
 void FHeartGraphAssetEditor::ClearSelectionStateFor(const FName SelectionOwner)
 {
-	if (SelectionOwner == GraphTab)
+	if (SelectionOwner == Heart::Editor::GraphTab)
 	{
 		FocusedGraphEditor->ClearSelectionSet();
 	}
-	else if (SelectionOwner == PaletteTab)
+	else if (SelectionOwner == Heart::Editor::PaletteTab)
 	{
 		if (Palette.IsValid())
 		{
@@ -584,7 +634,7 @@ void FHeartGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Nodes)
 
 	if (Nodes.Num() > 0)
 	{
-		SetUISelectionState(GraphTab);
+		SetUISelectionState(Heart::Editor::GraphTab);
 
 		for (TSet<UObject*>::TConstIterator SetIt(Nodes); SetIt; ++SetIt)
 		{
@@ -618,18 +668,58 @@ void FHeartGraphAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Nodes)
 
 void FHeartGraphAssetEditor::SelectSingleNode(UEdGraphNode* Node) const
 {
-	FocusedGraphEditor->ClearSelectionSet();
-	FocusedGraphEditor->SetNodeSelection(Node, true);
+	if (FocusedGraphEditor)
+	{
+		FocusedGraphEditor->ClearSelectionSet();
+        FocusedGraphEditor->SetNodeSelection(Node, true);
+	}
+
 }
 
 void FHeartGraphAssetEditor::SelectAllNodes() const
 {
-	FocusedGraphEditor->SelectAllNodes();
+	if (FocusedGraphEditor)
+	{
+		FocusedGraphEditor->SelectAllNodes();
+	}
 }
 
 bool FHeartGraphAssetEditor::CanSelectAllNodes() const
 {
 	return true;
+}
+
+void FHeartGraphAssetEditor::DeleteNode(UEdGraphNode* Node)
+{
+	check(Node);
+
+	const UEdGraphSchema* Schema = nullptr;
+
+	// Ensure we mark parent graph modified
+	if (UEdGraph* GraphObj = Node->GetGraph())
+	{
+		GraphObj->Modify();
+		Schema = GraphObj->GetSchema();
+	}
+
+	Node->Modify();
+
+	if (Schema)
+	{
+		Schema->BreakNodeLinks(*Node);
+	}
+
+	// Try to remove the Runtime Node first, if there is one.
+	if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))
+	{
+		if (auto&& RuntimeNode = HeartEdGraphNode->GetHeartGraphNode())
+		{
+			HeartGraph->RemoveNode(RuntimeNode->GetGuid());
+		}
+	}
+
+	// Destroy Editor node
+	Node->DestroyNode();
 }
 
 void FHeartGraphAssetEditor::DeleteSelectedNodes()
@@ -647,18 +737,7 @@ void FHeartGraphAssetEditor::DeleteSelectedNodes()
 
 		if (Node->CanUserDeleteNode())
 		{
-			if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))
-			{
-				if (HeartEdGraphNode->GetHeartGraphNode())
-				{
-					auto&& NodeGuid = HeartEdGraphNode->GetHeartGraphNode()->GetGuid();
-					FBlueprintEditorUtils::RemoveNode(nullptr, Node, true);
-					HeartGraph->RemoveNode(NodeGuid);
-					continue;
-				}
-			}
-
-			FBlueprintEditorUtils::RemoveNode(nullptr, Node, true);
+			DeleteNode(Node);
 		}
 	}
 }

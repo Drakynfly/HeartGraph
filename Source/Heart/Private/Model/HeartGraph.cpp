@@ -5,9 +5,30 @@
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
+#include "UObject/ObjectSaveContext.h"
+
+#define LOCTEXT_NAMESPACE "HeartGraph"
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)
+
+UHeartGraph::UHeartGraph()
+{
+#if WITH_EDITORONLY_DATA
+	EditorData.GraphTypeName = LOCTEXT("DefaultGraphTypeName", "HEART");
+#endif
+}
+
+#if WITH_EDITOR
+void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
+{
+	// Save the EdGraph with us in the editor
+	UHeartGraph* This = CastChecked<UHeartGraph>(InThis);
+	Collector.AddReferencedObject(This->HeartEdGraph, This);
+
+	Super::AddReferencedObjects(InThis, Collector);
+}
+#endif
 
 UWorld* UHeartGraph::GetWorld() const
 {
@@ -23,20 +44,77 @@ UWorld* UHeartGraph::GetWorld() const
 	return Super::GetWorld();
 }
 
-void UHeartGraph::PostDuplicate(EDuplicateMode::Type DuplicateMode)
+void UHeartGraph::PreSave(FObjectPreSaveContext SaveContext)
 {
-	Super::PostDuplicate(DuplicateMode);
+	Super::PreSave(SaveContext);
 
+	GetSchema()->OnPreSaveGraph(this, SaveContext);
+
+#if WITH_EDITOR
+	if (SaveContext.IsCooking())
+	{
+		if (GetSchema()->FlushNodesForRuntime)
+		{
+			Nodes.Empty();
+		}
+	}
+#endif
+}
+
+void UHeartGraph::PostLoad()
+{
+	Super::PostLoad();
+
+#if WITH_EDITOR
+	TArray<FHeartNodeGuid> DeadNodes;
+
+	// Fix-up node map in editor, when loading asset
+	for (auto&& Node : Nodes)
+	{
+		if (!IsValid(Node.Value))
+		{
+			DeadNodes.Add(Node.Key);
+			continue;
+		}
+
+		// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
+		// or these nodes will be invisible in the EdGraph
+		if (!IsValid(Node.Value->HeartEdGraphNode))
+		{
+			// Broadcasting this delegate is our hook to request the EdGraph to generate an EdGraphNode for us.
+			OnNodeCreatedInEditorExternally.ExecuteIfBound(Node.Value);
+		}
+	}
+
+	for (FHeartNodeGuid DeadNode : DeadNodes)
+	{
+		Nodes.Remove(DeadNode);
+	}
+#endif
+}
+
+void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
+{
 #if WITH_EDITOR
 	// The HeartEdGraph doesn't need to persist for graphs duplicated during gameplay
 	if (GetWorld()->IsGameWorld())
 	{
 		HeartEdGraph = nullptr;
 	}
+
+	if (DuplicateMode == EDuplicateMode::PIE)
+	{
+		if (GetSchema()->FlushNodesForRuntime)
+		{
+			Nodes.Empty();
+		}
+	}
 #endif
+
+	Super::PostDuplicate(DuplicateMode);
 }
 
-void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<UHeartGraphPin*>& AffectedPins)
+void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<FHeartPinGuid>& AffectedPins)
 {
 	FHeartGraphConnectionEvent Event;
 	Event.AffectedNodes = AffectedNodes;
@@ -50,16 +128,32 @@ void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent&
 	OnNodeConnectionsChanged.Broadcast(Event);
 }
 
-#if WITH_EDITOR
-void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
+UHeartGraph* UHeartGraph::GetHeartGraph() const
 {
-	// Save the EdGraph with us in the editor
-	UHeartGraph* This = CastChecked<UHeartGraph>(InThis);
-	Collector.AddReferencedObject(This->HeartEdGraph, This);
-
-	Super::AddReferencedObjects(InThis, Collector);
+	return const_cast<UHeartGraph*>(this);
 }
-#endif
+
+void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const
+{
+	for (auto&& Element : Nodes)
+	{
+		if (ensure(Element.Value))
+		{
+			if (Iter(Element.Value)) return;
+		}
+	}
+}
+
+void UHeartGraph::ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const
+{
+	for (auto&& Element : Extensions)
+	{
+		if (ensure(Element.Value))
+		{
+			if (Iter(Element.Value)) return;
+		}
+	}
+}
 
 UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 {
@@ -67,70 +161,12 @@ UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 	return Result ? *Result : nullptr;
 }
 
-UHeartGraphNode* UHeartGraph::FindNodeOfClass(const TSubclassOf<UHeartGraphNode> Class)
+void UHeartGraph::GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
 {
-	if (!IsValid(Class))
-	{
-		return nullptr;
-	}
-
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Node.Value.IsA(Class))
-		{
-			return Node.Value;
-		}
-	}
-
-	return nullptr;
-}
-
-UHeartGraphNode* UHeartGraph::FindNodeByPredicate(const FHeartGraphNodePredicate& Predicate)
-{
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Predicate.Execute(Node.Value))
-		{
-			return Node.Value;
-		}
-	}
-
-	return nullptr;
-}
-
-TArray<UHeartGraphNode*> UHeartGraph::FindAllNodesOfClass(const TSubclassOf<UHeartGraphNode> Class)
-{
-	if (!IsValid(Class))
-	{
-		return TArray<UHeartGraphNode*>();
-	}
-
-	TArray<UHeartGraphNode*> OutNodes;
-
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Node.Value.IsA(Class))
-		{
-			OutNodes.Add(Node.Value);
-		}
-	}
-
-	return OutNodes;
-}
-
-TArray<UHeartGraphNode*> UHeartGraph::FindAllNodesByPredicate(const FHeartGraphNodePredicate& Predicate)
-{
-	TArray<UHeartGraphNode*> OutNodes;
-
-	for (auto&& Node : Nodes)
-	{
-		if (IsValid(Node.Value) && Predicate.Execute(Node.Value))
-		{
-			OutNodes.Add(Node.Value);
-		}
-	}
-
-	return OutNodes;
+	// *le sign* epic templates mess this up . . .
+	TArray<TObjectPtr<UHeartGraphNode>> NodeArray;
+	Nodes.GenerateValueArray(NodeArray);
+	OutNodes = NodeArray;
 }
 
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
@@ -140,8 +176,7 @@ TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() cons
 
 const UHeartGraphSchema* UHeartGraph::GetSchema() const
 {
-	// Always return the schema for the CDO
-	return GetSchemaStatic<UHeartGraphSchema>(GetClass());
+	return UHeartGraphSchema::Get(GetClass());
 }
 
 const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const
@@ -149,23 +184,54 @@ const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphS
 	return GetSchema();
 }
 
+UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExtension> Class) const
+{
+	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
+	{
+		return *ExtensionPtr;
+	}
+	return nullptr;
+}
+
+UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExtension> Class)
+{
+	if (Extensions.Contains(Class))
+	{
+		return nullptr;
+	}
+
+	UHeartGraphExtension* NewExtension = NewObject<UHeartGraphExtension>(this, Class);
+	Extensions.Add(Class, NewExtension);
+	NewExtension->PostExtensionAdded();
+	return NewExtension;
+}
+
+void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
+{
+	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
+	{
+		(*ExtensionPtr)->PreExtensionRemove();
+		Extensions.Remove(Class);
+	}
+}
+
 UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location)
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
-	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
-		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeObject->GetClass());
+		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
 	}
 
 	if (!IsValid(GraphNodeClass))
 	{
-		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class: %s!"), *NodeObject->GetClass()->GetName())
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeObject->GetClass()->GetName())
 		return nullptr;
 	}
 
 	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
-	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
+	NewGraphNode->Guid = FHeartNodeGuid::New();
 	NewGraphNode->Location = Location;
 	NewGraphNode->NodeObject = NodeObject;
 
@@ -178,24 +244,24 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 {
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
-	if (auto&& NodeRegistry = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>())
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
-		GraphNodeClass = NodeRegistry->GetRegistry(GetClass())->GetGraphNodeClassForNode(NodeClass);
+		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeClass));
 	}
 
 	if (!IsValid(GraphNodeClass))
 	{
-		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class: %s!"), *NodeClass->GetName())
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeClass->GetName())
 		return nullptr;
 	}
 
 	// The graph has to be the outer for the NodeObjects or Unreal will kill them when recompiling the heart graph blueprint
 	// This is probably just a issue with the current version of unreal (5.1.0), but even if it's fixed, it's probably fine
 	// to leave it like this.
-	auto&& NewNodeObject = NewObject<UObject>(this, NodeClass);
+	UObject* NewNodeObject = NewObject<UObject>(this, NodeClass);
 
-	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
-	NewGraphNode->Guid = FHeartNodeGuid::NewGuid();
+	UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
+	NewGraphNode->Guid = FHeartNodeGuid::New();
 	NewGraphNode->Location = Location;
 	NewGraphNode->NodeObject = NewNodeObject;
 
@@ -240,7 +306,7 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 
 	const FHeartNodeGuid NodeGuid = Node->GetGuid();
 
-	if (Nodes.Contains(NodeGuid))
+	if (!ensure(!Nodes.Contains(NodeGuid)))
 	{
 		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
 		return;
@@ -276,7 +342,7 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	auto&& Removed = Nodes.Remove(NodeGuid);
 
 #if WITH_EDITOR
-	if (HeartEdGraph)
+	if (HeartEdGraph && NodeBeingRemoved)
 	{
 		if (auto&& EdGraphNode = (*NodeBeingRemoved)->GetEdGraphNode())
 		{
@@ -292,3 +358,94 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 
 	return Removed > 0;
 }
+
+bool UHeartGraph::ConnectPins(const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB)
+{
+	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
+	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
+
+	if (!ensure(IsValid(ANode) && IsValid(BNode)))
+	{
+		return false;
+	}
+
+	// Add to both lists
+	ANode->GetLinks(PinA.PinGuid).Links.Add(PinB);
+	BNode->GetLinks(PinB.PinGuid).Links.Add(PinA);
+
+#if WITH_EDITOR
+	if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
+	{
+		auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(ANode->GetPinDesc(PinA.PinGuid).Name);
+		auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BNode->GetPinDesc(PinB.PinGuid).Name);
+
+		if (ThisEdGraphPin && OtherEdGraphPin)
+		{
+			ThisEdGraphPin->MakeLinkTo(OtherEdGraphPin);
+		}
+	}
+#endif
+
+	return true;
+}
+
+bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB)
+{
+	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
+	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
+
+	if (!ensureAlways(IsValid(ANode) && IsValid(BNode)))
+	{
+		return false;
+	}
+
+	auto& AConnections = ANode->GetLinks(PinA.PinGuid);
+	auto& BConnections = BNode->GetLinks(PinB.PinGuid);
+
+	// We assume that both of these are true, but proceed anyway if only one of them are...
+	if (AConnections.Links.Contains(PinB) ||
+		BConnections.Links.Contains(PinA))
+	{
+		AConnections.Links.Remove(PinB);
+		BConnections.Links.Remove(PinA);
+
+#if WITH_EDITOR
+		if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
+		{
+			auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(ANode->GetPinDesc(PinA.PinGuid).Name);
+			auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BNode->GetPinDesc(PinB.PinGuid).Name);
+
+			if (ThisEdGraphPin && OtherEdGraphPin)
+			{
+				ThisEdGraphPin->BreakLinkTo(OtherEdGraphPin);
+			}
+		}
+#endif
+
+		ANode->NotifyPinConnectionsChanged(PinA.PinGuid);
+		BNode->NotifyPinConnectionsChanged(PinB.PinGuid);
+		NotifyNodeConnectionsChanged({ANode, BNode}, {PinA.PinGuid, PinB.PinGuid});
+	}
+
+	return true;
+}
+
+void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference Pin)
+{
+	UHeartGraphNode* ANode = GetNode(Pin.NodeGuid);
+
+	if (!ensure(IsValid(ANode)))
+	{
+		return;
+	}
+
+	const FHeartGraphPinConnections& Connections = ANode->GetLinks(Pin.PinGuid);
+	if (Connections.Links.IsEmpty()) return;
+
+	for (const FHeartGraphPinReference& Link : Connections.Links)
+	{
+		DisconnectPins(Pin, Link);
+	}
+}
+
+#undef LOCTEXT_NAMESPACE

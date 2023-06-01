@@ -5,8 +5,8 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphBlueprint.h"
 
-//#include "BlueprintEditorSettings.h"
-#include "ClassViewerFilter.h"
+#include "Assets/HeartDefaultClassFilter.h"
+
 #include "ClassViewerModule.h"
 #include "Editor.h"
 #include "Kismet2/KismetEditorUtilities.h"
@@ -92,8 +92,8 @@ public:
 				]
 		];
 
-			MakeParentClassPicker();
-		}
+		MakeParentClassPicker();
+	}
 
 	/** Sets properties for the supplied HeartGraphBlueprintFactory */
 	bool ConfigureProperties(const TWeakObjectPtr<UHeartGraphBlueprintFactory> InHeartGraphBlueprintFactory)
@@ -116,27 +116,6 @@ public:
 	}
 
 private:
-	class FHeartGraphBlueprintParentFilter final : public IClassViewerFilter
-	{
-	public:
-		/** All children of these classes will be included unless filtered out by another setting. */
-		TSet<const UClass*> AllowedChildrenOfClasses;
-
-		FHeartGraphBlueprintParentFilter() {}
-
-		virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-		{
-			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
-		}
-
-		virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const TSharedRef< const IUnloadedBlueprintData > InUnloadedClassData, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-		{
-			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) != EFilterReturn::Failed;
-		}
-	};
-
 	/** Creates the combo menu for the parent class */
 	void MakeParentClassPicker()
 	{
@@ -148,7 +127,7 @@ private:
 		Options.DisplayMode = EClassViewerDisplayMode::TreeView;
 		Options.bIsBlueprintBaseOnly = true;
 
-		const TSharedPtr<FHeartGraphBlueprintParentFilter> Filter = MakeShareable(new FHeartGraphBlueprintParentFilter);
+		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShareable(new FHeartDefaultClassFilter);
 
 		// All child child classes of UHeartGraph are valid
 		Filter->AllowedChildrenOfClasses.Add(UHeartGraph::StaticClass());

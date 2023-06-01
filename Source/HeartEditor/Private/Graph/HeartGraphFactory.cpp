@@ -6,6 +6,7 @@
 
 #include "ClassViewerFilter.h"
 #include "ClassViewerModule.h"
+#include "HeartRegistryEditorSubsystem.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet2/SClassPickerDialog.h"
 
@@ -36,7 +37,6 @@ public:
 				return false;
 			}
 
-			// @todo this doesnt seem to work
 			if (!InClass->GetDefaultObject<UHeartGraph>()->GetCanCreateAssetFromFactory())
 			{
 				return false;
@@ -76,6 +76,8 @@ bool UHeartGraphFactory::ConfigureProperties()
 	Filter->AllowedChildrenOfClasses.Add(UHeartGraph::StaticClass());
 
 	Options.ClassFilters = {Filter.ToSharedRef()};
+
+	Options.ExtraPickerCommonClasses = UHeartRegistryEditorSubsystem::GetFactoryCommonClasses();
 
 	const FText TitleText = LOCTEXT("CreateHeartAssetOptions", "Pick Heart Graph Class");
 	UClass* ChosenClass = nullptr;

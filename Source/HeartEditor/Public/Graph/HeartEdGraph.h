@@ -17,7 +17,7 @@ class HEARTEDITOR_API UHeartEdGraph : public UEdGraph
 public:
 	UHeartEdGraph(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	virtual void PostLoad() override;
+	virtual void PostInitProperties() override;
 
 	static UEdGraph* CreateGraph(UHeartGraph* InHeartGraph);
 

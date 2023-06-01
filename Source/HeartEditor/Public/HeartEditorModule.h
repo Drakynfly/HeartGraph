@@ -2,50 +2,60 @@
 
 #pragma once
 
-#include "AssetTypeCategories.h"
-#include "IAssetTypeActions.h"
 #include "Modules/ModuleInterface.h"
-#include "PropertyEditorDelegates.h"
 #include "Toolkits/IToolkit.h"
 
-class FSlateStyleSet;
-struct FGraphPanelPinConnectionFactory;
+#include "AssetTypeCategories.h"
 
+class UHeartGraphNode;
+class UHeartEdGraphNode;
 class FHeartGraphAssetEditor;
-class UHeartGraph;
+
+DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
 
 class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface
 {
 public:
-    static EAssetTypeCategories::Type HeartAssetCategory;
-
-private:
-    TArray<TSharedRef<IAssetTypeActions>> RegisteredAssetActions;
-    TSet<FName> CustomClassLayouts;
-
-public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
-private:
-    void RegisterAssets();
-    void UnregisterAssets();
+    void RegisterSlateEditorWidget(FName Style, const FOnGetSlateGraphWidgetInstance& Callback);
+    void DeregisterSlateEditorWidget(FName Style);
+    TArray<FName> GetSlateStyles() const;
+    TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
 
+    void RegisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass, TSubclassOf<UHeartEdGraphNode> EdClass);
+    void DeregisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass);
+    TSubclassOf<UHeartEdGraphNode> GetEdGraphClass(TSubclassOf<UHeartGraphNode> HeartClass) const;
+
+private:
     void RegisterPropertyCustomizations();
-    void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance DetailLayout);
+    void RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance& DetailLayout);
+
+    void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
+    void RegisterAssetIndexers() const;
+
+    void OnAssetManagerCreated();
+    void AddRegistrarPrimaryAssetRule();
+    void DisableGraphNodeRegistrarError();
+
+    /** Property Customizations; Cached so they can be unregistered */
+    TSet<FName> PropertyCustomizations;
 
 public:
     FDelegateHandle ModulesChangedHandle;
 
 private:
-    void ModulesChangesCallback(FName ModuleName, EModuleChangeReason ReasonForChange);
-    void RegisterAssetIndexers() const;
-
-    /** Property Customizations; Cached so they can be unregistered */
-    TMap<FName, FOnGetPropertyTypeCustomizationInstance> PropertyCustomizations;
+    TSet<FName> CustomClassLayouts;
 
 public:
-    static TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
+    static EAssetTypeCategories::Type HeartAssetCategory;
+private:
+    TArray<TSharedRef<class IAssetTypeActions>> RegisteredAssetActions;
+
+    TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
+
+    TMap<TSubclassOf<UHeartGraphNode>, TSubclassOf<UHeartEdGraphNode>> HeartGraphNodeToEdGraphNodeClassMap;
 };

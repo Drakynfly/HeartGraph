@@ -3,7 +3,8 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
-#include "Model/HeartGraphPin.h"
+#include "Model/HeartGraphPinDesc.h"
+#include "Model/HeartGraphPinReference.h"
 #include "View/HeartVisualizerInterfaces.h"
 #include "HeartGraphCanvasPin.generated.h"
 
@@ -25,15 +26,20 @@ public:
 	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
 	/** IHeartWidgetInputLinkerRedirector */
 
+	/** IHeartGraphPinInterface */
+	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	virtual FHeartPinGuid GetPinGuid() const override;
+	/** IHeartGraphPinInterface */
+
 	// Called by UHeartPinConnectionDragDropOperation when connecting pins.
 	void SetIsPreviewConnectionTarget(bool IsTarget, bool CanConnect);
 
-	UHeartGraphPin* GetPin() const { return GraphPin.Get(); }
+	FHeartGraphPinReference GetPinReference() const;
+
+	const FHeartGraphPinDesc& GetPinDesc() const { return PinDescription; }
+
 	UHeartGraphCanvasNode* GetCanvasNode() const { return GraphCanvasNode.Get(); }
 	UHeartGraphCanvas* GetCanvas() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasPin", meta = (DeterminesOutputType = Class))
-	UHeartGraphPin* GetPinTyped(TSubclassOf<UHeartGraphPin> Class) const { return GraphPin.Get(); }
 
 protected:
 	// Is this pin the target of a connection, and may be connected if confirmed. Useful to display a highlight on pins as if they are hovered.
@@ -42,7 +48,10 @@ protected:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "GraphCanvasPin")
-	TWeakObjectPtr<UHeartGraphPin> GraphPin;
+	FHeartPinGuid GraphPin;
+
+	UPROPERTY(BlueprintReadOnly, Category = "GraphCanvasPin")
+	FHeartGraphPinDesc PinDescription;
 
 	UPROPERTY(BlueprintReadOnly, Category = "GraphCanvasPin")
 	TWeakObjectPtr<UHeartGraphCanvasNode> GraphCanvasNode;

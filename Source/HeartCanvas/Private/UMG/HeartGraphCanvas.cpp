@@ -10,7 +10,7 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "Model/HeartGraph.h"
 
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "General/HeartMath.h"
 #include "UI/HeartWidgetUtilsLibrary.h"
@@ -20,6 +20,13 @@
 
 DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
 
+namespace Heart::Canvas
+{
+	int32 ConnectionZOrder = 0;
+	int32 NodeZOrder = 1;
+	int32 PopUpZOrder = 2;
+}
+
 UHeartGraphCanvas::UHeartGraphCanvas()
 {
 	View = {0.0, 0.0, 1.0};
@@ -28,7 +35,7 @@ UHeartGraphCanvas::UHeartGraphCanvas()
 	ViewBounds.Min = { -10000.0, -10000.0, 0.1 };
 	ViewBounds.Max = { 10000.0, 10000.0, 10.0 };
 
-	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("ProxyLayerStack");
+	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("LocationModifiers");
 }
 
 bool UHeartGraphCanvas::Initialize()
@@ -82,7 +89,12 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		return SuperLayerID;
 	}
 
-	auto&& ConnectionVisualizer = GetGraph()->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+	UHeartCanvasConnectionVisualizer* ConnectionVisualizer = nullptr;
+
+	if (DisplayedGraph.IsValid())
+	{
+		ConnectionVisualizer = DisplayedGraph->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+	}
 
 	if (!ensure(IsValid(ConnectionVisualizer)))
 	{
@@ -91,7 +103,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	}
 
 	// Get the set of pins for all children and synthesize geometry for culled out pins so lines can be drawn to them.
-	TMap<UHeartGraphPin*, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
+	TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
 	TSet<UHeartGraphCanvasPin*> VisiblePins;
 
 	for (auto&& DisplayedNode : DisplayedNodes)
@@ -103,16 +115,17 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		{
 			auto&& PinWidgets = GraphNode->GetPinWidgets();
 
-			const FVector2D NodeLoc = GraphNode->GetNode()->GetLocation();
+			const FVector2D NodeLoc = GraphNode->GetGraphNode()->GetLocation();
 
-			for (auto&& PinWidget : PinWidgets)
+			for (UHeartGraphCanvasPin* PinWidget : PinWidgets)
 			{
-				if (PinWidget->GetPin())
+				FHeartPinGuid WidgetGuid = PinWidget->GetPinGuid();
+				if (WidgetGuid.IsValid())
 				{
 					FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
 
 					const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom(PinLoc) * AllottedGeometry.Scale, FVector2D(AllottedGeometry.AbsolutePosition), FVector2D::ZeroVector, 1.f);
-					PinGeometries.Add(PinWidget->GetPin(), {PinWidget, SynthesizedPinGeometry});
+					PinGeometries.Add(WidgetGuid, {PinWidget, SynthesizedPinGeometry});
 				}
 			}
 		}
@@ -124,7 +137,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 	for (auto&& VisiblePin : VisiblePins)
 	{
-		PinGeometries.Add(VisiblePin->GetPin(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
+		PinGeometries.Add(VisiblePin->GetPinGuid(), {VisiblePin, VisiblePin->GetTickSpaceGeometry() });
 	}
 
 	/*
@@ -141,10 +154,10 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	{
 		auto&& PreviewPin = ResolvePinReference(PreviewConnectionPin);
 
-		if (IsValid(PreviewPin) && PreviewPin->GetPin())
+		if (IsValid(PreviewPin))
 		{
 			auto&& GraphGeo = GetTickSpaceGeometry();
-			FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPin())->Value;
+			FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPinGuid())->Value;
 
 			FVector2D StartPoint;
 			FVector2D EndPoint;
@@ -195,7 +208,7 @@ UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
 	return BindingContainer.GetLinker();
 }
 
-const UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
+UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
 {
 	return DisplayedGraph.Get();
 }
@@ -264,7 +277,7 @@ void UHeartGraphCanvas::UpdateAllPositionsOnCanvas()
 
 void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* CanvasNode)
 {
-	auto&& Node = CanvasNode->GetNode();
+	auto&& Node = CanvasNode->GetGraphNode();
 	auto&& NodeLocation = Node->GetLocation();
 
 	if (NodeLocation.ContainsNaN())
@@ -294,30 +307,83 @@ void UHeartGraphCanvas::UpdateAllCanvasNodesZoom()
 	}
 }
 
+void UHeartGraphCanvas::UpdateAfterSelectionChanged()
+{
+	if ((PanToSelectionSettings.EnablePanToSelection ||
+		PanToSelectionSettings.EnableZoomToSelection) &&
+		!SelectedNodes.IsEmpty())
+	{
+		FVector2D AverageNodePosition = FVector2D::ZeroVector;
+
+		for (FHeartNodeGuid SelectedNode : SelectedNodes)
+		{
+			if (auto&& Node = DisplayedNodes.Find(SelectedNode))
+			{
+				if (const TObjectPtr<UHeartGraphCanvasNode> CanvasNode = *Node)
+				{
+					// Add the canonical location of the graph node.
+					AverageNodePosition += CanvasNode->GetGraphNode()->GetLocation();
+
+					// Add half the size of the node. We are focusing on the center of the node, not the corner
+					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5 * (1.0 / View.Z);
+				}
+			}
+		}
+
+		AverageNodePosition *= 1.0 / SelectedNodes.Num();
+
+		if (PanToSelectionSettings.EnablePanToSelection)
+		{
+			FVector2D LocalNewCorner = AverageNodePosition;
+
+			LocalNewCorner = -LocalNewCorner;
+
+
+			// Add half the size of the canvas, to "center" the focus
+			LocalNewCorner += NodeCanvas->GetCachedGeometry().GetLocalSize() * 0.5;
+
+			SetViewCorner(LocalNewCorner, true);
+		}
+
+		if (PanToSelectionSettings.EnableZoomToSelection)
+		{
+			float TargetZoom = 0.f;
+
+			//SetZoom(TargetZoom, true);
+		}
+	}
+}
+
 void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 {
+	// This function is only used internally, so Node should *always* be validated prior to this point.
 	check(Node);
 
-	UHeartNodeRegistrySubsystem* NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
-
-	// @todo this should be templated to return UHeartGraphCanvasNode directly
-	if (auto&& VisualizerClass = NodeRegistrySubsystem->GetRegistry(GetGraph()->GetClass())
-			->GetVisualizerClassForGraphNode(Node->GetClass(), UHeartGraphCanvasNode::StaticClass()))
+	if (const TSubclassOf<UHeartGraphCanvasNode> VisualizerClass = GetVisualClassForNode(Node))
 	{
-		if (auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass))
-		{
-			Widget->GraphCanvas = this;
-			Widget->GraphNode = Node;
-			DisplayedNodes.Add(Node->GetGuid(), Widget);
-			NodeCanvas->AddChildToCanvas(Widget)->SetAutoSize(true);
-			Widget->OnZoomSet(View.Z);
-			UpdateNodePositionOnCanvas(Widget);
-		}
+		auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass);
+		check(Widget);
+
+		Widget->GraphCanvas = this;
+		Widget->GraphNode = Node;
+		Widget->PostInitNode();
+		DisplayedNodes.Add(Node->GetGuid(), Widget);
+
+		UCanvasPanelSlot* NodeSlot = NodeCanvas->AddChildToCanvas(Widget);
+		NodeSlot->SetZOrder(Heart::Canvas::NodeZOrder);
+		NodeSlot->SetAutoSize(true);
+
+		Widget->OnZoomSet(View.Z);
+		UpdateNodePositionOnCanvas(Widget);
 
 		if (!IsDesignTime())
 		{
 			Node->OnNodeLocationChanged.AddDynamic(this, &ThisClass::OnNodeLocationChanged);
 		}
+	}
+	else
+	{
+		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Unable to determine Visual Class. Node '%s' will not be displayed"), *Node->GetName())
 	}
 }
 
@@ -395,28 +461,46 @@ void UHeartGraphCanvas::AddToZoom(const double& Value)
 	}
 }
 
+TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Implementation(const UHeartGraphNode* Node) const
+{
+	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	if (!IsValid(RegistrySubsystem))
+	{
+		UE_LOG(LogHeartGraphCanvas, Error,
+			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+					"This error occured in UHeartGraphCanvas::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		return nullptr;
+	}
+
+	return RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass())
+								->GetVisualizerClassForGraphNode<UHeartGraphCanvasNode>(Node->GetClass());
+}
+
 void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Reference)
 {
 	PreviewConnectionPin = Reference;
 }
 
-void UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget)
+UCanvasPanelSlot* UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget)
 {
-	ConnectionCanvas->AddChild(ConnectionWidget);
+	UCanvasPanelSlot* ConnectionSlot = NodeCanvas->AddChildToCanvas(ConnectionWidget);
+	ConnectionSlot->SetZOrder(Heart::Canvas::ConnectionZOrder);
+	return ConnectionSlot;
 }
 
 bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const
 {
 	static const float GuardBandArea = 0.25f;
 
-	if (!IsValid(GraphNode) || !IsValid(GraphNode->GetNode()))
+	if (!IsValid(GraphNode) || !IsValid(GraphNode->GetGraphNode()))
 	{
 		return true;
 	}
 
 	//if (GraphNode->ShouldAllowCulling())
 	{
-		const FVector2D Location = GraphNode->GetNode()->GetLocation();
+		const FVector2D Location = GraphNode->GetGraphNode()->GetLocation();
 		const FVector2D MinClipArea = Geometry.GetLocalSize() * -GuardBandArea;
 		const FVector2D MaxClipArea = Geometry.GetLocalSize() * ( 1.f + GuardBandArea);
 		const FVector2D NodeTopLeft = ScalePositionToCanvasZoom(Location);
@@ -477,7 +561,7 @@ FVector2D UHeartGraphCanvas::ScalePositionToCanvasZoom(const FVector2D& Position
 
 FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Position) const
 {
-	return SaveDivide(Position, View.Z) - FVector2D(View);
+	return SafeDivide(Position, View.Z) - FVector2D(View);
 }
 
 UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPinReference& PinReference) const
@@ -515,8 +599,8 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 			return;
 		}
 
-		DisplayedGraph->OnNodeAdded.RemoveAll(this);
-		DisplayedGraph->OnNodeRemoved.RemoveAll(this);
+		DisplayedGraph->GetOnNodeAdded().RemoveAll(this);
+		DisplayedGraph->GetOnNodeRemoved().RemoveAll(this);
 		Reset();
 	}
 
@@ -524,8 +608,8 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 
 	if (DisplayedGraph.IsValid())
 	{
-		DisplayedGraph->OnNodeAdded.AddDynamic(this, &ThisClass::UHeartGraphCanvas::OnNodeAddedToGraph);
-		DisplayedGraph->OnNodeRemoved.AddDynamic(this, &ThisClass::UHeartGraphCanvas::OnNodeRemovedFromGraph);
+		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &UHeartGraphCanvas::OnNodeAddedToGraph);
+		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &UHeartGraphCanvas::OnNodeRemovedFromGraph);
 		Refresh();
 	}
 }
@@ -579,10 +663,16 @@ void UHeartGraphCanvas::SelectNode(const FHeartNodeGuid Node)
 {
 	if (ensure(Node.IsValid()))
 	{
-		if (auto&& NodePtr = DisplayedNodes.Find(Node))
+		bool IsAlreadyInSetPtr;
+		SelectedNodes.Add(Node, &IsAlreadyInSetPtr);
+		if (!IsAlreadyInSetPtr)
 		{
-			SelectedNodes.Add(Node);
-			(*NodePtr)->SetNodeSelected(true);
+			if (auto&& NodePtr = DisplayedNodes.Find(Node))
+			{
+				(*NodePtr)->SetNodeSelectedFromGraph(true);
+
+				UpdateAfterSelectionChanged();
+			}
 		}
 	}
 }
@@ -603,7 +693,9 @@ void UHeartGraphCanvas::UnselectNode(const FHeartNodeGuid Node)
 		{
 			if (auto&& NodePtr = DisplayedNodes.Find(Node))
 			{
-				(*NodePtr)->SetNodeSelected(false);
+				(*NodePtr)->SetNodeSelectedFromGraph(false);
+
+				UpdateAfterSelectionChanged();
 			}
 		}
 	}
@@ -620,7 +712,7 @@ void UHeartGraphCanvas::ClearNodeSelection()
 	{
 		if (auto&& Node = DisplayedNodes.Find(SelectedGuid))
 		{
-			(*Node)->SetNodeSelected(false);
+			(*Node)->SetNodeSelectedFromGraph(false);
 		}
 	}
 
@@ -631,33 +723,32 @@ UCanvasPanelSlot* UHeartGraphCanvas::AddWidgetToPopups(UWidget* Widget, const FV
 {
 	if (!IsValid(Widget)) return nullptr;
 
-	if (IsValid(PopupsCanvas))
-	{
-		auto&& CanvasSlot = PopupsCanvas->AddChildToCanvas(Widget);
-		CanvasSlot->SetPosition(Location);
-		CanvasSlot->SetAutoSize(true);
-		return CanvasSlot;
-	}
+	Popups.Add(Widget);
 
-	return nullptr;
+	UCanvasPanelSlot* CanvasSlot = NodeCanvas->AddChildToCanvas(Widget);
+	CanvasSlot->SetPosition(Location);
+	CanvasSlot->SetAutoSize(true);
+	CanvasSlot->SetZOrder(Heart::Canvas::PopUpZOrder);
+	return CanvasSlot;
 }
 
 bool UHeartGraphCanvas::RemoveWidgetFromPopups(UWidget* Widget)
 {
 	if (!IsValid(Widget)) return false;
 
-	if (IsValid(PopupsCanvas))
-	{
-		return PopupsCanvas->RemoveChild(Widget);
-	}
+	Popups.Remove(Widget);
 
-	return false;
+	return NodeCanvas->RemoveChild(Widget);
 }
 
 void UHeartGraphCanvas::ClearPopups()
 {
-	if (IsValid(PopupsCanvas))
+	TArray<TObjectPtr<UWidget>> PopupsCopy = Popups;
+
+	for (auto&& Widget : PopupsCopy)
 	{
-		PopupsCanvas->ClearChildren();
+		RemoveWidgetFromPopups(Widget);
 	}
+
+	Popups.Empty();
 }

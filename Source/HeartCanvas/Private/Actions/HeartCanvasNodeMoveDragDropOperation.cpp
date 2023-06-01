@@ -9,6 +9,11 @@
 
 #include "Components/CanvasPanelSlot.h"
 
+bool UHeartCanvasNodeMoveDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
+{
+	return Widget && Widget->IsA<UHeartGraphCanvasNode>();
+}
+
 bool UHeartCanvasNodeMoveDragDropOperation::SetupDragDropOperation()
 {
 	if (UHeartGraphCanvasNode* CreatedByNode = Cast<UHeartGraphCanvasNode>(SummonedBy))
@@ -52,11 +57,11 @@ void UHeartCanvasNodeMoveDragDropOperation::Dragged_Implementation(const FPointe
 			Diff *= DIVSettings.DragMultiplier;
 
 			Canvas->AddToViewCorner(Diff, DIVSettings.InterpDragIntoView);
-			Canvas->SetNodeLocation(Node->GetNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(UnclampedPosition));
+			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(UnclampedPosition));
 		}
 		else
 		{
-			Canvas->SetNodeLocation(Node->GetNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(ClampedPosition));
+			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(ClampedPosition));
 		}
 	}
 }

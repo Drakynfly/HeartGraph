@@ -5,10 +5,10 @@
 #include "UObject/Object.h"
 #include "HeartGraphSchema.generated.h"
 
+struct FHeartGraphPinReference;
 class UHeartGraph;
-class UHeartCanvasConnectionVisualizer;
-class UHeartGraphPin;
-class UHeartGraphNode;
+class UHeartGraphAction;
+class UHeartGraphNodeRegistry;
 
 /**
  * This is the type of response the graph editor should take when making a connection
@@ -53,14 +53,56 @@ struct FHeartConnectPinsResponse
 	FText Message;
 };
 
+/**
+ * Base class for Heart Schemas, const classes that are interacted with via only their CDO to describe the behavior
+ * of a Heart Graph instance.
+ */
 UCLASS(Abstract, Const, BlueprintType, Blueprintable)
-class HEART_API UHeartGraphSchema : public UObject // UEdGraphSchema
+class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 {
 	GENERATED_BODY()
+
+	friend UHeartGraph;
+
+public:
+	UHeartGraphSchema();
+
+	static const UHeartGraphSchema* Get(const TSubclassOf<UHeartGraph> GraphClass);
+
+	template <typename THeartGraph>
+	static const UHeartGraphSchema* Get()
+	{
+		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "THeartGraph must derive from UHeartGraph");
+		return Get(THeartGraph::StaticClass());
+	}
+
+	template <typename THeartGraphSchema>
+	static const THeartGraphSchema* Get(const TSubclassOf<UHeartGraph> GraphClass)
+	{
+		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
+		return Cast<THeartGraphSchema>(Get(GraphClass));
+	}
+
+	template <typename THeartGraphSchema, typename THeartGraph>
+	static const THeartGraphSchema* Get()
+	{
+		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
+		return Cast<THeartGraphSchema>(Get<THeartGraph>());
+	}
+
+protected:
+	// Called by UHeartGraph's PreSave.
+	virtual void OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPreSaveContext& SaveContext) const;
+
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryGetWorldForGraph(const UHeartGraph* HeartGraph, UWorld*& World) const;
+
+	// Get the class used by the HeartRegistryRuntimeSubsystem to track available nodes and visualizers for this graph.
+	// This usually does not need to be implemented, as the default has most behavior setup out of the box.
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
+	TSubclassOf<UHeartGraphNodeRegistry> GetRegistryClass() const;
 
 	// @todo this visualizer stuff should absolutely not be part of UHeartGraphSchema. what if we wanted to visualize the same graph in multiple ways?
 	// @todo maybe make a interface, or base class for visualizers, so this isn't just a UObject pointer?
@@ -77,18 +119,33 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	UClass* GetConnectionVisualizerClass() const;
 
+
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|Schema")
-	bool TryConnectPins(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
+	bool TryConnectPins(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
-	FHeartConnectPinsResponse CanPinsConnect(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const;
+	FHeartConnectPinsResponse CanPinsConnect(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
 	// AKA, setup function called on all graphs when they are created.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	void CreateDefaultNodesForGraph(UHeartGraph* Graph) const;
 
 #if WITH_EDITORONLY_DATA
+	// Enable to have the runtime function CanPinsConnect called by the EdGraphSchema for this graph.
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	bool RunCanPinsConnectInEdGraph;
+
+	// Optimization to discard Graph Nodes at runtime. Enable this if the Heart Graph is used only as an
+	// intermediate form, from which the Editor generates standalone data, and the node data is no longer used.
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	bool FlushNodesForRuntime = false;
+
+	// Style of slate widget to use by default
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	FName DefaultEditorStyle;
+
+	// Action to run on the graph during PreSave
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	TSubclassOf<UHeartGraphAction> EditorPreSaveAction;
 #endif
 };

@@ -3,6 +3,7 @@
 #include "Graph/Widgets/SHeartPalette.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "HeartEditorCommands.h"
+#include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartEdGraphSchema_Actions.h"
 
@@ -36,7 +37,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 	{
 		if (GraphAction->GetTypeId() == FHeartGraphSchemaAction_NewNode::StaticGetTypeId())
 		{
-			UClass* HeartGraphNodeClass = StaticCastSharedPtr<FHeartGraphSchemaAction_NewNode>(GraphAction)->NodeClass;
+			const UClass* HeartGraphNodeClass = StaticCastSharedPtr<FHeartGraphSchemaAction_NewNode>(GraphAction)->GetNodeClass();
 			HotkeyChord = FHeartSpawnNodeCommands::Get().GetChordByClass(HeartGraphNodeClass);
 		}
 		else if (GraphAction->GetTypeId() == FHeartGraphSchemaAction_NewComment::StaticGetTypeId())
@@ -56,7 +57,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 	const TSharedRef<SWidget> HotkeyDisplayWidget = CreateHotkeyDisplayWidget(NameFont, HotkeyChord);
 
 	// Create the actual widget
-	this->ChildSlot
+	ChildSlot
 	[
 		SNew(SHorizontalBox)
 		+ SHorizontalBox::Slot()
@@ -104,10 +105,18 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 
 	UpdateCategoryNames();
 
-	// @todo bind to the registry subsystem changing
-	//UHeartEdGraphSchema::OnNodeListChanged.AddSP(this, &SHeartPalette::Refresh);
+	if (auto&& EditorRegistry = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>())
+	{
+		EditorRegistry->OnRefreshPalettes.AddSP(this, &SHeartPalette::Refresh);
+	}
 
-	this->ChildSlot
+	UEdGraph* EdGraph = nullptr;
+	if (auto&& HeartGraph = InHeartGraphAssetEditor.Pin()->GetHeartGraph())
+	{
+		EdGraph = HeartGraph->GetEdGraph();
+	}
+
+	ChildSlot
 	[
 		SNew(SBorder)
 			.Padding(2.0f)
@@ -137,6 +146,7 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 							.OnCreateWidgetForAction(this, &SHeartPalette::OnCreateWidgetForAction)
 							.OnCollectAllActions(this, &SHeartPalette::CollectAllActions)
 							.AutoExpandActionMenu(true)
+							.GraphObj(EdGraph)
 					]
 			]
 	];
@@ -144,8 +154,30 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAsse
 
 SHeartPalette::~SHeartPalette()
 {
-	// @todo unbind from the registry subsystem changing
-	//UHeartEdGraphSchema::OnNodeListChanged.RemoveAll(this);
+	if (auto&& EditorRegistry = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>())
+	{
+		EditorRegistry->OnRefreshPalettes.RemoveAll(this);
+	}
+}
+
+TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)
+{
+	return SNew(SHeartPaletteItem, InCreateData);
+}
+
+void SHeartPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
+{
+	const UClass* AssetClass = UHeartGraph::StaticClass();
+
+	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
+	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())
+	{
+		AssetClass = HeartGraphAssetEditor->GetHeartGraph()->GetClass();
+	}
+
+	FGraphActionMenuBuilder ActionMenuBuilder;
+	UHeartEdGraphSchema::GetPaletteActions(ActionMenuBuilder, AssetClass, GetFilterCategoryName());
+	OutAllActions.Append(ActionMenuBuilder);
 }
 
 void SHeartPalette::Refresh()
@@ -183,26 +215,6 @@ void SHeartPalette::UpdateCategoryNames()
 	}
 }
 
-TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)
-{
-	return SNew(SHeartPaletteItem, InCreateData);
-}
-
-void SHeartPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
-{
-	const UClass* AssetClass = UHeartGraph::StaticClass();
-
-	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
-	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())
-	{
-		AssetClass = HeartGraphAssetEditor->GetHeartGraph()->GetClass();
-	}
-
-	FGraphActionMenuBuilder ActionMenuBuilder;
-	UHeartEdGraphSchema::GetPaletteActions(ActionMenuBuilder, AssetClass, GetFilterCategoryName());
-	OutAllActions.Append(ActionMenuBuilder);
-}
-
 FString SHeartPalette::GetFilterCategoryName() const
 {
 	if (CategoryComboBox.IsValid() && CategoryComboBox->GetSelectedItem() != CategoryNames[0])
@@ -225,7 +237,7 @@ void SHeartPalette::OnActionSelected(const TArray<TSharedPtr<FEdGraphSchemaActio
 		auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
 		if (HeartGraphAssetEditor)
 		{
-			HeartGraphAssetEditor->SetUISelectionState(FHeartGraphAssetEditor::PaletteTab);
+			HeartGraphAssetEditor->SetUISelectionState(Heart::Editor::Public::GetPaletteTabID());
 		}
 	}
 }

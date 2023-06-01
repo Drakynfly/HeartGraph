@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include "UObject/Interface.h"
+#include "Model/HeartGraphNodeInterface.h"
+#include "Model/HeartGraphPinInterface.h"
+#include "Model/HeartGraphPinTag.h"
 #include "HeartVisualizerInterfaces.generated.h"
 
-class UHeartGraphNode;
-class UHeartGraphPin;
-
-// This class does not need to be modified.
-UINTERFACE()
-class HEART_API UGraphNodeVisualizerInterface : public UInterface
+UINTERFACE(Blueprintable)
+class HEART_API UGraphNodeVisualizerInterface : public UHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 };
@@ -18,18 +16,29 @@ class HEART_API UGraphNodeVisualizerInterface : public UInterface
 /**
  *
  */
-class HEART_API IGraphNodeVisualizerInterface
+class HEART_API IGraphNodeVisualizerInterface : public IHeartGraphNodeInterface
 {
 	GENERATED_BODY()
 
+protected:
+	// Defer to Blueprint implementation by default
+	virtual UHeartGraphNode* GetHeartGraphNode() const override
+	{
+		return Execute_GetVisualizingNode(_getUObject());
+	}
+
 public:
+	// Get the Heart Graph Node that this object visualizes
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
+	UHeartGraphNode* GetVisualizingNode() const;
+
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
 	TSubclassOf<UHeartGraphNode> GetSupportedGraphNodeClass();
 };
 
 // This class does not need to be modified.
-UINTERFACE()
-class HEART_API UGraphPinVisualizerInterface : public UInterface
+UINTERFACE(Blueprintable)
+class HEART_API UGraphPinVisualizerInterface : public UHeartGraphPinInterface
 {
 	GENERATED_BODY()
 };
@@ -37,13 +46,13 @@ class HEART_API UGraphPinVisualizerInterface : public UInterface
 /**
  *
  */
-class HEART_API IGraphPinVisualizerInterface
+class HEART_API IGraphPinVisualizerInterface : public IHeartGraphPinInterface
 {
 	GENERATED_BODY()
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
-	TSubclassOf<UHeartGraphPin> GetSupportedGraphPinClass();
+	FHeartGraphPinTag GetSupportedGraphPinTag();
 
 	// Get a custom attachment position for the connection. By default it will be wherever the owning node/graph decides:
 	// The default behavior for widgets is to use the center of the widget geometry.
@@ -55,7 +64,7 @@ public:
 };
 
 // This class does not need to be modified.
-UINTERFACE()
+UINTERFACE(Blueprintable)
 class HEART_API UGraphConnectionVisualizerInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -70,5 +79,5 @@ class HEART_API IGraphConnectionVisualizerInterface
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
-	TSubclassOf<UHeartGraphPin> GetSupportedGraphPinClass();
+	FHeartGraphPinTag GetSupportedGraphPinTag();
 };

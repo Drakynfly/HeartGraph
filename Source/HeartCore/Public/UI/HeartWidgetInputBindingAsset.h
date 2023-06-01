@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "HeartWidgetInputBindingBase.h"
-#include "HeartWidgetInputBindingContainer.h"
 #include "InstancedStruct.h"
 #include "Engine/DataAsset.h"
 #include "HeartWidgetInputBindingAsset.generated.h"
 
-USTRUCT()
+class UHeartWidgetInputHandlerAsset;
+
+USTRUCT(BlueprintType)
 struct FHeartWidgetInputBinding
 {
 	GENERATED_BODY()
@@ -31,9 +31,6 @@ class HEARTCORE_API UHeartWidgetInputBindingAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "WidgetInputBindingAsset")
 	TArray<FHeartWidgetInputBinding> BindingData;
-
-	void BindLinker(const TObjectPtr<UHeartWidgetInputLinker>& Linker);
-	void UnbindLinker(const TObjectPtr<UHeartWidgetInputLinker>& Linker);
 };

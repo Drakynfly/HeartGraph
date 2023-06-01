@@ -4,44 +4,13 @@
 
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
-#include "Templates/SubclassOf.h"
+#include "HeartBreakpoint.h"
+#include "Model/HeartGraphPinDesc.h"
 
 #include "HeartEdGraphNode.generated.h"
 
 class UEdGraphSchema;
 class UHeartGraphNode;
-class UHeartGraphPin;
-
-USTRUCT()
-struct HEARTEDITOR_API FHeartBreakpoint
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	bool bHasBreakpoint;
-
-	bool bBreakpointEnabled;
-	bool bBreakpointHit;
-
-	FHeartBreakpoint()
-	{
-		bHasBreakpoint = false;
-		bBreakpointEnabled = false;
-		bBreakpointHit = false;
-	}
-
-	void AddBreakpoint();
-	void RemoveBreakpoint();
-	bool HasBreakpoint() const;
-
-	void EnableBreakpoint();
-	bool CanEnableBreakpoint() const;
-
-	void DisableBreakpoint();
-	bool IsBreakpointEnabled() const;
-
-	void ToggleBreakpoint();
-};
 
 /**
  * Graph representation of a Heart Node in an EdGraph
@@ -57,13 +26,12 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Heart Graph Node
 
-public:
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
 	UHeartGraphNode* GetHeartGraphNode() const;
 
 	// UObject
 	virtual void PostLoad() override;
-	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 	virtual void PostEditImport() override;
 	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
 	// --
@@ -71,6 +39,7 @@ public:
 	// UEdGraphNode
 	virtual void PostPlacedNewNode() override;
 	virtual void PrepareForCopying() override;
+	virtual void PostPasteNode() override;
 	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
     // --
 
@@ -83,7 +52,7 @@ private:
 	void OnBlueprintCompiled();
 
 	UFUNCTION()
-	void OnExternalChange(UHeartGraphNode* Node);
+	void OnNodeRequestReconstruction();
 
 //////////////////////////////////////////////////////////////////////////
 // Graph node
@@ -123,31 +92,27 @@ public:
 	virtual FSlateIcon GetIconAndTint(FLinearColor& OutColor) const override;
 	virtual bool ShowPaletteIconOnNode() const override { return true; }
 	virtual FText GetTooltipText() const override;
+	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;
+	virtual bool CanJumpToDefinition() const override;
+	virtual void JumpToDefinition() const override;
 	// --
 
 //////////////////////////////////////////////////////////////////////////
 // Utils
 
-	UHeartGraphPin* GetPinByName(const FName& Name) const;
+	virtual void GetPopupMessages(TArray<TPair<FString, FLinearColor>>& Messages) const;
 
-public:
-	// UEdGraphNode
-	virtual bool CanJumpToDefinition() const override;
-	virtual void JumpToDefinition() const override;
-	// --
+	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType
+	FEdGraphPinType GetEdGraphPinTypeFromPinDesc(const FHeartGraphPinDesc& PinDesc) const;
 
 	void JumpToNodeDefinition() const;
-
-private:
-	// @todo move out of this class
-	void JumpToClassDefinition(const UClass* Class) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Pins
 
 public:
-	void CreateInputPin(const UHeartGraphPin* HeartPin, const int32 Index = INDEX_NONE);
-	void CreateOutputPin(const UHeartGraphPin* HeartPin, const int32 Index = INDEX_NONE);
+	void CreateInputPin(const FHeartGraphPinDesc& PinDesc);
+	void CreateOutputPin(const FHeartGraphPinDesc& PinDesc);
 
 	void RemoveOrphanedPin(UEdGraphPin* Pin);
 
@@ -161,14 +126,10 @@ public:
 	void AddUserOutput();
 
 	// Add pin only on this instance of node, under default pins
-	void AddInstancePin(const EEdGraphPinDirection Direction, const uint8 NumberedPinsAmount);
+	void AddInstancePin(const EEdGraphPinDirection Direction);
 
 	// Call node and graph updates manually, if using bBatchRemoval
 	void RemoveInstancePin(UEdGraphPin* Pin);
-
-	// UEdGraphNode
-	virtual void GetPinHoverText(const UEdGraphPin& Pin, FString& HoverTextOut) const override;
-	// --
 
 //////////////////////////////////////////////////////////////////////////
 // Breakpoints
@@ -196,7 +157,7 @@ public:
 
 private:
 	UPROPERTY(Instanced)
-	UHeartGraphNode* HeartGraphNode;
+	TObjectPtr<UHeartGraphNode> HeartGraphNode;
 
 	bool bBlueprintCompilationPending;
 	bool bNeedsFullReconstruction;

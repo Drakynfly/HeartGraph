@@ -3,11 +3,17 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "Components/Widget.h"
+
 #include "HeartDragDropOperation.h"
 #include "HeartInputTypes.h"
 #include "HeartWidgetInputLinkerRedirector.h"
 #include "HeartWidgetInputTrip.h"
 #include "HeartWidgetInputLinker.generated.h"
+
+
+struct FHeartWidgetInputBinding;
+struct FHeartManualEvent;
 
 USTRUCT(BlueprintType)
 struct FHeartManualInputQueryResult
@@ -27,7 +33,7 @@ struct FHeartManualInputQueryResult
  * FHeartWidgetInputBindingContainer property. It can be subclassed if necessary for additional custom features, but
  * that is not usually needed.
  */
-UCLASS()
+UCLASS(BlueprintType)
 class HEARTCORE_API UHeartWidgetInputLinker : public UObject
 {
 	GENERATED_BODY()
@@ -49,7 +55,7 @@ public:
 	virtual void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 
 	// Custom input
-	virtual FReply HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, FHeartInputActivation Activation);
+	virtual FReply HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, const FHeartManualEvent& Activation);
 	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UWidget* Widget) const;
 
 public:
@@ -58,6 +64,15 @@ public:
 
 	void BindToOnDragDetected(const FHeartWidgetInputTrip& Trip, const Heart::Input::FConditionalDragDropTrigger& DragDropTrigger);
 	void UnbindToOnDragDetected(const FHeartWidgetInputTrip& Trip);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
+	void AddBindings(const TArray<FHeartWidgetInputBinding>& Bindings);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
+	void RemoveBindings(const TArray<FHeartWidgetInputBinding>& Bindings);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
+	bool TriggerManualInput(UWidget* Widget, FName Key, const FHeartManualEvent& Activation);
 
 private:
 	// Input trips that fire a delegate.
@@ -71,11 +86,17 @@ namespace Heart::Input
 {
 	static UHeartWidgetInputLinker* FindLinkerForWidget(const UWidget* Widget)
 	{
+		if (!ensure(IsValid(Widget))) return nullptr;
+
 		for (auto&& Test = Widget; Test; Test = Test->GetTypedOuter<UWidget>())
 		{
 			if (Test->Implements<UHeartWidgetInputLinkerRedirector>())
 			{
-				return IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test);
+				// In some cases, a widget may implement the interface but have linking disabled, and return nullptr
+				if (UHeartWidgetInputLinker* Linker = IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test))
+				{
+					return Linker;
+				}
 			}
 		}
 

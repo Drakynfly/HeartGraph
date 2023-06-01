@@ -5,14 +5,14 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNodeBlueprint.h"
 
-//#include "BlueprintEditorSettings.h"
-#include "ClassViewerFilter.h"
+#include "Assets/HeartDefaultClassFilter.h"
+
 #include "ClassViewerModule.h"
 #include "Editor.h"
-#include "Kismet2/KismetEditorUtilities.h"
 #include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "SlateOptMacros.h"
+#include "Kismet2/KismetEditorUtilities.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -92,8 +92,8 @@ public:
 				]
 		];
 
-			MakeParentClassPicker();
-		}
+		MakeParentClassPicker();
+	}
 
 	/** Sets properties for the supplied HeartGraphNodeBlueprintFactory */
 	bool ConfigureProperties(const TWeakObjectPtr<UHeartGraphNodeBlueprintFactory> InHeartGraphNodeBlueprintFactory)
@@ -116,27 +116,6 @@ public:
 	}
 
 private:
-	class FHeartGraphNodeBlueprintParentFilter final : public IClassViewerFilter
-	{
-	public:
-		/** All children of these classes will be included unless filtered out by another setting. */
-		TSet<const UClass*> AllowedChildrenOfClasses;
-
-		FHeartGraphNodeBlueprintParentFilter() {}
-
-		virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-		{
-			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InClass) != EFilterReturn::Failed;
-		}
-
-		virtual bool IsUnloadedClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const TSharedRef< const IUnloadedBlueprintData > InUnloadedClassData, TSharedRef< FClassViewerFilterFuncs > InFilterFuncs) override
-		{
-			// If it appears on the allowed child-of classes list (or there is nothing on that list)
-			return InFilterFuncs->IfInChildOfClassesSet(AllowedChildrenOfClasses, InUnloadedClassData) != EFilterReturn::Failed;
-		}
-	};
-
 	/** Creates the combo menu for the parent class */
 	void MakeParentClassPicker()
 	{
@@ -148,7 +127,7 @@ private:
 		Options.DisplayMode = EClassViewerDisplayMode::TreeView;
 		Options.bIsBlueprintBaseOnly = true;
 
-		const TSharedPtr<FHeartGraphNodeBlueprintParentFilter> Filter = MakeShareable(new FHeartGraphNodeBlueprintParentFilter);
+		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShareable(new FHeartDefaultClassFilter);
 
 		// All child child classes of UHeartGraphNode are valid
 		Filter->AllowedChildrenOfClasses.Add(UHeartGraphNode::StaticClass());
@@ -249,7 +228,9 @@ UObject* UHeartGraphNodeBlueprintFactory::FactoryCreateNew(UClass* Class, UObjec
 {
 	check(Class->IsChildOf(UHeartGraphNodeBlueprint::StaticClass()));
 
-	if (ParentClass == nullptr || !FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass) || !ParentClass->IsChildOf(UHeartGraphNode::StaticClass()))
+	if (ParentClass == nullptr ||
+		!FKismetEditorUtilities::CanCreateBlueprintOfClass(ParentClass) ||
+		!ParentClass->IsChildOf(UHeartGraphNode::StaticClass()))
 	{
 		FFormatNamedArguments Args;
 		Args.Add(TEXT("ClassName"), ParentClass ? FText::FromString(ParentClass->GetName()) : LOCTEXT("Null", "(null)"));
@@ -257,18 +238,12 @@ UObject* UHeartGraphNodeBlueprintFactory::FactoryCreateNew(UClass* Class, UObjec
 		return nullptr;
 	}
 
-	UHeartGraphNodeBlueprint* NewBP = CastChecked<UHeartGraphNodeBlueprint>(FKismetEditorUtilities::CreateBlueprint(ParentClass, InParent, Name, BPTYPE_Normal, UHeartGraphNodeBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass(), CallingContext));
-
-	if (NewBP && NewBP->UbergraphPages.Num() > 0)
-	{
-		//UBlueprintEditorSettings* Settings = GetMutableDefault<UBlueprintEditorSettings>();
-		//if(Settings && Settings->bSpawnDefaultBlueprintNodes)
-		{
-			int32 NodePositionY = 0;
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_ExecuteInput"), UHeartGraphNode::StaticClass(), NodePositionY);
-			//FKismetEditorUtilities::AddDefaultEventNode(NewBP, NewBP->UbergraphPages[0], FName("K2_Cleanup"), UHeartGraphNode::StaticClass(), NodePositionY);
-		}
-	}
+	UHeartGraphNodeBlueprint* NewBP = CastChecked<UHeartGraphNodeBlueprint>(
+		FKismetEditorUtilities::CreateBlueprint(
+			ParentClass, InParent, Name, BPTYPE_Normal,
+			UHeartGraphNodeBlueprint::StaticClass(),
+			UBlueprintGeneratedClass::StaticClass(),
+			CallingContext));
 
 	return NewBP;
 }

@@ -1,19 +1,22 @@
-﻿using UnrealBuildTool;
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+
+using UnrealBuildTool;
 
 public class HeartCore : ModuleRules
 {
     public HeartCore(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         // Engine dependencies
         PublicDependencyModuleNames.AddRange(
             new []
             {
                 "Core",
-                "UMG",
+                "GameplayTags",
                 "InputCore",
-                "StructUtils"
+                "StructUtils",
+                "UMG"
             });
 
         PrivateDependencyModuleNames.AddRange(

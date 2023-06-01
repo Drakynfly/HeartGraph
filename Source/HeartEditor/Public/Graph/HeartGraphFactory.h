@@ -13,9 +13,10 @@ class HEARTEDITOR_API UHeartGraphFactory : public UFactory
 public:
 	UHeartGraphFactory(const FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(EditAnywhere, Category = Asset)
-	TSubclassOf<class UHeartGraph> AssetClass;
-
 	virtual bool ConfigureProperties() override;
 	virtual UObject* FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn) override;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = Asset)
+	TSubclassOf<class UHeartGraph> AssetClass;
 };

@@ -1,12 +1,60 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartGraphSchema.h"
+
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphPin.h"
+#include "ModelView/Actions/HeartGraphAction.h"
+#include "UI/HeartInputActivation.h"
+#include "UObject/ObjectSaveContext.h"
+
+UHeartGraphSchema::UHeartGraphSchema()
+{
+#if WITH_EDITORONLY_DATA
+	DefaultEditorStyle = "Horizontal";
+#endif
+}
+
+const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph> GraphClass)
+{
+	if (!ensure(IsValid(GraphClass)))
+	{
+		return GetDefault<UHeartGraphSchema>();
+	}
+
+	const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
+	const UClass* Class = DefaultHeartGraph->GetSchemaClass();
+
+	if (!ensure(IsValid(Class)))
+	{
+		UE_LOG(LogHeartGraph, Warning, TEXT("GetSchemaClass for Graph Class '%s' returned nullptr!"), *GraphClass->GetName())
+		return GetDefault<UHeartGraphSchema>();
+	}
+
+	return GetDefault<UHeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
+}
 
 bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
 {
 	return false;
+}
+
+TSubclassOf<UHeartGraphNodeRegistry> UHeartGraphSchema::GetRegistryClass_Implementation() const
+{
+	return UHeartGraphNodeRegistry::StaticClass();
+}
+
+void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPreSaveContext& SaveContext) const
+{
+	if (!ensure(HeartGraph)) return;
+
+#if WITH_EDITOR
+	if (IsValid(EditorPreSaveAction))
+	{
+		UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
+	}
+#endif
 }
 
 UObject* UHeartGraphSchema::GetConnectionVisualizer() const
@@ -19,35 +67,38 @@ UObject* UHeartGraphSchema::GetConnectionVisualizer() const
 	return nullptr;
 }
 
-bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHeartGraphPin* PinB) const
+bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
-	const FHeartConnectPinsResponse Response = CanPinsConnect(PinA, PinB);
+	UHeartGraphNode* NodeA = Graph->GetNode(PinA.NodeGuid);
+	UHeartGraphNode* NodeB = Graph->GetNode(PinB.NodeGuid);
+
+	const FHeartConnectPinsResponse Response = CanPinsConnect(Graph, PinA, PinB);
 
 	bool bModified = false;
 
 	switch (Response.Response)
 	{
 	case EHeartCanConnectPinsResponse::Allow:
-		PinA->ConnectTo(PinB);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakA:
-		PinA->DisconnectFromAll(true);
-		PinA->ConnectTo(PinB);
+		Graph->DisconnectAllPins(PinA);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakB:
-		PinB->DisconnectFromAll(true);
-		PinA->ConnectTo(PinB);
+		Graph->DisconnectAllPins(PinB);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakAB:
-		PinA->DisconnectFromAll(true);
-		PinB->DisconnectFromAll(true);
-		PinA->ConnectTo(PinB);
+		Graph->DisconnectAllPins(PinA);
+		Graph->DisconnectAllPins(PinB);
+		Graph->ConnectPins(PinA, PinB);
 		bModified = true;
 		break;
 
@@ -68,15 +119,14 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraphPin* PinA, UHea
 
 	if (bModified)
 	{
-		PinA->GetNode()->NotifyPinConnectionsChanged(PinA);
-		PinB->GetNode()->NotifyPinConnectionsChanged(PinB);
-		auto&& Graph = PinA->GetNode()->GetGraph();
-		Graph->NotifyNodeConnectionsChanged({PinA->GetNode(), PinB->GetNode()}, {PinA, PinB});
+		NodeA->NotifyPinConnectionsChanged(PinA.PinGuid);
+		NodeB->NotifyPinConnectionsChanged(PinB.PinGuid);
+		Graph->NotifyNodeConnectionsChanged({NodeA, NodeB}, {PinA.PinGuid, PinB.PinGuid});
 	}
 
 	return bModified;
 }
-FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(UHeartGraphPin* A, UHeartGraphPin* B) const
+FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
 	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow};
 }

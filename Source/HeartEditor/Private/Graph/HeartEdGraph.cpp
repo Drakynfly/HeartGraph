@@ -1,6 +1,8 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/HeartEdGraph.h"
+
+#include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/HeartGraphUtils.h"
@@ -16,11 +18,14 @@ UHeartEdGraph::UHeartEdGraph(const FObjectInitializer& ObjectInitializer)
 {
 }
 
-void UHeartEdGraph::PostLoad()
+void UHeartEdGraph::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
 
-	GetHeartGraph()->OnNodeCreatedInEditorExternally.BindUObject(this, &ThisClass::OnNodeCreatedInEditorExternally);
+	if (!IsTemplate())
+	{
+		GetHeartGraph()->OnNodeCreatedInEditorExternally.BindUObject(this, &ThisClass::OnNodeCreatedInEditorExternally);
+	}
 }
 
 UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
@@ -29,7 +34,6 @@ UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
 	NewGraph->bAllowDeletion = false;
 
 	InHeartGraph->HeartEdGraph = NewGraph;
-	InHeartGraph->OnNodeCreatedInEditorExternally.BindUObject(NewGraph, &ThisClass::OnNodeCreatedInEditorExternally);
 
 	NewGraph->GetSchema()->CreateDefaultNodesForGraph(*NewGraph);
 
@@ -55,7 +59,9 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 	auto&& HeartGraph = GetHeartGraph();
 	HeartGraph->Modify();
 
-	const UClass* EdGraphNodeClass = UHeartEdGraphSchema::GetAssignedEdGraphNodeClass(Node->GetClass());
+	if (!ensure(GEditor)) return;
+
+	const UClass* EdGraphNodeClass = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>()->GetAssignedEdGraphNodeClass(Node->GetClass());
 	auto&& NewEdGraphNode = NewObject<UHeartEdGraphNode>(this, EdGraphNodeClass, NAME_None, RF_NoFlags);
 	NewEdGraphNode->CreateNewGuid();
 
@@ -77,7 +83,7 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 
 	NotifyGraphChanged();
 
-	auto&& HeartGraphAssetEditor = FHeartGraphUtils::GetHeartGraphAssetEditor(this);
+	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(this);
 	if (HeartGraphAssetEditor.IsValid())
 	{
 		HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);

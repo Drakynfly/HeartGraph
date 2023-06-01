@@ -4,9 +4,9 @@
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
+#include "UI/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
-#include "UI/HeartWidgetInputLinker.h"
-#include "UI/HeartWidgetInputTrigger.h"
+#include "UMG/HeartGraphWidgetBase.h"
 
 bool UHeartCanvasActionDragDropOperation::SetupDragDropOperation()
 {
@@ -19,52 +19,23 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 
 	if (IsValid(Action))
 	{
-		FHeartInputActivation Activation;
-		Activation.ActivationValue = 0;
-		Action->Execute(GetHoveredWidget(), Activation, Payload);
+		Action->Execute(GetHoveredWidget(), FHeartInputActivation(PointerEvent), Payload);
 	}
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation_Action::Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
+bool UHeartWidgetInputBinding_DragDropOperation_Action::PassCondition(const UWidget* TestWidget) const
 {
-	Heart::Input::FConditionalDragDropTrigger DragDropTrigger;
+	bool Failed = !Super::PassCondition(TestWidget);
 
-	DragDropTrigger.Condition.BindUObject(this, &ThisClass::PassCondition);
-	DragDropTrigger.Callback.BindUObject(this, &ThisClass::BeginDDO);
-	DragDropTrigger.Layer = Heart::Input::Event;
-
-	for (auto&& Trigger : InTriggers)
+	if (IsValid(ActionClass))
 	{
-		if (Trigger.IsValid())
+		if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(TestWidget))
 		{
-			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
-
-			for (auto&& Trip : Trips)
-			{
-				Linker->BindToOnDragDetected(Trip, DragDropTrigger);
-			}
+			Failed |= !ActionClass.GetDefaultObject()->CanExecuteOnWidget(HeartWidget);
 		}
 	}
 
-	return true;
-}
-
-bool UHeartWidgetInputBinding_DragDropOperation_Action::Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const
-{
-	for (auto&& Trigger : InTriggers)
-	{
-		if (Trigger.IsValid())
-		{
-			auto&& Trips = Trigger.Get<FHeartWidgetInputTrigger>().CreateTrips();
-
-			for (auto&& Trip : Trips)
-			{
-				Linker->UnbindToOnDragDetected(Trip);
-			}
-		}
-	}
-
-	return true;
+	return !Failed;
 }
 
 UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const

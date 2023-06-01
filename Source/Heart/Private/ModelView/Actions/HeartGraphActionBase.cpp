@@ -2,8 +2,10 @@
 
 #include "ModelView/Actions/HeartGraphActionBase.h"
 
+#include "UI/HeartInputActivation.h"
+
 bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGraphActionBase> Class,
-	UObject* Target, const FHeartInputActivation& Activation)
+													UObject* Target, const FHeartManualEvent& Activation)
 {
 	if (!ensure(IsValid(Class)))
 	{
@@ -11,11 +13,11 @@ bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGrap
 	}
 
 	auto&& Action = CreateGraphAction(Class);
-	return Action->Execute(Target, Activation);
+	return Action->Execute(Target, FHeartInputActivation(Activation));
 }
 
 bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartGraphActionBase> Class,
-                                                               UObject* Target, const FHeartInputActivation& Activation, UObject* Payload)
+                                                               UObject* Target, const FHeartManualEvent& Activation, UObject* Payload)
 {
 	if (!ensure(IsValid(Class)))
 	{
@@ -23,7 +25,7 @@ bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf
 	}
 
 	auto&& Action = CreateGraphAction(Class);
-	return Action->Execute(Target, Activation, Payload);
+	return Action->Execute(Target, FHeartInputActivation(Activation), Payload);
 }
 
 UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
@@ -36,12 +38,11 @@ UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassO
 	return NewObject<UHeartGraphActionBase>(GetTransientPackage(), Class);
 }
 
-bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target,
-	const FHeartInputActivation& Activation)
+bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation)
 {
 	if (ensure(Action))
 	{
-		return Action->Execute(Target, Activation);
+		return Action->Execute(Target, FHeartInputActivation(Activation));
 	}
 
 	return false;

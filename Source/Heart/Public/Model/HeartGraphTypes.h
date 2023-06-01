@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "HeartGuids.h"
 #include "HeartGraphTypes.generated.h"
 
 class UHeartGraphNode;
-class UHeartGraphPin;
 
 USTRUCT(BlueprintType)
 struct FHeartGraphConnectionEvent
@@ -16,5 +16,19 @@ struct FHeartGraphConnectionEvent
 	TArray<TObjectPtr<UHeartGraphNode>> AffectedNodes;
 
 	UPROPERTY(BlueprintReadOnly, Category = "ConnectionEvent")
-	TArray<TObjectPtr<UHeartGraphPin>> AffectedPins;
+	TArray<FHeartPinGuid> AffectedPins;
 };
+
+USTRUCT(BlueprintType)
+struct FHeartGraphNodeMessage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "NodeMessage")
+	FText Message;
+
+	UPROPERTY(BlueprintReadOnly, Category = "NodeMessage")
+	FLinearColor Color = FLinearColor::White;
+};
+
+

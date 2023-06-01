@@ -3,23 +3,22 @@
 #pragma once
 
 #include "HeartWidgetInputBindingBase.h"
-#include "HeartDragDropOperation.h"
+#include "HeartWidgetInputBinding_DragDropOperationBase.h"
 #include "HeartWidgetInputBinding_DragDropOperation.generated.h"
 
+enum class EDragPivot : uint8;
+
 /**
- *
+ * A heart widget input binding that can launch a Drag Drop Operation
  */
 UCLASS(meta = (DisplayName = "Drag Drop Operation"))
-class HEARTCORE_API UHeartWidgetInputBinding_DragDropOperation : public UHeartWidgetInputBindingBase
+class HEARTCORE_API UHeartWidgetInputBinding_DragDropOperation : public UHeartWidgetInputBinding_DragDropOperationBase
 {
 	GENERATED_BODY()
 
-public:
-	virtual bool Bind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const override;
-	virtual bool Unbind(UHeartWidgetInputLinker* Linker, const TArray<FInstancedStruct>& InTriggers) const override;
-
 protected:
-	UHeartDragDropOperation* BeginDDO(UWidget* Widget) const;
+	virtual bool PassCondition(const UWidget* TestWidget) const override;
+	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))

@@ -18,6 +18,11 @@ struct FHeartWidgetInputTrip
 	FKey Key = EKeys::Invalid;
 	FName CustomKey = NAME_None;
 
+	bool IsValid() const
+	{
+		return Type != Unknown && (Key.IsValid() || !CustomKey.IsNone());
+	}
+
 	friend bool operator==(const FHeartWidgetInputTrip& Lhs, const FHeartWidgetInputTrip& Rhs)
 	{
 		return Lhs.Type == Rhs.Type &&

@@ -1,4 +1,6 @@
-﻿using UnrealBuildTool;
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+
+using UnrealBuildTool;
 
 public class HeartCanvas : ModuleRules
 {
@@ -11,6 +13,7 @@ public class HeartCanvas : ModuleRules
             {
                 "Core",
                 "InputCore",
+                "GameplayTags",
                 "UMG"
             }
         );

@@ -4,7 +4,7 @@
 
 #include "UMG/HeartGraphCanvas.h" // For log category
 #include "Components/PanelWidget.h"
-#include "GraphRegistry/HeartNodeRegistrySubsystem.h"
+#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
 #include "UI/HeartUMGContextObject.h"
 
@@ -13,11 +13,11 @@ UHeartNodePalette* UHeartNodePaletteCategory::GetPalette() const
 	return GetTypedOuter<UHeartNodePalette>();
 }
 
-UWidget* UHeartNodePaletteCategory::MakeWidgetForNode_Implementation(UClass* NodeClass)
+UWidget* UHeartNodePaletteCategory::MakeWidgetForNode_Implementation(const FHeartNodeSource NodeSource)
 {
 	auto&& Palette = GetPalette();
 	if (!IsValid(Palette)) return nullptr;
-	return Palette->CreateNodeWidgetFromFactory(NodeClass);
+	return Palette->CreateNodeWidgetFromFactory(NodeSource);
 }
 
 bool UHeartNodePalette::Initialize()
@@ -51,7 +51,7 @@ void UHeartNodePalette::Reset()
 	OnReset();
 }
 
-void UHeartNodePalette::Display(const TMap<UClass*, TSubclassOf<UHeartGraphNode>>& Classes)
+void UHeartNodePalette::Display(const TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& Classes)
 {
 	if (!ensure(IsValid(PalettePanel)))
 	{
@@ -60,28 +60,28 @@ void UHeartNodePalette::Display(const TMap<UClass*, TSubclassOf<UHeartGraphNode>
 
 	for (auto&& ClassPair : Classes)
 	{
-		UClass* NodeClass = ClassPair.Key;
+		FHeartNodeSource NodeSource = ClassPair.Key;
 		TSubclassOf<UHeartGraphNode> GraphNode = ClassPair.Value;
 
-		if (!ensure(IsValid(NodeClass) || !ensure(IsValid(GraphNode))))
+		if (!ensure(NodeSource.IsValid() && IsValid(GraphNode)))
 		{
 			continue;
 		}
 
-		if (!ShouldDisplayNode(NodeClass, GraphNode))
+		if (!ShouldDisplayNode(NodeSource, GraphNode))
 		{
 			continue;
 		}
 
-		FText Category = GraphNode->GetDefaultObject<UHeartGraphNode>()->GetDefaultNodeCategory(NodeClass);
+		FText Category = GraphNode->GetDefaultObject<UHeartGraphNode>()->GetDefaultNodeCategory(NodeSource);
 
 		if (UHeartNodePaletteCategory* CategoryWidget = FindOrCreateCategory(Category))
 		{
-			CategoryWidget->AddNode(NodeClass);
+			CategoryWidget->AddNode(NodeSource);
 		}
 		else
 		{
-			if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(NodeClass))
+			if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(NodeSource))
 			{
 				PalettePanel->AddChild(NewPaletteEntry);
 			}
@@ -122,9 +122,11 @@ UHeartNodePaletteCategory* UHeartNodePalette::FindOrCreateCategory(const FText& 
 	return nullptr;
 }
 
-UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(UClass* NodeClass)
+UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSource NodeSource)
 {
-	if (auto&& WidgetClass = WidgetFactory.GetWidgetClass(NodeClass))
+	UObject* Obj = NodeSource.As<UObject>();
+
+	if (auto&& WidgetClass = WidgetFactory.GetWidgetClass(NodeSource.As<UObject>()))
 	{
 		auto&& NewNodeWidget = CreateWidget(this, WidgetClass);
 
@@ -132,13 +134,13 @@ UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(UClass* NodeClass)
 		// highly suggested.
 		if (NewNodeWidget->Implements<UHeartUMGContextObject>())
 		{
-			IHeartUMGContextObject::Execute_SetContextObject(NewNodeWidget, NodeClass);
+			IHeartUMGContextObject::Execute_SetContextObject(NewNodeWidget, Obj);
 		}
 
 		return NewNodeWidget;
 	}
 
-	UE_LOG(LogHeartGraphCanvas, Warning, TEXT("WidgetClass not found in WidgetFactory for '%s'. It will not be displayed!"), *NodeClass->GetName())
+	UE_LOG(LogHeartGraphCanvas, Warning, TEXT("WidgetClass not found in WidgetFactory for '%s'. It will not be displayed!"), *Obj->GetName())
 	return nullptr;
 }
 
@@ -146,28 +148,21 @@ void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
 
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartNodeRegistrySubsystem>();
+	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 
 	if (auto&& Registry = NodeRegistrySubsystem->GetRegistry(DisplayedRegistryGraph))
 	{
-		TMap<UClass*, TSubclassOf<UHeartGraphNode>> NodeClasses;
+		TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>> NodeClasses;
 
-		if (Filter.IsBound())
-		{
-			Registry->GetFilteredNodeClassesWithGraphClass(Filter, NodeClasses);
-		}
-		else
-		{
-			Registry->GetNodeClassesWithGraphClass(NodeClasses);
-		}
+		Registry->QueryGraphAndNodeClasses(Query, NodeClasses);
 
 		Display(NodeClasses);
 	}
 }
 
-void UHeartNodePalette::SetFilter(const FNodeClassFilter& NewFilter, const bool bRefreshPalette)
+void UHeartNodePalette::SetFilter(const FNodeSourceFilter& NewFilter, const bool bRefreshPalette)
 {
-	Filter = NewFilter;
+	Query.Filter = NewFilter;
 
 	if (bRefreshPalette)
 	{
@@ -177,7 +172,7 @@ void UHeartNodePalette::SetFilter(const FNodeClassFilter& NewFilter, const bool 
 
 void UHeartNodePalette::ClearFilter(const bool bRefreshPalette)
 {
-	Filter.Unbind();
+	Query.Filter.Unbind();
 
 	if (bRefreshPalette)
 	{
@@ -185,11 +180,11 @@ void UHeartNodePalette::ClearFilter(const bool bRefreshPalette)
 	}
 }
 
-bool UHeartNodePalette::ShouldDisplayNode_Implementation(const UClass* NodeClass,
+bool UHeartNodePalette::ShouldDisplayNode_Implementation(const FHeartNodeSource NodeClass,
                                                          const TSubclassOf<UHeartGraphNode> GraphNodeClass)
 {
-	if (NodeClass->HasAnyClassFlags(CLASS_Abstract | CLASS_Deprecated)) return false;
-	if (GraphNodeClass->HasAnyClassFlags(CLASS_Abstract | CLASS_Deprecated)) return false;
+	if (NodeClass.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return false;
+	if (GraphNodeClass->HasAnyClassFlags(CLASS_Abstract)) return false;
 
 	return GetDefault<UHeartGraphNode>(GraphNodeClass)->CanCreate();
 }

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "HeartDragDropOperation.h"
-#include "HeartWidgetInputCondition.h"
+class UWidget;
+class UHeartDragDropOperation;
 
 DECLARE_DELEGATE_RetVal_OneParam(FText, FHeartWidgetInputDescription, const UWidget* /** Widget */);
 
@@ -20,8 +20,8 @@ namespace Heart::Input
 	enum EHeartInputLayer
 	{
 		None, // Blank layer. Do not use.
-		Event, // Default layer. Events cause FReply::Handled to be returned
-		Listener, // Interception layer. Events cause FReply::Unhandled to be returned
+		Event, // Default layer. Events may return FReply::Handled
+		Listener, // Interception layer. Listeners always return FReply::Unhandled
 	};
 
 	struct FConditionalInputBase
@@ -29,9 +29,10 @@ namespace Heart::Input
 		// Callback to retrieve a text description of the action
 		FHeartWidgetInputDescription Description;
 
-		// @todo conditions are a hack. they don't need to be used 95% of the time, and when they are used, its to fix weird behavior in other stuff
-		// Track down and fix the general weirdness with input binding and eventually deprecate them, probably, unless they become useful in some permanent way
+		// Callback to determine if the context of the trigger is valid for executing the action
 		FHeartWidgetInputCondition Condition;
+
+		// Input layers determine the priority of callbacks, and whether they Handle the input callstack
 		EHeartInputLayer Layer = None;
 
 		friend bool operator<(const FConditionalInputBase& A, const FConditionalInputBase& B)

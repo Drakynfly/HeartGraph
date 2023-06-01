@@ -3,7 +3,7 @@
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphPin.h"
+#include "Model/HeartGraphPinInterface.h"
 
 bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
@@ -19,9 +19,9 @@ bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Ac
 		return true;
 	}
 
-	if (auto&& Pin = Cast<UHeartGraphPin>(Object))
+	if (Object->Implements<UHeartGraphPinInterface>())
 	{
-		ExecuteOnPin(Pin, Activation, ContextObject);
+		ExecuteOnPin(Object, Activation, ContextObject);
 		return true;
 	}
 
@@ -54,9 +54,9 @@ void UHeartGraphActionBlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const 
 	}
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnPin(UHeartGraphPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
+void UHeartGraphActionBlueprintBase::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
-	if (ensure(IsValid(Pin)))
+	if (ensure(IsValid(Pin.GetObject())))
 	{
 		BP_ExecuteOnPin(Pin, Activation, ContextObject);
 	}

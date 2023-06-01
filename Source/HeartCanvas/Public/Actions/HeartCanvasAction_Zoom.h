@@ -17,4 +17,7 @@ public:
 	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+
+protected:
+	void HandleAddZoom(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation);
 };

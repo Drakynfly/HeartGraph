@@ -8,22 +8,12 @@
 class UHeartGraph;
 class UHeartGraphNode;
 
-//DECLARE_MULTICAST_DELEGATE(FHeartGraphSchemaRefresh);
-
 UCLASS()
 class HEARTEDITOR_API UHeartEdGraphSchema : public UEdGraphSchema
 {
 	GENERATED_BODY()
 
-private:
-	//static TArray<UClass*> NativeHeartGraphNodes;
-	//static TMap<FName, FAssetData> BlueprintHeartGraphNodes;
-	//static TMap<UClass*, UClass*> AssignedGraphNodeClasses;
-
-	//static bool bBlueprintCompilationPending;
-
 public:
-	static void SubscribeToAssetChanges();
 	static void GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const FString& CategoryName);
 
 	//~ EdGraphSchema
@@ -43,32 +33,14 @@ public:
 	// --
 
 	virtual void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
-
 	//~ EdGraphSchema
 
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
-	static UClass* GetAssignedEdGraphNodeClass(const UClass* HeartGraphNodeClass);
-
 
 private:
 	static void GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName);
 	static void GetCommentAction(FGraphActionMenuBuilder& ActionMenuBuilder, const UEdGraph* CurrentGraph = nullptr);
 
-	static bool IsHeartGraphNodePlaceable(const UClass* Class);
-
-	//static void OnBlueprintPreCompile(UBlueprint* Blueprint);
-	//static void OnBlueprintCompiled();
-
-	//static void GatherHeartGraphNodes();
-	//static void OnHotReload(EReloadCompleteReason ReloadCompleteReason);
-
-	//static void OnAssetAdded(const FAssetData& AssetData);
-	//static void AddAsset(const FAssetData& AssetData, const bool bBatch);
-	//static void OnAssetRemoved(const FAssetData& AssetData);
-
 public:
-	//static FHeartGraphSchemaRefresh OnNodeListChanged;
-	static UBlueprint* GetPlaceableNodeBlueprint(const FAssetData& AssetData);
-
 	static const UHeartGraph* GetAssetClassDefaults(const UEdGraph* Graph);
 };

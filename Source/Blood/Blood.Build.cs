@@ -1,13 +1,17 @@
-﻿using UnrealBuildTool;
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+
+using UnrealBuildTool;
 
 public class Blood : ModuleRules
 {
     public Blood(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+        bUseUnity = false;
 
         PublicDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "Core",
                 "StructUtils",
@@ -15,7 +19,7 @@ public class Blood : ModuleRules
         );
 
         PrivateDependencyModuleNames.AddRange(
-            new string[]
+            new []
             {
                 "CoreUObject",
                 "Engine",

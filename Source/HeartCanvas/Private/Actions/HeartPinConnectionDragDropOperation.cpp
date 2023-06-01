@@ -8,6 +8,11 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "View/PinConnectionStatusInterface.h"
 
+bool UHeartPinConnectionDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
+{
+	return Widget && Widget->IsA<UHeartGraphCanvasPin>();
+}
+
 bool UHeartPinConnectionDragDropOperation::SetupDragDropOperation()
 {
 	if (UHeartGraphCanvasPin* CanvasPin = Cast<UHeartGraphCanvasPin>(SummonedBy))
@@ -16,7 +21,7 @@ bool UHeartPinConnectionDragDropOperation::SetupDragDropOperation()
 		Canvas = CanvasPin->GetCanvas();
 		if (Canvas.IsValid())
 		{
-			Canvas->SetPreviewConnection(DraggedPin->GetPin()->GetReference());
+			Canvas->SetPreviewConnection(DraggedPin->GetPinReference());
 			DraggedPin->SetIsPreviewConnectionTarget(true, true);
 			return true;
 		}
@@ -36,7 +41,9 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 
 	if (DraggedPin.IsValid() && HoveredPin.IsValid())
 	{
-		if (Canvas->GetGraph()->GetSchema()->TryConnectPins(DraggedPin->GetPin(), HoveredPin->GetPin()))
+		UHeartGraph* Graph = Canvas->GetGraph();
+
+		if (Graph->GetSchema()->TryConnectPins(Graph, DraggedPin->GetPinReference(), HoveredPin->GetPinReference()))
 		{
 		}
 	}
@@ -88,7 +95,8 @@ bool UHeartPinConnectionDragDropOperation::OnHoverPin(UHeartGraphCanvasPin* Canv
 			}
 
 			HoveredPin = CanvasPin;
-			Response = Canvas->GetGraph()->GetSchema()->CanPinsConnect(DraggedPin->GetPin(), HoveredPin->GetPin());
+			Response = Canvas->GetGraph()->GetSchema()->CanPinsConnect(Canvas->GetGraph(),
+					DraggedPin->GetPinReference(), HoveredPin->GetPinReference());
 			HoveredPin->SetIsPreviewConnectionTarget(true, Response.Response != EHeartCanConnectPinsResponse::Disallow);
 
 			if (DefaultDragVisual && DefaultDragVisual->Implements<UPinConnectionStatusInterface>())
