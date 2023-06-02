@@ -77,6 +77,11 @@ void UHeartGraph::PostLoad()
 			continue;
 		}
 
+		if (Node.Value->NodeObject->GetOuter() == this)
+		{
+			Node.Value->NodeObject->Rename(nullptr, Node.Value);
+		}
+
 		// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
 		// or these nodes will be invisible in the EdGraph
 		if (!IsValid(Node.Value->HeartEdGraphNode))
@@ -139,7 +144,10 @@ void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) 
 	{
 		if (ensure(Element.Value))
 		{
-			if (Iter(Element.Value)) return;
+			if (!Iter(Element.Value))
+			{
+				break;
+			}
 		}
 	}
 }
@@ -195,6 +203,11 @@ UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExt
 
 UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExtension> Class)
 {
+	if (!IsValid(Class))
+	{
+		return nullptr;
+	}
+
 	if (Extensions.Contains(Class))
 	{
 		return nullptr;
@@ -255,15 +268,10 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 		return nullptr;
 	}
 
-	// The graph has to be the outer for the NodeObjects or Unreal will kill them when recompiling the heart graph blueprint
-	// This is probably just a issue with the current version of unreal (5.1.0), but even if it's fixed, it's probably fine
-	// to leave it like this.
-	UObject* NewNodeObject = NewObject<UObject>(this, NodeClass);
-
 	UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
 	NewGraphNode->Guid = FHeartNodeGuid::New();
 	NewGraphNode->Location = Location;
-	NewGraphNode->NodeObject = NewNodeObject;
+	NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeClass);
 
 	NewGraphNode->OnCreate();
 
@@ -298,11 +306,13 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 		return;
 	}
 
+	/*
 	if (!ensure(IsValid(Node->GetNodeObject())))
 	{
 		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node with invalid object!"))
 		return;
 	}
+	*/
 
 	const FHeartNodeGuid NodeGuid = Node->GetGuid();
 

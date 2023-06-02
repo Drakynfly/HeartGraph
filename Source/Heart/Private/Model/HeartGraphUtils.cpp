@@ -67,7 +67,7 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInte
 			{
 				OutNodes.Add(Node);
 			}
-			return false;
+			return true;
 		});
 
 	return OutNodes;
@@ -88,7 +88,7 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScript
 			{
 				OutNodes.Add(Node);
 			}
-			return false;
+			return true;
 		});
 
 	return OutNodes;

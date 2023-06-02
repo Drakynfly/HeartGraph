@@ -1,8 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "General/HeartFlakes.h"
-
 #include "General/HeartFlakeInterface.h"
+
+#include "Compression/OodleDataCompressionUtil.h"
 
 static const FName SkippedObjectMarker("_SKIP_");
 
@@ -19,7 +20,7 @@ FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)
 	}
 	else
 	{
-		ClassOrSkip = Obj->GetClass()->GetPathName();
+		ClassOrSkip = FSoftClassPath(Obj->GetClass()).ToString();
 	}
 
 	*this << ClassOrSkip;
@@ -75,31 +76,28 @@ FArchive& FHeartMemoryReader::operator<<(UObject*& Obj)
 	FString ClassOrSkip;
 	*this << ClassOrSkip;
 
-	if (*ClassOrSkip != SkippedObjectMarker)
+	if (ClassOrSkip.IsEmpty())
 	{
-		if (ClassOrSkip.IsEmpty())
-		{
-			return *this;
-		}
+		return *this;
+	}
 
-		const UClass* ObjClass = FindObject<UClass>(nullptr, *ClassOrSkip);
-		if (!IsValid(ObjClass))
-		{
-			ObjClass = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, *ClassOrSkip,
-				nullptr, LOAD_None, nullptr));
-		}
+	if (*ClassOrSkip == SkippedObjectMarker)
+	{
+		return *this;
+	}
 
-		if (IsValid(ObjClass))
+	const UClass* ObjClass = FSoftClassPath(ClassOrSkip).TryLoadClass<UObject>();
+
+	if (IsValid(ObjClass))
+	{
+		Obj = NewObject<UObject>(OuterStack.Last(), ObjClass);
+		OuterStack.Push(Obj);
+		Obj->Serialize(*this);
+		if (Obj->Implements<UHeartFlakeInterface>())
 		{
-			Obj = NewObject<UObject>(OuterStack.Last(), ObjClass);
-			OuterStack.Push(Obj);
-			Obj->Serialize(*this);
-			if (Obj->Implements<UHeartFlakeInterface>())
-			{
-				IHeartFlakeInterface::Execute_PostRead(Obj);
-			}
-			OuterStack.Pop();
+			IHeartFlakeInterface::Execute_PostRead(Obj);
 		}
+		OuterStack.Pop();
 	}
 
 	return *this;
@@ -136,36 +134,82 @@ FString FHeartMemoryReader::GetArchiveName() const
 	return TEXT("FHeartMemoryReader");
 }
 
+namespace Heart::Flakes
+{
+	FHeartFlake CreateFlake(UObject* Object)
+	{
+		FHeartFlake Flake;
+		Flake.Class = Object->GetClass()->GetPathName();
+
+		TArray<uint8> Raw;
+		FHeartMemoryWriter MemoryWriter(Raw, Object);
+		Object->Serialize(MemoryWriter);
+
+		FOodleCompressedArray::CompressTArray(
+			Flake.Data, Raw,
+			FOodleDataCompression::ECompressor::Kraken, // @todo expose as option
+			FOodleDataCompression::ECompressionLevel::SuperFast // @todo expose as option
+			);
+
+		MemoryWriter.FlushCache();
+		MemoryWriter.Close();
+
+		return Flake;
+	}
+
+	void WriteObject(UObject* Object, const FHeartFlake& Flake)
+	{
+		TArray<uint8> Raw;
+
+		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+
+		FHeartMemoryReader MemoryReader(Raw, true, Object);
+		Object->Serialize(MemoryReader);
+
+		MemoryReader.FlushCache();
+		MemoryReader.Close();
+	}
+
+	UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
+	{
+		if (!IsValid(ExpectedClass) || ExpectedClass->IsChildOf<AActor>())
+		{
+			return nullptr;
+		}
+
+		const UClass* ObjClass = Flake.Class.TryLoadClass<UObject>();
+
+		if (!IsValid(ObjClass))
+		{
+			return nullptr;
+		}
+
+		if (!ObjClass->IsChildOf(ExpectedClass))
+		{
+			return nullptr;
+		}
+
+		auto&& LoadedObject = NewObject<UObject>(Outer, ObjClass);
+
+		WriteObject(LoadedObject, Flake);
+
+		return LoadedObject;
+	}
+}
+
 FHeartFlake UHeartFlakeLibrary::CreateFlake(UObject* Object)
 {
 	check(Object && !Object->IsA<AActor>());
 
-	FHeartFlake Flake;
-    Flake.Class = Object->GetClass()->GetPathName();
-
-    FHeartMemoryWriter MemoryWriter(Flake.Data, Object);
-    Object->Serialize(MemoryWriter);
-
-    MemoryWriter.FlushCache();
-    MemoryWriter.Close();
-
-	return Flake;
+	return Heart::Flakes::CreateFlake(Object);
 }
 
 FHeartFlake_Actor UHeartFlakeLibrary::CreateFlake_Actor(AActor* Actor)
 {
 	check(Actor);
 
-	FHeartFlake_Actor Flake;
-	Flake.Class = Actor->GetClass()->GetPathName();
-
-	FHeartMemoryWriter MemoryWriter(Flake.Data, Actor);
-	Actor->Serialize(MemoryWriter);
-
+	FHeartFlake_Actor Flake = Heart::Flakes::CreateFlake(Actor);
 	Flake.Transform = Actor->GetTransform();
-
-	MemoryWriter.FlushCache();
-	MemoryWriter.Close();
 
 	return Flake;
 }
@@ -173,73 +217,23 @@ FHeartFlake_Actor UHeartFlakeLibrary::CreateFlake_Actor(AActor* Actor)
 UObject* UHeartFlakeLibrary::ConstructObjectFromFlake(const FHeartFlake& Flake, UObject* Outer,
                                                       const UClass* ExpectedClass)
 {
-	if (!IsValid(ExpectedClass) || ExpectedClass->IsChildOf<AActor>())
-	{
-		return nullptr;
-	}
-
-	const FString ClassStr = Flake.Class;
-	if (ClassStr.IsEmpty())
-	{
-		return nullptr;
-	}
-
-	auto&& ObjClass = FindObject<UClass>(nullptr, *ClassStr);
-	if (!IsValid(ObjClass))
-	{
-		ObjClass = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, *ClassStr, nullptr, LOAD_None, nullptr));
-	}
-
-	if (!IsValid(ObjClass))
-	{
-		return nullptr;
-	}
-
-	if (!ObjClass->IsChildOf(ExpectedClass))
-	{
-		return nullptr;
-	}
-
-	auto&& LoadedObject = NewObject<UObject>(Outer, ObjClass);
-
-	FHeartMemoryReader MemoryReader(Flake.Data, true, LoadedObject);
-	LoadedObject->Serialize(MemoryReader);
-
-	MemoryReader.FlushCache();
-	MemoryReader.Close();
-
-	return LoadedObject;
+	return Heart::Flakes::CreateObject(Flake, Outer, ExpectedClass);
 }
 
 AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Flake, UObject* WorldContextObj,
 	const TSubclassOf<AActor> ExpectedClass)
 {
-	if (!IsValid(ExpectedClass) || ExpectedClass->IsChildOf<AActor>())
-	{
-		return nullptr;
-	}
-
 	if (!IsValid(WorldContextObj))
 	{
 		return nullptr;
 	}
 
-	const FString ClassStr = Flake.Class;
-	if (ClassStr.IsEmpty())
+	if (!IsValid(ExpectedClass))
 	{
 		return nullptr;
 	}
 
-	auto&& ActorClass = FindObject<UClass>(nullptr, *ClassStr);
-	if (!IsValid(ActorClass))
-	{
-		ActorClass = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, *ClassStr, nullptr, LOAD_None, nullptr));
-	}
-
-	if (!IsValid(ActorClass))
-	{
-		return nullptr;
-	}
+	const TSubclassOf<AActor> ActorClass = Flake.Class.TryLoadClass<AActor>();
 
 	if (!ActorClass->IsChildOf(ExpectedClass))
 	{
@@ -248,13 +242,9 @@ AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Fla
 
 	if (auto&& LoadedActor = WorldContextObj->GetWorld()->SpawnActorDeferred<AActor>(ActorClass, FTransform::Identity))
 	{
+		Heart::Flakes::WriteObject(LoadedActor, Flake);
+
 		LoadedActor->FinishSpawning(Flake.Transform);
-
-		FHeartMemoryReader MemoryReader(Flake.Data, true, LoadedActor);
-		LoadedActor->Serialize(MemoryReader);
-
-		MemoryReader.FlushCache();
-		MemoryReader.Close();
 
 		return LoadedActor;
 	}

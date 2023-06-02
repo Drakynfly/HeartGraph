@@ -53,7 +53,7 @@ struct HEARTCORE_API FHeartFlake
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FString Class;
+	FSoftClassPath Class;
 
 	UPROPERTY()
 	TArray<uint8> Data;
@@ -71,6 +71,11 @@ struct HEARTCORE_API FHeartFlake_Actor : public FHeartFlake
 {
 	GENERATED_BODY()
 
+	FHeartFlake_Actor() {}
+
+	FHeartFlake_Actor(const FHeartFlake& Flake)
+	  : FHeartFlake(Flake) {}
+
 	UPROPERTY()
 	FTransform Transform;
 
@@ -82,6 +87,21 @@ struct HEARTCORE_API FHeartFlake_Actor : public FHeartFlake
 		return Ar;
 	}
 };
+
+namespace Heart::Flakes
+{
+	HEARTCORE_API FHeartFlake CreateFlake(UObject* Object);
+
+	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake);
+
+	HEARTCORE_API UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
+
+	template <typename T>
+	T* CreateObject(const FHeartFlake& Flake, UObject* Outer)
+	{
+		return Cast<T>(CreateObject(Flake, Outer, T::StaticClass()));
+	}
+}
 
 /**
  * A simple set of functions to convert arbitrary objects/actors into "Flakes", and back. This is Heart's serialization

@@ -15,6 +15,16 @@ UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 	return DuplicateObject(Source, Outer);
 }
 
+bool UHeartGeneralUtils::AddObjectToActorReplicateSubObjectList(AActor* Actor, UObject* Object)
+{
+	if (Object && Actor && Object->GetOuter() == Actor)
+	{
+		Actor->AddReplicatedSubObject(Object);
+		return Actor->IsReplicatedSubObjectRegistered(Object);
+	}
+	return false;
+}
+
 UClass* UHeartGeneralUtils::GetParentClass(const UClass* Class)
 {
 	return IsValid(Class) ? Class->GetSuperClass() : nullptr;

@@ -99,8 +99,10 @@ public:
 	//* IHeartGraphInterface */
 
 
+	// Return true in Iter to continue iterating
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
 
+	// Return true in Iter to continue iterating
 	void ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const;
 
 
@@ -194,7 +196,7 @@ public:
 
 	/** Add the extension of the requested class. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
-	UHeartGraphExtension* AddExtension(TSubclassOf<UHeartGraphExtension> Class);
+	UHeartGraphExtension* AddExtension(UPARAM(meta = (AllowAbstract = "false")) TSubclassOf<UHeartGraphExtension> Class);
 
 	/** Remove the extension. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
