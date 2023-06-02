@@ -89,8 +89,8 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 				return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Invalid Heart Graph Node!"));
 			}
 
-			const FHeartPinGuid HeartPinA = HeartNodeA->GetPinByName(PinA->GetFName());
-			const FHeartPinGuid HeartPinB = HeartNodeB->GetPinByName(PinB->GetFName());
+			const FHeartPinGuid& HeartPinA = HeartNodeA->GetPinByName(PinA->GetFName());
+			const FHeartPinGuid& HeartPinB = HeartNodeB->GetPinByName(PinB->GetFName());
 
 			FHeartConnectPinsResponse RuntimeResult;
 

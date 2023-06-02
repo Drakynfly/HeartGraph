@@ -19,7 +19,7 @@ class UHeartGraph;
 class UHeartGraphCanvas;
 class UHeartGraphNode;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, FHeartPinGuid, Pin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, const FHeartPinGuid&, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
 
@@ -204,10 +204,10 @@ public:
 	FVector2D GetLocation() const { return Location; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartGraphPinDesc GetPinDesc(FHeartPinGuid Pin) const;
+	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartGraphPinReference GetPinReference(FHeartPinGuid Pin) const;
+	FHeartGraphPinReference GetPinReference(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartPinGuid GetPinByName(const FName& Name) const;
@@ -268,8 +268,8 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	FHeartGraphPinConnections& GetLinks(FHeartPinGuid Pin);
-	FHeartGraphPinConnections GetLinks(FHeartPinGuid Pin) const;
+	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
+	FHeartGraphPinConnections GetLinks(const FHeartPinGuid& Pin) const;
 
 	// Get all pins that match the predicate.
 	template <typename Predicate>
@@ -287,7 +287,7 @@ public:
 	FHeartPinGuid AddPin(const FHeartGraphPinDesc& Desc);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	bool RemovePin(FHeartPinGuid Pin);
+	bool RemovePin(const FHeartPinGuid& Pin);
 
 	// Add a numbered instance pin
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
@@ -297,7 +297,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void RemoveInstancePin(EHeartPinDirection Direction);
 
-	virtual void NotifyPinConnectionsChanged(FHeartPinGuid Pin);
+	virtual void NotifyPinConnectionsChanged(const FHeartPinGuid& Pin);
 
 protected:
 	// Called by the owning graph when we are created.

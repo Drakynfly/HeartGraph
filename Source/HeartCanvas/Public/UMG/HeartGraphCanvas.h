@@ -97,8 +97,8 @@ public:
 	/** IHeartGraphInterface */
 
 	/** IHeartNodeLocationAccessor */
-	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override;
-	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override;
+	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override;
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location) override;
 	/** IHeartNodeLocationAccessor */
 
 
@@ -187,7 +187,7 @@ public:
 	UHeartGraphCanvasPin* ResolvePinReference(const FHeartGraphPinReference& PinReference) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	UHeartGraphCanvasNode* GetCanvasNode(FHeartNodeGuid NodeGuid);
+	UHeartGraphCanvasNode* GetCanvasNode(const FHeartNodeGuid& NodeGuid);
 
 
 	/*---------------------------
@@ -216,16 +216,16 @@ public:
 	---------------------------*/
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	void SelectNode(FHeartNodeGuid Node);
+	void SelectNode(const FHeartNodeGuid& Node);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void SelectNodes(const TArray<FHeartNodeGuid>& Nodes);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	void UnselectNode(FHeartNodeGuid Node);
+	void UnselectNode(const FHeartNodeGuid& Node);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	bool IsNodeSelected(FHeartNodeGuid Node) const;
+	bool IsNodeSelected(const FHeartNodeGuid& Node) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void ClearNodeSelection();

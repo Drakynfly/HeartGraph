@@ -48,19 +48,19 @@ public:
 	void RebuildAllPinConnections();
 
 	UFUNCTION()
-	void RebuildPinConnections(FHeartPinGuid Pin);
+	void RebuildPinConnections(const FHeartPinGuid& Pin);
 
 	UFUNCTION(BlueprintCallable, meta = (DeterminesOutputType = Class, DeprecatedFunction))
 	UHeartGraphNode* GetNodeTyped(TSubclassOf<UHeartGraphNode> Class) const { return GraphNode.Get(); }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
-	UHeartGraphCanvasPin* GetPinWidget(FHeartPinGuid Pin) const;
+	UHeartGraphCanvasPin* GetPinWidget(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphCanvasNode")
 	TArray<UHeartGraphCanvasPin*> GetPinWidgets() const { return PinWidgets; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
-	UHeartGraphCanvasPin* CreatePinWidget(FHeartPinGuid Pin);
+	UHeartGraphCanvasPin* CreatePinWidget(const FHeartPinGuid& Pin);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
 	void DestroyPinWidget(UHeartGraphCanvasPin* PinWidget);

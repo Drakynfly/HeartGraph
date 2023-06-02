@@ -68,7 +68,7 @@ void UHeartGraphCanvasNode::RebuildAllPinConnections()
 	}
 }
 
-void UHeartGraphCanvasNode::RebuildPinConnections(FHeartPinGuid Pin)
+void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 {
 	for (auto&& ConnectionWidget : ConnectionWidgets)
 	{
@@ -149,7 +149,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(FHeartPinGuid Pin)
 	}
 }
 
-UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid Guid) const
+UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid& Guid) const
 {
 	for (auto&& PinWidget : PinWidgets)
 	{
@@ -162,7 +162,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid Gu
 	return nullptr;
 }
 
-UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid Pin)
+UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid& Pin)
 {
 	const FHeartGraphPinDesc Desc = GraphNode->GetPinDesc(Pin);
 

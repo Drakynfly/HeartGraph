@@ -171,7 +171,7 @@ UHeartGraph* UHeartGraphNode::GetGraph() const
 	return GetOwningGraph<UHeartGraph>();
 }
 
-FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid Pin) const
+FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
 {
 	if (PinDescriptions.Contains(Pin))
 	{
@@ -180,7 +180,7 @@ FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid Pin) const
 	return FHeartGraphPinDesc();
 }
 
-FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid Pin) const
+FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid& Pin) const
 {
 	if (PinDescriptions.Contains(Pin))
 	{
@@ -310,12 +310,12 @@ bool UHeartGraphNode::CanDuplicate_Implementation() const
 	return true;
 }
 
-FHeartGraphPinConnections& UHeartGraphNode::GetLinks(const FHeartPinGuid Pin)
+FHeartGraphPinConnections& UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin)
 {
 	return PinConnections.FindOrAdd(Pin);
 }
 
-FHeartGraphPinConnections UHeartGraphNode::GetLinks(const FHeartPinGuid Pin) const
+FHeartGraphPinConnections UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin) const
 {
 	return PinConnections.Contains(Pin) ? PinConnections[Pin] : FHeartGraphPinConnections();
 }
@@ -336,7 +336,7 @@ FHeartPinGuid UHeartGraphNode::AddPin(const FHeartGraphPinDesc& Desc)
 	return NewKey;
 }
 
-bool UHeartGraphNode::RemovePin(const FHeartPinGuid Pin)
+bool UHeartGraphNode::RemovePin(const FHeartPinGuid& Pin)
 {
 	if (!ensure(Pin.IsValid()))
 	{
@@ -456,7 +456,7 @@ void UHeartGraphNode::ReconstructPins()
 	}
 }
 
-void UHeartGraphNode::NotifyPinConnectionsChanged(const FHeartPinGuid Pin)
+void UHeartGraphNode::NotifyPinConnectionsChanged(const FHeartPinGuid& Pin)
 {
 	BP_OnConnectionsChanged(Pin);
 	OnPinConnectionsChanged.Broadcast(Pin);

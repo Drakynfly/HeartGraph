@@ -172,7 +172,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	UHeartGraph* HeartGraph = HeartGraphNode->GetGraph();
 
 	// Get the matching HeartPin for the EdGraphPin that was changed
-	FHeartPinGuid HeartPin = HeartGraphNode->GetPinByName(Pin->PinName);
+	const FHeartPinGuid& HeartPin = HeartGraphNode->GetPinByName(Pin->PinName);
 
 	const FHeartGraphPinReference SelfReference{HeartGraphNode->GetGuid(), HeartPin};
 
@@ -234,7 +234,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 		if (!FoundConnection)
 		{
 			UHeartGraphNode* HeartNodeConnectedInEditor = Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetHeartGraphNode();
-			FHeartPinGuid ConnectedHeartPin = HeartNodeConnectedInEditor->GetPinByName(EdGraphPin->PinName);
+			const FHeartPinGuid& ConnectedHeartPin = HeartNodeConnectedInEditor->GetPinByName(EdGraphPin->PinName);
 
 			if (!ensure(ConnectedHeartPin.IsValid()))
 			{
@@ -424,7 +424,7 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 	TArray<FHeartPinGuid> ExistingInputPins = HeartGraphNode->GetInputPins();
 	TArray<FHeartPinGuid> ExistingOutputPins = HeartGraphNode->GetOutputPins();
 
-	for (FHeartPinGuid InputPin : ExistingInputPins)
+	for (const FHeartPinGuid& InputPin : ExistingInputPins)
 	{
 		if (!ensure(InputPin.IsValid()))
 		{
@@ -434,7 +434,7 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 		CreateInputPin(HeartGraphNode->GetPinDesc(InputPin));
 	}
 
-	for (FHeartPinGuid OutputPin : ExistingOutputPins)
+	for (const FHeartPinGuid& OutputPin : ExistingOutputPins)
 	{
 		if (!ensure(OutputPin.IsValid()))
 		{
@@ -872,14 +872,14 @@ void UHeartEdGraphNode::AddInstancePin(const EEdGraphPinDirection Direction)
 
 	if (Direction == EGPD_Input)
 	{
-		const FHeartPinGuid NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Input);
+		const FHeartPinGuid& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Input);
 		const auto Desc = HeartGraphNode->GetPinDesc(NewInstancePin);
 		CreateInputPin(Desc);
 		HeartGraphNode->AddPin(Desc);
 	}
 	else
 	{
-		const FHeartPinGuid NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Output);
+		const FHeartPinGuid& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Output);
 		const auto Desc = HeartGraphNode->GetPinDesc(NewInstancePin);
 		CreateOutputPin(Desc);
 		HeartGraphNode->AddPin(Desc);

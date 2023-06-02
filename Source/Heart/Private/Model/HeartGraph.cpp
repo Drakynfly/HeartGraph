@@ -86,7 +86,7 @@ void UHeartGraph::PostLoad()
 		}
 	}
 
-	for (FHeartNodeGuid DeadNode : DeadNodes)
+	for (const FHeartNodeGuid& DeadNode : DeadNodes)
 	{
 		Nodes.Remove(DeadNode);
 	}

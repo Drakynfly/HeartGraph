@@ -222,7 +222,7 @@ UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
 	return DisplayedGraph.Get();
 }
 
-FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid Node) const
+FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
 	if (ensure(IsValid(LocationModifiers)))
 	{
@@ -232,7 +232,7 @@ FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid Node) const
 	return FVector2D();
 }
 
-void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
+void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location)
 {
 	if (ensure(IsValid(LocationModifiers)))
 	{
@@ -324,7 +324,7 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 	{
 		FVector2D AverageNodePosition = FVector2D::ZeroVector;
 
-		for (FHeartNodeGuid SelectedNode : SelectedNodes)
+		for (const FHeartNodeGuid& SelectedNode : SelectedNodes)
 		{
 			if (auto&& Node = DisplayedNodes.Find(SelectedNode))
 			{
@@ -589,7 +589,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPi
 	return nullptr;
 }
 
-UHeartGraphCanvasNode* UHeartGraphCanvas::GetCanvasNode(const FHeartNodeGuid NodeGuid)
+UHeartGraphCanvasNode* UHeartGraphCanvas::GetCanvasNode(const FHeartNodeGuid& NodeGuid)
 {
 	if (auto&& Node = DisplayedNodes.Find(NodeGuid))
 	{
@@ -668,7 +668,7 @@ void UHeartGraphCanvas::AddToZoom(const double NewZoom, const bool Interp)
 	}
 }
 
-void UHeartGraphCanvas::SelectNode(const FHeartNodeGuid Node)
+void UHeartGraphCanvas::SelectNode(const FHeartNodeGuid& Node)
 {
 	if (ensure(Node.IsValid()))
 	{
@@ -694,7 +694,7 @@ void UHeartGraphCanvas::SelectNodes(const TArray<FHeartNodeGuid>& Nodes)
 	}
 }
 
-void UHeartGraphCanvas::UnselectNode(const FHeartNodeGuid Node)
+void UHeartGraphCanvas::UnselectNode(const FHeartNodeGuid& Node)
 {
 	if (ensure(Node.IsValid()))
 	{
@@ -710,7 +710,7 @@ void UHeartGraphCanvas::UnselectNode(const FHeartNodeGuid Node)
 	}
 }
 
-bool UHeartGraphCanvas::IsNodeSelected(const FHeartNodeGuid Node) const
+bool UHeartGraphCanvas::IsNodeSelected(const FHeartNodeGuid& Node) const
 {
 	return SelectedNodes.Contains(Node);
 }

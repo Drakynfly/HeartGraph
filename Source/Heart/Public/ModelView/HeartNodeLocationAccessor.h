@@ -29,16 +29,16 @@ class HEART_API IHeartNodeLocationAccessor : public IHeartGraphInterface
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location (Guid)"))
-	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const;
+	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const;
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location (Guid)"))
-	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location);
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location 3D (Guid)"))
-	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const;
+	virtual FVector GetNodeLocation3D(const FHeartNodeGuid& Node) const;
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location 3D (Guid)"))
-	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location);
+	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location);
 };
 
 UCLASS()
@@ -104,10 +104,10 @@ class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartNodeLocat
 public:
 	/* IHeartNodeLocationAccessor */
 	virtual UHeartGraph* GetHeartGraph() const override;
-	virtual FVector2D GetNodeLocation(FHeartNodeGuid Node) const override final;
-	virtual void SetNodeLocation(FHeartNodeGuid Node, const FVector2D& Location) override final;
-	virtual FVector GetNodeLocation3D(FHeartNodeGuid Node) const override final;
-	virtual void SetNodeLocation3D(FHeartNodeGuid Node, const FVector& Location) override final;
+	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override final;
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location) override final;
+	virtual FVector GetNodeLocation3D(const FHeartNodeGuid& Node) const override final;
+	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location) override final;
 	/* IHeartNodeLocationAccessor */
 
 public:

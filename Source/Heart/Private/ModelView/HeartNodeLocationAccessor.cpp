@@ -6,22 +6,22 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 
-FVector2D IHeartNodeLocationAccessor::GetNodeLocation(const FHeartNodeGuid Node) const
+FVector2D IHeartNodeLocationAccessor::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
 	return GetHeartGraph()->GetNode(Node)->GetLocation();
 }
 
-void IHeartNodeLocationAccessor::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
+void IHeartNodeLocationAccessor::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location)
 {
 	GetHeartGraph()->GetNode(Node)->SetLocation(Location);
 }
 
-FVector IHeartNodeLocationAccessor::GetNodeLocation3D(const FHeartNodeGuid Node) const
+FVector IHeartNodeLocationAccessor::GetNodeLocation3D(const FHeartNodeGuid& Node) const
 {
 	return GetHeartGraph()->GetNode<UHeartGraphNode3D>(Node)->GetLocation3D();
 }
 
-void IHeartNodeLocationAccessor::SetNodeLocation3D(const FHeartNodeGuid Node, const FVector& Location)
+void IHeartNodeLocationAccessor::SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location)
 {
 	GetHeartGraph()->GetNode<UHeartGraphNode3D>(Node)->SetLocation3D(Location);
 }
@@ -103,22 +103,22 @@ UHeartGraph* UHeartNodeLocationProxy::GetHeartGraph() const
 	return ProxiedObject->GetHeartGraph();
 }
 
-FVector2D UHeartNodeLocationProxy::GetNodeLocation(const FHeartNodeGuid Node) const
+FVector2D UHeartNodeLocationProxy::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
 	return ProxyLayer->ProxyToLocation(ProxiedObject->GetNodeLocation(Node));
 }
 
-void UHeartNodeLocationProxy::SetNodeLocation(const FHeartNodeGuid Node, const FVector2D& Location)
+void UHeartNodeLocationProxy::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location)
 {
 	ProxiedObject->SetNodeLocation(Node, ProxyLayer->LocationToProxy(Location));
 }
 
-FVector UHeartNodeLocationProxy::GetNodeLocation3D(const FHeartNodeGuid Node) const
+FVector UHeartNodeLocationProxy::GetNodeLocation3D(const FHeartNodeGuid& Node) const
 {
 	return ProxyLayer->ProxyToLocation3D(ProxiedObject->GetNodeLocation3D(Node));
 }
 
-void UHeartNodeLocationProxy::SetNodeLocation3D(const FHeartNodeGuid Node, const FVector& Location)
+void UHeartNodeLocationProxy::SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location)
 {
 	ProxiedObject->SetNodeLocation3D(Node, ProxyLayer->LocationToProxy3D(Location));
 }
