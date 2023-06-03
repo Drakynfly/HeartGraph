@@ -5,6 +5,8 @@
 #include "Model/HeartGraphNode.h"
 #include "Net/UnrealNetwork.h"
 
+DEFINE_LOG_CATEGORY(LogHeartNet)
+
 void FHeartReplicatedNodeData::PostReplicatedAdd(const FHeartReplicatedGraphNodes& Array)
 {
 	Array.OwningProxy->UpdateNodeProxy(*this);
@@ -150,11 +152,6 @@ UHeartGraph* UHeartGraphNetProxy::GetGraph() const
 	return ProxyGraph;
 }
 
-UHeartGraph* UHeartGraphNetProxy::GetProxiedGraph() const
-{
-	return ProxyGraph;
-}
-
 UHeartGraphNetProxy* UHeartGraphNetProxy::CreateHeartNetProxy(AActor* Owner, UHeartGraph* SourceGraph)
 {
 	ensure(Owner->GetIsReplicated());
@@ -170,11 +167,6 @@ UHeartGraphNetProxy* UHeartGraphNetProxy::CreateHeartNetProxy(AActor* Owner, UHe
 	return NewProxy;
 }
 
-void UHeartGraphNetProxy::RequestUpdateNode(UHeartGraphNode* Node)
-{
-	UpdateReplicatedNodeData(Node);
-}
-
 void UHeartGraphNetProxy::Destroy()
 {
 	if (IsValid(this))
@@ -186,6 +178,11 @@ void UHeartGraphNetProxy::Destroy()
 	}
 }
 
+void UHeartGraphNetProxy::RequestUpdateNode(UHeartGraphNode* Node)
+{
+	UpdateReplicatedNodeData(Node);
+}
+
 bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 {
 	if (!IsValid(InSourceGraph))
@@ -194,6 +191,11 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 	}
 
 	SourceGraph = InSourceGraph;
+
+	SourceGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAdded_Source);
+	SourceGraph->GetOnNodeMoved().AddUObject(this, &ThisClass::OnNodesMoved_Source);
+	SourceGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemoved_Source);
+	SourceGraph->GetOnNodeConnectionsChanged().AddUObject(this, &ThisClass::OnNodeConnectionsChanged_Source);
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, GraphClass, this);
 	GraphClass = SourceGraph->GetClass();
@@ -213,15 +215,32 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 	return true;
 }
 
-void UHeartGraphNetProxy::OnRep_GraphClass()
+void UHeartGraphNetProxy::OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode)
 {
-	ensure(!ProxyGraph && GraphClass);
+	UpdateReplicatedNodeData(HeartGraphNode);
+}
 
-	ProxyGraph = NewObject<UHeartGraph>(this, GraphClass);
-
-	for (auto&& Element : ReplicatedNodes.Items)
+void UHeartGraphNetProxy::OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent)
+{
+	if (NodeMoveEvent.MoveFinished)
 	{
-		UpdateNodeProxy(Element);
+		for (auto Element : NodeMoveEvent.AffectedNodes)
+		{
+			UpdateReplicatedNodeData(Element);
+		}
+	}
+}
+
+void UHeartGraphNetProxy::OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode)
+{
+	RemoveReplicatedNodeData(HeartGraphNode->GetGuid());
+}
+
+void UHeartGraphNetProxy::OnNodeConnectionsChanged_Source(const FHeartGraphConnectionEvent& GraphConnectionEvent)
+{
+	for (auto Element : GraphConnectionEvent.AffectedNodes)
+	{
+		UpdateReplicatedNodeData(Element);
 	}
 }
 
@@ -238,12 +257,52 @@ void UHeartGraphNetProxy::UpdateReplicatedNodeData(UHeartGraphNode* Node)
 		[Node](FHeartReplicatedNodeData& NodeData)
 		{
 			NodeData.FlakeData = Heart::Flakes::CreateFlake(Node);
+			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated node '%s' (%i bytes)"),
+				*Node->GetName(), NodeData.FlakeData.Data.Num());
 		});
 }
 
 void UHeartGraphNetProxy::RemoveReplicatedNodeData(const FHeartNodeGuid& Node)
 {
 	ReplicatedNodes.Delete(Node);
+}
+
+UHeartGraph* UHeartGraphNetProxy::GetProxiedGraph() const
+{
+	return ProxyGraph;
+}
+
+void UHeartGraphNetProxy::OnRep_GraphClass()
+{
+	ensure(!ProxyGraph && GraphClass);
+
+	ProxyGraph = NewObject<UHeartGraph>(this, GraphClass);
+
+	ProxyGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAdded_Proxy);
+	ProxyGraph->GetOnNodeMoved().AddUObject(this, &ThisClass::OnNodesMoved_Proxy);
+	ProxyGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemoved_Proxy);
+	ProxyGraph->GetOnNodeConnectionsChanged().AddUObject(this, &ThisClass::OnNodeConnectionsChanged_Proxy);
+
+	for (auto&& Element : ReplicatedNodes.Items)
+	{
+		UpdateNodeProxy(Element);
+	}
+}
+
+void UHeartGraphNetProxy::OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode)
+{
+}
+
+void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent)
+{
+}
+
+void UHeartGraphNetProxy::OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode)
+{
+}
+
+void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent)
+{
 }
 
 bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData)
@@ -253,6 +312,7 @@ bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedNodeData& NodeDa
 		if (UHeartGraphNode* ExistingNode = ProxyGraph->GetNode(NodeData.NodeGuid))
 		{
 			Heart::Flakes::WriteObject(ExistingNode, NodeData.FlakeData);
+			OnNodeProxyUpdated.Broadcast(ExistingNode);
 			return true;
 		}
 

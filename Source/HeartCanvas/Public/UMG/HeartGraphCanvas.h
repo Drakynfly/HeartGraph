@@ -98,7 +98,7 @@ public:
 
 	/** IHeartNodeLocationAccessor */
 	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override;
-	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location) override;
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove) override;
 	/** IHeartNodeLocationAccessor */
 
 
@@ -182,6 +182,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D UnscalePositionToCanvasZoom(const FVector2D& Position) const;
+
+	// Reconstruct the display for this node. Useful for force updates on nodes that are known to have changed, but
+	// don't have specific bindings available. Try not to use to much however, as this isn't the cheapest operation.
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
+	void InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	UHeartGraphCanvasPin* ResolvePinReference(const FHeartGraphPinReference& PinReference) const;

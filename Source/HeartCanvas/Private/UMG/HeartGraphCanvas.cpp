@@ -232,11 +232,12 @@ FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid& Node) const
 	return FVector2D();
 }
 
-void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location)
+void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, const bool InProgressMove)
 {
 	if (ensure(IsValid(LocationModifiers)))
 	{
-		DisplayedGraph->GetNode(Node)->SetLocation(LocationModifiers->LocationToProxy(Location));
+		UHeartGraphNode* GraphNode = DisplayedGraph->GetNode(Node);
+		GraphNode->SetLocation(LocationModifiers->LocationToProxy(Location));
 	}
 }
 
@@ -542,17 +543,19 @@ void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 		return;
 	}
 
-	if (DisplayedNodes.Contains(Node->GetGuid()))
-	{
-		if (Node->IsSelected())
-		{
-			UnselectNode(Node->GetGuid());
-		}
+	Node->OnNodeLocationChanged.RemoveAll(this);
 
-		DisplayedNodes.FindAndRemoveChecked(Node->GetGuid())->RemoveFromParent();
+	const FHeartNodeGuid NodeGuid = Node->GetGuid();
+
+	if (SelectedNodes.Contains(NodeGuid))
+	{
+		UnselectNode(NodeGuid);
 	}
 
-	Node->OnNodeLocationChanged.RemoveAll(this);
+	if (DisplayedNodes.Contains(NodeGuid))
+	{
+		DisplayedNodes.FindAndRemoveChecked(NodeGuid)->RemoveFromParent();
+	}
 }
 
 void UHeartGraphCanvas::OnNodeLocationChanged(UHeartGraphNode* Node, const FVector2D& Location)
@@ -571,6 +574,21 @@ FVector2D UHeartGraphCanvas::ScalePositionToCanvasZoom(const FVector2D& Position
 FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Position) const
 {
 	return SafeDivide(Position, View.Z) - FVector2D(View);
+}
+
+void UHeartGraphCanvas::InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid)
+{
+	UHeartGraphNode* GraphNode = GetGraph()->GetNode(NodeGuid);
+
+	const bool Selected = SelectedNodes.Contains(NodeGuid);
+
+	OnNodeRemovedFromGraph(GraphNode);
+	OnNodeAddedToGraph(GraphNode);
+
+	if (Selected && IsValid(GraphNode))
+	{
+		SelectNode(NodeGuid);
+	}
 }
 
 UHeartGraphCanvasPin* UHeartGraphCanvas::ResolvePinReference(const FHeartGraphPinReference& PinReference) const

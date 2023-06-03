@@ -168,7 +168,7 @@ uint8 UHeartGraphNode::GetInstancedOutputNum() const
 
 UHeartGraph* UHeartGraphNode::GetGraph() const
 {
-	return GetOwningGraph<UHeartGraph>();
+	return CastChecked<UHeartGraph>(GetOuter());
 }
 
 FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const

@@ -7,6 +7,8 @@
 #include "Net/Serialization/FastArraySerializer.h"
 #include "HeartGraphNetProxy.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogHeartNet, Log, All)
+
 struct FHeartReplicatedGraphNodes;
 
 USTRUCT()
@@ -60,6 +62,8 @@ struct TStructOpsTypeTraits<FHeartReplicatedGraphNodes> : public TStructOpsTypeT
    };
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartNetProxyNodeEvent, UHeartGraphNode*, Node);
+
 
 /**
  * This class represents a Heart Graph over the network, and can replicate its data between connections.
@@ -88,34 +92,66 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
 	UHeartGraph* GetGraph() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
-	UHeartGraph* GetProxiedGraph() const;
 
+	/**-------------------------*/
+	/*		NET LIFETIME		*/
+	/**-------------------------*/
+public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy")
 	static UHeartGraphNetProxy* CreateHeartNetProxy(AActor* Owner, UHeartGraph* SourceGraph);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy")
-	void RequestUpdateNode(UHeartGraphNode* Node);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy")
 	void Destroy();
 
 protected:
+	virtual void OnDestroyed() {}
+
+
+	/**-------------------------*/
+	/*		SOURCE GRAPH		*/
+	/**-------------------------*/
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy")
+	void RequestUpdateNode(UHeartGraphNode* Node);
+
+protected:
 	bool SetupGraphProxy(UHeartGraph* InSourceGraph);
 
-	UFUNCTION()
-	virtual void OnRep_GraphClass();
-
-	virtual void OnDestroyed() {}
+	virtual void OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent);
+	virtual void OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodeConnectionsChanged_Source(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
 	virtual bool ShouldReplicateNode(UHeartGraphNode* Node) const;
 
 	void UpdateReplicatedNodeData(UHeartGraphNode* Node);
-
 	void RemoveReplicatedNodeData(const FHeartNodeGuid& Node);
+
+
+	/**-------------------------*/
+	/*		PROXY GRAPH			*/
+	/**-------------------------*/
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
+	UHeartGraph* GetProxiedGraph() const;
+
+protected:
+	UFUNCTION()
+	virtual void OnRep_GraphClass();
+
+	virtual void OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent);
+	virtual void OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
 	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData);
 	bool RemoveNodeProxy(const FHeartNodeGuid& Node);
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
+	FHeartNetProxyNodeEvent OnNodeProxyUpdated;
 
 protected:
 	// Original graph pointer. Only valid from the server.

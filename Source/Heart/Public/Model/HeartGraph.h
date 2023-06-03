@@ -18,6 +18,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphEvent, UHeartGraph*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeMovedEvent, const FHeartNodeMoveEvent&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&);
 
 // @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
@@ -88,8 +89,11 @@ public:
 	virtual void PostLoad() override;
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 
+	// Called after node locations have changed.
+	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
+
 	// Called after a pin connection change has been made.
-	void NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<FHeartPinGuid>& AffectedPins);
+	void NotifyNodeConnectionsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const TSet<FHeartPinGuid>& AffectedPins);
 
 	// Called after a pin connection change has been made.
 	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
@@ -115,6 +119,7 @@ public:
 #endif
 
 	FHeartGraphNodeEvent& GetOnNodeAdded() { return OnNodeAdded; }
+	FHeartGraphNodeMovedEvent& GetOnNodeMoved() { return OnNodeMoved; }
 	FHeartGraphNodeEvent& GetOnNodeRemoved() { return OnNodeRemoved; }
 	FHeartGraphNodeConnectionEvent& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
 
@@ -314,6 +319,7 @@ private:
 	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
 
 	FHeartGraphNodeEvent OnNodeAdded;
+	FHeartGraphNodeMovedEvent OnNodeMoved;
 	FHeartGraphNodeEvent OnNodeRemoved;
 	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
 };

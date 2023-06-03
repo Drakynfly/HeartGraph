@@ -119,7 +119,15 @@ void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 	Super::PostDuplicate(DuplicateMode);
 }
 
-void UHeartGraph::NotifyNodeConnectionsChanged(const TArray<UHeartGraphNode*>& AffectedNodes, const TArray<FHeartPinGuid>& AffectedPins)
+void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const bool InProgress)
+{
+	FHeartNodeMoveEvent Event;
+	Event.AffectedNodes = AffectedNodes;
+	Event.MoveFinished = !InProgress;
+	OnNodeMoved.Broadcast(Event);
+}
+
+void UHeartGraph::NotifyNodeConnectionsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const TSet<FHeartPinGuid>& AffectedPins)
 {
 	FHeartGraphConnectionEvent Event;
 	Event.AffectedNodes = AffectedNodes;

@@ -5,6 +5,7 @@
 #include "Algorithms/Nodesoup.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
+#include "ModelView/HeartNodeLocationAccessor.h"
 
 bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const
 {
@@ -39,10 +40,17 @@ bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, cons
 
 	TArray<FVector2D> NewPositions = Nodesoup::kamada_kawai(GraphAdjacencyList, Width, Height, Strength, EnergyThreshold);
 
+	TSet<UHeartGraphNode*> Touched;
+
 	for (int32 i = 0; i < NewPositions.Num(); ++i)
 	{
-		Nodes[i]->SetLocation(NewPositions[i]);
+		auto Node = Nodes[i];
+		Touched.Add(Node);
+
+		Accessor->SetNodeLocation(Node->GetGuid(), NewPositions[i], false);
 	}
+
+	Accessor->GetHeartGraph()->NotifyNodeLocationsChanged(Touched, false);
 
 	return true;
 }

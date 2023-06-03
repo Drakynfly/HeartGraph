@@ -2,6 +2,7 @@
 
 #include "Actions/HeartCanvasNodeMoveDragDropOperation.h"
 
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 #include "UMG/HeartGraphCanvas.h"
@@ -57,14 +58,28 @@ void UHeartCanvasNodeMoveDragDropOperation::Dragged_Implementation(const FPointe
 			Diff *= DIVSettings.DragMultiplier;
 
 			Canvas->AddToViewCorner(Diff, DIVSettings.InterpDragIntoView);
-			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(UnclampedPosition));
+			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(UnclampedPosition), true);
 		}
 		else
 		{
-			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(ClampedPosition));
+			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(ClampedPosition), true);
 		}
+
+		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, true);
 	}
 }
+
+void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEvent& PointerEvent)
+{
+	Super::Drop_Implementation(PointerEvent);
+
+	if (Node.IsValid() && FSlateApplication::IsInitialized())
+	{
+		auto&& Canvas = Node->GetCanvas();
+
+		// Final call to notify graph that the movement in no longer in-progress
+		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, false);
+	}}
 
 FVector2D UHeartCanvasNodeMoveDragDropOperation::ClampToBorder(const FVector2D& Value) const
 {

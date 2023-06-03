@@ -122,12 +122,14 @@ void UHeartEdGraphNode::PreSave(const FObjectPreSaveContext SaveContext)
 	Super::PreSave(SaveContext);
 
 	// Sync runtime location with position in edgraph
+	// @todo maybe move this to the edgraph's presave, where it can bulk edit validation stuff like this
 	if (IsValid(HeartGraphNode))
 	{
 		FVector2D NewLocation;
 		NewLocation.X = NodePosX;
 		NewLocation.Y = NodePosY;
 		HeartGraphNode->SetLocation(NewLocation);
+		HeartGraphNode->GetGraph()->NotifyNodeLocationsChanged({HeartGraphNode}, false);
 	}
 }
 

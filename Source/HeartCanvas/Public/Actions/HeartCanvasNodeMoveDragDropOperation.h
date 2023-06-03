@@ -20,6 +20,8 @@ public:
 
 	virtual void Dragged_Implementation(const FPointerEvent& PointerEvent) override;
 
+	virtual void Drop_Implementation(const FPointerEvent& PointerEvent) override;
+
 protected:
 	FVector2D ClampToBorder(const FVector2D& Value) const;
 

@@ -187,8 +187,7 @@ public:
 	THeartGraph* GetOwningGraph() const
 	{
 		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "The graph class must derive from UHeartGraph");
-		check(GetOuter()->IsA(UHeartGraph::StaticClass())); // This must always succeed, even if the cast below doesn't
-		return Cast<THeartGraph>(GetOuter());
+		return Cast<THeartGraph>(GetGraph());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")

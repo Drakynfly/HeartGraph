@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
+#include "Model/HeartGraphPinReference.h"
 #include "View/HeartVisualizerInterfaces.h"
 #include "HeartGraphCanvasConnection.generated.h"
 
@@ -27,9 +28,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TWeakObjectPtr<UHeartGraphCanvas> GraphCanvas;
 
+	// The Output pin we are connected to.
 	UPROPERTY(BlueprintReadOnly, Category = "Pins")
-	TWeakObjectPtr<UHeartGraphCanvasPin> FromPin;
+	FHeartGraphPinReference FromPin;
 
+	// The Input pin we are connected to.
 	UPROPERTY(BlueprintReadOnly, Category = "Pins")
-	TWeakObjectPtr<UHeartGraphCanvasPin> ToPin;
+	FHeartGraphPinReference ToPin;
 };

@@ -32,13 +32,13 @@ public:
 	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const;
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location (Guid)"))
-	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location);
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove);
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location 3D (Guid)"))
 	virtual FVector GetNodeLocation3D(const FHeartNodeGuid& Node) const;
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location 3D (Guid)"))
-	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location);
+	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, bool InProgressMove);
 };
 
 UCLASS()
@@ -51,13 +51,15 @@ public:
 	static FVector2D GetNodeLocation_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode* Node);
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location"))
-	static void SetNodeLocation_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode* Node, const FVector2D& Location);
+	static void SetNodeLocation_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor,
+		UHeartGraphNode* Node, const FVector2D& Location, bool InProgressMove);
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Get Node Location 3D"))
 	static FVector GetNodeLocation3D_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node);
 
 	UFUNCTION(BlueprintCallable, Category = "HeartNodePositionAccessor", meta = (DisplayName = "Set Node Location 3D"))
-	static void SetNodeLocation3D_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, UHeartGraphNode3D* Node, const FVector& Location);
+	static void SetNodeLocation3D_Pointer(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor,
+		UHeartGraphNode3D* Node, const FVector& Location, bool InProgressMove);
 };
 
 UCLASS(Abstract, const, EditInlineNew, CollapseCategories)
@@ -105,9 +107,9 @@ public:
 	/* IHeartNodeLocationAccessor */
 	virtual UHeartGraph* GetHeartGraph() const override;
 	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override final;
-	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location) override final;
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove) override final;
 	virtual FVector GetNodeLocation3D(const FHeartNodeGuid& Node) const override final;
-	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location) override final;
+	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, bool InProgressMove) override final;
 	/* IHeartNodeLocationAccessor */
 
 public:
