@@ -10,7 +10,6 @@
 
 class UHeartGraphNode;
 class UHeartEdGraphNode;
-class FHeartGraphAssetEditor;
 
 DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
 
@@ -51,13 +50,14 @@ public:
 private:
     TSet<FName> CustomClassLayouts;
 
+    TMap<TSubclassOf<UHeartGraphNode>, TSubclassOf<UHeartEdGraphNode>> HeartGraphNodeToEdGraphNodeClassMap;
+
+    // This holds the registered callbacks to generated Slate widgets for UHeartEdGraphNodes
+    TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
+
     // @todo TEMP STUFF:
 public:
     static EAssetTypeCategories::Type HeartAssetCategory_TEMP;
 private:
     TArray<TSharedRef<class IAssetTypeActions>> RegisteredAssetActions;
-
-    TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
-
-    TMap<TSubclassOf<UHeartGraphNode>, TSubclassOf<UHeartEdGraphNode>> HeartGraphNodeToEdGraphNodeClassMap;
 };

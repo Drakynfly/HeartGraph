@@ -11,6 +11,7 @@
 #include "Model/HeartGraphNode.h"
 
 #include "Fonts/SlateFontInfo.h"
+#include "Graph/TabSpawners.h"
 #include "Styling/CoreStyle.h"
 #include "Styling/SlateBrush.h"
 #include "Styling/SlateColor.h"
@@ -99,7 +100,7 @@ FText SHeartPaletteItem::GetItemTooltip() const
 	return ActionPtr.Pin()->GetTooltipDescription();
 }
 
-void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAssetEditor> InHeartGraphAssetEditor)
+void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FAssetEditor> InHeartGraphAssetEditor)
 {
 	HeartGraphAssetEditorPtr = InHeartGraphAssetEditor;
 
@@ -230,14 +231,13 @@ void SHeartPalette::CategorySelectionChanged(TSharedPtr<FString> NewSelection, E
 	RefreshActionsList(true);
 }
 
-void SHeartPalette::OnActionSelected(const TArray<TSharedPtr<FEdGraphSchemaAction>>& InActions, ESelectInfo::Type InSelectionType) const
+void SHeartPalette::OnActionSelected(const TArray<TSharedPtr<FEdGraphSchemaAction>>& InActions, const ESelectInfo::Type InSelectionType) const
 {
 	if (InSelectionType == ESelectInfo::OnMouseClick || InSelectionType == ESelectInfo::OnKeyPress || InSelectionType == ESelectInfo::OnNavigation || InActions.Num() == 0)
 	{
-		auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
-		if (HeartGraphAssetEditor)
+		if (auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin())
 		{
-			HeartGraphAssetEditor->SetUISelectionState(Heart::Editor::Public::GetPaletteTabID());
+			HeartGraphAssetEditor->SetUISelectionState(Heart::AssetEditor::FNodePaletteSummoner::TabId);
 		}
 	}
 }

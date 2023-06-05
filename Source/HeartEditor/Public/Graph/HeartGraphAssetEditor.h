@@ -2,212 +2,219 @@
 
 #pragma once
 
+#include "WorkflowOrientedApp/WorkflowCentricApplication.h"
 #include "EditorUndoClient.h"
 #include "GraphEditor.h"
 #include "Misc/NotifyHook.h"
-#include "Toolkits/AssetEditorToolkit.h"
 #include "Toolkits/IToolkitHost.h"
 #include "UObject/GCObject.h"
 
 struct FPropertyChangedEvent;
 
-class IDetailsView;
-class SDockableTab;
+class FWorkflowTabSpawnInfo;
 class SGraphEditor;
-class UEdGraphNode;
-
 class SHeartPalette;
+class UEdGraphNode;
 class UHeartGraph;
 class UHeartEdGraphNode;
+class FHeartGraphAssetToolbar;
 
-namespace Heart::Editor::Public
+namespace Heart::AssetEditor
 {
-	HEARTEDITOR_API FName GetPaletteTabID();
-}
-
-class HEARTEDITOR_API FHeartGraphAssetEditor : public FAssetEditorToolkit, public FEditorUndoClient, public FGCObject, public FNotifyHook
-{
-public:
-	FHeartGraphAssetEditor();
-	virtual ~FHeartGraphAssetEditor() override;
-
-	UHeartGraph* GetHeartGraph() const { return HeartGraph; };
-
-	// FGCObject
-	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
-	virtual FString GetReferencerName() const override
+	namespace Modes
 	{
-		return TEXT("FHeartGraphAssetEditor");
+		extern const FName Editor;
 	}
-	// --
 
-	// FEditorUndoClient
-	virtual void PostUndo(bool bSuccess) override;
-	virtual void PostRedo(bool bSuccess) override;
-	// --
+	class SDetailsPanel;
+	class FApplicationMode_Editor;
 
-	virtual void HandleUndoTransaction();
+	class HEARTEDITOR_API FAssetEditor : public FWorkflowCentricApplication, public FEditorUndoClient, public FGCObject, public FNotifyHook
+	{
+		friend class FApplicationMode_Editor;
 
-	// FNotifyHook
-	virtual void NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged) override;
-	// --
+	public:
+		FAssetEditor();
+		virtual ~FAssetEditor() override;
 
-	// IToolkit
-	virtual FName GetToolkitFName() const override;
-	virtual FText GetBaseToolkitName() const override;
-	virtual FString GetWorldCentricTabPrefix() const override;
-	virtual FLinearColor GetWorldCentricTabColorScale() const override;
+		// FGCObject
+		virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+		virtual FString GetReferencerName() const override
+		{
+			return TEXT("FHeartGraphAssetEditor");
+		}
+		// --
 
-	virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
-	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
-	// --
+		// FEditorUndoClient
+		virtual void PostUndo(bool bSuccess) override;
+		virtual void PostRedo(bool bSuccess) override;
+		// --
 
-	/** FAssetEditorToolkit interface */
-	virtual void PostRegenerateMenusAndToolbars() override;
+		virtual void HandleUndoTransaction();
 
-private:
-	TSharedRef<FTabManager::FLayout> GenerateLayout() const;
+		// FNotifyHook
+		virtual void NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged) override;
+		// --
 
-	TSharedRef<SDockTab> SpawnTab_Details(const FSpawnTabArgs& Args) const;
-	TSharedRef<SDockTab> SpawnTab_GraphCanvas(const FSpawnTabArgs& Args) const;
-	TSharedRef<SDockTab> SpawnTab_Palette(const FSpawnTabArgs& Args) const;
+		// IToolkit
+		virtual FName GetToolkitFName() const override;
+		virtual FText GetBaseToolkitName() const override;
+		virtual FString GetWorldCentricTabPrefix() const override;
+		virtual FLinearColor GetWorldCentricTabColorScale() const override;
 
-public:
-	/** Edits the specified HeartGraph object */
-	void InitHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, UObject* ObjectToEdit);
+		// FAssetEditorToolkit
+		virtual void RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager) override;
+		virtual void UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager) override;
+		// --
 
-protected:
-	virtual void CreateToolbar();
+		/** FAssetEditorToolkit interface */
+		virtual void PostRegenerateMenusAndToolbars() override;
 
-	virtual void BindToolbarCommands();
-	virtual void RefreshAsset();
+		// FWorkflowCentricApplication
+		virtual void SetCurrentMode(FName NewMode) override;
+		// --
 
-	virtual void CreateWidgets();
+	public:
+		/** Edits the specified HeartGraph object */
+		void InitAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, UHeartGraph* InHeartGraph);
 
-	virtual TSharedRef<SGraphEditor> CreateGraphWidget();
-	virtual FGraphAppearanceInfo GetGraphAppearanceInfo() const;
-	virtual FText GetCornerText() const;
+		UHeartGraph* GetHeartGraph() const { return HeartGraph; }
 
-	virtual void BindGraphCommands();
+	protected:
+		virtual void CreateToolbar();
 
-private:
-	static void UndoGraphAction();
-	static void RedoGraphAction();
+		virtual void BindToolbarCommands();
+		virtual void RefreshAsset();
 
-	static FReply OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2D& InPosition, UEdGraph* InGraph);
+		virtual FGraphAppearanceInfo GetGraphAppearanceInfo() const;
+		virtual FText GetCornerText() const;
 
-public:
-	/** Gets the UI selection state of this editor */
-	FName GetUISelectionState() const { return CurrentUISelection; }
-	void SetUISelectionState(const FName SelectionOwner);
+		virtual void BindGraphCommands();
 
-	virtual void ClearSelectionStateFor(const FName SelectionOwner);
+		void OnDetailsPanelCreated(const TSharedRef<SDetailsPanel, ESPMode::ThreadSafe>& DetailsView);
+		void OnNodePaletteCreated(const TSharedRef<SHeartPalette, ESPMode::ThreadSafe>& NodePalette);
 
-private:
-	void OnCreateComment() const;
-	void OnStraightenConnections() const;
+		TSharedRef<SGraphEditor> CreateGraphWidget(const FWorkflowTabSpawnInfo& Info);
 
-public:
-	static bool CanEdit();
-	static EVisibility GetDebuggerVisibility();
+	private:
+		static void UndoGraphAction();
+		static void RedoGraphAction();
 
-	TSet<UHeartEdGraphNode*> GetSelectedHeartGraphNodes() const;
-	int32 GetNumberOfSelectedNodes() const;
-	bool GetBoundsForSelectedNodes(class FSlateRect& Rect, float Padding) const;
+		static FReply OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2D& InPosition, UEdGraph* InGraph);
 
-protected:
-	virtual void OnSelectedNodesChanged(const TSet<UObject*>& Nodes);
+	public:
+		/** Gets the UI selection state of this editor */
+		FName GetUISelectionState() const { return CurrentUISelection; }
+		void SetUISelectionState(const FName SelectionOwner);
 
-public:
-	virtual void SelectSingleNode(UEdGraphNode* Node) const;
+		virtual void ClearSelectionStateFor(const FName SelectionOwner);
 
-protected:
-	virtual void SelectAllNodes() const;
-	virtual bool CanSelectAllNodes() const;
+	private:
+		void OnCreateComment() const;
+		void OnStraightenConnections() const;
 
-	virtual void DeleteNode(UEdGraphNode* Node);
+	public:
+		bool CanEdit() const;
+		static EVisibility GetDebuggerVisibility();
 
-	virtual void DeleteSelectedNodes();
-	virtual void DeleteSelectedDuplicableNodes();
-	virtual bool CanDeleteNodes() const;
+		TSet<UHeartEdGraphNode*> GetSelectedHeartGraphNodes() const;
+		int32 GetNumberOfSelectedNodes() const;
+		bool GetBoundsForSelectedNodes(FSlateRect& Rect, float Padding) const;
 
-	virtual void CopySelectedNodes() const;
-	virtual bool CanCopyNodes() const;
+	protected:
+		virtual void OnSelectedNodesChanged(const TSet<UObject*>& Nodes);
 
-	virtual void CutSelectedNodes();
-	virtual bool CanCutNodes() const;
+	public:
+		virtual void SelectSingleNode(UEdGraphNode* Node) const;
 
-	virtual void PasteNodes();
+	protected:
+		virtual void SelectAllNodes() const;
+		virtual bool CanSelectAllNodes() const;
 
-public:
-	virtual void PasteNodesHere(const FVector2D& Location);
-	virtual bool CanPasteNodes() const;
+		virtual void DeleteNode(UEdGraphNode* Node);
 
-protected:
-	virtual void DuplicateNodes();
-	virtual bool CanDuplicateNodes() const;
+		virtual void DeleteSelectedNodes();
+		virtual void DeleteSelectedDuplicableNodes();
+		virtual bool CanDeleteNodes() const;
 
-	virtual void OnNodeDoubleClicked(UEdGraphNode* Node) const;
-	virtual void OnNodeTitleCommitted(const FText& NewText, ETextCommit::Type CommitInfo, UEdGraphNode* NodeBeingChanged);
+		virtual void CopySelectedNodes() const;
+		virtual bool CanCopyNodes() const;
 
-private:
-	void AddInput() const;
-	bool CanAddInput() const;
+		virtual void CutSelectedNodes();
+		virtual bool CanCutNodes() const;
 
-	void AddOutput() const;
-	bool CanAddOutput() const;
+		virtual void PasteNodes();
 
-	void RemovePin() const;
-	bool CanRemovePin() const;
+	public:
+		virtual void PasteNodesHere(const FVector2D& Location);
+		virtual bool CanPasteNodes() const;
 
-	void OnAddBreakpoint() const;
-	void OnAddPinBreakpoint() const;
+	protected:
+		virtual void DuplicateNodes();
+		virtual bool CanDuplicateNodes() const;
 
-	bool CanAddBreakpoint() const;
-	bool CanAddPinBreakpoint() const;
+		virtual void OnNodeDoubleClicked(UEdGraphNode* Node) const;
+		virtual void OnNodeTitleCommitted(const FText& NewText, ETextCommit::Type CommitInfo, UEdGraphNode* NodeBeingChanged);
 
-	void OnRemoveBreakpoint() const;
-	void OnRemovePinBreakpoint() const;
+	private:
+		void AddInput() const;
+		bool CanAddInput() const;
 
-	bool CanRemoveBreakpoint() const;
-	bool CanRemovePinBreakpoint() const;
+		void AddOutput() const;
+		bool CanAddOutput() const;
 
-	void OnEnableBreakpoint() const;
-	void OnEnablePinBreakpoint() const;
+		void RemovePin() const;
+		bool CanRemovePin() const;
 
-	bool CanEnableBreakpoint() const;
-	bool CanEnablePinBreakpoint() const;
+		void OnAddBreakpoint() const;
+		void OnAddPinBreakpoint() const;
 
-	void OnDisableBreakpoint() const;
-	void OnDisablePinBreakpoint() const;
+		bool CanAddBreakpoint() const;
+		bool CanAddPinBreakpoint() const;
 
-	bool CanDisableBreakpoint() const;
-	bool CanDisablePinBreakpoint() const;
+		void OnRemoveBreakpoint() const;
+		void OnRemovePinBreakpoint() const;
 
-	void OnToggleBreakpoint() const;
-	void OnTogglePinBreakpoint() const;
+		bool CanRemoveBreakpoint() const;
+		bool CanRemovePinBreakpoint() const;
 
-	bool CanToggleBreakpoint() const;
-	bool CanTogglePinBreakpoint() const;
+		void OnEnableBreakpoint() const;
+		void OnEnablePinBreakpoint() const;
 
-	void JumpToGraphNodeDefinition() const;
-	bool CanJumpToGraphNodeDefinition() const;
+		bool CanEnableBreakpoint() const;
+		bool CanEnablePinBreakpoint() const;
 
-	void JumpToNodeObjectDefinition() const;
-	bool CanJumpToNodeObjectDefinition() const;
+		void OnDisableBreakpoint() const;
+		void OnDisablePinBreakpoint() const;
 
-protected:
-	/** The HeartGraph asset being inspected */
-	TObjectPtr<UHeartGraph> HeartGraph;
+		bool CanDisableBreakpoint() const;
+		bool CanDisablePinBreakpoint() const;
 
-	TSharedPtr<class FHeartGraphAssetToolbar> AssetToolbar;
+		void OnToggleBreakpoint() const;
+		void OnTogglePinBreakpoint() const;
 
-	TSharedPtr<SGraphEditor> FocusedGraphEditor;
-	TSharedPtr<IDetailsView> DetailsView_Graph;
-	TSharedPtr<IDetailsView> DetailsView_Object;
-	TSharedPtr<class SHeartPalette> Palette;
+		bool CanToggleBreakpoint() const;
+		bool CanTogglePinBreakpoint() const;
 
-private:
-	/** The current UI selection state of this editor */
-	FName CurrentUISelection;
-};
+		void JumpToGraphNodeDefinition() const;
+		bool CanJumpToGraphNodeDefinition() const;
+
+		void JumpToNodeObjectDefinition() const;
+		bool CanJumpToNodeObjectDefinition() const;
+
+	protected:
+		/** The HeartGraph asset being inspected */
+		TObjectPtr<UHeartGraph> HeartGraph;
+
+		TSharedPtr<FHeartGraphAssetToolbar> AssetToolbar;
+
+		// ApplicationMode_Editor Tabs
+		TSharedPtr<SGraphEditor> GraphEditor;
+		TSharedPtr<SDetailsPanel> DetailsPanel;
+		TSharedPtr<SHeartPalette> Palette;
+
+	private:
+		/** The current UI selection state of this editor */
+		FName CurrentUISelection;
+	};
+}

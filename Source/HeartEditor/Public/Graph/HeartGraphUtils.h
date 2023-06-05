@@ -3,13 +3,20 @@
 #pragma once
 
 class UHeartGraph;
-class FHeartGraphAssetEditor;
 
-namespace Heart::GraphUtils
+namespace Heart
 {
-	void JumpToClassDefinition(const UClass* Class);
+	namespace AssetEditor
+	{
+		class FAssetEditor;
+	}
 
-	TSharedRef<FHeartGraphAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
+	namespace GraphUtils
+	{
+		void JumpToClassDefinition(const UClass* Class);
 
-	TSharedPtr<FHeartGraphAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn);
+		TSharedPtr<AssetEditor::FAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
+
+		TSharedPtr<AssetEditor::FAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn);
+	}
 }

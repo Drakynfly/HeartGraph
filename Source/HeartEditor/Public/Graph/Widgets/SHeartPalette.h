@@ -4,7 +4,10 @@
 
 #include "SGraphPalette.h"
 
-class FHeartGraphAssetEditor;
+namespace Heart::AssetEditor
+{
+	class FAssetEditor;
+}
 
 /** Widget displaying a single item  */
 // @todo, double-clicking on this should open up the node BP
@@ -28,7 +31,7 @@ public:
 	SLATE_BEGIN_ARGS(SHeartPalette) {}
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, TWeakPtr<FHeartGraphAssetEditor> InHeartGraphAssetEditor);
+	void Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FAssetEditor> InHeartGraphAssetEditor);
 	virtual ~SHeartPalette() override;
 
 protected:
@@ -49,7 +52,7 @@ public:
 	void ClearGraphActionMenuSelection() const;
 
 protected:
-	TWeakPtr<FHeartGraphAssetEditor> HeartGraphAssetEditorPtr;
+	TWeakPtr<Heart::AssetEditor::FAssetEditor> HeartGraphAssetEditorPtr;
 	TArray<TSharedPtr<FString>> CategoryNames;
 	TSharedPtr<STextComboBox> CategoryComboBox;
 };

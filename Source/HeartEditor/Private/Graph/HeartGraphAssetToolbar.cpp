@@ -3,12 +3,11 @@
 #include "Graph/HeartGraphAssetToolbar.h"
 
 #include "Graph/HeartGraphAssetEditor.h"
-//#include "Asset/SAssetRevisionMenu.h"
+//#include "Graph/Widgets/SAssetRevisionMenu.h"
 #include "HeartEditorCommands.h"
 
 #include "Model/HeartGraph.h"
 
-#include "Kismet2/DebuggerCommands.h"
 #include "Misc/Attribute.h"
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "ToolMenu.h"
@@ -34,7 +33,7 @@ void SHeartGraphAssetBreadcrumb::Construct(const FArguments& InArgs, const TWeak
 	// create breadcrumb
 	SAssignNew(BreadcrumbTrail, SBreadcrumbTrail<FHeartBreadcrumb>)
 		.OnCrumbClicked(this, &SHeartGraphAssetBreadcrumb::OnCrumbClicked)
-		.Visibility_Static(&FHeartGraphAssetEditor::GetDebuggerVisibility)
+		.Visibility_Static(&Heart::AssetEditor::FAssetEditor::GetDebuggerVisibility)
 		.ButtonStyle(FAppStyle::Get(), "FlatButton")
 		.DelimiterImage(FAppStyle::GetBrush("Sequencer.BreadcrumbIcon"))
 		.PersistentBreadcrumbs(true)
@@ -85,7 +84,7 @@ FText SHeartGraphAssetBreadcrumb::GetBreadcrumbText(const TWeakObjectPtr<UHeartG
 //////////////////////////////////////////////////////////////////////////
 // Heart Graph Asset Toolbar
 
-FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<FHeartGraphAssetEditor> InAssetEditor, UToolMenu* ToolbarMenu)
+FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FAssetEditor> InAssetEditor, UToolMenu* ToolbarMenu)
 	: HeartGraphAssetEditor(InAssetEditor)
 {
 	BuildAssetToolbar(ToolbarMenu);
@@ -168,14 +167,13 @@ TSharedRef<SWidget> FHeartGraphAssetToolbar::MakeDiffMenu() const
 {
 	if (ISourceControlModule::Get().IsEnabled() && ISourceControlModule::Get().GetProvider().IsAvailable())
 	{
-		auto&& HeartGraph = HeartGraphAssetEditor.Pin()->GetHeartGraph();
-		if (HeartGraph)
+		if (auto&& HeartGraph = HeartGraphAssetEditor.Pin()->GetHeartGraph())
 		{
 			FString Filename = SourceControlHelpers::PackageFilename(HeartGraph->GetPathName());
 			TWeakObjectPtr<UObject> AssetPtr = HeartGraph;
 
+			return SNullWidget::NullWidget;
 			// Add our async SCC task widget
-			// @TODO
 			//return SNew(SAssetRevisionMenu, Filename)
 			//	.OnRevisionSelected_Static(&OnDiffRevisionPicked, AssetPtr);
 		}
@@ -197,8 +195,6 @@ void FHeartGraphAssetToolbar::BuildDebuggerToolbar(UToolMenu* ToolbarMenu)
 {
 	FToolMenuSection& Section = ToolbarMenu->AddSection("Debugging");
 	Section.InsertPosition = FToolMenuInsert("Asset", EToolMenuInsertType::After);
-
-	FPlayWorldCommands::BuildToolbar(Section);
 
 	auto&& TemplateAsset = HeartGraphAssetEditor.Pin()->GetHeartGraph();
 

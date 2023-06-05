@@ -2,6 +2,7 @@
 
 #include "Graph/HeartGraphUtils.h"
 
+#include "HeartEditorModule.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/HeartEdGraph.h"
 
@@ -12,53 +13,64 @@
 
 #include "Toolkits/ToolkitManager.h"
 
-void Heart::GraphUtils::JumpToClassDefinition(const UClass* Class)
+namespace Heart::GraphUtils
 {
-	if (Class->IsNative())
+	void JumpToClassDefinition(const UClass* Class)
 	{
-		if (FSourceCodeNavigation::CanNavigateToClass(Class))
+		if (Class->IsNative())
 		{
-			const bool bSucceeded = FSourceCodeNavigation::NavigateToClass(Class);
-			if (bSucceeded)
+			if (FSourceCodeNavigation::CanNavigateToClass(Class))
 			{
-				return;
+				const bool bSucceeded = FSourceCodeNavigation::NavigateToClass(Class);
+				if (bSucceeded)
+				{
+					return;
+				}
+			}
+
+			// Failing that, fall back to the older method which will still get the file open assuming it exists
+			FString NativeParentClassHeaderPath;
+			const bool bFileFound = FSourceCodeNavigation::FindClassHeaderPath(Class, NativeParentClassHeaderPath) &&
+				(IFileManager::Get().FileSize(*NativeParentClassHeaderPath) != INDEX_NONE);
+			if (bFileFound)
+			{
+				const FString AbsNativeParentClassHeaderPath = FPaths::ConvertRelativePathToFull(NativeParentClassHeaderPath);
+				FSourceCodeNavigation::OpenSourceFile(AbsNativeParentClassHeaderPath);
 			}
 		}
-
-		// Failing that, fall back to the older method which will still get the file open assuming it exists
-		FString NativeParentClassHeaderPath;
-		const bool bFileFound = FSourceCodeNavigation::FindClassHeaderPath(Class, NativeParentClassHeaderPath) && (IFileManager::Get().FileSize(*NativeParentClassHeaderPath) != INDEX_NONE);
-		if (bFileFound)
+		else
 		{
-			const FString AbsNativeParentClassHeaderPath = FPaths::ConvertRelativePathToFull(NativeParentClassHeaderPath);
-			FSourceCodeNavigation::OpenSourceFile(AbsNativeParentClassHeaderPath);
+			FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(Class);
 		}
 	}
-	else
+
+	TSharedPtr<AssetEditor::FAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode,
+		const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
 	{
-		FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(Class);
-	}
-}
-
-TSharedRef<FHeartGraphAssetEditor> Heart::GraphUtils::CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
-{
-	TSharedRef<FHeartGraphAssetEditor> NewHeartGraphAssetEditor(new FHeartGraphAssetEditor());
-	NewHeartGraphAssetEditor->InitHeartGraphAssetEditor(Mode, InitToolkitHost, HeartGraph);
-	return NewHeartGraphAssetEditor;
-}
-
-TSharedPtr<FHeartGraphAssetEditor> Heart::GraphUtils::GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn)
-{
-	check(ObjectToFocusOn);
-
-	TSharedPtr<FHeartGraphAssetEditor> HeartGraphAssetEditor;
-	if (const UHeartGraph* HeartGraph = Cast<UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph())
-	{
-		const TSharedPtr<IToolkit> FoundAssetEditor = FToolkitManager::Get().FindEditorForAsset(HeartGraph);
-		if (FoundAssetEditor.IsValid())
+		if (!HeartGraph->GetEdGraph())
 		{
-			HeartGraphAssetEditor = StaticCastSharedPtr<FHeartGraphAssetEditor>(FoundAssetEditor);
+			UE_LOG(LogHeartEditor, Error, TEXT("HeartEdGraph is invalid for HeartGraph '%s'!"), *HeartGraph->GetName())
+			return nullptr;
 		}
+
+		TSharedRef<AssetEditor::FAssetEditor> NewHeartGraphAssetEditor(new AssetEditor::FAssetEditor());
+		NewHeartGraphAssetEditor->InitAssetEditor(Mode, InitToolkitHost, HeartGraph);
+		return NewHeartGraphAssetEditor;
 	}
-	return HeartGraphAssetEditor;
+
+	TSharedPtr<AssetEditor::FAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn)
+	{
+		check(ObjectToFocusOn);
+
+		TSharedPtr<AssetEditor::FAssetEditor> HeartGraphAssetEditor;
+		if (const UHeartGraph* HeartGraph = Cast<UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph())
+		{
+			const TSharedPtr<IToolkit> FoundAssetEditor = FToolkitManager::Get().FindEditorForAsset(HeartGraph);
+			if (FoundAssetEditor.IsValid())
+			{
+				HeartGraphAssetEditor = StaticCastSharedPtr<AssetEditor::FAssetEditor>(FoundAssetEditor);
+			}
+		}
+		return HeartGraphAssetEditor;
+	}
 }
