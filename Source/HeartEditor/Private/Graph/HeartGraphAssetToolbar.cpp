@@ -16,10 +16,12 @@
 
 #include "AssetToolsModule.h"
 #include "IAssetTypeActions.h"
+#include "IDocumentation.h"
 #include "ISourceControlModule.h"
 #include "ISourceControlProvider.h"
 #include "SourceControlHelpers.h"
 #include "Misc/MessageDialog.h"
+#include "WorkflowOrientedApp/SModeWidget.h"
 
 #define LOCTEXT_NAMESPACE "HeartDebuggerToolbar"
 
@@ -33,7 +35,7 @@ void SHeartGraphAssetBreadcrumb::Construct(const FArguments& InArgs, const TWeak
 	// create breadcrumb
 	SAssignNew(BreadcrumbTrail, SBreadcrumbTrail<FHeartBreadcrumb>)
 		.OnCrumbClicked(this, &SHeartGraphAssetBreadcrumb::OnCrumbClicked)
-		.Visibility_Static(&Heart::AssetEditor::FAssetEditor::GetDebuggerVisibility)
+		.Visibility_Static(&Heart::AssetEditor::FHeartGraphEditor::GetDebuggerVisibility)
 		.ButtonStyle(FAppStyle::Get(), "FlatButton")
 		.DelimiterImage(FAppStyle::GetBrush("Sequencer.BreadcrumbIcon"))
 		.PersistentBreadcrumbs(true)
@@ -84,11 +86,80 @@ FText SHeartGraphAssetBreadcrumb::GetBreadcrumbText(const TWeakObjectPtr<UHeartG
 //////////////////////////////////////////////////////////////////////////
 // Heart Graph Asset Toolbar
 
-FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FAssetEditor> InAssetEditor, UToolMenu* ToolbarMenu)
-	: HeartGraphAssetEditor(InAssetEditor)
+FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> InAssetEditor, UToolMenu* ToolbarMenu)
+	: AssetEditor(InAssetEditor)
 {
 	BuildAssetToolbar(ToolbarMenu);
 	BuildDebuggerToolbar(ToolbarMenu);
+}
+
+void FHeartGraphAssetToolbar::AddEditorModesToolbar(TSharedPtr<FExtender> Extender)
+{
+	const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> AssetEditorPtr = AssetEditor.Pin();
+
+	Extender->AddToolBarExtension(
+		"Asset",
+		EExtensionHook::After,
+		AssetEditorPtr->GetToolkitCommands(),
+		FToolBarExtensionDelegate::CreateSP(this, &FHeartGraphAssetToolbar::FillEditorModesToolbar));
+}
+
+void FHeartGraphAssetToolbar::FillEditorModesToolbar(FToolBarBuilder& ToolBarBuilder)
+{
+	const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> AssetEditorPtr = AssetEditor.Pin();
+	const UHeartGraph* BlueprintObj = AssetEditorPtr->GetHeartGraph();
+
+	if (IsValid(BlueprintObj))
+	{
+		const TAttribute<FName> GetActiveMode(AssetEditorPtr.ToSharedRef(), &Heart::AssetEditor::FHeartGraphEditor::GetCurrentMode);
+		const FOnModeChangeRequested SetActiveMode = FOnModeChangeRequested::CreateSP(AssetEditorPtr.ToSharedRef(), &Heart::AssetEditor::FHeartGraphEditor::SetCurrentMode);
+
+		// Left side padding
+		AssetEditorPtr->AddToolbarWidget(SNew(SSpacer).Size(FVector2D(4.0f, 1.0f)));
+
+		struct FTempRegisteredApplicationMode
+		{
+			FName ModeID;
+			FText LocalizedMode;
+			FText TooltipText;
+		};
+
+		TArray<FTempRegisteredApplicationMode> RegisteredApplicationModes;
+
+		FTempRegisteredApplicationMode EditorMode;
+		EditorMode.ModeID = Heart::AssetEditor::Modes::Editor;
+		EditorMode.LocalizedMode = LOCTEXT("ApplicationMode_Editor.LocalizedName", "Graph");
+		EditorMode.TooltipText = LOCTEXT("ApplicationMode_Editor.TooltipText", "Switch to Graph Editing Mode");
+
+		RegisteredApplicationModes.Add(EditorMode);
+
+		FTempRegisteredApplicationMode PreviewScene;
+		PreviewScene.ModeID = Heart::AssetEditor::Modes::PreviewScene;
+		PreviewScene.LocalizedMode = LOCTEXT("ApplicationMode_PreviewScene.LocalizedName", "Scene");
+		PreviewScene.TooltipText = LOCTEXT("ApplicationMode_PreviewScene.TooltipText", "Switch to Preview Scene Mode");
+
+		RegisteredApplicationModes.Add(PreviewScene);
+
+		for (FTempRegisteredApplicationMode& Mode : RegisteredApplicationModes)
+		{
+			AssetEditorPtr->AddToolbarWidget(
+				SNew(SModeWidget, Mode.LocalizedMode, Mode.ModeID)
+				.OnGetActiveMode(GetActiveMode)
+				.OnSetActiveMode(SetActiveMode)
+				.CanBeSelected(AssetEditorPtr.Get(), &Heart::AssetEditor::FHeartGraphEditor::CanActivateMode, Mode.ModeID)
+				.ToolTip(IDocumentation::Get()->CreateToolTip(
+					Mode.TooltipText,
+					nullptr,
+					TEXT("Editors/HeartEditor"),
+					Mode.ModeID.ToString()))
+				.IconImage(FAppStyle::GetBrush("FullBlueprintEditor.SwitchToScriptingMode"))
+				.AddMetaData<FTagMetaData>(FTagMetaData(Mode.ModeID))
+			);
+
+			// Right side padding
+			AssetEditorPtr->AddToolbarWidget(SNew(SSpacer).Size(FVector2D(10.0f, 1.0f)));
+		}
+	}
 }
 
 void FHeartGraphAssetToolbar::BuildAssetToolbar(UToolMenu* ToolbarMenu) const
@@ -167,7 +238,7 @@ TSharedRef<SWidget> FHeartGraphAssetToolbar::MakeDiffMenu() const
 {
 	if (ISourceControlModule::Get().IsEnabled() && ISourceControlModule::Get().GetProvider().IsAvailable())
 	{
-		if (auto&& HeartGraph = HeartGraphAssetEditor.Pin()->GetHeartGraph())
+		if (auto&& HeartGraph = AssetEditor.Pin()->GetHeartGraph())
 		{
 			FString Filename = SourceControlHelpers::PackageFilename(HeartGraph->GetPathName());
 			TWeakObjectPtr<UObject> AssetPtr = HeartGraph;
@@ -196,7 +267,7 @@ void FHeartGraphAssetToolbar::BuildDebuggerToolbar(UToolMenu* ToolbarMenu)
 	FToolMenuSection& Section = ToolbarMenu->AddSection("Debugging");
 	Section.InsertPosition = FToolMenuInsert("Asset", EToolMenuInsertType::After);
 
-	auto&& TemplateAsset = HeartGraphAssetEditor.Pin()->GetHeartGraph();
+	auto&& TemplateAsset = AssetEditor.Pin()->GetHeartGraph();
 
 	Breadcrumb = SNew(SHeartGraphAssetBreadcrumb, TemplateAsset);
 	Section.AddEntry(FToolMenuEntry::InitWidget("AssetBreadcrumb", Breadcrumb.ToSharedRef(), FText(), true));

@@ -6,11 +6,9 @@
 
 #include "Model/HeartGraph.h"
 
-class UToolMenu;
-
 namespace Heart::AssetEditor
 {
-	class FAssetEditor;
+	class FHeartGraphEditor;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,16 +52,19 @@ private:
 class HEARTEDITOR_API FHeartGraphAssetToolbar final : public TSharedFromThis<FHeartGraphAssetToolbar>
 {
 public:
-	explicit FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FAssetEditor> InAssetEditor, UToolMenu* ToolbarMenu);
+	explicit FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> InAssetEditor, UToolMenu* ToolbarMenu);
 
+	void AddEditorModesToolbar(TSharedPtr<FExtender> Extender);
 private:
+	void FillEditorModesToolbar(FToolBarBuilder& ToolBarBuilder);
+
 	void BuildAssetToolbar(UToolMenu* ToolbarMenu) const;
 	TSharedRef<SWidget> MakeDiffMenu() const;
 
 	void BuildDebuggerToolbar(UToolMenu* ToolbarMenu);
 
 private:
-	TWeakPtr<Heart::AssetEditor::FAssetEditor> HeartGraphAssetEditor;
+	TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> AssetEditor;
 
 	TSharedPtr<SHeartGraphAssetBreadcrumb> Breadcrumb;
 };

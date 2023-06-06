@@ -44,7 +44,7 @@ namespace Heart::GraphUtils
 		}
 	}
 
-	TSharedPtr<AssetEditor::FAssetEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode,
+	TSharedPtr<AssetEditor::FHeartGraphEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode,
 		const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph)
 	{
 		if (!HeartGraph->GetEdGraph())
@@ -53,22 +53,22 @@ namespace Heart::GraphUtils
 			return nullptr;
 		}
 
-		TSharedRef<AssetEditor::FAssetEditor> NewHeartGraphAssetEditor(new AssetEditor::FAssetEditor());
+		TSharedRef<AssetEditor::FHeartGraphEditor> NewHeartGraphAssetEditor(new AssetEditor::FHeartGraphEditor());
 		NewHeartGraphAssetEditor->InitAssetEditor(Mode, InitToolkitHost, HeartGraph);
 		return NewHeartGraphAssetEditor;
 	}
 
-	TSharedPtr<AssetEditor::FAssetEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn)
+	TSharedPtr<AssetEditor::FHeartGraphEditor> GetHeartGraphAssetEditor(const UObject* ObjectToFocusOn)
 	{
 		check(ObjectToFocusOn);
 
-		TSharedPtr<AssetEditor::FAssetEditor> HeartGraphAssetEditor;
+		TSharedPtr<AssetEditor::FHeartGraphEditor> HeartGraphAssetEditor;
 		if (const UHeartGraph* HeartGraph = Cast<UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph())
 		{
 			const TSharedPtr<IToolkit> FoundAssetEditor = FToolkitManager::Get().FindEditorForAsset(HeartGraph);
 			if (FoundAssetEditor.IsValid())
 			{
-				HeartGraphAssetEditor = StaticCastSharedPtr<AssetEditor::FAssetEditor>(FoundAssetEditor);
+				HeartGraphAssetEditor = StaticCastSharedPtr<AssetEditor::FHeartGraphEditor>(FoundAssetEditor);
 			}
 		}
 		return HeartGraphAssetEditor;

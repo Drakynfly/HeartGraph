@@ -1,25 +1,27 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Graph/HeartGraphAssetEditorMode_Editor.h"
+#include "AssetEditor/ApplicationMode_Editor.h"
 
+#include "HeartEditorModule.h"
 #include "TabSpawners.h"
 #include "Graph/HeartGraphAssetEditor.h"
+#include "Graph/HeartGraphAssetToolbar.h"
 
 namespace Heart::AssetEditor
 {
-	FApplicationMode_Editor::FApplicationMode_Editor(TSharedRef<FAssetEditor> AssetEditor)
+	FApplicationMode_Editor::FApplicationMode_Editor(TSharedRef<FHeartGraphEditor> AssetEditor)
 		: FApplicationMode(Modes::Editor)
 	{
 		HeartGraphAssetEditorPtr = AssetEditor;
 
 		TabFactories.RegisterFactory(MakeShared<FDetailsPanelSummoner>(AssetEditor,
-			FOnDetailsCreated::CreateSP(AssetEditor, &FAssetEditor::OnDetailsPanelCreated)));
+			FOnDetailsCreated::CreateSP(AssetEditor, &FHeartGraphEditor::OnDetailsPanelCreated)));
 
 		TabFactories.RegisterFactory(MakeShared<FGraphEditorSummoner>(AssetEditor,
-			FCreateGraphEditor::CreateSP(AssetEditor, &FAssetEditor::CreateGraphWidget)));
+			FCreateGraphEditor::CreateSP(AssetEditor, &FHeartGraphEditor::CreateGraphWidget)));
 
 		TabFactories.RegisterFactory(MakeShared<FNodePaletteSummoner>(AssetEditor,
-			FOnPaletteCreated::CreateSP(AssetEditor, &FAssetEditor::OnNodePaletteCreated)));
+			FOnPaletteCreated::CreateSP(AssetEditor, &FHeartGraphEditor::OnNodePaletteCreated)));
 
 		TabLayout = FTabManager::NewLayout("HeartAssetEditor_Layout_v1")
 			->AddArea
@@ -44,11 +46,15 @@ namespace Heart::AssetEditor
 						->AddTab(FNodePaletteSummoner::TabId, ETabState::OpenedTab)
 					)
 			);
+
+		FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+		ToolbarExtender = HeartEditorModule.GetToolBarExtensibilityManager()->GetAllExtenders();
+		AssetEditor->GetToolbar()->AddEditorModesToolbar(ToolbarExtender);
 	}
 
 	void FApplicationMode_Editor::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
 	{
-		const TSharedPtr<FAssetEditor> AssetEditor = HeartGraphAssetEditorPtr.Pin();
+		const TSharedPtr<FHeartGraphEditor> AssetEditor = HeartGraphAssetEditorPtr.Pin();
 		AssetEditor->RegisterTabSpawners(InTabManager.ToSharedRef());
 		AssetEditor->PushTabFactories(TabFactories);
 		FApplicationMode::RegisterTabFactories(InTabManager);

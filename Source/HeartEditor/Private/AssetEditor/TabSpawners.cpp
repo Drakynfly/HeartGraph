@@ -4,6 +4,8 @@
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/Widgets/SHeartDetailsPanel.h"
 #include "Graph/Widgets/SHeartPalette.h"
+#include "Preview/HeartPreviewScene.h"
+#include "Preview/SPreviewSceneViewport.h"
 
 #define LOCTEXT_NAMESPACE "Heart::AssetEditor::TabSpawners"
 
@@ -15,7 +17,7 @@ namespace Heart::AssetEditor
 
 	const FName FDetailsPanelSummoner::TabId("Heart_AssetEditor_Details");
 
-	FDetailsPanelSummoner::FDetailsPanelSummoner(TSharedPtr<FAssetEditor> AssetEditor,
+	FDetailsPanelSummoner::FDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor,
 												 const FOnDetailsCreated& InOnDetailsCreated)
 	  : FWorkflowTabFactory(TabId, AssetEditor)
 	{
@@ -47,7 +49,7 @@ namespace Heart::AssetEditor
 
 	const FName FGraphEditorSummoner::TabId("Heart_AssetEditor_GraphEditor");
 
-	FGraphEditorSummoner::FGraphEditorSummoner(TSharedPtr<FAssetEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor)
+	FGraphEditorSummoner::FGraphEditorSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor)
 	  : FWorkflowTabFactory(TabId, AssetEditor),
 		CreateGraphEditor(InCreateGraphEditor)
 	{
@@ -76,7 +78,7 @@ namespace Heart::AssetEditor
 
 	const FName FNodePaletteSummoner::TabId("Heart_AssetEditor_NodePalette");
 
-	FNodePaletteSummoner::FNodePaletteSummoner(TSharedPtr<FAssetEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated)
+	FNodePaletteSummoner::FNodePaletteSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated)
 	  : FWorkflowTabFactory(TabId, AssetEditor)
 	{
 		TabLabel = LOCTEXT("NodePaletteTabLabel", "Palette");
@@ -98,6 +100,70 @@ namespace Heart::AssetEditor
 	FText FNodePaletteSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
 	{
 		return LOCTEXT("NodePalette_TabTooltip", "");
+	}
+
+
+	/*-------------------
+		PREVIEW SCENE
+	 -------------------*/
+
+	const FName FPreviewSceneSummoner::TabId("Heart_AssetEditor_PreviewScene");
+
+	FPreviewSceneSummoner::FPreviewSceneSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor)
+	  : FWorkflowTabFactory(TabId, AssetEditor)
+	{
+		TabLabel = LOCTEXT("PreviewSceneTabLabel", "Preview");
+		TabIcon = FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Viewports");
+		bIsSingleton = true;
+
+		ViewMenuDescription = LOCTEXT("PreviewScene_Description", "");
+		ViewMenuTooltip = LOCTEXT("PreviewScene_ToolTip", "");
+
+		PreviewViewport = SNew(SPreviewSceneViewport, AssetEditor, MakeShareable(
+			new FHeartPreviewScene(
+				FPreviewScene::ConstructionValues()
+				.AllowAudioPlayback(true)
+				.ShouldSimulatePhysics(true)
+				.ForceUseMovementComponentInNonGameWorld(true),
+				AssetEditor.ToSharedRef())));
+	}
+
+	TSharedRef<SWidget> FPreviewSceneSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
+	{
+		return PreviewViewport.ToSharedRef();
+	}
+
+	FText FPreviewSceneSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
+	{
+		return LOCTEXT("PreviewScene_TabTooltip", "");
+	}
+
+
+	/*-------------------
+	PREVIEW SCENE DETAILS
+	 -------------------*/
+
+	const FName FPreviewSceneDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewSceneDetails");
+
+	FPreviewSceneDetailsPanelSummoner::FPreviewSceneDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor)
+	  : FWorkflowTabFactory(TabId, AssetEditor)
+	{
+		TabLabel = LOCTEXT("PreviewSceneDetailsTabLabel", "Details");
+		TabIcon = FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Details");
+		bIsSingleton = true;
+
+		ViewMenuDescription = LOCTEXT("PreviewSceneDetails_Description", "");
+		ViewMenuTooltip = LOCTEXT("PreviewSceneDetails_ToolTip", "");
+	}
+
+	TSharedRef<SWidget> FPreviewSceneDetailsPanelSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
+	{
+		return SNullWidget::NullWidget;
+	}
+
+	FText FPreviewSceneDetailsPanelSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
+	{
+		return LOCTEXT("PreviewSceneDetailsPanel_TabTooltip", "");
 	}
 }
 

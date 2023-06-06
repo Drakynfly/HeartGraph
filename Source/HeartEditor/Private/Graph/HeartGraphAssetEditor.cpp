@@ -3,15 +3,15 @@
 #include "Graph/HeartGraphAssetEditor.h"
 
 #include "Graph/HeartGraphAssetToolbar.h"
-#include "Graph/HeartEdGraph.h"
-#include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartEdGraphSchema_Actions.h"
 #include "Nodes/HeartEdGraphNode.h"
 
 #include "Graph/Widgets/SHeartPalette.h"
 #include "Graph/Widgets/SHeartDetailsPanel.h"
 
-#include "Graph/HeartGraphAssetEditorMode_Editor.h"
+#include "AssetEditor/ApplicationMode_Editor.h"
+#include "AssetEditor/ApplicationMode_PreviewScene.h"
+#include "AssetEditor/TabSpawners.h"
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
@@ -25,6 +25,7 @@
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditor.h"
 #include "GraphEditorActions.h"
+#include "HeartEditorModule.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
 #include "PersonaModule.h"
@@ -32,7 +33,6 @@
 #include "PropertyEditorModule.h"
 #include "ScopedTransaction.h"
 #include "SNodePanel.h"
-#include "TabSpawners.h"
 #include "ToolMenus.h"
 #include "Widgets/Docking/SDockTab.h"
 
@@ -45,41 +45,45 @@ namespace Heart::AssetEditor
 	namespace Modes
 	{
 		const FName Editor("Heart_AssetEditorMode_Editor");
+		const FName PreviewScene("Heart_AssetEditorMode_PreviewScene");
 	}
 
-	FAssetEditor::FAssetEditor()
+	FHeartGraphEditor::FHeartGraphEditor()
 		: HeartGraph(nullptr)
 	{
 	}
 
-	FAssetEditor::~FAssetEditor()
+	FHeartGraphEditor::~FHeartGraphEditor()
 	{
 		GEditor->UnregisterForUndo(this);
 	}
 
-	void FAssetEditor::AddReferencedObjects(FReferenceCollector& Collector)
+	void FHeartGraphEditor::AddReferencedObjects(FReferenceCollector& Collector)
 	{
 		Collector.AddReferencedObject(HeartGraph);
 	}
 
-	void FAssetEditor::PostUndo(bool bSuccess)
+	void FHeartGraphEditor::PostUndo(bool bSuccess)
 	{
 		HandleUndoTransaction();
 	}
 
-	void FAssetEditor::PostRedo(bool bSuccess)
+	void FHeartGraphEditor::PostRedo(bool bSuccess)
 	{
 		HandleUndoTransaction();
 	}
 
-	void FAssetEditor::HandleUndoTransaction()
+	void FHeartGraphEditor::HandleUndoTransaction()
 	{
 		SetUISelectionState(NAME_None);
-		GraphEditor->NotifyGraphChanged();
+		if (GraphEditor)
+		{
+			GraphEditor->NotifyGraphChanged();
+		}
 		FSlateApplication::Get().DismissAllMenus();
 	}
 
-	void FAssetEditor::NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged)
+	void FHeartGraphEditor::NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged)
 	{
 		if (PropertyChangedEvent.ChangeType != EPropertyChangeType::Interactive)
 		{
@@ -87,39 +91,39 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	FName FAssetEditor::GetToolkitFName() const
+	FName FHeartGraphEditor::GetToolkitFName() const
 	{
 		return FName("HeartEditor");
 	}
 
-	FText FAssetEditor::GetBaseToolkitName() const
+	FText FHeartGraphEditor::GetBaseToolkitName() const
 	{
 		return LOCTEXT("AppLabel", "HeartGraph Editor");
 	}
 
-	FString FAssetEditor::GetWorldCentricTabPrefix() const
+	FString FHeartGraphEditor::GetWorldCentricTabPrefix() const
 	{
 		return LOCTEXT("WorldCentricTabPrefix", "HeartGraph").ToString();
 	}
 
-	FLinearColor FAssetEditor::GetWorldCentricTabColorScale() const
+	FLinearColor FHeartGraphEditor::GetWorldCentricTabColorScale() const
 	{
 		return FLinearColor(0.3f, 0.2f, 0.5f, 0.5f);
 	}
 
-	void FAssetEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
+	void FHeartGraphEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 	{
 		WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_HeartGraphAssetEditor", "HeartGraph Editor"));
 
 		FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 	}
 
-	void FAssetEditor::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
+	void FHeartGraphEditor::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 	{
 		FAssetEditorToolkit::UnregisterTabSpawners(InTabManager);
 	}
 
-	void FAssetEditor::PostRegenerateMenusAndToolbars()
+	void FHeartGraphEditor::PostRegenerateMenusAndToolbars()
 	{
 		// Provide a hyperlink to view our class
 		const TSharedRef<SHorizontalBox> MenuOverlayBox = SNew(SHorizontalBox)
@@ -143,7 +147,7 @@ namespace Heart::AssetEditor
 		SetMenuOverlay(MenuOverlayBox);
 	}
 
-	void FAssetEditor::SetCurrentMode(const FName NewMode)
+	void FHeartGraphEditor::SetCurrentMode(const FName NewMode)
 	{
 		// Clear the selection state when the mode changes.
 		SetUISelectionState(NAME_None);
@@ -151,7 +155,7 @@ namespace Heart::AssetEditor
 		FWorkflowCentricApplication::SetCurrentMode(NewMode);
 	}
 
-	void FAssetEditor::InitAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, UHeartGraph* InHeartGraph)
+	void FHeartGraphEditor::InitAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, UHeartGraph* InHeartGraph)
 	{
 		check(IsValid(InHeartGraph))
 		HeartGraph = InHeartGraph;
@@ -161,8 +165,6 @@ namespace Heart::AssetEditor
 		GEditor->RegisterForUndo(this);
 
 		BindToolbarCommands();
-		CreateToolbar();
-
 		BindGraphCommands();
 
 		constexpr bool bCreateDefaultStandaloneMenu = true;
@@ -170,19 +172,39 @@ namespace Heart::AssetEditor
 		FAssetEditorToolkit::InitAssetEditor(Mode, InitToolkitHost, AppIdentifier, FTabManager::FLayout::NullLayout,
 			bCreateDefaultStandaloneMenu, bCreateDefaultToolbar, HeartGraph, false);
 
+		// Toolbar must be initialized before Application Modes are added, as they will probably use the toolbar.
+		CreateToolbar();
+
+		// Graph editor mode
 		AddApplicationMode(
 			Modes::Editor,
 			MakeShareable(new FApplicationMode_Editor(SharedThis(this))));
 
+		// 3D scene preview mode
+		AddApplicationMode(
+			Modes::PreviewScene,
+			MakeShareable(new FApplicationMode_PreviewScene(SharedThis(this))));
+
+		// Default mode to open on
 		SetCurrentMode(Modes::Editor);
 
 		//ExtendMenu();
 		//ExtendToolbar();
 
+		FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+		AddMenuExtender(HeartEditorModule.GetMenuExtensibilityManager()->GetAllExtenders(GetToolkitCommands(), GetEditingObjects()));
+		AddToolbarExtender(HeartEditorModule.GetToolBarExtensibilityManager()->GetAllExtenders(GetToolkitCommands(), GetEditingObjects()));
+
 		RegenerateMenusAndToolbars();
 	}
 
-	void FAssetEditor::CreateToolbar()
+	bool FHeartGraphEditor::CanActivateMode(FName NewMode) const
+	{
+		// @todo
+		return true;
+	}
+
+	void FHeartGraphEditor::CreateToolbar()
 	{
 		FName ParentToolbarName;
 		const FName ToolBarName = GetToolMenuToolbarName(ParentToolbarName);
@@ -200,18 +222,18 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::BindToolbarCommands()
+	void FHeartGraphEditor::BindToolbarCommands()
 	{
 		FHeartGraphToolbarCommands::Register();
 		const FHeartGraphToolbarCommands& ToolbarCommands = FHeartGraphToolbarCommands::Get();
 
 		// Editing
 		ToolkitCommands->MapAction(ToolbarCommands.RefreshAsset,
-			FExecuteAction::CreateSP(this, &FAssetEditor::RefreshAsset),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanEdit));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::RefreshAsset),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanEdit));
 	}
 
-	void FAssetEditor::RefreshAsset()
+	void FHeartGraphEditor::RefreshAsset()
 	{
 		SetCurrentMode(Modes::Editor);
 
@@ -226,14 +248,14 @@ namespace Heart::AssetEditor
 		*/
 	}
 
-	FGraphAppearanceInfo FAssetEditor::GetGraphAppearanceInfo() const
+	FGraphAppearanceInfo FHeartGraphEditor::GetGraphAppearanceInfo() const
 	{
 		FGraphAppearanceInfo AppearanceInfo;
 		AppearanceInfo.CornerText = GetCornerText();
 		return AppearanceInfo;
 	}
 
-	FText FAssetEditor::GetCornerText() const
+	FText FHeartGraphEditor::GetCornerText() const
 	{
 		if (ensure(IsValid(HeartGraph)))
 		{
@@ -243,7 +265,7 @@ namespace Heart::AssetEditor
 		return LOCTEXT("AppearanceCornerText_HeartGraphErrorText", "UNKNOWN");
 	}
 
-	void FAssetEditor::BindGraphCommands()
+	void FHeartGraphEditor::BindGraphCommands()
 	{
 		FGraphEditorCommands::Register();
 		FHeartGraphCommands::Register();
@@ -255,158 +277,158 @@ namespace Heart::AssetEditor
 
 		// Graph commands
 		ToolkitCommands->MapAction(GraphCommands.CreateComment,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnCreateComment),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanEdit));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnCreateComment),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanEdit));
 
 		ToolkitCommands->MapAction(GraphCommands.StraightenConnections,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnStraightenConnections));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnStraightenConnections));
 
 		// Generic Node commands
 		ToolkitCommands->MapAction(GenericCommands.Undo,
-			FExecuteAction::CreateStatic(&FAssetEditor::UndoGraphAction),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanEdit));
+			FExecuteAction::CreateStatic(&FHeartGraphEditor::UndoGraphAction),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanEdit));
 
 		ToolkitCommands->MapAction(GenericCommands.Redo,
-			FExecuteAction::CreateStatic(&FAssetEditor::RedoGraphAction),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanEdit));
+			FExecuteAction::CreateStatic(&FHeartGraphEditor::RedoGraphAction),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanEdit));
 
 		ToolkitCommands->MapAction(GenericCommands.SelectAll,
-			FExecuteAction::CreateSP(this, &FAssetEditor::SelectAllNodes),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanSelectAllNodes));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::SelectAllNodes),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanSelectAllNodes));
 
 		ToolkitCommands->MapAction(GenericCommands.Delete,
-			FExecuteAction::CreateSP(this, &FAssetEditor::DeleteSelectedNodes),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanDeleteNodes));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::DeleteSelectedNodes),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanDeleteNodes));
 
 		ToolkitCommands->MapAction(GenericCommands.Copy,
-			FExecuteAction::CreateSP(this, &FAssetEditor::CopySelectedNodes),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanCopyNodes));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::CopySelectedNodes),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanCopyNodes));
 
 		ToolkitCommands->MapAction(GenericCommands.Cut,
-			FExecuteAction::CreateSP(this, &FAssetEditor::CutSelectedNodes),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanCutNodes));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::CutSelectedNodes),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanCutNodes));
 
 		ToolkitCommands->MapAction(GenericCommands.Paste,
-			FExecuteAction::CreateSP(this, &FAssetEditor::PasteNodes),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanPasteNodes));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::PasteNodes),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanPasteNodes));
 
 		ToolkitCommands->MapAction(GenericCommands.Duplicate,
-			FExecuteAction::CreateSP(this, &FAssetEditor::DuplicateNodes),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanDuplicateNodes));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::DuplicateNodes),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanDuplicateNodes));
 
 		// Pin commands
 		ToolkitCommands->MapAction(HeartGraphCommands.AddInput,
-			FExecuteAction::CreateSP(this, &FAssetEditor::AddInput),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanAddInput));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::AddInput),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanAddInput));
 
 		ToolkitCommands->MapAction(HeartGraphCommands.AddOutput,
-			FExecuteAction::CreateSP(this, &FAssetEditor::AddOutput),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanAddOutput));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::AddOutput),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanAddOutput));
 
 		ToolkitCommands->MapAction(HeartGraphCommands.RemovePin,
-			FExecuteAction::CreateSP(this, &FAssetEditor::RemovePin),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanRemovePin));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::RemovePin),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanRemovePin));
 
 		// Breakpoint commands
 		ToolkitCommands->MapAction(GraphCommands.AddBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnAddBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanAddBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnAddBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanAddBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanAddBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanAddBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(GraphCommands.RemoveBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnRemoveBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanRemoveBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnRemoveBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanRemoveBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanRemoveBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanRemoveBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(GraphCommands.EnableBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnEnableBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanEnableBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnEnableBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanEnableBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanEnableBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanEnableBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(GraphCommands.DisableBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnDisableBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanDisableBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnDisableBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanDisableBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanDisableBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanDisableBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(GraphCommands.ToggleBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnToggleBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanToggleBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnToggleBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanToggleBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanToggleBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanToggleBreakpoint)
 		);
 
 		// Pin Breakpoint commands
 		ToolkitCommands->MapAction(HeartGraphCommands.AddPinBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnAddPinBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanAddPinBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnAddPinBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanAddPinBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanAddPinBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanAddPinBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(HeartGraphCommands.RemovePinBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnRemovePinBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanRemovePinBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnRemovePinBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanRemovePinBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanRemovePinBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanRemovePinBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(HeartGraphCommands.EnablePinBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnEnablePinBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanEnablePinBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnEnablePinBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanEnablePinBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanEnablePinBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanEnablePinBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(HeartGraphCommands.DisablePinBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnDisablePinBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanDisablePinBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnDisablePinBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanDisablePinBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanDisablePinBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanDisablePinBreakpoint)
 		);
 
 		ToolkitCommands->MapAction(HeartGraphCommands.TogglePinBreakpoint,
-			FExecuteAction::CreateSP(this, &FAssetEditor::OnTogglePinBreakpoint),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanTogglePinBreakpoint),
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::OnTogglePinBreakpoint),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanTogglePinBreakpoint),
 			FIsActionChecked(),
-			FIsActionButtonVisible::CreateSP(this, &FAssetEditor::CanTogglePinBreakpoint)
+			FIsActionButtonVisible::CreateSP(this, &FHeartGraphEditor::CanTogglePinBreakpoint)
 		);
 
 		// Jump commands
 		ToolkitCommands->MapAction(HeartGraphCommands.JumpToGraphNodeDefinition,
-	        FExecuteAction::CreateSP(this, &FAssetEditor::JumpToGraphNodeDefinition),
-	        FCanExecuteAction::CreateSP(this, &FAssetEditor::CanJumpToGraphNodeDefinition));
+	        FExecuteAction::CreateSP(this, &FHeartGraphEditor::JumpToGraphNodeDefinition),
+	        FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanJumpToGraphNodeDefinition));
 
 		// Jump commands
 		ToolkitCommands->MapAction(HeartGraphCommands.JumpToNodeDefinition,
-			FExecuteAction::CreateSP(this, &FAssetEditor::JumpToNodeObjectDefinition),
-			FCanExecuteAction::CreateSP(this, &FAssetEditor::CanJumpToNodeObjectDefinition));
+			FExecuteAction::CreateSP(this, &FHeartGraphEditor::JumpToNodeObjectDefinition),
+			FCanExecuteAction::CreateSP(this, &FHeartGraphEditor::CanJumpToNodeObjectDefinition));
 	}
 
-	void FAssetEditor::OnDetailsPanelCreated(const TSharedRef<SDetailsPanel, ESPMode::ThreadSafe>& DetailsView)
+	void FHeartGraphEditor::OnDetailsPanelCreated(const TSharedRef<SDetailsPanel, ESPMode::ThreadSafe>& DetailsView)
 	{
 		DetailsPanel = DetailsView;
 	}
 
-	void FAssetEditor::OnNodePaletteCreated(const TSharedRef<SHeartPalette, ESPMode::ThreadSafe>& NodePalette)
+	void FHeartGraphEditor::OnNodePaletteCreated(const TSharedRef<SHeartPalette, ESPMode::ThreadSafe>& NodePalette)
 	{
 		Palette = NodePalette;
 	}
 
-	TSharedRef<SGraphEditor> FAssetEditor::CreateGraphWidget(const FWorkflowTabSpawnInfo& Info)
+	TSharedRef<SGraphEditor> FHeartGraphEditor::CreateGraphWidget(const FWorkflowTabSpawnInfo& Info)
 	{
 		SGraphEditor::FGraphEditorEvents InEvents;
-		InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FAssetEditor::OnSelectedNodesChanged);
-		InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FAssetEditor::OnNodeDoubleClicked);
-		InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FAssetEditor::OnNodeTitleCommitted);
-		InEvents.OnSpawnNodeByShortcut = SGraphEditor::FOnSpawnNodeByShortcut::CreateStatic(&FAssetEditor::OnSpawnGraphNodeByShortcut, HeartGraph->GetEdGraph());
+		InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FHeartGraphEditor::OnSelectedNodesChanged);
+		InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FHeartGraphEditor::OnNodeDoubleClicked);
+		InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FHeartGraphEditor::OnNodeTitleCommitted);
+		InEvents.OnSpawnNodeByShortcut = SGraphEditor::FOnSpawnNodeByShortcut::CreateStatic(&FHeartGraphEditor::OnSpawnGraphNodeByShortcut, HeartGraph->GetEdGraph());
 
 		GraphEditor = SNew(SGraphEditor)
 			.AdditionalCommands(ToolkitCommands)
@@ -420,17 +442,17 @@ namespace Heart::AssetEditor
 		return GraphEditor.ToSharedRef();
 	}
 
-	void FAssetEditor::UndoGraphAction()
+	void FHeartGraphEditor::UndoGraphAction()
 	{
 		GEditor->UndoTransaction();
 	}
 
-	void FAssetEditor::RedoGraphAction()
+	void FHeartGraphEditor::RedoGraphAction()
 	{
 		GEditor->RedoTransaction();
 	}
 
-	FReply FAssetEditor::OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2D& InPosition, UEdGraph* InGraph)
+	FReply FHeartGraphEditor::OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2D& InPosition, UEdGraph* InGraph)
 	{
 		if (FHeartSpawnNodeCommands::IsRegistered())
 		{
@@ -446,7 +468,7 @@ namespace Heart::AssetEditor
 		return FReply::Unhandled();
 	}
 
-	void FAssetEditor::SetUISelectionState(const FName SelectionOwner)
+	void FHeartGraphEditor::SetUISelectionState(const FName SelectionOwner)
 	{
 		if (SelectionOwner != CurrentUISelection)
 		{
@@ -455,7 +477,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::ClearSelectionStateFor(const FName SelectionOwner)
+	void FHeartGraphEditor::ClearSelectionStateFor(const FName SelectionOwner)
 	{
 		if (SelectionOwner == FGraphEditorSummoner::TabId)
 		{
@@ -470,28 +492,28 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnCreateComment() const
+	void FHeartGraphEditor::OnCreateComment() const
 	{
 		FHeartGraphSchemaAction_NewComment CommentAction;
 		CommentAction.PerformAction(HeartGraph->GetEdGraph(), nullptr, GraphEditor->GetPasteLocation());
 	}
 
-	void FAssetEditor::OnStraightenConnections() const
+	void FHeartGraphEditor::OnStraightenConnections() const
 	{
 		GraphEditor->OnStraightenConnections();
 	}
 
-	bool FAssetEditor::CanEdit() const
+	bool FHeartGraphEditor::CanEdit() const
 	{
 		return GEditor->PlayWorld == nullptr;
 	}
 
-	EVisibility FAssetEditor::GetDebuggerVisibility()
+	EVisibility FHeartGraphEditor::GetDebuggerVisibility()
 	{
 		return GEditor->PlayWorld ? EVisibility::Visible : EVisibility::Collapsed;
 	}
 
-	TSet<UHeartEdGraphNode*> FAssetEditor::GetSelectedHeartGraphNodes() const
+	TSet<UHeartEdGraphNode*> FHeartGraphEditor::GetSelectedHeartGraphNodes() const
 	{
 		TSet<UHeartEdGraphNode*> Result;
 
@@ -507,17 +529,17 @@ namespace Heart::AssetEditor
 		return Result;
 	}
 
-	int32 FAssetEditor::GetNumberOfSelectedNodes() const
+	int32 FHeartGraphEditor::GetNumberOfSelectedNodes() const
 	{
 		return GraphEditor->GetSelectedNodes().Num();
 	}
 
-	bool FAssetEditor::GetBoundsForSelectedNodes(FSlateRect& Rect, const float Padding) const
+	bool FHeartGraphEditor::GetBoundsForSelectedNodes(FSlateRect& Rect, const float Padding) const
 	{
 		return GraphEditor->GetBoundsForSelectedNodes(Rect, Padding);
 	}
 
-	void FAssetEditor::OnSelectedNodesChanged(const TSet<UObject*>& Nodes)
+	void FHeartGraphEditor::OnSelectedNodesChanged(const TSet<UObject*>& Nodes)
 	{
 		TArray<UObject*> SelectedGraphObjects;
 		TArray<UObject*> SelectedObjects;
@@ -556,7 +578,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::SelectSingleNode(UEdGraphNode* Node) const
+	void FHeartGraphEditor::SelectSingleNode(UEdGraphNode* Node) const
 	{
 		if (GraphEditor)
 		{
@@ -566,7 +588,7 @@ namespace Heart::AssetEditor
 
 	}
 
-	void FAssetEditor::SelectAllNodes() const
+	void FHeartGraphEditor::SelectAllNodes() const
 	{
 		if (GraphEditor)
 		{
@@ -574,12 +596,12 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanSelectAllNodes() const
+	bool FHeartGraphEditor::CanSelectAllNodes() const
 	{
 		return true;
 	}
 
-	void FAssetEditor::DeleteNode(UEdGraphNode* Node)
+	void FHeartGraphEditor::DeleteNode(UEdGraphNode* Node)
 	{
 		check(Node);
 
@@ -612,7 +634,7 @@ namespace Heart::AssetEditor
 		Node->DestroyNode();
 	}
 
-	void FAssetEditor::DeleteSelectedNodes()
+	void FHeartGraphEditor::DeleteSelectedNodes()
 	{
 		const FScopedTransaction Transaction(LOCTEXT("DeleteSelectedNode", "Delete Selected Node"));
 		GraphEditor->GetCurrentGraph()->Modify();
@@ -632,7 +654,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::DeleteSelectedDuplicableNodes()
+	void FHeartGraphEditor::DeleteSelectedDuplicableNodes()
 	{
 		// Cache off the old selection
 		const FGraphPanelSelectionSet OldSelectedNodes = GraphEditor->GetSelectedNodes();
@@ -668,7 +690,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanDeleteNodes() const
+	bool FHeartGraphEditor::CanDeleteNodes() const
 	{
 		if (CanEdit())
 		{
@@ -690,7 +712,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::CutSelectedNodes()
+	void FHeartGraphEditor::CutSelectedNodes()
 	{
 		CopySelectedNodes();
 
@@ -698,12 +720,12 @@ namespace Heart::AssetEditor
 		DeleteSelectedDuplicableNodes();
 	}
 
-	bool FAssetEditor::CanCutNodes() const
+	bool FHeartGraphEditor::CanCutNodes() const
 	{
 		return CanCopyNodes() && CanDeleteNodes();
 	}
 
-	void FAssetEditor::CopySelectedNodes() const
+	void FHeartGraphEditor::CopySelectedNodes() const
 	{
 		const FGraphPanelSelectionSet SelectedNodes = GraphEditor->GetSelectedNodes();
 		for (FGraphPanelSelectionSet::TConstIterator SelectedIt(SelectedNodes); SelectedIt; ++SelectedIt)
@@ -728,7 +750,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanCopyNodes() const
+	bool FHeartGraphEditor::CanCopyNodes() const
 	{
 		if (CanEdit())
 		{
@@ -746,12 +768,12 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::PasteNodes()
+	void FHeartGraphEditor::PasteNodes()
 	{
 		PasteNodesHere(GraphEditor->GetPasteLocation());
 	}
 
-	void FAssetEditor::PasteNodesHere(const FVector2D& Location)
+	void FHeartGraphEditor::PasteNodesHere(const FVector2D& Location)
 	{
 		SetUISelectionState(NAME_None);
 
@@ -819,7 +841,7 @@ namespace Heart::AssetEditor
 		HeartGraph->MarkPackageDirty();
 	}
 
-	bool FAssetEditor::CanPasteNodes() const
+	bool FHeartGraphEditor::CanPasteNodes() const
 	{
 		if (CanEdit())
 		{
@@ -832,18 +854,18 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::DuplicateNodes()
+	void FHeartGraphEditor::DuplicateNodes()
 	{
 		CopySelectedNodes();
 		PasteNodes();
 	}
 
-	bool FAssetEditor::CanDuplicateNodes() const
+	bool FHeartGraphEditor::CanDuplicateNodes() const
 	{
 		return CanCopyNodes();
 	}
 
-	void FAssetEditor::OnNodeDoubleClicked(UEdGraphNode* Node) const
+	void FHeartGraphEditor::OnNodeDoubleClicked(UEdGraphNode* Node) const
 	{
 		if (auto&& HeartGraphNode = Cast<UHeartEdGraphNode>(Node)->GetHeartGraphNode())
 		{
@@ -851,7 +873,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnNodeTitleCommitted(const FText& NewText, ETextCommit::Type CommitInfo, UEdGraphNode* NodeBeingChanged)
+	void FHeartGraphEditor::OnNodeTitleCommitted(const FText& NewText, ETextCommit::Type CommitInfo, UEdGraphNode* NodeBeingChanged)
 	{
 		if (NodeBeingChanged)
 		{
@@ -861,7 +883,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::AddInput() const
+	void FHeartGraphEditor::AddInput() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -869,7 +891,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanAddInput() const
+	bool FHeartGraphEditor::CanAddInput() const
 	{
 		if (CanEdit() && GetSelectedHeartGraphNodes().Num() == 1)
 		{
@@ -882,7 +904,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::AddOutput() const
+	void FHeartGraphEditor::AddOutput() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -890,7 +912,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanAddOutput() const
+	bool FHeartGraphEditor::CanAddOutput() const
 	{
 		if (CanEdit() && GetSelectedHeartGraphNodes().Num() == 1)
 		{
@@ -903,7 +925,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::RemovePin() const
+	void FHeartGraphEditor::RemovePin() const
 	{
 		if (auto&& SelectedPin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -914,7 +936,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanRemovePin() const
+	bool FHeartGraphEditor::CanRemovePin() const
 	{
 		if (CanEdit() && GetSelectedHeartGraphNodes().Num() == 1)
 		{
@@ -937,7 +959,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::OnAddBreakpoint() const
+	void FHeartGraphEditor::OnAddBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -945,7 +967,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnAddPinBreakpoint() const
+	void FHeartGraphEditor::OnAddPinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -957,7 +979,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanAddBreakpoint() const
+	bool FHeartGraphEditor::CanAddBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -967,7 +989,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	bool FAssetEditor::CanAddPinBreakpoint() const
+	bool FHeartGraphEditor::CanAddPinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -980,7 +1002,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::OnRemoveBreakpoint() const
+	void FHeartGraphEditor::OnRemoveBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -988,7 +1010,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnRemovePinBreakpoint() const
+	void FHeartGraphEditor::OnRemovePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -999,7 +1021,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanRemoveBreakpoint() const
+	bool FHeartGraphEditor::CanRemoveBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -1009,7 +1031,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	bool FAssetEditor::CanRemovePinBreakpoint() const
+	bool FHeartGraphEditor::CanRemovePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1022,7 +1044,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::OnEnableBreakpoint() const
+	void FHeartGraphEditor::OnEnableBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -1030,7 +1052,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnEnablePinBreakpoint() const
+	void FHeartGraphEditor::OnEnablePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1041,7 +1063,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanEnableBreakpoint() const
+	bool FHeartGraphEditor::CanEnableBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1059,7 +1081,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	bool FAssetEditor::CanEnablePinBreakpoint() const
+	bool FHeartGraphEditor::CanEnablePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1072,7 +1094,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::OnDisableBreakpoint() const
+	void FHeartGraphEditor::OnDisableBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -1080,7 +1102,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnDisablePinBreakpoint() const
+	void FHeartGraphEditor::OnDisablePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1091,7 +1113,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanDisableBreakpoint() const
+	bool FHeartGraphEditor::CanDisableBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -1101,7 +1123,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	bool FAssetEditor::CanDisablePinBreakpoint() const
+	bool FHeartGraphEditor::CanDisablePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1114,7 +1136,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::OnToggleBreakpoint() const
+	void FHeartGraphEditor::OnToggleBreakpoint() const
 	{
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
 		{
@@ -1122,7 +1144,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	void FAssetEditor::OnTogglePinBreakpoint() const
+	void FHeartGraphEditor::OnTogglePinBreakpoint() const
 	{
 		if (auto&& Pin = GraphEditor->GetGraphPinForMenu())
 		{
@@ -1134,17 +1156,17 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanToggleBreakpoint() const
+	bool FHeartGraphEditor::CanToggleBreakpoint() const
 	{
 		return GetSelectedHeartGraphNodes().Num() > 0;
 	}
 
-	bool FAssetEditor::CanTogglePinBreakpoint() const
+	bool FHeartGraphEditor::CanTogglePinBreakpoint() const
 	{
 		return GraphEditor->GetGraphPinForMenu() != nullptr;
 	}
 
-	void FAssetEditor::JumpToGraphNodeDefinition() const
+	void FHeartGraphEditor::JumpToGraphNodeDefinition() const
 	{
 		// Iterator used but should only contain one node
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
@@ -1154,7 +1176,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanJumpToGraphNodeDefinition() const
+	bool FHeartGraphEditor::CanJumpToGraphNodeDefinition() const
 	{
 		if (!GetSelectedHeartGraphNodes().Num() == 1)
 		{
@@ -1170,7 +1192,7 @@ namespace Heart::AssetEditor
 		return false;
 	}
 
-	void FAssetEditor::JumpToNodeObjectDefinition() const
+	void FHeartGraphEditor::JumpToNodeObjectDefinition() const
 	{
 		// Iterator used but should only contain one node
 		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
@@ -1180,7 +1202,7 @@ namespace Heart::AssetEditor
 		}
 	}
 
-	bool FAssetEditor::CanJumpToNodeObjectDefinition() const
+	bool FHeartGraphEditor::CanJumpToNodeObjectDefinition() const
 	{
 		if (!GetSelectedHeartGraphNodes().Num() == 1)
 	    {

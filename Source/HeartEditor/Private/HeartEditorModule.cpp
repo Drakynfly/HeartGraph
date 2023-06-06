@@ -52,6 +52,9 @@ void FHeartEditorModule::StartupModule()
 {
 	FHeartEditorStyle::Initialize();
 
+	MenuExtensibilityManager = MakeShareable(new FExtensibilityManager);
+	ToolBarExtensibilityManager = MakeShareable(new FExtensibilityManager);
+
 	// @TODO BEGIN TEMP STUFF
 	{
 		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();

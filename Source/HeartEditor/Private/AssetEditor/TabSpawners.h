@@ -8,7 +8,11 @@ class SHeartPalette;
 
 namespace Heart::AssetEditor
 {
-	class FAssetEditor;
+	//
+	//		GRAPH EDITOR TABS
+	//
+
+	class FHeartGraphEditor;
 	class SDetailsPanel;
 
 	/** Callback for when a details panel is created */
@@ -18,7 +22,7 @@ namespace Heart::AssetEditor
 	{
 		static const FName TabId;
 
-		FDetailsPanelSummoner(TSharedPtr<FAssetEditor> AssetEditor, const FOnDetailsCreated& InOnDetailsCreated);
+		FDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& InOnDetailsCreated);
 
 		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
@@ -34,7 +38,7 @@ namespace Heart::AssetEditor
 	{
 		static const FName TabId;
 
-		FGraphEditorSummoner(TSharedPtr<FAssetEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor);
+		FGraphEditorSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor);
 
 		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
@@ -51,12 +55,40 @@ namespace Heart::AssetEditor
 	{
 		static const FName TabId;
 
-		FNodePaletteSummoner(TSharedPtr<FAssetEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated);
+		FNodePaletteSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated);
 
 		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
 
 	private:
 		TSharedPtr<SHeartPalette> HeartPalette;
+	};
+
+
+	//
+	//		SCENE PREVIEW TABS
+	//
+
+	struct FPreviewSceneSummoner : public FWorkflowTabFactory
+	{
+		static const FName TabId;
+
+		FPreviewSceneSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor);
+
+		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
+		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
+
+	private:
+		TSharedPtr<class SPreviewSceneViewport> PreviewViewport;
+	};
+
+	struct FPreviewSceneDetailsPanelSummoner : public FWorkflowTabFactory
+	{
+		static const FName TabId;
+
+		FPreviewSceneDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor);
+
+		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
+		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
 	};
 }

@@ -7,19 +7,19 @@
 
 namespace Heart::AssetEditor
 {
-	class FAssetEditor;
+	class FHeartGraphEditor;
 
 	class FApplicationMode_Editor : public FApplicationMode
     {
     public:
-    	FApplicationMode_Editor(TSharedRef<FAssetEditor> AssetEditor);
+    	FApplicationMode_Editor(TSharedRef<FHeartGraphEditor> AssetEditor);
 
     	/** FApplicationMode interface */
     	virtual void RegisterTabFactories(TSharedPtr<FTabManager> InTabManager) override;
 
     protected:
     	/** The hosting app */
-    	TWeakPtr<FAssetEditor> HeartGraphAssetEditorPtr;
+    	TWeakPtr<FHeartGraphEditor> HeartGraphAssetEditorPtr;
 
     	/** The tab factories we support */
     	FWorkflowAllowedTabSet TabFactories;

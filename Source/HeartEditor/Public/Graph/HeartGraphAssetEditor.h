@@ -24,18 +24,19 @@ namespace Heart::AssetEditor
 	namespace Modes
 	{
 		extern const FName Editor;
+		extern const FName PreviewScene;
 	}
 
 	class SDetailsPanel;
 	class FApplicationMode_Editor;
 
-	class HEARTEDITOR_API FAssetEditor : public FWorkflowCentricApplication, public FEditorUndoClient, public FGCObject, public FNotifyHook
+	class HEARTEDITOR_API FHeartGraphEditor : public FWorkflowCentricApplication, public FEditorUndoClient, public FGCObject, public FNotifyHook
 	{
 		friend class FApplicationMode_Editor;
 
 	public:
-		FAssetEditor();
-		virtual ~FAssetEditor() override;
+		FHeartGraphEditor();
+		virtual ~FHeartGraphEditor() override;
 
 		// FGCObject
 		virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
@@ -79,6 +80,10 @@ namespace Heart::AssetEditor
 		void InitAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<class IToolkitHost>& InitToolkitHost, UHeartGraph* InHeartGraph);
 
 		UHeartGraph* GetHeartGraph() const { return HeartGraph; }
+
+		TSharedPtr<FHeartGraphAssetToolbar> GetToolbar() const { return AssetToolbar; }
+
+		bool CanActivateMode(FName NewMode) const;
 
 	protected:
 		virtual void CreateToolbar();

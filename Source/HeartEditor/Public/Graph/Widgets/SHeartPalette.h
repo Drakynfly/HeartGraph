@@ -6,7 +6,7 @@
 
 namespace Heart::AssetEditor
 {
-	class FAssetEditor;
+	class FHeartGraphEditor;
 }
 
 /** Widget displaying a single item  */
@@ -31,7 +31,7 @@ public:
 	SLATE_BEGIN_ARGS(SHeartPalette) {}
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FAssetEditor> InHeartGraphAssetEditor);
+	void Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> InHeartGraphAssetEditor);
 	virtual ~SHeartPalette() override;
 
 protected:
@@ -52,7 +52,7 @@ public:
 	void ClearGraphActionMenuSelection() const;
 
 protected:
-	TWeakPtr<Heart::AssetEditor::FAssetEditor> HeartGraphAssetEditorPtr;
+	TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> HeartGraphAssetEditorPtr;
 	TArray<TSharedPtr<FString>> CategoryNames;
 	TSharedPtr<STextComboBox> CategoryComboBox;
 };

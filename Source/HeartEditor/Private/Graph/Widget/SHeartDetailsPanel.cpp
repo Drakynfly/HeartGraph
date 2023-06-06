@@ -11,7 +11,7 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 namespace Heart::AssetEditor
 {
-	void SDetailsPanel::Construct(const FArguments& InArgs, const TSharedPtr<FAssetEditor>& AssetEditor)
+	void SDetailsPanel::Construct(const FArguments& InArgs, const TSharedPtr<FHeartGraphEditor>& AssetEditor)
 	{
 		FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 
@@ -22,7 +22,7 @@ namespace Heart::AssetEditor
 		Args.NotifyHook = AssetEditor.Get();
 
 		FIsPropertyEditingEnabled CanEditDelegate;
-		CanEditDelegate.BindSP(AssetEditor.ToSharedRef(), &FAssetEditor::CanEdit);
+		CanEditDelegate.BindSP(AssetEditor.ToSharedRef(), &FHeartGraphEditor::CanEdit);
 
 		DetailsView_Graph = PropertyModule.CreateDetailView(Args);
 		DetailsView_Graph->SetIsPropertyEditingEnabledDelegate(CanEditDelegate);

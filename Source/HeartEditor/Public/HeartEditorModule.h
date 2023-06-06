@@ -15,7 +15,7 @@ DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphNode>, FOnGetSlateGraphWidgetI
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
 
-class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface
+class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface, public IHasMenuExtensibility, public IHasToolBarExtensibility
 {
 public:
     virtual void StartupModule() override;
@@ -29,6 +29,10 @@ public:
     void RegisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass, TSubclassOf<UHeartEdGraphNode> EdClass);
     void DeregisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass);
     TSubclassOf<UHeartEdGraphNode> GetEdGraphClass(TSubclassOf<UHeartGraphNode> HeartClass) const;
+
+    /** Gets the extensibility managers for outside entities to extend the Heart Asset Editor's menus and toolbars */
+    virtual TSharedPtr<FExtensibilityManager> GetMenuExtensibilityManager() override { return MenuExtensibilityManager; }
+    virtual TSharedPtr<FExtensibilityManager> GetToolBarExtensibilityManager() override { return ToolBarExtensibilityManager; }
 
 private:
     void RegisterPropertyCustomizations();
@@ -54,6 +58,9 @@ private:
 
     // This holds the registered callbacks to generated Slate widgets for UHeartEdGraphNodes
     TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
+
+    TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;
+    TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;
 
     // @todo TEMP STUFF:
 public:

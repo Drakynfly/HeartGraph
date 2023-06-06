@@ -6,7 +6,7 @@
 
 namespace Heart::AssetEditor
 {
-	class FAssetEditor;
+	class FHeartGraphEditor;
 
 	/**
 	 * A split details panel showing two detail views, one for the Graph / GraphNode and one for the NodeObject
@@ -20,7 +20,7 @@ namespace Heart::AssetEditor
 		SLATE_END_ARGS()
 
 		/** Constructs this widget with InArgs */
-		void Construct(const FArguments& InArgs, const TSharedPtr<FAssetEditor>& AssetEditor);
+		void Construct(const FArguments& InArgs, const TSharedPtr<FHeartGraphEditor>& AssetEditor);
 
 		TSharedPtr<IDetailsView> DetailsView_Graph;
 		TSharedPtr<IDetailsView> DetailsView_Object;

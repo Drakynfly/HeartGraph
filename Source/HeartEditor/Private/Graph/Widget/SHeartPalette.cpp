@@ -4,6 +4,7 @@
 #include "Graph/HeartGraphAssetEditor.h"
 #include "HeartEditorCommands.h"
 #include "HeartRegistryEditorSubsystem.h"
+#include "AssetEditor/TabSpawners.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartEdGraphSchema_Actions.h"
 
@@ -11,7 +12,6 @@
 #include "Model/HeartGraphNode.h"
 
 #include "Fonts/SlateFontInfo.h"
-#include "Graph/TabSpawners.h"
 #include "Styling/CoreStyle.h"
 #include "Styling/SlateBrush.h"
 #include "Styling/SlateColor.h"
@@ -100,7 +100,7 @@ FText SHeartPaletteItem::GetItemTooltip() const
 	return ActionPtr.Pin()->GetTooltipDescription();
 }
 
-void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FAssetEditor> InHeartGraphAssetEditor)
+void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> InHeartGraphAssetEditor)
 {
 	HeartGraphAssetEditorPtr = InHeartGraphAssetEditor;
 
