@@ -173,7 +173,7 @@ UHeartGraph* UHeartGraphNode::GetGraph() const
 
 FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
 {
-	if (PinDescriptions.Contains(Pin))
+	if (Pin.IsValid() && PinDescriptions.Contains(Pin))
 	{
 		return PinDescriptions[Pin];
 	}

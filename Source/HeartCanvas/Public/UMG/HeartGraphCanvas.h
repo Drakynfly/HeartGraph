@@ -122,7 +122,7 @@ protected:
 
 	void UpdateAfterSelectionChanged();
 
-	void AddNodeToDisplay(UHeartGraphNode* Node);
+	void AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget);
 
 	void SetViewOffset(const FVector2D& Value);
 	void AddToViewOffset(const FVector2D& Value);

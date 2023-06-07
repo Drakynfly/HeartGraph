@@ -243,6 +243,8 @@ void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid& Node, const FVecto
 
 void UHeartGraphCanvas::Reset()
 {
+	ClearPopups();
+
 	for (auto&& DisplayedNode : DisplayedNodes)
 	{
 		DisplayedNode.Value->RemoveFromParent();
@@ -267,13 +269,13 @@ void UHeartGraphCanvas::Refresh()
 	{
 		if (IsValid(GraphNode))
 		{
-			AddNodeToDisplay(GraphNode);
+			AddNodeToDisplay(GraphNode, false);
 		}
 	}
 
 	for (auto&& DisplayedNode : DisplayedNodes)
 	{
-		DisplayedNode.Value->RebuildAllPinConnections();
+		DisplayedNode.Value->PostInitNode();
 	}
 }
 
@@ -364,7 +366,7 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 	}
 }
 
-void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
+void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget)
 {
 	// This function is only used internally, so Node should *always* be validated prior to this point.
 	check(Node);
@@ -376,7 +378,6 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 
 		Widget->GraphCanvas = this;
 		Widget->GraphNode = Node;
-		Widget->PostInitNode();
 		DisplayedNodes.Add(Node->GetGuid(), Widget);
 
 		UCanvasPanelSlot* NodeSlot = NodeCanvas->AddChildToCanvas(Widget);
@@ -385,6 +386,11 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node)
 
 		Widget->OnZoomSet(View.Z);
 		UpdateNodePositionOnCanvas(Widget);
+
+		if (InitNodeWidget)
+		{
+			Widget->PostInitNode();
+		}
 
 		if (!IsDesignTime())
 		{
@@ -532,7 +538,7 @@ void UHeartGraphCanvas::OnNodeAddedToGraph(UHeartGraphNode* Node)
 {
 	if (IsValid(Node))
 	{
-		AddNodeToDisplay(Node);
+		AddNodeToDisplay(Node, true);
 	}
 }
 

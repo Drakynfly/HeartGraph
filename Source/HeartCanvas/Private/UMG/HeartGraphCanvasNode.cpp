@@ -159,6 +159,11 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid
 {
 	const FHeartGraphPinDesc Desc = GraphNode->GetPinDesc(Pin);
 
+	if (!Desc.IsValid())
+	{
+		return nullptr;
+	}
+
 	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	UClass* CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
