@@ -33,6 +33,8 @@
 
 #include "UI/HeartWidgetInputBindingAsset.h"
 
+#include "Customizations/HeartGuidCustomization.h"
+
 // @todo temp includes
 #include "AssetToolsModule.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
@@ -209,6 +211,13 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 	FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(PropertyEditorModuleName);
 
 	TMap<FName, FOnGetPropertyTypeCustomizationInstance> Customizations;
+
+	Customizations.Add(FHeartGraphGuid::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
+	Customizations.Add(FHeartNodeGuid::StaticStruct()->GetFName(),
+	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
+	Customizations.Add(FHeartPinGuid::StaticStruct()->GetFName(),
+	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
 
 	Customizations.Add(FClassList::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&Heart::FItemsArrayCustomization::MakeInstance));
