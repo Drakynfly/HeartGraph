@@ -292,6 +292,14 @@ void UHeartEdGraphNode::OnBlueprintPreCompile(UBlueprint* Blueprint)
 	if (Blueprint && Blueprint == HeartGraphNode->GetClass()->ClassGeneratedBy)
 	{
 		bBlueprintCompilationPending = true;
+
+		UObject* NodeObject = HeartGraphNode->GetNodeObject();
+		if (NodeObject->GetOuter() == HeartGraphNode)
+		{
+			// While we are compiling, our NodeObject needs to be moved temporarily to the EdGraph for ownership.
+			// If we don't then it gets destroyed for some reason! (relevant for 5.2, retest on future versions)
+			NodeObject->Rename(nullptr, GetGraph());
+		}
 	}
 }
 
@@ -299,6 +307,16 @@ void UHeartEdGraphNode::OnBlueprintCompiled()
 {
 	if (bBlueprintCompilationPending)
 	{
+		// Restore the node from the above hack, if it was applied.
+		UObject* NodeObject = HeartGraphNode->GetNodeObject();
+		if (ensure(IsValid(NodeObject)))
+		{
+			if (NodeObject->GetOuter() == GetGraph())
+			{
+				NodeObject->Rename(nullptr, HeartGraphNode);
+			}
+		}
+
 		OnNodeRequestReconstruction();
 	}
 
@@ -640,28 +658,37 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 
 FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) const
 {
-	if (ensure(HeartGraphNode) && HeartGraphNode->GetNodeObject())
+	if (!ensure(IsValid(HeartGraphNode)))
+	{
+		// Display error with *our* name, in case we are a custom EdGraphNode that may help debug the situation.
+		return FText::Format(
+			LOCTEXT("GetNodeTitle_InvalidGraphNode", "Invalid HeartGraphNode ({0})"), FText::FromString(GetName()));
+	}
+
+	if (!(IsValid(HeartGraphNode->GetNodeObject())))
+	{
+		// Display error with the GraphNode name, that may help debug the situation.
+		return FText::Format(
+			LOCTEXT("GetNodeTitle_InvalidNodeObject", "Invalid NodeObject ({0})"), FText::FromString(HeartGraphNode->GetName()));
+	}
+
 	{
 		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
 		{
 			switch (TitleType) {
+			case ENodeTitleType::EditableTitle:
+				// @todo support for EditableTitles when? :)
 			case ENodeTitleType::FullTitle:
 				// @todo is full FullTitle only used for in-graph instances? i *think* so
 				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::NodeInstance);
 			case ENodeTitleType::MenuTitle:
 				return HeartGraphNode->GetNodeTitle(nullptr, EHeartNodeNameContext::Palette);
-			case ENodeTitleType::EditableTitle:
-				// @todo support for EditableTitles when? :)
 			case ENodeTitleType::ListView:
 			default: ;
 				return HeartGraphNode->GetNodeTitle(nullptr, EHeartNodeNameContext::Default);
 			}
 		}
 	}
-
-	auto&& SuperTitle = Super::GetNodeTitle(TitleType);
-	return FText::Format(FTextFormat::FromString(TEXT("{0} ({1})")),
-		LOCTEXT("GetNodeTitle_Invalid", "Invalid HeartGraphNode"), SuperTitle);
 }
 
 FLinearColor UHeartEdGraphNode::GetNodeTitleColor() const
