@@ -18,6 +18,9 @@ Currently this system requires some c++ boilerplate to add it to custom widget t
 ### HeartCanvas
 A toolset for displaying and editing a `UHeartGraph` using entirely UMG widgets. Essentially meant to replicate unreal's native `UEdGraph` editor, except with far more customization, to tailor the graph's appearance and behavior to the needs of the project.
 
+### HeartScene
+An alternative visualization method using scene components, allowing for full 3D graph visualizers.
+
 ### HeartEditor
 A (currently WIP) asset authoring tool for Heart graphs using Unreal's native UEdGraph toolset. Such a workflow allows for creating a graph inside the Unreal Engine Editor, and viewing it using HeartCanvas at runtime (such as a perk tree).
 
