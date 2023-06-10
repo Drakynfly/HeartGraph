@@ -5,7 +5,7 @@
 #include "HeartGraphNode.h"
 #include "HeartGraphNode3D.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocation3DChanged, class UHeartGraphNode3D*, Node, const FVector, Location);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocation3DChanged, class UHeartGraphNode3D*, Node, const FVector&, Location);
 
 /**
  * Base class for nodes that are represented in 3 dimensions.

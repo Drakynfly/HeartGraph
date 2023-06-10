@@ -4,6 +4,9 @@
 
 #include "AdvancedPreviewScene.h"
 
+class AHeartSceneActor;
+class UPreviewSceneConfig;
+
 namespace Heart::AssetEditor
 {
 	class FHeartGraphEditor;
@@ -24,7 +27,17 @@ namespace Heart::AssetEditor
 			return EditorPtr.Pin().ToSharedRef();
 		}
 
-		UStaticMeshComponent* PreviewComponent = nullptr;
+		UPreviewSceneConfig* GetConfig() const { return SceneConfig; }
+
+		void OnRefresh();
+
+	protected:
+		void OnConfigEdit(const FPropertyChangedEvent& PropertyChangedEvent);
+
+		void ReconstructSceneActor();
+
+		TObjectPtr<UPreviewSceneConfig> SceneConfig;
+		TObjectPtr<AHeartSceneActor> SceneActor;
 
 	private:
 		TWeakPtr<FHeartGraphEditor> EditorPtr;

@@ -10,10 +10,25 @@
 
 class UHeartGraphNode;
 class UHeartEdGraphNode;
+class FApplicationMode;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
+
+namespace Heart::AssetEditor
+{
+    class FHeartGraphEditor;
+}
 
 DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
 
-DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
+struct HEARTEDITOR_API FHeartRegisteredApplicationMode
+{
+	FText LocalizedName;
+	FText TooltipText;
+
+    DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<FApplicationMode>, FOnGetInstance, TSharedRef<Heart::AssetEditor::FHeartGraphEditor> Editor);
+    FOnGetInstance CreateModeInstance;
+};
 
 class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface, public IHasMenuExtensibility, public IHasToolBarExtensibility
 {
@@ -33,6 +48,10 @@ public:
     /** Gets the extensibility managers for outside entities to extend the Heart Asset Editor's menus and toolbars */
     virtual TSharedPtr<FExtensibilityManager> GetMenuExtensibilityManager() override { return MenuExtensibilityManager; }
     virtual TSharedPtr<FExtensibilityManager> GetToolBarExtensibilityManager() override { return ToolBarExtensibilityManager; }
+
+    void RegisterApplicationMode(FName ModeName, const FHeartRegisteredApplicationMode& ModeData);
+    void DeregisterApplicationMode(FName ModeName);
+    const TMap<FName, FHeartRegisteredApplicationMode>& GetApplicationModes() const { return ApplicationModeCallbacks; }
 
 private:
     void RegisterPropertyCustomizations();
@@ -56,8 +75,11 @@ private:
 
     TMap<TSubclassOf<UHeartGraphNode>, TSubclassOf<UHeartEdGraphNode>> HeartGraphNodeToEdGraphNodeClassMap;
 
-    // This holds the registered callbacks to generated Slate widgets for UHeartEdGraphNodes
+    // This holds the registered callbacks to generate Slate widgets for UHeartEdGraphNodes
     TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
+
+    // This holds the registered callbacks to generate Application Modes for UHeartEdGraphNodes
+    TMap<FName, FHeartRegisteredApplicationMode> ApplicationModeCallbacks;
 
     TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;
     TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;

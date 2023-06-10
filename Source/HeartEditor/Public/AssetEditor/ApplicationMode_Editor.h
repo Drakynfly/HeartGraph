@@ -11,7 +11,9 @@ namespace Heart::AssetEditor
 
 	class FApplicationMode_Editor : public FApplicationMode
     {
-    public:
+	public:
+		static const FName ModeID;
+
     	FApplicationMode_Editor(TSharedRef<FHeartGraphEditor> AssetEditor);
 
     	/** FApplicationMode interface */

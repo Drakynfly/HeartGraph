@@ -10,10 +10,10 @@ struct FHeartGraphPinReference
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinReference")
 	FHeartNodeGuid NodeGuid;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinReference")
 	FHeartPinGuid PinGuid;
 
 	bool IsValid() const
@@ -46,6 +46,6 @@ struct FHeartGraphPinConnections
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
 	TSet<FHeartGraphPinReference> Links;
 };

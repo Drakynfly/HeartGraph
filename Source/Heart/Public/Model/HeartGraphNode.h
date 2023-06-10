@@ -338,7 +338,7 @@ public:
 
 protected:
 	// The object that this graph node represents. Contains the data and functionality of a spawned instance.
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<UObject> NodeObject;
 
 	UPROPERTY()
@@ -347,10 +347,10 @@ protected:
 	UPROPERTY()
 	FVector2D Location;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
 	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
 	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
 
 	UPROPERTY(BlueprintReadOnly)

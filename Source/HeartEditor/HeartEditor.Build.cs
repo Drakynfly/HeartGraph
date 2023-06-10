@@ -24,7 +24,6 @@ public class HeartEditor : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new[]
             {
-                "AdvancedPreviewScene",
                 "ApplicationCore",  // For clipboard copy/paste
                 "AssetDefinition",
                 "AssetSearch",

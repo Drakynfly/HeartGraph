@@ -10,7 +10,6 @@
 #include "Graph/Widgets/SHeartDetailsPanel.h"
 
 #include "AssetEditor/ApplicationMode_Editor.h"
-#include "AssetEditor/ApplicationMode_PreviewScene.h"
 #include "AssetEditor/TabSpawners.h"
 
 #include "Model/HeartGraph.h"
@@ -41,12 +40,6 @@
 namespace Heart::AssetEditor
 {
 	static const FName AppIdentifier(TEXTVIEW("HeartEditorApp"));
-
-	namespace Modes
-	{
-		const FName Editor("Heart_AssetEditorMode_Editor");
-		const FName PreviewScene("Heart_AssetEditorMode_PreviewScene");
-	}
 
 	FHeartGraphEditor::FHeartGraphEditor()
 		: HeartGraph(nullptr)
@@ -175,23 +168,22 @@ namespace Heart::AssetEditor
 		// Toolbar must be initialized before Application Modes are added, as they will probably use the toolbar.
 		CreateToolbar();
 
-		// Graph editor mode
-		AddApplicationMode(
-			Modes::Editor,
-			MakeShareable(new FApplicationMode_Editor(SharedThis(this))));
+		FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 
-		// 3D scene preview mode
-		AddApplicationMode(
-			Modes::PreviewScene,
-			MakeShareable(new FApplicationMode_PreviewScene(SharedThis(this))));
+		// Add all registered application modes.
+		for (auto&& ModeData : HeartEditorModule.GetApplicationModes())
+		{
+			AddApplicationMode(
+				ModeData.Key,
+				ModeData.Value.CreateModeInstance.Execute(SharedThis(this)));
+		}
 
 		// Default mode to open on
-		SetCurrentMode(Modes::Editor);
+		SetCurrentMode(FApplicationMode_Editor::ModeID);
 
 		//ExtendMenu();
 		//ExtendToolbar();
 
-		FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 		AddMenuExtender(HeartEditorModule.GetMenuExtensibilityManager()->GetAllExtenders(GetToolkitCommands(), GetEditingObjects()));
 		AddToolbarExtender(HeartEditorModule.GetToolBarExtensibilityManager()->GetAllExtenders(GetToolkitCommands(), GetEditingObjects()));
 
@@ -235,8 +227,6 @@ namespace Heart::AssetEditor
 
 	void FHeartGraphEditor::RefreshAsset()
 	{
-		SetCurrentMode(Modes::Editor);
-
 		/*
 		TArray<UHeartGraphNode*> HeartGraphNodes;
 		HeartGraph->GetNodeArray(HeartGraphNodes);

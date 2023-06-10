@@ -15,6 +15,7 @@
 #include "Widgets/SBoxPanel.h"
 
 #include "AssetToolsModule.h"
+#include "HeartEditorModule.h"
 #include "IAssetTypeActions.h"
 #include "IDocumentation.h"
 #include "ISourceControlModule.h"
@@ -124,36 +125,23 @@ void FHeartGraphAssetToolbar::FillEditorModesToolbar(FToolBarBuilder& ToolBarBui
 			FText TooltipText;
 		};
 
-		TArray<FTempRegisteredApplicationMode> RegisteredApplicationModes;
-
-		FTempRegisteredApplicationMode EditorMode;
-		EditorMode.ModeID = Heart::AssetEditor::Modes::Editor;
-		EditorMode.LocalizedMode = LOCTEXT("ApplicationMode_Editor.LocalizedName", "Graph");
-		EditorMode.TooltipText = LOCTEXT("ApplicationMode_Editor.TooltipText", "Switch to Graph Editing Mode");
-
-		RegisteredApplicationModes.Add(EditorMode);
-
-		FTempRegisteredApplicationMode PreviewScene;
-		PreviewScene.ModeID = Heart::AssetEditor::Modes::PreviewScene;
-		PreviewScene.LocalizedMode = LOCTEXT("ApplicationMode_PreviewScene.LocalizedName", "Scene");
-		PreviewScene.TooltipText = LOCTEXT("ApplicationMode_PreviewScene.TooltipText", "Switch to Preview Scene Mode");
-
-		RegisteredApplicationModes.Add(PreviewScene);
-
-		for (FTempRegisteredApplicationMode& Mode : RegisteredApplicationModes)
+		const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+		for (auto&& Mode : HeartEditorModule.GetApplicationModes())
 		{
+			const FHeartRegisteredApplicationMode& ModeData = Mode.Value;
+
 			AssetEditorPtr->AddToolbarWidget(
-				SNew(SModeWidget, Mode.LocalizedMode, Mode.ModeID)
+				SNew(SModeWidget, ModeData.LocalizedName, Mode.Key)
 				.OnGetActiveMode(GetActiveMode)
 				.OnSetActiveMode(SetActiveMode)
-				.CanBeSelected(AssetEditorPtr.Get(), &Heart::AssetEditor::FHeartGraphEditor::CanActivateMode, Mode.ModeID)
+				.CanBeSelected(AssetEditorPtr.Get(), &Heart::AssetEditor::FHeartGraphEditor::CanActivateMode, Mode.Key)
 				.ToolTip(IDocumentation::Get()->CreateToolTip(
-					Mode.TooltipText,
+					ModeData.TooltipText,
 					nullptr,
 					TEXT("Editors/HeartEditor"),
-					Mode.ModeID.ToString()))
+					Mode.Key.ToString()))
 				.IconImage(FAppStyle::GetBrush("FullBlueprintEditor.SwitchToScriptingMode"))
-				.AddMetaData<FTagMetaData>(FTagMetaData(Mode.ModeID))
+				.AddMetaData<FTagMetaData>(FTagMetaData(Mode.Key))
 			);
 
 			// Right side padding

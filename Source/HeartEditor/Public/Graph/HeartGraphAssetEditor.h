@@ -21,12 +21,6 @@ class FHeartGraphAssetToolbar;
 
 namespace Heart::AssetEditor
 {
-	namespace Modes
-	{
-		extern const FName Editor;
-		extern const FName PreviewScene;
-	}
-
 	class SDetailsPanel;
 	class FApplicationMode_Editor;
 

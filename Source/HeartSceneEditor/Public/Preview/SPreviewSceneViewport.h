@@ -43,6 +43,8 @@ namespace Heart::AssetEditor
 		TSharedPtr<FHeartPreviewScene> GetPreviewScene() { return PreviewScene; }
 		TSharedPtr<FPreviewSceneViewportClient> GetViewportClient() { return ViewportClient; }
 
+		void Refresh();
+
 		void FocusViewport();
 
 	protected:

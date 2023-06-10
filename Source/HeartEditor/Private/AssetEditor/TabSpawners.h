@@ -63,32 +63,4 @@ namespace Heart::AssetEditor
 	private:
 		TSharedPtr<SHeartPalette> HeartPalette;
 	};
-
-
-	//
-	//		SCENE PREVIEW TABS
-	//
-
-	struct FPreviewSceneSummoner : public FWorkflowTabFactory
-	{
-		static const FName TabId;
-
-		FPreviewSceneSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor);
-
-		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
-		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
-
-	private:
-		TSharedPtr<class SPreviewSceneViewport> PreviewViewport;
-	};
-
-	struct FPreviewSceneDetailsPanelSummoner : public FWorkflowTabFactory
-	{
-		static const FName TabId;
-
-		FPreviewSceneDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor);
-
-		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
-		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
-	};
 }

@@ -37,6 +37,7 @@
 
 // @todo temp includes
 #include "AssetToolsModule.h"
+#include "AssetEditor/ApplicationMode_Editor.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
 
 
@@ -111,6 +112,18 @@ void FHeartEditorModule::StartupModule()
 	// Register to get a warning on startup if settings aren't configured correctly
 	UAssetManager::CallOrRegister_OnAssetManagerCreated(
 		FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FHeartEditorModule::OnAssetManagerCreated));
+
+	// Register the default application mode.
+	FHeartRegisteredApplicationMode EditorMode;
+	EditorMode.LocalizedName = LOCTEXT("ApplicationMode_Editor.LocalizedName", "Graph");
+	EditorMode.TooltipText = LOCTEXT("ApplicationMode_Editor.TooltipText", "Switch to Graph Editing Mode");
+	EditorMode.CreateModeInstance = FHeartRegisteredApplicationMode::FOnGetInstance::CreateLambda(
+		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
+		{
+			return MakeShareable(new Heart::AssetEditor::FApplicationMode_Editor(Editor));
+		});
+
+	RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_Editor::ModeID, EditorMode);
 }
 
 void FHeartEditorModule::ShutdownModule()
@@ -204,6 +217,16 @@ TSubclassOf<UHeartEdGraphNode> FHeartEditorModule::GetEdGraphClass(const TSubcla
 	}
 
 	return UHeartEdGraphNode::StaticClass();
+}
+
+void FHeartEditorModule::RegisterApplicationMode(const FName ModeName, const FHeartRegisteredApplicationMode& ModeData)
+{
+	ApplicationModeCallbacks.Add(ModeName, ModeData);
+}
+
+void FHeartEditorModule::DeregisterApplicationMode(const FName ModeName)
+{
+	ApplicationModeCallbacks.Remove(ModeName);
 }
 
 void FHeartEditorModule::RegisterPropertyCustomizations()

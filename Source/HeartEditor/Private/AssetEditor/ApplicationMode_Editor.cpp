@@ -9,8 +9,10 @@
 
 namespace Heart::AssetEditor
 {
+	const FName FApplicationMode_Editor::ModeID("Heart_AssetEditorMode_Editor");
+
 	FApplicationMode_Editor::FApplicationMode_Editor(TSharedRef<FHeartGraphEditor> AssetEditor)
-		: FApplicationMode(Modes::Editor)
+		: FApplicationMode(ModeID)
 	{
 		HeartGraphAssetEditorPtr = AssetEditor;
 

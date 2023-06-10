@@ -1,0 +1,36 @@
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+
+#include "HeartSceneEditorModule.h"
+
+#include "HeartEditorModule.h"
+#include "Preview/ApplicationMode_PreviewScene.h"
+
+#define LOCTEXT_NAMESPACE "HeartSceneEditorModule"
+
+void FHeartSceneEditorModule::StartupModule()
+{
+	// Register 3D scene preview application mode
+	FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+
+	FHeartRegisteredApplicationMode PreviewScene;
+	PreviewScene.LocalizedName = LOCTEXT("ApplicationMode_PreviewScene.LocalizedName", "Scene");
+	PreviewScene.TooltipText = LOCTEXT("ApplicationMode_PreviewScene.TooltipText", "Switch to Preview Scene Mode");
+	PreviewScene.CreateModeInstance = FHeartRegisteredApplicationMode::FOnGetInstance::CreateLambda(
+		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
+		{
+			return MakeShareable(new Heart::AssetEditor::FApplicationMode_PreviewScene(Editor));
+		});
+
+	HeartEditorModule.RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_PreviewScene::ModeID, PreviewScene);
+}
+
+void FHeartSceneEditorModule::ShutdownModule()
+{
+	// Remove registered application mode
+	FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	HeartEditorModule.DeregisterApplicationMode(Heart::AssetEditor::FApplicationMode_PreviewScene::ModeID);
+}
+
+#undef LOCTEXT_NAMESPACE
+
+IMPLEMENT_MODULE(FHeartSceneEditorModule, HeartSceneEditor)

@@ -247,6 +247,7 @@ void UHeartGraphCanvas::Reset()
 
 	for (auto&& DisplayedNode : DisplayedNodes)
 	{
+		DisplayedNode.Value->GraphNode->OnNodeLocationChanged.RemoveAll(this);
 		DisplayedNode.Value->RemoveFromParent();
 	}
 
@@ -560,7 +561,14 @@ void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 
 	if (DisplayedNodes.Contains(NodeGuid))
 	{
-		DisplayedNodes.FindAndRemoveChecked(NodeGuid)->RemoveFromParent();
+		auto&& Value = DisplayedNodes.FindAndRemoveChecked(NodeGuid);
+
+		if (Value->GraphNode.IsValid())
+		{
+			Value->GraphNode->OnNodeLocationChanged.RemoveAll(this);
+		}
+
+		Value->RemoveFromParent();
 	}
 }
 

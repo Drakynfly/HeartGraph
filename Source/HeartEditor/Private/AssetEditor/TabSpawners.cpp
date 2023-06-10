@@ -4,8 +4,6 @@
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/Widgets/SHeartDetailsPanel.h"
 #include "Graph/Widgets/SHeartPalette.h"
-#include "Preview/HeartPreviewScene.h"
-#include "Preview/SPreviewSceneViewport.h"
 
 #define LOCTEXT_NAMESPACE "Heart::AssetEditor::TabSpawners"
 
@@ -100,70 +98,6 @@ namespace Heart::AssetEditor
 	FText FNodePaletteSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
 	{
 		return LOCTEXT("NodePalette_TabTooltip", "");
-	}
-
-
-	/*-------------------
-		PREVIEW SCENE
-	 -------------------*/
-
-	const FName FPreviewSceneSummoner::TabId("Heart_AssetEditor_PreviewScene");
-
-	FPreviewSceneSummoner::FPreviewSceneSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor)
-	  : FWorkflowTabFactory(TabId, AssetEditor)
-	{
-		TabLabel = LOCTEXT("PreviewSceneTabLabel", "Preview");
-		TabIcon = FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Viewports");
-		bIsSingleton = true;
-
-		ViewMenuDescription = LOCTEXT("PreviewScene_Description", "");
-		ViewMenuTooltip = LOCTEXT("PreviewScene_ToolTip", "");
-
-		PreviewViewport = SNew(SPreviewSceneViewport, AssetEditor, MakeShareable(
-			new FHeartPreviewScene(
-				FPreviewScene::ConstructionValues()
-				.AllowAudioPlayback(true)
-				.ShouldSimulatePhysics(true)
-				.ForceUseMovementComponentInNonGameWorld(true),
-				AssetEditor.ToSharedRef())));
-	}
-
-	TSharedRef<SWidget> FPreviewSceneSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
-	{
-		return PreviewViewport.ToSharedRef();
-	}
-
-	FText FPreviewSceneSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
-	{
-		return LOCTEXT("PreviewScene_TabTooltip", "");
-	}
-
-
-	/*-------------------
-	PREVIEW SCENE DETAILS
-	 -------------------*/
-
-	const FName FPreviewSceneDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewSceneDetails");
-
-	FPreviewSceneDetailsPanelSummoner::FPreviewSceneDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor)
-	  : FWorkflowTabFactory(TabId, AssetEditor)
-	{
-		TabLabel = LOCTEXT("PreviewSceneDetailsTabLabel", "Details");
-		TabIcon = FSlateIcon(FAppStyle::GetAppStyleSetName(), "LevelEditor.Tabs.Details");
-		bIsSingleton = true;
-
-		ViewMenuDescription = LOCTEXT("PreviewSceneDetails_Description", "");
-		ViewMenuTooltip = LOCTEXT("PreviewSceneDetails_ToolTip", "");
-	}
-
-	TSharedRef<SWidget> FPreviewSceneDetailsPanelSummoner::CreateTabBody(const FWorkflowTabSpawnInfo& Info) const
-	{
-		return SNullWidget::NullWidget;
-	}
-
-	FText FPreviewSceneDetailsPanelSummoner::GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const
-	{
-		return LOCTEXT("PreviewSceneDetailsPanel_TabTooltip", "");
 	}
 }
 

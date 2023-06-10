@@ -68,6 +68,11 @@ namespace Heart::AssetEditor
 			FExecuteAction::CreateSP(this, &SPreviewSceneViewport::FocusViewport));
 	}
 
+	void SPreviewSceneViewport::Refresh()
+	{
+		ViewportClient->AdvancedPreviewScene->OnRefresh();
+	}
+
 	void SPreviewSceneViewport::FocusViewport()
 	{
 		OnFocusViewportToSelection();
