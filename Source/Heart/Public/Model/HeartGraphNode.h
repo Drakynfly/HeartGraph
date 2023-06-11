@@ -208,7 +208,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartGraphPinReference GetPinReference(const FHeartPinGuid& Pin) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (AutoCreateRefTerm = "Name"))
 	FHeartPinGuid GetPinByName(const FName& Name) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
@@ -228,7 +228,10 @@ public:
 	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TSet<UHeartGraphNode*> GetConnectedGraphNodes() const;
+	bool HasConnections(const FHeartPinGuid& Pin) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 
 
 	/*----------------------------

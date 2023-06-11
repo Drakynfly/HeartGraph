@@ -31,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|SceneGenerator")
 	void Regenerate();
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|SceneGenerator")
+	UHeartSceneNode* GetSceneNode(const FHeartNodeGuid& NodeGuid) const;
+
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|SceneGenerator")
 	void OnReset();

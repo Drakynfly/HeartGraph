@@ -35,6 +35,15 @@ void UHeartSceneGenerator::Regenerate()
 	Generate();
 }
 
+UHeartSceneNode* UHeartSceneGenerator::GetSceneNode(const FHeartNodeGuid& NodeGuid) const
+{
+	if (auto&& Node = SceneNodes.Find(NodeGuid))
+	{
+		return *Node;
+	}
+	return nullptr;
+}
+
 void UHeartSceneGenerator::OnReset_Implementation()
 {
 }
@@ -71,9 +80,13 @@ UHeartSceneNode* UHeartSceneGenerator::AddNodeToDisplay(UHeartGraphNode* GraphNo
 
 		SceneNode->Generator = this;
 		SceneNode->GraphNode = GraphNode;
+
 		SceneNodes.Add(GraphNode->GetGuid(), SceneNode);
 
 		SceneNode->RegisterComponent();
+
+		SceneNode->NativeOnCreated();
+
 		return SceneNode;
 	}
 	else

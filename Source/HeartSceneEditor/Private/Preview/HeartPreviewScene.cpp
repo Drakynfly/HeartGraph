@@ -1,12 +1,15 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Preview/HeartPreviewScene.h"
+#include "Preview/PreviewSceneConfig.h"
 
 #include "HeartSceneActor.h"
 #include "HeartSceneGenerator.h"
-#include "GameFramework/WorldSettings.h"
+
+#include "Model/HeartGraph.h"
 #include "Graph/HeartGraphAssetEditor.h"
-#include "Preview/PreviewSceneConfig.h"
+
+#include "GameFramework/WorldSettings.h"
 
 namespace Heart::AssetEditor
 {
@@ -26,9 +29,12 @@ namespace Heart::AssetEditor
 	{
 	}
 
-	void FHeartPreviewScene::Tick(float InDeltaTime)
+	void FHeartPreviewScene::Tick(const float InDeltaTime)
 	{
 		FAdvancedPreviewScene::Tick(InDeltaTime);
+
+		// Tick the scene world
+		GetWorld()->Tick(LEVELTICK_All, InDeltaTime);
 	}
 
 	void FHeartPreviewScene::OnRefresh()
@@ -66,8 +72,14 @@ namespace Heart::AssetEditor
 
 			if (auto&& Generator = SceneActor->GetGenerator())
 			{
-				FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-				Generator->Regenerate();
+				if (UHeartGraph* Graph = DuplicateObject<UHeartGraph>(EditorPtr.Pin()->GetHeartGraph(), SceneActor))
+				{
+					Generator->SetDisplayedGraph(Graph);
+					{
+						FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+						Generator->Regenerate();
+					}
+				}
 			}
 		}
 	}
