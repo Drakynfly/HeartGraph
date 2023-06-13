@@ -5,8 +5,6 @@
 #include "WorkflowOrientedApp/ApplicationMode.h"
 #include "WorkflowOrientedApp/WorkflowTabManager.h"
 
-class UPreviewSceneConfig;
-
 namespace Heart::AssetEditor
 {
 	class FHeartGraphEditor;

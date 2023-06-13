@@ -4,6 +4,7 @@
 #include "Preview/PreviewSceneConfig.h"
 
 #include "HeartSceneActor.h"
+#include "HeartSceneExtension.h"
 #include "HeartSceneGenerator.h"
 
 #include "Model/HeartGraph.h"
@@ -41,17 +42,31 @@ namespace Heart::AssetEditor
 	{
 		if (!IsValid(SceneConfig))
 		{
+			TSubclassOf<UPreviewSceneConfig> ConfigClass;
+
+			if (auto&& SceneExtension = EditorPtr.Pin()->GetHeartGraph()->GetExtension<UHeartSceneExtension>())
+			{
+				ConfigClass = SceneExtension->GetConfigClass();
+			}
+
+			if (!IsValid(ConfigClass))
+			{
+				ConfigClass = UPreviewSceneConfig::StaticClass();
+			}
+
 			// Add component that exposed settings for configuring the scene
-			SceneConfig = NewObject<UPreviewSceneConfig>(GetTransientPackage());
+			SceneConfig = NewObject<UPreviewSceneConfig>(GetTransientPackage(), ConfigClass);
 			FAdvancedPreviewScene::AddComponent(SceneConfig, FTransform::Identity);
 
 			SceneConfig->OnConfigEdit.BindRaw(this, &FHeartPreviewScene::OnConfigEdit);
 		}
+
+		ReconstructSceneActor();
 	}
 
 	void FHeartPreviewScene::OnConfigEdit(const FPropertyChangedEvent& PropertyChangedEvent)
 	{
-		if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UPreviewSceneConfig, SceneClass))
+		if (PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED(UPreviewSceneConfig, SceneClassOverride))
 		{
 			ReconstructSceneActor();
 		}
@@ -59,22 +74,38 @@ namespace Heart::AssetEditor
 
 	void FHeartPreviewScene::ReconstructSceneActor()
 	{
-		if (SceneActor)
+		const UHeartGraph* Graph = EditorPtr.Pin()->GetHeartGraph();
+
+		UClass* SceneClass = nullptr;
+
+		if (IsValid(SceneConfig) && IsValid(SceneConfig->SceneClassOverride))
 		{
-			SceneActor->Destroy();
-			SceneActor = nullptr;
+			SceneClass = SceneConfig->SceneClassOverride;
+		}
+		else if (auto&& SceneExtension = Graph->GetExtension<UHeartSceneExtension>())
+		{
+			SceneClass = SceneExtension->GetSceneClass();
 		}
 
-		if (IsValid(SceneConfig->SceneClass))
+		if (SceneActor)
+		{
+			if (SceneActor->GetClass() != SceneClass)
+			{
+				SceneActor->Destroy();
+				SceneActor = nullptr;
+			}
+		}
+
+		if (!IsValid(SceneActor) && IsValid(SceneClass))
 		{
 			FActorSpawnParameters Params;
-			SceneActor = GetWorld()->SpawnActor<AHeartSceneActor>(SceneConfig->SceneClass);
+			SceneActor = GetWorld()->SpawnActor<AHeartSceneActor>(SceneClass);
 
 			if (auto&& Generator = SceneActor->GetGenerator())
 			{
-				if (UHeartGraph* Graph = DuplicateObject<UHeartGraph>(EditorPtr.Pin()->GetHeartGraph(), SceneActor))
+				if (UHeartGraph* DupGraph = DuplicateObject<UHeartGraph>(Graph, SceneActor))
 				{
-					Generator->SetDisplayedGraph(Graph);
+					Generator->SetDisplayedGraph(DupGraph);
 					{
 						FEditorScriptExecutionGuard EditorScriptExecutionGuard;
 						Generator->Regenerate();

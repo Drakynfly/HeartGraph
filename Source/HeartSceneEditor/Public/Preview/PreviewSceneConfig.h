@@ -21,5 +21,5 @@ public:
 	FOnConfigEdit OnConfigEdit;
 
 	UPROPERTY(EditAnywhere, Category = "Config")
-	TSubclassOf<AHeartSceneActor> SceneClass;
+	TSubclassOf<AHeartSceneActor> SceneClassOverride;
 };

@@ -108,9 +108,9 @@ void FHeartGraphAssetToolbar::AddEditorModesToolbar(TSharedPtr<FExtender> Extend
 void FHeartGraphAssetToolbar::FillEditorModesToolbar(FToolBarBuilder& ToolBarBuilder)
 {
 	const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> AssetEditorPtr = AssetEditor.Pin();
-	const UHeartGraph* BlueprintObj = AssetEditorPtr->GetHeartGraph();
+	const UHeartGraph* HeartGraph = AssetEditorPtr->GetHeartGraph();
 
-	if (IsValid(BlueprintObj))
+	if (IsValid(HeartGraph))
 	{
 		const TAttribute<FName> GetActiveMode(AssetEditorPtr.ToSharedRef(), &Heart::AssetEditor::FHeartGraphEditor::GetCurrentMode);
 		const FOnModeChangeRequested SetActiveMode = FOnModeChangeRequested::CreateSP(AssetEditorPtr.ToSharedRef(), &Heart::AssetEditor::FHeartGraphEditor::SetCurrentMode);
@@ -129,6 +129,11 @@ void FHeartGraphAssetToolbar::FillEditorModesToolbar(FToolBarBuilder& ToolBarBui
 		for (auto&& Mode : HeartEditorModule.GetApplicationModes())
 		{
 			const FHeartRegisteredApplicationMode& ModeData = Mode.Value;
+
+			if (!ModeData.SupportsAsset.Execute(HeartGraph))
+			{
+				continue;
+			}
 
 			AssetEditorPtr->AddToolbarWidget(
 				SNew(SModeWidget, ModeData.LocalizedName, Mode.Key)

@@ -117,10 +117,15 @@ void FHeartEditorModule::StartupModule()
 	FHeartRegisteredApplicationMode EditorMode;
 	EditorMode.LocalizedName = LOCTEXT("ApplicationMode_Editor.LocalizedName", "Graph");
 	EditorMode.TooltipText = LOCTEXT("ApplicationMode_Editor.TooltipText", "Switch to Graph Editing Mode");
-	EditorMode.CreateModeInstance = FHeartRegisteredApplicationMode::FOnGetInstance::CreateLambda(
+	EditorMode.CreateModeInstance.BindLambda(
 		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
 		{
 			return MakeShareable(new Heart::AssetEditor::FApplicationMode_Editor(Editor));
+		});
+	EditorMode.SupportsAsset.BindLambda(
+		[](const UHeartGraph* Asset)
+		{
+			return true;
 		});
 
 	RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_Editor::ModeID, EditorMode);

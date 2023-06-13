@@ -202,10 +202,14 @@ const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphS
 
 UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExtension> Class) const
 {
-	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
+	for (auto&& Extension : Extensions)
 	{
-		return *ExtensionPtr;
+		if (Extension.Key->IsChildOf(Class))
+		{
+			return Extension.Value;
+		}
 	}
+
 	return nullptr;
 }
 

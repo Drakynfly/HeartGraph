@@ -8,6 +8,7 @@
 // @todo this include is temp
 #include "AssetTypeCategories.h"
 
+class UHeartGraph;
 class UHeartGraphNode;
 class UHeartEdGraphNode;
 class FApplicationMode;
@@ -28,6 +29,9 @@ struct HEARTEDITOR_API FHeartRegisteredApplicationMode
 
     DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<FApplicationMode>, FOnGetInstance, TSharedRef<Heart::AssetEditor::FHeartGraphEditor> Editor);
     FOnGetInstance CreateModeInstance;
+
+    DECLARE_DELEGATE_RetVal_OneParam(bool, FSupportsAssetCallback, const UHeartGraph* Asset);
+    FSupportsAssetCallback SupportsAsset;
 };
 
 class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface, public IHasMenuExtensibility, public IHasToolBarExtensibility

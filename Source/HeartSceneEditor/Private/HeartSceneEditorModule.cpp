@@ -3,6 +3,8 @@
 #include "HeartSceneEditorModule.h"
 
 #include "HeartEditorModule.h"
+#include "HeartSceneExtension.h"
+#include "Model/HeartGraph.h"
 #include "Preview/ApplicationMode_PreviewScene.h"
 
 #define LOCTEXT_NAMESPACE "HeartSceneEditorModule"
@@ -15,10 +17,15 @@ void FHeartSceneEditorModule::StartupModule()
 	FHeartRegisteredApplicationMode PreviewScene;
 	PreviewScene.LocalizedName = LOCTEXT("ApplicationMode_PreviewScene.LocalizedName", "Scene");
 	PreviewScene.TooltipText = LOCTEXT("ApplicationMode_PreviewScene.TooltipText", "Switch to Preview Scene Mode");
-	PreviewScene.CreateModeInstance = FHeartRegisteredApplicationMode::FOnGetInstance::CreateLambda(
+	PreviewScene.CreateModeInstance.BindLambda(
 		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
 		{
 			return MakeShareable(new Heart::AssetEditor::FApplicationMode_PreviewScene(Editor));
+		});
+	PreviewScene.SupportsAsset.BindLambda(
+		[](const UHeartGraph* Asset)
+		{
+			return IsValid(Asset->GetExtension<UHeartSceneExtension>());
 		});
 
 	HeartEditorModule.RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_PreviewScene::ModeID, PreviewScene);
