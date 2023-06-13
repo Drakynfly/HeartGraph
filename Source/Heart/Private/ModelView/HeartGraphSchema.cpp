@@ -50,6 +50,30 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	if (!ensure(HeartGraph)) return;
 
 #if WITH_EDITOR
+	// Reset instance extensions.
+	TSet<TSubclassOf<UHeartGraphExtension>> PreviousClassList;
+	HeartGraph->Extensions.GetKeys(PreviousClassList);
+
+	for (auto&& Extension : DefaultExtensions)
+	{
+		PreviousClassList.Remove(Extension->GetClass());
+		HeartGraph->RemoveExtension(Extension->GetClass());
+		HeartGraph->AddExtensionInstance(DuplicateObject(Extension, HeartGraph));
+	}
+
+	for (auto&& ExtensionClass : AdditionalExtensionClasses)
+	{
+		// Add an extension of this class if none exist
+		PreviousClassList.Remove(ExtensionClass);
+		HeartGraph->AddExtension(ExtensionClass);
+	}
+
+	// Cleanup extensions for classes no longer registered
+	for (auto&& Class : PreviousClassList)
+	{
+		HeartGraph->RemoveExtension(Class);
+	}
+
 	if (IsValid(EditorPreSaveAction))
 	{
 		UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));

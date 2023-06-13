@@ -7,8 +7,9 @@
 
 struct FHeartGraphPinReference;
 class UHeartGraph;
-class UHeartGraphAction;
 class UHeartGraphNodeRegistry;
+class UHeartGraphExtension;
+class UHeartGraphAction;
 
 /**
  * This is the type of response the graph editor should take when making a connection
@@ -96,9 +97,18 @@ protected:
 
 
 public:
+#if WITH_EDITOR
+	bool GetRunCanPinsConnectInEdGraph() const { return RunCanPinsConnectInEdGraph; }
+
+	static FName DefaultEditorStylePropertyName() { return GET_MEMBER_NAME_CHECKED(UHeartGraphSchema, DefaultEditorStyle); }
+	FName GetDefaultEditorStyle() const { return DefaultEditorStyle; }
+#endif
+
+protected:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryGetWorldForGraph(const UHeartGraph* HeartGraph, UWorld*& World) const;
 
+public:
 	// Get the class used by the HeartRegistryRuntimeSubsystem to track available nodes and visualizers for this graph.
 	// This usually does not need to be implemented, as the default has most behavior setup out of the box.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
@@ -129,6 +139,17 @@ public:
 	// AKA, setup function called on all graphs when they are created.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	void CreateDefaultNodesForGraph(UHeartGraph* Graph) const;
+
+protected:
+	// These extensions are copied to each asset instance. They can be edited at runtime, but are otherwise, identical
+	// for every instance of the graph class bound to this schema.
+	UPROPERTY(EditAnywhere, Instanced, Category = "Extensions")
+	TArray<TObjectPtr<UHeartGraphExtension>> DefaultExtensions;
+
+	// These extension classes are used to add extensions to each asset instance. These instances are uniquely
+	// customizable per instance, as only the existence of these classes is validated against.
+	UPROPERTY(EditAnywhere, Category = "Extensions")
+	TArray<TSubclassOf<UHeartGraphExtension>> AdditionalExtensionClasses;
 
 #if WITH_EDITORONLY_DATA
 	// Enable to have the runtime function CanPinsConnect called by the EdGraphSchema for this graph.

@@ -646,7 +646,7 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 
 		if (VisualWidgetType == "GraphDefault")
 		{
-			VisualWidgetType = HeartGraphNode->GetGraph()->GetSchema()->DefaultEditorStyle;
+			VisualWidgetType = HeartGraphNode->GetGraph()->GetSchema()->GetDefaultEditorStyle();
 		}
 
 		auto&& EditorRegister = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();

@@ -79,7 +79,7 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 
 	if (ensure(IsValid(RuntimeSchema)))
 	{
-		if (RuntimeSchema->RunCanPinsConnectInEdGraph)
+		if (RuntimeSchema->GetRunCanPinsConnectInEdGraph())
 		{
 			auto&& HeartNodeA = OwningNodeA->GetHeartGraphNode();
 			auto&& HeartNodeB = OwningNodeB->GetHeartGraphNode();

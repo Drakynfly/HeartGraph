@@ -24,7 +24,7 @@ FHeartGraphSchemaCustomization::FHeartGraphSchemaCustomization()
 
 void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	StyleProp = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(UHeartGraphSchema, DefaultEditorStyle));
+	StyleProp = DetailBuilder.GetProperty(UHeartGraphSchema::DefaultEditorStylePropertyName());
 
 	if (StyleProp.IsValid())
 	{

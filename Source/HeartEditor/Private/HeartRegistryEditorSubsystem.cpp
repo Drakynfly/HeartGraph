@@ -57,6 +57,11 @@ TArray<UClass*> UHeartRegistryEditorSubsystem::GetFactoryCommonClasses()
 		{
 			if (Class->IsChildOf<UHeartGraph>())
 			{
+				if (Class->HasAnyClassFlags(CLASS_Abstract | CLASS_Hidden | CLASS_NewerVersionExists))
+				{
+					return false;
+				}
+
 				return Class->GetDefaultObject<UHeartGraph>()->GetDisplayClassAsCommonInFactory();
 			}
 			return false;

@@ -227,11 +227,31 @@ UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExt
 	return NewExtension;
 }
 
+bool UHeartGraph::AddExtensionInstance(UHeartGraphExtension* Extension)
+{
+	if (IsValid(Extension))
+	{
+		// Should only add instances that have been created/renamed to us.
+		check(Extension->GetOuter() == this);
+
+		if (!Extensions.Contains(Extension->GetClass()))
+		{
+			Extensions.Add(Extension->GetClass(), Extension);
+			Extension->PostExtensionAdded();
+		}
+	}
+
+	return false;
+}
+
 void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
 {
 	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
 	{
-		(*ExtensionPtr)->PreExtensionRemove();
+		if (*ExtensionPtr)
+		{
+			(*ExtensionPtr)->PreExtensionRemove();
+		}
 		Extensions.Remove(Class);
 	}
 }

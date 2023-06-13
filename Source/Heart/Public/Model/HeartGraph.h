@@ -203,6 +203,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
 	UHeartGraphExtension* AddExtension(UPARAM(meta = (AllowAbstract = "false")) TSubclassOf<UHeartGraphExtension> Class);
 
+	/** Adds an extension to the Extensions list. Fails if an extension of this class already exists. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	bool AddExtensionInstance(UHeartGraphExtension* Extension);
+
 	/** Remove the extension. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void RemoveExtension(TSubclassOf<UHeartGraphExtension> Class);
