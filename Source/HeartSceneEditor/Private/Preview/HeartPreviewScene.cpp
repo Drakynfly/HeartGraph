@@ -44,7 +44,7 @@ namespace Heart::AssetEditor
 		{
 			TSubclassOf<UPreviewSceneConfig> ConfigClass;
 
-			if (auto&& SceneExtension = EditorPtr.Pin()->GetHeartGraph()->GetExtension<UHeartSceneExtension>())
+			if (auto&& SceneExtension = GetEditor()->GetHeartGraph()->GetExtension<UHeartSceneExtension>())
 			{
 				ConfigClass = SceneExtension->GetConfigClass();
 			}
@@ -74,7 +74,7 @@ namespace Heart::AssetEditor
 
 	void FHeartPreviewScene::ReconstructSceneActor()
 	{
-		const UHeartGraph* Graph = EditorPtr.Pin()->GetHeartGraph();
+		const UHeartGraph* Graph = GetEditor()->GetHeartGraph();
 
 		UClass* SceneClass = nullptr;
 
