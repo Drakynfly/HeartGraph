@@ -23,9 +23,14 @@ DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraphCanvas, Log, All)
 UENUM()
 enum class EHeartGraphZoomAlgorithm : uint8
 {
-	None,			// No compensation to view will be applied when zooming
-	MouseRelative,	// Adjust the view to maintain mouse position
-	GraphRelative,	// Adjust the view to maintain graph position
+	// No compensation to view will be applied when zooming
+	None,
+
+	// Adjust the view to maintain mouse position
+	MouseRelative,
+
+	// Adjust the view to maintain graph position
+	GraphRelative,
 };
 
 USTRUCT(BlueprintType)
