@@ -27,7 +27,6 @@
 #include "HeartEditorModule.h"
 #include "HAL/PlatformApplicationMisc.h"
 #include "IDetailsView.h"
-#include "PersonaModule.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 #include "ScopedTransaction.h"

@@ -14,7 +14,7 @@ namespace Heart::AssetEditor
 	/**
 	 *
 	 */
-	class SPreviewSceneViewport : public SEditorViewport, public FGCObject, public ICommonEditorViewportToolbarInfoProvider
+	class SPreviewSceneViewport : public SEditorViewport, public ICommonEditorViewportToolbarInfoProvider
 	{
 	public:
 		SLATE_BEGIN_ARGS(SPreviewSceneViewport) {}
@@ -22,10 +22,6 @@ namespace Heart::AssetEditor
 
 		void Construct(const FArguments& InArgs, const TSharedPtr<FHeartGraphEditor>& InShowcaseAssetEditor, const TSharedPtr<FHeartPreviewScene>& InPreviewScene);
 		virtual ~SPreviewSceneViewport() override;
-
-		//~ FGCObject
-		virtual void AddReferencedObjects(FReferenceCollector& Collector) override {}
-		//~
 
 		//~ ICommonEditorViewportToolbarInfoProvider
 		virtual TSharedRef<SEditorViewport> GetViewportWidget() override;

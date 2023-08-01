@@ -30,7 +30,7 @@ struct FHeartNodeMoveEvent
 
 	// Is the move "in-progress" or finished, typically during drag-drop style movement.
 	UPROPERTY(BlueprintReadOnly, Category = "ConnectionEvent")
-	bool MoveFinished;
+	bool MoveFinished = false;
 };
 
 USTRUCT(BlueprintType)
@@ -44,5 +44,3 @@ struct FHeartGraphNodeMessage
 	UPROPERTY(BlueprintReadOnly, Category = "NodeMessage")
 	FLinearColor Color = FLinearColor::White;
 };
-
-
