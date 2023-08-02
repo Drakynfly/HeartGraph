@@ -58,7 +58,6 @@ void UHeartEdGraphNode::PostLoad()
 
 	if (ensure(IsValid(HeartGraphNode)))
 	{
-		HeartGraphNode->SetEdGraphNode(this); // fix already created nodes
 		SubscribeToExternalChanges();
 
 		ReconstructNode();
@@ -266,8 +265,6 @@ void UHeartEdGraphNode::PostCopyNode()
 			// Ensures HeartGraphNode is owned by the HeartGraph
 			HeartGraphNode->Rename(nullptr, HeartGraph, REN_DontCreateRedirectors);
 		}
-
-		HeartGraphNode->SetEdGraphNode(this);
 	}
 }
 

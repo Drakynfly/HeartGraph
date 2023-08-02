@@ -167,10 +167,6 @@ public:
 				GETTERS
 	----------------------------*/
 
-#if WITH_EDITOR
-	UEdGraphNode* GetEdGraphNode() const { return HeartEdGraphNode; }
-#endif
-
 	template <typename TNodeClass>
 	TNodeClass* GetNodeObject() const
 	{
@@ -239,8 +235,6 @@ public:
 	----------------------------*/
 public:
 #if WITH_EDITOR
-	void SetEdGraphNode(UEdGraphNode* GraphNode);
-
 	virtual bool CanCreate_Editor() const;
 #endif
 
@@ -361,13 +355,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	uint8 InstancedOutputs = 0;
-
-private:
-#if WITH_EDITORONLY_DATA
-	// If valid, always castable to UHeartEdGraphNode. Not set for nodes created during runtime, even in PIE.
-	UPROPERTY()
-	TObjectPtr<UEdGraphNode> HeartEdGraphNode;
-#endif
 };
 
 

@@ -156,7 +156,7 @@ public:
 	TMap<FEdGraphPinReference, FHeartBreakpoint> PinBreakpoints;
 
 private:
-	UPROPERTY(Instanced)
+	UPROPERTY()
 	TObjectPtr<UHeartGraphNode> HeartGraphNode;
 
 	bool bBlueprintCompilationPending;

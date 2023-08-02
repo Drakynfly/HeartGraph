@@ -24,7 +24,32 @@ void UHeartEdGraph::PostInitProperties()
 
 	if (!IsTemplate())
 	{
-		GetHeartGraph()->OnNodeCreatedInEditorExternally.BindUObject(this, &ThisClass::OnNodeCreatedInEditorExternally);
+		UHeartGraph* HeartGraph = GetHeartGraph();
+
+		HeartGraph->OnNodeAdded.AddUObject(this, &ThisClass::OnNodeAdded);
+		HeartGraph->OnNodeRemoved.AddUObject(this, &ThisClass::OnNodeRemoved);
+		HeartGraph->OnNodeConnectionsChanged.AddUObject(this, &ThisClass::OnNodeConnectionsChanged);
+	}
+}
+
+void UHeartEdGraph::PostLoad()
+{
+	Super::PostLoad();
+
+	UHeartGraph* HeartGraph = GetHeartGraph();
+
+	for (auto&& Element : HeartGraph->Nodes)
+	{
+		if (IsValid(Element.Value))
+		{
+			// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
+			// or these nodes will be invisible in the EdGraph
+			if (!IsValid(FindEdGraphNodeForNode(Element.Value)))
+			{
+				// Broadcasting this delegate is our hook to request the EdGraph to generate an EdGraphNode for us.
+				OnNodeCreatedInEditorExternally(Element.Value);
+			}
+		}
 	}
 }
 
@@ -34,10 +59,41 @@ UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
 	NewGraph->bAllowDeletion = false;
 
 	InHeartGraph->HeartEdGraph = NewGraph;
+	for (auto&& Element : InHeartGraph->Nodes)
+	{
+		if (IsValid(Element.Value))
+		{
+			NewGraph->OnNodeCreatedInEditorExternally(Element.Value);
+		}
+	}
 
 	NewGraph->GetSchema()->CreateDefaultNodesForGraph(*NewGraph);
 
 	return NewGraph;
+}
+
+UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNode(const TFunction<bool(const UHeartEdGraphNode*)>& Iter)
+{
+	for (auto Element : Nodes)
+	{
+		if (UHeartEdGraphNode* HeartEdGraphNode = Cast<UHeartEdGraphNode>(Element))
+		{
+			if (Iter(HeartEdGraphNode))
+			{
+				return HeartEdGraphNode;
+			}
+		}
+	}
+	return nullptr;
+}
+
+UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNodeForNode(const UHeartGraphNode* HeartGraphNode)
+{
+	return FindEdGraphNode(
+		[HeartGraphNode](const UHeartEdGraphNode* Node)
+		{
+			return Node->GetHeartGraphNode() == HeartGraphNode;
+		});
 }
 
 UHeartGraph* UHeartEdGraph::GetHeartGraph() const
@@ -74,7 +130,6 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 	// Assign nodes to each other
 	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime
 	NewEdGraphNode->SetHeartGraphNode(Node);
-	Node->SetEdGraphNode(NewEdGraphNode);
 
 	//HeartGraph->AddNode(Node);
 
@@ -91,4 +146,65 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 
 	HeartGraph->PostEditChange();
 	HeartGraph->MarkPackageDirty();
+}
+
+void UHeartEdGraph::OnNodeAdded(UHeartGraphNode* HeartGraphNode)
+{
+	if (IsValid(HeartGraphNode))
+	{
+		if (auto&& EdGraphNode = FindEdGraphNodeForNode(HeartGraphNode))
+		{
+			AddNode(EdGraphNode);
+		}
+		else
+		{
+			OnNodeCreatedInEditorExternally(HeartGraphNode);
+		}
+	}
+}
+
+void UHeartEdGraph::OnNodeRemoved(UHeartGraphNode* HeartGraphNode)
+{
+	if (IsValid(HeartGraphNode))
+	{
+		if (auto&& EdGraphNode = FindEdGraphNodeForNode(HeartGraphNode))
+		{
+			RemoveNode(EdGraphNode);
+		}
+	}
+}
+
+void UHeartEdGraph::OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& HeartGraphConnectionEvent)
+{
+	if (HeartGraphConnectionEvent.AffectedNodes.Num() != 2 ||
+		HeartGraphConnectionEvent.AffectedPins.Num() != 2)
+	{
+		return;
+	}
+
+	const UHeartGraphNode* NodeA = HeartGraphConnectionEvent.AffectedNodes.Get(FSetElementId::FromInteger(0));
+	const UHeartGraphNode* NodeB = HeartGraphConnectionEvent.AffectedNodes.Get(FSetElementId::FromInteger(1));
+	const UEdGraphNode* EdNodeA = FindEdGraphNodeForNode(NodeA);
+	const UEdGraphNode* EdNodeB = FindEdGraphNodeForNode(NodeB);
+	const FHeartPinGuid PinAGuid = HeartGraphConnectionEvent.AffectedPins.Get(FSetElementId::FromInteger(0));
+	const FHeartPinGuid PinBGuid = HeartGraphConnectionEvent.AffectedPins.Get(FSetElementId::FromInteger(1));
+
+	if (EdNodeA && EdNodeB)
+	{
+		auto&& EdGraphPinA = EdNodeA->FindPin(NodeA->GetPinDesc(PinAGuid).Name);
+		auto&& EdGraphPinB = EdNodeB->FindPin(NodeB->GetPinDesc(PinBGuid).Name);
+
+		if (EdGraphPinA && EdGraphPinB)
+		{
+			if (NodeA->GetLinks(PinAGuid).Links.Contains(NodeB->GetPinReference(PinBGuid)) &&
+				NodeB->GetLinks(PinBGuid).Links.Contains(NodeA->GetPinReference(PinAGuid)))
+			{
+				EdGraphPinA->MakeLinkTo(EdGraphPinB);
+			}
+			else
+			{
+				EdGraphPinA->BreakLinkTo(EdGraphPinB);
+			}
+		}
+	}
 }

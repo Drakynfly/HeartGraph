@@ -149,25 +149,6 @@ protected:
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
 public:
-	UE_DEPRECATED(5.2, "Use UHeartGraphSchema::Get instead");
-	template <typename THeartGraphSchema, typename THeartGraph>
-	static const THeartGraphSchema* GetSchemaStatic()
-	{
-		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
-		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "THeartGraph must derive from UHeartGraph");
-		const UHeartGraph* DefaultHeartGraph = GetDefault<THeartGraph>();
-		return GetDefault<THeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
-	}
-
-	UE_DEPRECATED(5.2, "Use UHeartGraphSchema::Get instead");
-	template <typename THeartGraphSchema>
-	static const THeartGraphSchema* GetSchemaStatic(const TSubclassOf<UHeartGraph> GraphClass)
-	{
-		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
-		const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
-		return GetDefault<THeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
-	}
-
 	template <typename THeartGraphSchema>
 	const THeartGraphSchema* GetSchemaTyped() const
 	{
@@ -295,12 +276,6 @@ private:
 	// Always castable to UHeartEdGraph. Only valid for HeartGraphs created by the editor.
 	UPROPERTY()
 	TObjectPtr<UEdGraph> HeartEdGraph;
-
-	// Delegate that is broadcast whenever a node is added to the graph while in the editor, from a source other than
-	// the HeartEdGraph, such as a BP schema, or action. This allows the EdGraph to assign an EdGraphNode anyway, which
-	// is needed to visualize the node in the editor.
-	DECLARE_DELEGATE_OneParam(FNodeCreatedInEditorExternally, UHeartGraphNode* /* Node */)
-	FNodeCreatedInEditorExternally OnNodeCreatedInEditorExternally;
 
 public:
 	// @todo temp while sparse struct is broken, see above comment on this

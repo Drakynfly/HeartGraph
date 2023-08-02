@@ -81,14 +81,6 @@ void UHeartGraph::PostLoad()
 		{
 			Node.Value->NodeObject->Rename(nullptr, Node.Value);
 		}
-
-		// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
-		// or these nodes will be invisible in the EdGraph
-		if (!IsValid(Node.Value->HeartEdGraphNode))
-		{
-			// Broadcasting this delegate is our hook to request the EdGraph to generate an EdGraphNode for us.
-			OnNodeCreatedInEditorExternally.ExecuteIfBound(Node.Value);
-		}
 	}
 
 	for (const FHeartNodeGuid& DeadNode : DeadNodes)
@@ -356,20 +348,6 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 
 	Nodes.Add(NodeGuid, Node);
 
-#if WITH_EDITOR
-	if (HeartEdGraph)
-	{
-		if (auto&& EdGraphNode = Node->GetEdGraphNode())
-		{
-			HeartEdGraph->AddNode(EdGraphNode);
-		}
-		else
-		{
-			OnNodeCreatedInEditorExternally.ExecuteIfBound(Node);
-		}
-	}
-#endif
-
 	OnNodeAdded.Broadcast(Node);
 }
 
@@ -382,16 +360,6 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 
 	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
 	auto&& Removed = Nodes.Remove(NodeGuid);
-
-#if WITH_EDITOR
-	if (HeartEdGraph && NodeBeingRemoved)
-	{
-		if (auto&& EdGraphNode = (*NodeBeingRemoved)->GetEdGraphNode())
-		{
-			HeartEdGraph->RemoveNode(EdGraphNode);
-		}
-	}
-#endif
 
 	if (NodeBeingRemoved)
 	{
@@ -415,18 +383,9 @@ bool UHeartGraph::ConnectPins(const FHeartGraphPinReference& PinA, const FHeartG
 	ANode->GetLinks(PinA.PinGuid).Links.Add(PinB);
 	BNode->GetLinks(PinB.PinGuid).Links.Add(PinA);
 
-#if WITH_EDITOR
-	if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
-	{
-		auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(ANode->GetPinDesc(PinA.PinGuid).Name);
-		auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BNode->GetPinDesc(PinB.PinGuid).Name);
-
-		if (ThisEdGraphPin && OtherEdGraphPin)
-		{
-			ThisEdGraphPin->MakeLinkTo(OtherEdGraphPin);
-		}
-	}
-#endif
+	ANode->NotifyPinConnectionsChanged(PinA.PinGuid);
+	BNode->NotifyPinConnectionsChanged(PinB.PinGuid);
+	NotifyNodeConnectionsChanged({ANode, BNode}, {PinA.PinGuid, PinB.PinGuid});
 
 	return true;
 }
@@ -450,19 +409,6 @@ bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference& PinA, const FHea
 	{
 		AConnections.Links.Remove(PinB);
 		BConnections.Links.Remove(PinA);
-
-#if WITH_EDITOR
-		if (ANode->GetEdGraphNode() && BNode->GetEdGraphNode())
-		{
-			auto&& ThisEdGraphPin = ANode->GetEdGraphNode()->FindPin(ANode->GetPinDesc(PinA.PinGuid).Name);
-			auto&& OtherEdGraphPin = BNode->GetEdGraphNode()->FindPin(BNode->GetPinDesc(PinB.PinGuid).Name);
-
-			if (ThisEdGraphPin && OtherEdGraphPin)
-			{
-				ThisEdGraphPin->BreakLinkTo(OtherEdGraphPin);
-			}
-		}
-#endif
 
 		ANode->NotifyPinConnectionsChanged(PinA.PinGuid);
 		BNode->NotifyPinConnectionsChanged(PinB.PinGuid);

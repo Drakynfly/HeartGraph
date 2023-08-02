@@ -59,7 +59,7 @@ struct TStructOpsTypeTraits<FHeartReplicatedGraphNodes> : public TStructOpsTypeT
 	enum
 	{
 		WithNetDeltaSerializer = true,
-   };
+    };
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartNetProxyNodeEvent, UHeartGraphNode*, Node);

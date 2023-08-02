@@ -574,7 +574,6 @@ namespace Heart::AssetEditor
 			GraphEditor->ClearSelectionSet();
 	        GraphEditor->SetNodeSelection(Node, true);
 		}
-
 	}
 
 	void FHeartGraphEditor::SelectAllNodes() const

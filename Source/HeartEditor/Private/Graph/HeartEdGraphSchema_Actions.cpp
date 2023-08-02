@@ -96,7 +96,6 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	// Assign nodes to each other
 	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime
 	NewEdGraphNode->SetHeartGraphNode(NewGraphNode);
-	NewGraphNode->SetEdGraphNode(NewEdGraphNode);
 
 	HeartGraph->AddNode(NewGraphNode);
 

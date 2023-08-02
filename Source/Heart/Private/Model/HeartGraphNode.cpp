@@ -274,14 +274,6 @@ TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDi
 
 
 #if WITH_EDITOR
-void UHeartGraphNode::SetEdGraphNode(UEdGraphNode* GraphNode)
-{
-	if (HeartEdGraphNode != GraphNode)
-	{
-		HeartEdGraphNode = GraphNode;
-	}
-}
-
 bool UHeartGraphNode::CanCreate_Editor() const
 {
 	if (GetOverrideCanCreateInEditor())

@@ -91,16 +91,11 @@ UObject* UHeartGraphSchema::GetConnectionVisualizer() const
 	return nullptr;
 }
 
-bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
+bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB) const
 {
-	UHeartGraphNode* NodeA = Graph->GetNode(PinA.NodeGuid);
-	UHeartGraphNode* NodeB = Graph->GetNode(PinB.NodeGuid);
-
-	const FHeartConnectPinsResponse Response = CanPinsConnect(Graph, PinA, PinB);
-
 	bool bModified = false;
 
-	switch (Response.Response)
+	switch (CanPinsConnect(Graph, PinA, PinB).Response)
 	{
 	case EHeartCanConnectPinsResponse::Allow:
 		Graph->ConnectPins(PinA, PinB);
@@ -139,13 +134,6 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, FHeart
 	case EHeartCanConnectPinsResponse::Disallow:
 	default:
 		break;
-	}
-
-	if (bModified)
-	{
-		NodeA->NotifyPinConnectionsChanged(PinA.PinGuid);
-		NodeB->NotifyPinConnectionsChanged(PinB.PinGuid);
-		Graph->NotifyNodeConnectionsChanged({NodeA, NodeB}, {PinA.PinGuid, PinB.PinGuid});
 	}
 
 	return bModified;
