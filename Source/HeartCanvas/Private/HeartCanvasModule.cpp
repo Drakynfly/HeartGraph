@@ -2,7 +2,7 @@
 
 #include "HeartCanvasModule.h"
 
-#define LOCTEXT_NAMESPACE "FHeartCanvasModule"
+#define LOCTEXT_NAMESPACE "HeartCanvasModule"
 
 void FHeartCanvasModule::StartupModule()
 {

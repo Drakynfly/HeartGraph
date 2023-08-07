@@ -2,7 +2,7 @@
 
 #include "BloodModule.h"
 
-#define LOCTEXT_NAMESPACE "FBloodModule"
+#define LOCTEXT_NAMESPACE "BloodModule"
 
 void FBloodModule::StartupModule()
 {
