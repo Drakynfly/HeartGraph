@@ -53,6 +53,8 @@ EAssetTypeCategories::Type FHeartEditorModule::HeartAssetCategory_TEMP = static_
 
 void FHeartEditorModule::StartupModule()
 {
+	using namespace Heart::AssetEditor;
+
 	FHeartEditorStyle::Initialize();
 
 	MenuExtensibilityManager = MakeShareable(new FExtensibilityManager);
@@ -114,13 +116,13 @@ void FHeartEditorModule::StartupModule()
 		FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FHeartEditorModule::OnAssetManagerCreated));
 
 	// Register the default application mode.
-	FHeartRegisteredApplicationMode EditorMode;
+	FRegisteredApplicationMode EditorMode;
 	EditorMode.LocalizedName = LOCTEXT("ApplicationMode_Editor.LocalizedName", "Graph");
 	EditorMode.TooltipText = LOCTEXT("ApplicationMode_Editor.TooltipText", "Switch to Graph Editing Mode");
 	EditorMode.CreateModeInstance.BindLambda(
-		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
+		[](const TSharedRef<FHeartGraphEditor>& Editor)
 		{
-			return MakeShareable(new Heart::AssetEditor::FApplicationMode_Editor(Editor));
+			return MakeShareable(new FApplicationMode_Editor(Editor));
 		});
 	EditorMode.SupportsAsset.BindLambda(
 		[](const UHeartGraph* Asset)
@@ -128,7 +130,7 @@ void FHeartEditorModule::StartupModule()
 			return true;
 		});
 
-	RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_Editor::ModeID, EditorMode);
+	RegisterApplicationMode(FApplicationMode_Editor::ModeID, EditorMode);
 }
 
 void FHeartEditorModule::ShutdownModule()
@@ -224,7 +226,7 @@ TSubclassOf<UHeartEdGraphNode> FHeartEditorModule::GetEdGraphClass(const TSubcla
 	return UHeartEdGraphNode::StaticClass();
 }
 
-void FHeartEditorModule::RegisterApplicationMode(const FName ModeName, const FHeartRegisteredApplicationMode& ModeData)
+void FHeartEditorModule::RegisterApplicationMode(const FName ModeName, const Heart::AssetEditor::FRegisteredApplicationMode& ModeData)
 {
 	ApplicationModeCallbacks.Add(ModeName, ModeData);
 }

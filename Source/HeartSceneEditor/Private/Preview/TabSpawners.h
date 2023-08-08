@@ -13,7 +13,7 @@ namespace Heart::AssetEditor
 	class FHeartGraphEditor;
 	class SPreviewSceneViewport;
 
-	DECLARE_DELEGATE_OneParam(FOnPreviewSceneCreated, const TSharedRef<SPreviewSceneViewport>&);
+	using FOnPreviewSceneCreated = TDelegate<void(const TSharedRef<SPreviewSceneViewport>&)>;
 
 	struct FPreviewSceneSummoner : public FWorkflowTabFactory
 	{
@@ -28,7 +28,7 @@ namespace Heart::AssetEditor
 		TSharedPtr<SPreviewSceneViewport> PreviewViewport;
 	};
 
-	DECLARE_DELEGATE_OneParam(FOnDetailsCreated, const TSharedRef<IDetailsView>&);
+	using FOnDetailsCreated = TDelegate<void(const TSharedRef<IDetailsView>&)>;
 
 	struct FPreviewSceneDetailsPanelSummoner : public FWorkflowTabFactory
 	{
@@ -43,5 +43,3 @@ namespace Heart::AssetEditor
 		FOnDetailsCreated Callback;
 	};
 }
-
-

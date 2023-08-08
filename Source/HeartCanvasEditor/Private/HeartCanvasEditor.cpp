@@ -8,21 +8,22 @@
 #include "Model/HeartGraph.h"
 #include "HeartCanvasExtension.h"
 
-
 #define LOCTEXT_NAMESPACE "HeartCanvasEditorModule"
 
 void FHeartCanvasEditorModule::StartupModule()
 {
+	using namespace Heart::AssetEditor;
+
 	// Register 3D scene preview application mode
 	FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 
-	FHeartRegisteredApplicationMode PreviewCanvas;
+	FRegisteredApplicationMode PreviewCanvas;
 	PreviewCanvas.LocalizedName = LOCTEXT("ApplicationMode_PreviewCanvas.LocalizedName", "Canvas");
 	PreviewCanvas.TooltipText = LOCTEXT("ApplicationMode_PreviewCanvas.TooltipText", "Switch to Preview Canvas Mode");
 	PreviewCanvas.CreateModeInstance.BindLambda(
-		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
+		[](const TSharedRef<FHeartGraphEditor>& Editor)
 		{
-			return MakeShareable(new Heart::AssetEditor::FApplicationMode_PreviewCanvas(Editor));
+			return MakeShareable(new FApplicationMode_PreviewCanvas(Editor));
 		});
 	PreviewCanvas.SupportsAsset.BindLambda(
 		[](const UHeartGraph* Asset)
@@ -30,7 +31,7 @@ void FHeartCanvasEditorModule::StartupModule()
 			return IsValid(Asset->GetExtension<UHeartCanvasExtension>());
 		});
 
-	HeartEditorModule.RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_PreviewCanvas::ModeID, PreviewCanvas);
+	HeartEditorModule.RegisterApplicationMode(FApplicationMode_PreviewCanvas::ModeID, PreviewCanvas);
 }
 
 void FHeartCanvasEditorModule::ShutdownModule()

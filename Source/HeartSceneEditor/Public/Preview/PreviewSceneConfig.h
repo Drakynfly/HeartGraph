@@ -17,7 +17,7 @@ public:
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
-	DECLARE_DELEGATE_OneParam(FOnConfigEdit, const FPropertyChangedEvent&);
+	using FOnConfigEdit = TDelegate<void(const FPropertyChangedEvent&)>;
 	FOnConfigEdit OnConfigEdit;
 
 	UPROPERTY(EditAnywhere, Category = "Config")
