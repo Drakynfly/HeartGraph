@@ -2,7 +2,7 @@
 
 #include "HeartModule.h"
 
-#define LOCTEXT_NAMESPACE "FHeartModule"
+#define LOCTEXT_NAMESPACE "HeartModule"
 
 void FHeartModule::StartupModule()
 {

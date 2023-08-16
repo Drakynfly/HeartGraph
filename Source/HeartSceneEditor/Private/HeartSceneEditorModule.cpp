@@ -11,16 +11,18 @@
 
 void FHeartSceneEditorModule::StartupModule()
 {
+	using namespace Heart::AssetEditor;
+
 	// Register 3D scene preview application mode
 	FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 
-	FHeartRegisteredApplicationMode PreviewScene;
+	FRegisteredApplicationMode PreviewScene;
 	PreviewScene.LocalizedName = LOCTEXT("ApplicationMode_PreviewScene.LocalizedName", "Scene");
 	PreviewScene.TooltipText = LOCTEXT("ApplicationMode_PreviewScene.TooltipText", "Switch to Preview Scene Mode");
 	PreviewScene.CreateModeInstance.BindLambda(
-		[](const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& Editor)
+		[](const TSharedRef<FHeartGraphEditor>& Editor)
 		{
-			return MakeShareable(new Heart::AssetEditor::FApplicationMode_PreviewScene(Editor));
+			return MakeShareable(new FApplicationMode_PreviewScene(Editor));
 		});
 	PreviewScene.SupportsAsset.BindLambda(
 		[](const UHeartGraph* Asset)
@@ -28,7 +30,7 @@ void FHeartSceneEditorModule::StartupModule()
 			return IsValid(Asset->GetExtension<UHeartSceneExtension>());
 		});
 
-	HeartEditorModule.RegisterApplicationMode(Heart::AssetEditor::FApplicationMode_PreviewScene::ModeID, PreviewScene);
+	HeartEditorModule.RegisterApplicationMode(FApplicationMode_PreviewScene::ModeID, PreviewScene);
 }
 
 void FHeartSceneEditorModule::ShutdownModule()

@@ -16,7 +16,7 @@ namespace Heart::AssetEditor
 	class SDetailsPanel;
 
 	/** Callback for when a details panel is created */
-	DECLARE_DELEGATE_OneParam(FOnDetailsCreated, const TSharedRef<SDetailsPanel>&);
+	using FOnDetailsCreated = TDelegate<void(const TSharedRef<SDetailsPanel>&)>;
 
 	struct FDetailsPanelSummoner : public FWorkflowTabFactory
 	{
@@ -32,7 +32,7 @@ namespace Heart::AssetEditor
 	};
 
 
-	DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphEditor>, FCreateGraphEditor, const FWorkflowTabSpawnInfo&)
+	using FCreateGraphEditor = TDelegate<TSharedRef<SGraphEditor>(const FWorkflowTabSpawnInfo&)>;
 
 	struct FGraphEditorSummoner : public FWorkflowTabFactory
 	{
@@ -49,7 +49,7 @@ namespace Heart::AssetEditor
 
 
 	/** Callback for when a node palette is created */
-	DECLARE_DELEGATE_OneParam(FOnPaletteCreated, const TSharedRef<SHeartPalette>&);
+	using FOnPaletteCreated = TDelegate<void(const TSharedRef<SHeartPalette>&)>;
 
 	struct FNodePaletteSummoner : public FWorkflowTabFactory
 	{

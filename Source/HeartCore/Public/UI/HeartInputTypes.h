@@ -5,15 +5,10 @@
 class UWidget;
 class UHeartDragDropOperation;
 
-DECLARE_DELEGATE_RetVal_OneParam(FText, FHeartWidgetInputDescription, const UWidget* /** Widget */);
-
-DECLARE_DELEGATE_RetVal_OneParam(bool, FHeartWidgetInputCondition, const UWidget* /** Widget */);
-
-DECLARE_DELEGATE_RetVal_TwoParams(
-	FReply, FHeartWidgetLinkedEventCallback, UWidget* /** Widget */, const struct FHeartInputActivation& /** Activation */);
-
-DECLARE_DELEGATE_RetVal_OneParam(
-	UHeartDragDropOperation*, FHeartWidgetLinkedDragDropTriggerCreate, UWidget* /** Widget */);
+using FHeartWidgetInputDescription = TDelegate<FText(const UWidget*)>;
+using FHeartWidgetInputCondition = TDelegate<bool(const UWidget*)>;
+using FHeartWidgetLinkedEventCallback = TDelegate<FReply(UWidget*, const struct FHeartInputActivation&)>;;
+using FHeartWidgetLinkedDragDropTriggerCreate = TDelegate<UHeartDragDropOperation*(UWidget*)>;
 
 namespace Heart::Input
 {

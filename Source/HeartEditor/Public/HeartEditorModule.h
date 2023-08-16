@@ -18,21 +18,21 @@ DECLARE_LOG_CATEGORY_EXTERN(LogHeartEditor, Log, All)
 namespace Heart::AssetEditor
 {
     class FHeartGraphEditor;
+
+    struct HEARTEDITOR_API FRegisteredApplicationMode
+    {
+        FText LocalizedName;
+        FText TooltipText;
+
+        using FOnGetInstance = TDelegate<TSharedRef<FApplicationMode>(TSharedRef<FHeartGraphEditor> Editor)>;
+        FOnGetInstance CreateModeInstance;
+
+        using FSupportsAssetCallback = TDelegate<bool(const UHeartGraph* Asset)>;
+        FSupportsAssetCallback SupportsAsset;
+    };
 }
 
-DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<SGraphNode>, FOnGetSlateGraphWidgetInstance, UHeartEdGraphNode* Node);
-
-struct HEARTEDITOR_API FHeartRegisteredApplicationMode
-{
-	FText LocalizedName;
-	FText TooltipText;
-
-    DECLARE_DELEGATE_RetVal_OneParam(TSharedRef<FApplicationMode>, FOnGetInstance, TSharedRef<Heart::AssetEditor::FHeartGraphEditor> Editor);
-    FOnGetInstance CreateModeInstance;
-
-    DECLARE_DELEGATE_RetVal_OneParam(bool, FSupportsAssetCallback, const UHeartGraph* Asset);
-    FSupportsAssetCallback SupportsAsset;
-};
+using FOnGetSlateGraphWidgetInstance = TDelegate<TSharedRef<SGraphNode>(UHeartEdGraphNode* Node)>;
 
 class HEARTEDITOR_API FHeartEditorModule : public IModuleInterface, public IHasMenuExtensibility, public IHasToolBarExtensibility
 {
@@ -53,9 +53,9 @@ public:
     virtual TSharedPtr<FExtensibilityManager> GetMenuExtensibilityManager() override { return MenuExtensibilityManager; }
     virtual TSharedPtr<FExtensibilityManager> GetToolBarExtensibilityManager() override { return ToolBarExtensibilityManager; }
 
-    void RegisterApplicationMode(FName ModeName, const FHeartRegisteredApplicationMode& ModeData);
+    void RegisterApplicationMode(FName ModeName, const Heart::AssetEditor::FRegisteredApplicationMode& ModeData);
     void DeregisterApplicationMode(FName ModeName);
-    const TMap<FName, FHeartRegisteredApplicationMode>& GetApplicationModes() const { return ApplicationModeCallbacks; }
+    const TMap<FName, Heart::AssetEditor::FRegisteredApplicationMode>& GetApplicationModes() const { return ApplicationModeCallbacks; }
 
 private:
     void RegisterPropertyCustomizations();
@@ -83,7 +83,7 @@ private:
     TMap<FName, FOnGetSlateGraphWidgetInstance> EditorSlateCallbacks;
 
     // This holds the registered callbacks to generate Application Modes for UHeartEdGraphNodes
-    TMap<FName, FHeartRegisteredApplicationMode> ApplicationModeCallbacks;
+    TMap<FName, Heart::AssetEditor::FRegisteredApplicationMode> ApplicationModeCallbacks;
 
     TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;
     TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;

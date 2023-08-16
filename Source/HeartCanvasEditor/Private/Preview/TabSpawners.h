@@ -22,7 +22,7 @@ namespace Heart::AssetEditor
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
 	};
 
-	DECLARE_DELEGATE_OneParam(FOnDetailsCreated, const TSharedRef<IDetailsView>&);
+	using FOnDetailsCreated = TDelegate<void(const TSharedRef<IDetailsView>&)>;
 
 	struct FPreviewCanvasDetailsPanelSummoner : public FWorkflowTabFactory
 	{
@@ -37,5 +37,3 @@ namespace Heart::AssetEditor
 		FOnDetailsCreated Callback;
 	};
 }
-
-
