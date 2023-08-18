@@ -50,7 +50,7 @@ protected:
 	void OnAnyRegistryChanged(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
 
 public:
-	DECLARE_MULTICAST_DELEGATE(FHeartRegistryEditorPaletteRefresh);
+	using FHeartRegistryEditorPaletteRefresh = TMulticastDelegate<void()>;
 	FHeartRegistryEditorPaletteRefresh OnRefreshPalettes;
 
 private:

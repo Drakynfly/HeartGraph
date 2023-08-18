@@ -14,7 +14,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
 class UHeartGraphNodeRegistry;
-DECLARE_MULTICAST_DELEGATE_OneParam(FHeartRegistryEventNative, UHeartGraphNodeRegistry*);
+using FHeartRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartRegistryEvent, class UHeartGraphNodeRegistry*, Registry);
 
 /**

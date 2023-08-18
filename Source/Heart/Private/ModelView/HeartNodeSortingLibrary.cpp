@@ -128,7 +128,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 			{
 				if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
 				{
-					OutTreeNode.Children.Add(FInstancedStruct::Make(BuildTreeNode(ConnectedNode)));
+					OutTreeNode.Children.Add(TInstancedStruct<FHeartTreeNode>::Make(BuildTreeNode(ConnectedNode)));
 				}
 			}
 		}

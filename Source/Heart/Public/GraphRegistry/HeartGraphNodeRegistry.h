@@ -14,7 +14,7 @@ struct FHeartGraphPinDesc;
 class UHeartGraphNode;
 
 class UHeartGraphNodeRegistry;
-DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEventNative, UHeartGraphNodeRegistry*);
+using FHeartGraphNodeRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEvent, UHeartGraphNodeRegistry*, Registry);
 
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeSourceFilter, const FHeartNodeSource, NodeSource);

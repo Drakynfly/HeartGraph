@@ -16,10 +16,10 @@ class UHeartGraphNode;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphEvent, UHeartGraph*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeEvent, UHeartGraphNode*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeMovedEvent, const FHeartNodeMoveEvent&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeConnectionEvent, const FHeartGraphConnectionEvent&);
+using FHeartGraphEvent = TMulticastDelegate<void(UHeartGraph*)>;
+using FHeartGraphNodeEvent = TMulticastDelegate<void(UHeartGraphNode*)>;
+using FHeartGraphNodeMovedEvent = TMulticastDelegate<void(const FHeartNodeMoveEvent&)>;
+using FHeartGraphNodeConnectionEvent = TMulticastDelegate<void(const FHeartGraphConnectionEvent&)>;
 
 // @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
 // If/when Epic fixes that, these properties should be moved back into the sparse class struct below
