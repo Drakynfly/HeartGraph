@@ -71,14 +71,14 @@ private:
 	TObjectPtr<const UObject> NodeObj;
 
 public:
-	friend bool operator==(const FHeartNodeSource Lhs, const FHeartNodeSource RHS)
+	friend bool operator==(const FHeartNodeSource Lhs, const FHeartNodeSource Rhs)
 	{
-		return Lhs.NodeObj == RHS.NodeObj;
+		return Lhs.NodeObj == Rhs.NodeObj;
 	}
 
-	friend bool operator!=(const FHeartNodeSource Lhs, const FHeartNodeSource RHS)
+	friend bool operator!=(const FHeartNodeSource Lhs, const FHeartNodeSource Rhs)
 	{
-		return !(Lhs == RHS);
+		return !(Lhs == Rhs);
 	}
 
 	friend uint32 GetTypeHash(const FHeartNodeSource SourceObject)
