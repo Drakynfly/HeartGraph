@@ -1,14 +1,15 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "General/HeartGeneralUtils.h"
-
-#include "EngineFontServices.h"
 #include "General/VectorBounds.h"
 #include "General/Vector2DBounds.h"
 
 #include "Algo/LevenshteinDistance.h"
+#include "EngineFontServices.h"
 #include "Engine/Font.h"
 #include "Fonts/FontCache.h"
+
+DEFINE_LOG_CATEGORY(LogHeartGeneral)
 
 UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 {
@@ -17,8 +18,18 @@ UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 
 bool UHeartGeneralUtils::AddObjectToActorReplicateSubObjectList(AActor* Actor, UObject* Object)
 {
-	if (Object && Actor && Object->GetOuter() == Actor)
+	if (Object && Actor)
 	{
+		if (Object->GetTypedOuter<AActor>() != Actor)
+		{
+			UE_LOG(LogHeartGeneral, Warning,
+				TEXT("AddObjectToActorReplicateSubObjectList: Should not register Object to Actor that does not own it."
+						" GivenActor: '%s', Object: '%s' DirectOuter: '%s', FirstActorOuter: '%s'"),
+						*Actor->GetName(), *Object->GetName(), *Object->GetOuter()->GetName(),
+						*Object->GetTypedOuter<AActor>()->GetName())
+			return false;
+		}
+
 		Actor->AddReplicatedSubObject(Object);
 		return Actor->IsReplicatedSubObjectRegistered(Object);
 	}
@@ -96,7 +107,7 @@ int32 UHeartGeneralUtils::LevenshteinDistance(const FString& A, const FString& B
 
 bool UHeartGeneralUtils::FontSupportsChar(const UFont* Font, const TCHAR Char)
 {
-	switch(Font->FontCacheType)
+	switch (Font->FontCacheType)
 	{
 	case EFontCacheType::Offline:
 		{

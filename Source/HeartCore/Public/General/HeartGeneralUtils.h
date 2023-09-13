@@ -7,6 +7,8 @@
 #include "Vector2DBounds.h"
 #include "HeartGeneralUtils.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogHeartGeneral, Log, All)
+
 /**
  *
  */
@@ -23,8 +25,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Object", DisplayName = "Duplicate Object", meta = (DeterminesOutputType = Source))
 	static UObject* K2_DuplicateObject(UObject* Outer, UObject* Source);
 
-	// Adds an object to the actors SubObjectList so it can be replicated.
-	// The actor must own the object, and have ReplicateUsingRegisteredSubObjectList enabled
+	// Adds an object to the actor's SubObjectList so it can be replicated.
+	// The actor must be somewhere up the objects outer chain, and have ReplicateUsingRegisteredSubObjectList enabled
 	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Object", meta = (DefaultToSelf = Actor))
 	static bool AddObjectToActorReplicateSubObjectList(AActor* Actor, UObject* Object);
 
