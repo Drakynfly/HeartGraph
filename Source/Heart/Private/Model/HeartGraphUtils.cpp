@@ -140,7 +140,9 @@ FHeartNodeSource UHeartGraphUtils::MakeNodeSourceFromObject(UObject* Object)
 
 UClass* UHeartGraphUtils::NodeSourceToClass(const FHeartNodeSource NodeSource, const UClass* BaseClass)
 {
-	if (NodeSource.IsAOrClassOf(BaseClass))
+	if (BaseClass == nullptr ||
+		BaseClass == UObject::StaticClass() ||
+		NodeSource.IsAOrClassOf(BaseClass))
 	{
 		return NodeSource.As<UClass>();
 	}
@@ -149,7 +151,9 @@ UClass* UHeartGraphUtils::NodeSourceToClass(const FHeartNodeSource NodeSource, c
 
 UObject* UHeartGraphUtils::NodeSourceToObject(const FHeartNodeSource NodeSource, const UClass* BaseClass)
 {
-	if (NodeSource.IsAOrClassOf(BaseClass))
+	if (BaseClass == nullptr ||
+		BaseClass == UObject::StaticClass() ||
+		NodeSource.IsAOrClassOf(BaseClass))
 	{
 		return NodeSource.As<UObject>();
 	}
