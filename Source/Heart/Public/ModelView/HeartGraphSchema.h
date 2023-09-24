@@ -52,6 +52,31 @@ struct FHeartConnectPinsResponse
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "ConnectPinsResponse")
 	FText Message;
+
+	static FHeartConnectPinsResponse Disallow(const FText& Message)
+	{
+		return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Disallow, Message };
+	}
+
+	static FHeartConnectPinsResponse Allow()
+	{
+		return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow, FText::GetEmpty() };
+	}
+
+	static FHeartConnectPinsResponse BreakA()
+	{
+		return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::AllowBreakA, FText::GetEmpty() };
+	}
+
+	static FHeartConnectPinsResponse BreakB()
+	{
+		return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::AllowBreakB, FText::GetEmpty() };
+	}
+
+	static FHeartConnectPinsResponse BreakAB()
+	{
+		return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::AllowBreakAB, FText::GetEmpty() };
+	}
 };
 
 /**
