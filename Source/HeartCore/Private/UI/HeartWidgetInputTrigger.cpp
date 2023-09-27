@@ -2,42 +2,42 @@
 
 #include "UI/HeartWidgetInputTrigger.h"
 
-TArray<FHeartWidgetInputTrip> FHeartWidgetInputTrigger_KeyDown::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyDown::CreateTrips() const
 {
-	TArray<FHeartWidgetInputTrip> Trips;
+	TArray<Heart::Input::FInputTrip> Trips;
 
 	for (const FKey& TripKey : Keys)
 	{
-		FHeartWidgetInputTrip& Trip = Trips.AddDefaulted_GetRef();
+		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
 		Trip.Key = TripKey;
-		Trip.Type = Press;
+		Trip.Type = Heart::Input::Press;
 	}
 
 	return Trips;
 }
 
-TArray<FHeartWidgetInputTrip> FHeartWidgetInputTrigger_KeyUp::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyUp::CreateTrips() const
 {
-	TArray<FHeartWidgetInputTrip> Trips;
+	TArray<Heart::Input::FInputTrip> Trips;
 
 	for (const FKey& TripKey : Keys)
 	{
-		FHeartWidgetInputTrip& Trip = Trips.AddDefaulted_GetRef();
+		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
 		Trip.Key = TripKey;
-		Trip.Type = Release;
+		Trip.Type = Heart::Input::Release;
 	}
 
 	return Trips;
 }
 
-TArray<FHeartWidgetInputTrip> FHeartWidgetInputTrigger_Manual::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_Manual::CreateTrips() const
 {
-	TArray<FHeartWidgetInputTrip> Trips;
+	TArray<Heart::Input::FInputTrip> Trips;
 
 	for (const FName Key : Keys)
 	{
-		FHeartWidgetInputTrip& Trip = Trips.AddDefaulted_GetRef();
-		Trip.Type = Manual;
+		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
+		Trip.Type = Heart::Input::Manual;
 		Trip.CustomKey = Key;
 	}
 

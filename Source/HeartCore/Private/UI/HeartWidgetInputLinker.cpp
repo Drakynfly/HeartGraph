@@ -29,7 +29,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseWheel)
 
-	FHeartWidgetInputTrip MouseWheelAxisTrip;
+	FInputTrip MouseWheelAxisTrip;
 	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis;
 	MouseWheelAxisTrip.Type = Press; // Mouse wheel events must always use the 'Press' type
 
@@ -76,7 +76,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonDown)
 
-	FHeartWidgetInputTrip Trip;
+	FInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
 	Trip.Type = Press;
 
@@ -143,7 +143,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonUp)
 
-	FHeartWidgetInputTrip Trip;
+	FInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
 	Trip.Type = Release;
 
@@ -180,7 +180,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyDown)
 
-	FHeartWidgetInputTrip Trip;
+	FInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
 	Trip.Type = Press;
 
@@ -217,7 +217,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyUp)
 
-	FHeartWidgetInputTrip Trip;
+	FInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
 	Trip.Type = Release;
 
@@ -254,7 +254,7 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnDragDetected)
 
-	FHeartWidgetInputTrip Trip;
+	FInputTrip Trip;
 	Trip.Type = Press;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
 
@@ -345,7 +345,7 @@ FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeom
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
 
-	FHeartWidgetInputTrip Trip;
+	FInputTrip Trip;
 	Trip.Type = Manual;
 	Trip.CustomKey = Key;
 
@@ -412,7 +412,7 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetInputLinker::QueryManualTrigger
 	return Results;
 }
 
-void UHeartWidgetInputLinker::BindInputCallback(const FHeartWidgetInputTrip& Trip, const FConditionalInputCallback& InputCallback)
+void UHeartWidgetInputLinker::BindInputCallback(const FInputTrip& Trip, const FConditionalInputCallback& InputCallback)
 {
 	if (ensure(Trip.IsValid()))
 	{
@@ -420,13 +420,13 @@ void UHeartWidgetInputLinker::BindInputCallback(const FHeartWidgetInputTrip& Tri
 	}
 }
 
-void UHeartWidgetInputLinker::UnbindInputCallback(const FHeartWidgetInputTrip& Trip)
+void UHeartWidgetInputLinker::UnbindInputCallback(const FInputTrip& Trip)
 {
 	InputCallbackMappings.Remove(Trip);
 
 }
 
-void UHeartWidgetInputLinker::BindToOnDragDetected(const FHeartWidgetInputTrip& Trip, const FConditionalDragDropTrigger& DragDropTrigger)
+void UHeartWidgetInputLinker::BindToOnDragDetected(const FInputTrip& Trip, const FConditionalDragDropTrigger& DragDropTrigger)
 {
 	if (ensure(Trip.IsValid()))
 	{
@@ -434,7 +434,7 @@ void UHeartWidgetInputLinker::BindToOnDragDetected(const FHeartWidgetInputTrip& 
 	}
 }
 
-void UHeartWidgetInputLinker::UnbindToOnDragDetected(const FHeartWidgetInputTrip& Trip)
+void UHeartWidgetInputLinker::UnbindToOnDragDetected(const FInputTrip& Trip)
 {
 	DragDropTriggers.Remove(Trip);
 }

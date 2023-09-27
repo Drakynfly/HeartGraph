@@ -59,11 +59,11 @@ public:
 	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UWidget* Widget) const;
 
 public:
-	void BindInputCallback(const FHeartWidgetInputTrip& Trip, const Heart::Input::FConditionalInputCallback& InputCallback);
-	void UnbindInputCallback(const FHeartWidgetInputTrip& Trip);
+	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const Heart::Input::FConditionalInputCallback& InputCallback);
+	void UnbindInputCallback(const Heart::Input::FInputTrip& Trip);
 
-	void BindToOnDragDetected(const FHeartWidgetInputTrip& Trip, const Heart::Input::FConditionalDragDropTrigger& DragDropTrigger);
-	void UnbindToOnDragDetected(const FHeartWidgetInputTrip& Trip);
+	void BindToOnDragDetected(const Heart::Input::FInputTrip& Trip, const Heart::Input::FConditionalDragDropTrigger& DragDropTrigger);
+	void UnbindToOnDragDetected(const Heart::Input::FInputTrip& Trip);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
 	void AddBindings(const TArray<FHeartWidgetInputBinding>& Bindings);
@@ -76,10 +76,10 @@ public:
 
 private:
 	// Input trips that fire a delegate.
-	TMultiMap<FHeartWidgetInputTrip, Heart::Input::FConditionalInputCallback> InputCallbackMappings;
+	TMultiMap<Heart::Input::FInputTrip, Heart::Input::FConditionalInputCallback> InputCallbackMappings;
 
 	// Input trips that begin a drag drop operation
-	TMultiMap<FHeartWidgetInputTrip, Heart::Input::FConditionalDragDropTrigger> DragDropTriggers;
+	TMultiMap<Heart::Input::FInputTrip, Heart::Input::FConditionalDragDropTrigger> DragDropTriggers;
 };
 
 namespace Heart::Input
