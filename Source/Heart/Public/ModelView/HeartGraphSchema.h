@@ -179,7 +179,7 @@ protected:
 #if WITH_EDITORONLY_DATA
 	// Enable to have the runtime function CanPinsConnect called by the EdGraphSchema for this graph.
 	UPROPERTY(EditAnywhere, Category = "Editor")
-	bool RunCanPinsConnectInEdGraph;
+	bool RunCanPinsConnectInEdGraph = false;
 
 	// Optimization to discard Graph Nodes at runtime. Enable this if the Heart Graph is used only as an
 	// intermediate form, from which the Editor generates standalone data, and the node data is no longer used.

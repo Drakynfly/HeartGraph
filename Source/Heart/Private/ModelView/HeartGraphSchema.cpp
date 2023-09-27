@@ -24,7 +24,7 @@ const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph> G
 	}
 
 	const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
-	const UClass* Class = DefaultHeartGraph->GetSchemaClass();
+	UClass* Class = DefaultHeartGraph->GetSchemaClass();
 
 	if (!ensure(IsValid(Class)))
 	{
@@ -32,7 +32,7 @@ const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph> G
 		return GetDefault<UHeartGraphSchema>();
 	}
 
-	return GetDefault<UHeartGraphSchema>(DefaultHeartGraph->GetSchemaClass());
+	return GetDefault<UHeartGraphSchema>(Class);
 }
 
 bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
