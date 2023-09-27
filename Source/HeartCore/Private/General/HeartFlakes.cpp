@@ -9,6 +9,11 @@ static const FName SkippedObjectMarker("_SKIP_");
 
 FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)
 {
+	if (!IsValid(Obj))
+	{
+		return *this;
+	}
+
 	// Only serialize UObjects if we are also serializing its outer.
 	const bool SkipObject = !OuterStack.Contains(Obj->GetOuter());
 
@@ -136,10 +141,31 @@ FString FHeartMemoryReader::GetArchiveName() const
 
 namespace Heart::Flakes
 {
+	FHeartFlake CreateFlake(const FInstancedStruct& Struct)
+	{
+		FHeartFlake Flake;
+		Flake.Struct = Struct.GetScriptStruct()->GetPathName();
+
+		TArray<uint8> Raw;
+		FHeartMemoryWriter MemoryWriter(Raw, nullptr);
+		const_cast<FInstancedStruct&>(Struct).Serialize(MemoryWriter);
+
+		FOodleCompressedArray::CompressTArray(
+			Flake.Data, Raw,
+			FOodleDataCompression::ECompressor::Kraken, // @todo expose as option
+			FOodleDataCompression::ECompressionLevel::SuperFast // @todo expose as option
+			);
+
+		MemoryWriter.FlushCache();
+		MemoryWriter.Close();
+
+		return Flake;
+	}
+
 	FHeartFlake CreateFlake(UObject* Object)
 	{
 		FHeartFlake Flake;
-		Flake.Class = Object->GetClass()->GetPathName();
+		Flake.Struct = Object->GetClass()->GetPathName();
 
 		TArray<uint8> Raw;
 		FHeartMemoryWriter MemoryWriter(Raw, Object);
@@ -177,7 +203,7 @@ namespace Heart::Flakes
 			return nullptr;
 		}
 
-		const UClass* ObjClass = Flake.Class.TryLoadClass<UObject>();
+		const UClass* ObjClass = LoadClass<UObject>(nullptr, *Flake.Struct.ToString(), nullptr, LOAD_None, nullptr);
 
 		if (!IsValid(ObjClass))
 		{
@@ -195,6 +221,16 @@ namespace Heart::Flakes
 
 		return LoadedObject;
 	}
+}
+
+FHeartFlake UHeartFlakeLibrary::CreateFlake_Struct(const FInstancedStruct& Struct)
+{
+	if (Struct.IsValid())
+	{
+		return Heart::Flakes::CreateFlake(Struct);
+	}
+
+	return FHeartFlake();
 }
 
 FHeartFlake UHeartFlakeLibrary::CreateFlake(UObject* Object)
@@ -233,14 +269,16 @@ AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Fla
 		return nullptr;
 	}
 
-	const TSubclassOf<AActor> ActorClass = Flake.Class.TryLoadClass<AActor>();
+	LoadClass<AActor>(nullptr, *Flake.Struct.ToString(), nullptr, LOAD_None, nullptr);
+
+	const TSubclassOf<AActor> ActorClass = LoadClass<AActor>(nullptr, *Flake.Struct.ToString(), nullptr, LOAD_None, nullptr);
 
 	if (!ActorClass->IsChildOf(ExpectedClass))
 	{
 		return nullptr;
 	}
 
-	if (auto&& LoadedActor = WorldContextObj->GetWorld()->SpawnActorDeferred<AActor>(ActorClass, FTransform::Identity))
+	if (auto&& LoadedActor = WorldContextObj->GetWorld()->SpawnActorDeferred<AActor>(ActorClass, Flake.Transform))
 	{
 		Heart::Flakes::WriteObject(LoadedActor, Flake);
 

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "InstancedStruct.h"
+
 #include "HeartFlakes.generated.h"
 
 class HEARTCORE_API FHeartMemoryWriter : public FMemoryWriter
@@ -52,15 +54,16 @@ struct HEARTCORE_API FHeartFlake
 {
 	GENERATED_BODY()
 
+	// This is either a UClass, or UStruct.
 	UPROPERTY()
-	FSoftClassPath Class;
+	FSoftObjectPath Struct;
 
 	UPROPERTY()
 	TArray<uint8> Data;
 
 	friend FArchive& operator<<(FArchive& Ar, FHeartFlake& Flake)
 	{
-		Ar << Flake.Class;
+		Ar << Flake.Struct;
 		Ar << Flake.Data;
 		return Ar;
 	}
@@ -81,7 +84,7 @@ struct HEARTCORE_API FHeartFlake_Actor : public FHeartFlake
 
 	friend FArchive& operator<<(FArchive& Ar, FHeartFlake_Actor& Flake)
 	{
-		Ar << Flake.Class;
+		Ar << Flake.Struct;
 		Ar << Flake.Data;
 		Ar << Flake.Transform;
 		return Ar;
@@ -90,6 +93,8 @@ struct HEARTCORE_API FHeartFlake_Actor : public FHeartFlake
 
 namespace Heart::Flakes
 {
+	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct);
+
 	HEARTCORE_API FHeartFlake CreateFlake(UObject* Object);
 
 	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake);
@@ -97,11 +102,12 @@ namespace Heart::Flakes
 	HEARTCORE_API UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
 
 	template <typename T>
-	T* CreateObject(const FHeartFlake& Flake, UObject* Outer)
+	T* CreateObject(const FHeartFlake& Flake, UObject* Outer = GetTransientPackage())
 	{
 		return Cast<T>(CreateObject(Flake, Outer, T::StaticClass()));
 	}
 }
+
 
 /**
  * A simple set of functions to convert arbitrary objects/actors into "Flakes", and back. This is Heart's serialization
@@ -114,11 +120,15 @@ class HEARTCORE_API UHeartFlakeLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
+	/** Serialize an struct (and all its subobjects) into a flake. */
+	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Struct)"))
+	static FHeartFlake CreateFlake_Struct(const FInstancedStruct& Struct);
+
 	/** Serialize an object (and all its subobjects) into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Object)"))
 	static FHeartFlake CreateFlake(UObject* Object);
 
-	/** Serialize an object (and all its subobjects) into a flake. */
+	/** Serialize an actor (and all its subobjects) into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Actor)"))
 	static FHeartFlake_Actor CreateFlake_Actor(AActor* Actor);
 
