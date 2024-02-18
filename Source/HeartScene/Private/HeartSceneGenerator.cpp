@@ -14,11 +14,52 @@
 UHeartSceneGenerator::UHeartSceneGenerator()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	UseWorldSpaceInModifiers = false;
 }
 
 UHeartGraph* UHeartSceneGenerator::GetHeartGraph() const
 {
 	return Graph;
+}
+
+FVector UHeartSceneGenerator::GetNodeLocation3D(const FHeartNodeGuid& Node) const
+{
+	if (!SceneNodes.Contains(Node))
+	{
+		return FVector();
+	}
+
+	if (ensure(IsValid(LocationModifiers)))
+	{
+		const auto SceneNode = SceneNodes[Node];
+		return LocationModifiers->ProxyToLocation3D(UseWorldSpaceInModifiers ? SceneNode->GetComponentLocation() : SceneNode->GetRelativeLocation());
+	}
+
+	return FVector();
+}
+
+void UHeartSceneGenerator::SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, const bool InProgressMove)
+{
+	if (!SceneNodes.Contains(Node))
+	{
+		return;
+	}
+
+	if (ensure(IsValid(LocationModifiers)))
+	{
+		const auto SceneNode = SceneNodes[Node];
+
+		const FVector Proxy = LocationModifiers->LocationToProxy3D(Location);
+
+		if (UseWorldSpaceInModifiers)
+		{
+			SceneNode->SetWorldLocation(Proxy);
+		}
+		else
+		{
+			SceneNode->SetRelativeLocation(Proxy);
+		}
+	}
 }
 
 void UHeartSceneGenerator::SetDisplayedGraph(UHeartGraph* NewGraph)
