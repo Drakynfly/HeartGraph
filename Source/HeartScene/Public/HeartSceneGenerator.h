@@ -47,7 +47,6 @@ protected:
 	UHeartSceneNode* AddNodeToDisplay(UHeartGraphNode* GraphNode);
 
 protected:
-
 	UPROPERTY()
 	TObjectPtr<UHeartGraph> Graph;
 

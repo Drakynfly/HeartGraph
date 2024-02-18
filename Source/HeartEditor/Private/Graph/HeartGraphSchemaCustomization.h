@@ -22,5 +22,5 @@ private:
 
 	TSharedPtr<IPropertyHandle> StyleProp;
 
-	TArray<FName> Options;
+	TArray<FName> StyleOptions;
 };

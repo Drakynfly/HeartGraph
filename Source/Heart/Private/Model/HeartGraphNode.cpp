@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartEdNodeInterface.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphStatics.h"
 
@@ -10,7 +11,7 @@ UHeartGraphNode::UHeartGraphNode()
 {
 #if WITH_EDITOR
 	// Unless specified otherwise, use the graph's Schema default style.
-	EditorData.EditorSlateStyle = "GraphDefault";
+	GetHeartGraphNodeSparseClassData()->EditorSlateStyle = "GraphDefault";
 #endif
 }
 
@@ -47,15 +48,6 @@ void UHeartGraphNode::PostLoad()
 
 #if WITH_EDITOR
 
-void UHeartGraphNode::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
-{
-	// Save the NodeObject with us in the editor
-	UHeartGraphNode* This = CastChecked<UHeartGraphNode>(InThis);
-	//Collector.AddReferencedObject(This->NodeObject, This);
-
-	Super::AddReferencedObjects(InThis, Collector);
-}
-
 void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
@@ -64,7 +56,10 @@ void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 	   (PropertyChangedEvent.MemberProperty->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
 		GetPropertiesTriggeringNodeReconstruction().Contains(PropertyChangedEvent.GetPropertyName())))
 	{
-		OnReconstructionRequested.ExecuteIfBound();
+		if (EdGraphNodePointer)
+		{
+			EdGraphNodePointer->OnPropertyChanged();
+		}
 	}
 }
 
@@ -79,7 +74,10 @@ void UHeartGraphNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& Pr
 		if (Property && (Property->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
 		   	GetPropertiesTriggeringNodeReconstruction().Contains(Property->GetFName())))
 		{
-			OnReconstructionRequested.ExecuteIfBound();
+			if (EdGraphNodePointer)
+			{
+				EdGraphNodePointer->OnPropertyChanged();
+			}
 		}
 	}
 }
@@ -255,6 +253,11 @@ TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDi
 
 	for (const TTuple<FHeartPinGuid, FHeartGraphPinConnections>& Element : PinConnections)
 	{
+		if (!PinDescriptions.Contains(Element.Key))
+		{
+			continue;
+		}
+
 		if (!EnumHasAnyFlags(PinDescriptions[Element.Key].Direction, Direction))
 		{
 			continue;

@@ -29,15 +29,10 @@ struct FHeartGraphEditorDataTemp
 	GENERATED_BODY()
 
 #if WITH_EDITORONLY_DATA
-	/**
-	 * The displayed name of graphs in the Unreal Editor graph window corner text. By default, will read "Heart" unless
-	 * changed by a subclass, either in BP via the details panel, or in C++ by settings EditorData.GraphTypeName in the
-	 * constructor.
-	 */
+
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
 
-	// Can the editor create instances of this graph as an asset.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	bool CanCreateAssetFromFactory = false;
 
@@ -55,14 +50,21 @@ struct FHeartGraphSparseClassData
 {
 	GENERATED_BODY()
 
-/*
+	/**
+	 * The displayed name of graphs in the Unreal Editor graph window corner text. By default, will read "Heart" unless
+	 * changed by a subclass, either in BP via the details panel, or in C++ by settings EditorData.GraphTypeName in the
+	 * constructor.
+	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
 
 	// Can the editor create instances of this graph as an asset.
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	bool CanCreateAssetFromFactory = false;
-*/
+
+	// Should this class be shown in the "Common" section when creating a new Heart Graph
+	UPROPERTY(EditDefaultsOnly, Category = "Editor")
+	bool DisplayClassAsCommonInFactory = false;
 };
 
 /**
@@ -281,9 +283,6 @@ public:
 	// @todo temp while sparse struct is broken, see above comment on this
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	FHeartGraphEditorDataTemp EditorData;
-	auto GetGraphTypeName() const { return EditorData.GraphTypeName; }
-	auto GetCanCreateAssetFromFactory() const { return EditorData.CanCreateAssetFromFactory; }
-	auto GetDisplayClassAsCommonInFactory() const { return EditorData.DisplayClassAsCommonInFactory; }
 private:
 #endif
 

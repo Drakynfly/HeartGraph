@@ -4,15 +4,16 @@
 
 #include "IDetailCustomization.h"
 
-class FHeartGraphNodeEditorDataTempCustomization : public IPropertyTypeCustomization
+class FHeartGraphNodeCustomization : public IDetailCustomization
 {
 public:
-	static TSharedRef<IPropertyTypeCustomization> MakeInstance();
+	/** Makes a new instance of this detail layout class for a specific detail view requesting it */
+	static TSharedRef<IDetailCustomization> MakeInstance();
 
-	FHeartGraphNodeEditorDataTempCustomization();
+	FHeartGraphNodeCustomization();
 
-	virtual void CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle, FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils) override;
-	virtual void CustomizeChildren(TSharedRef<IPropertyHandle> StructPropertyHandle, IDetailChildrenBuilder& StructBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils) override;
+	/** IDetailCustomization interface */
+	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
 
 private:
 	void OnStyleSelectionChanged(FName Name, ESelectInfo::Type SelectInfo);
@@ -21,15 +22,5 @@ private:
 
 	TSharedPtr<IPropertyHandle> StyleProp;
 
-	TArray<FName> Options;
-};
-
-class FHeartGraphNodeCustomization : public IDetailCustomization
-{
-public:
-	/** Makes a new instance of this detail layout class for a specific detail view requesting it */
-	static TSharedRef<IDetailCustomization> MakeInstance();
-
-	/** IDetailCustomization interface */
-	virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override;
+	TArray<FName> StyleOptions;
 };

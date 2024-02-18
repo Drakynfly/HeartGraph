@@ -32,6 +32,7 @@
 #include "ScopedTransaction.h"
 #include "SNodePanel.h"
 #include "ToolMenus.h"
+#include "Graph/HeartEdGraph.h"
 #include "Widgets/Docking/SDockTab.h"
 
 #define LOCTEXT_NAMESPACE "HeartAssetEditor"
@@ -151,6 +152,12 @@ namespace Heart::AssetEditor
 	{
 		check(IsValid(InHeartGraph))
 		HeartGraph = InHeartGraph;
+
+		// @todo:: This is a temp hack to fixup graphs that loose their EdGraph somehow
+		if (!HeartGraph->GetEdGraph())
+		{
+			UHeartEdGraph::CreateGraph(HeartGraph);
+		}
 
 		// Support undo/redo
 		HeartGraph->SetFlags(RF_Transactional);

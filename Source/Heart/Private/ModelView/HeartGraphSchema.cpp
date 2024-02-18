@@ -54,6 +54,8 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	TSet<TSubclassOf<UHeartGraphExtension>> PreviousClassList;
 	HeartGraph->Extensions.GetKeys(PreviousClassList);
 
+	// @todo this function needs to be rewritten if we want the extensions to be editable on a per graph class basis
+
 	for (auto&& Extension : DefaultExtensions)
 	{
 		PreviousClassList.Remove(Extension->GetClass());

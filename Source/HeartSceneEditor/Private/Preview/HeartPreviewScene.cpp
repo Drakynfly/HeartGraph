@@ -78,9 +78,9 @@ namespace Heart::AssetEditor
 
 		UClass* SceneClass = nullptr;
 
-		if (IsValid(SceneConfig) && IsValid(SceneConfig->SceneClassOverride))
+		if (IsValid(SceneConfig) && !SceneConfig->SceneClassOverride.IsNull())
 		{
-			SceneClass = SceneConfig->SceneClassOverride;
+			SceneClass = SceneConfig->SceneClassOverride.LoadSynchronous();
 		}
 		else if (auto&& SceneExtension = Graph->GetExtension<UHeartSceneExtension>())
 		{

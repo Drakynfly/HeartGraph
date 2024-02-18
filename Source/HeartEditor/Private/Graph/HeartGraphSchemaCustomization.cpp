@@ -19,7 +19,7 @@ FHeartGraphSchemaCustomization::FHeartGraphSchemaCustomization()
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 
-	Options.Append(HeartEditorModule.GetSlateStyles());
+	StyleOptions.Append(HeartEditorModule.GetSlateStyles());
 }
 
 void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
@@ -41,7 +41,7 @@ void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 		EditorSlateStyleRow.ValueContent()
 			[
 				SNew(SComboBox<FName>)
-				.OptionsSource(&Options)
+				.OptionsSource(&StyleOptions)
 				.OnSelectionChanged(this, &FHeartGraphSchemaCustomization::OnStyleSelectionChanged)
 				.OnGenerateWidget(this, &FHeartGraphSchemaCustomization::OnGenerateStyleWidget)
 				[

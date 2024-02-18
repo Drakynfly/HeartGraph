@@ -5,70 +5,55 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "HeartEditorModule.h"
-#include "IDetailChildrenBuilder.h"
+#include "Graph/HeartGraphUtils.h"
 #include "Model/HeartGraphNode.h"
 
-#define LOCTEXT_NAMESPACE "HeartGraphNodeEditorDataTempCustomization"
+#define LOCTEXT_NAMESPACE "HeartGraphNodeCustomization"
 
-TSharedRef<IPropertyTypeCustomization> FHeartGraphNodeEditorDataTempCustomization::MakeInstance()
+TSharedRef<IDetailCustomization> FHeartGraphNodeCustomization::MakeInstance()
 {
-	return MakeShareable(new FHeartGraphNodeEditorDataTempCustomization);
+	return MakeShareable(new FHeartGraphNodeCustomization);
 }
 
-FHeartGraphNodeEditorDataTempCustomization::FHeartGraphNodeEditorDataTempCustomization()
+FHeartGraphNodeCustomization::FHeartGraphNodeCustomization()
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
 
-	Options.Add("GraphDefault");
-	Options.Append(HeartEditorModule.GetSlateStyles());
+	StyleOptions.Add(Heart::GraphUtils::DefaultStyle);
+	StyleOptions.Append(HeartEditorModule.GetSlateStyles());
 }
 
-void FHeartGraphNodeEditorDataTempCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> PropertyHandle,
-																 FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& CustomizationUtils)
+void FHeartGraphNodeCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-}
+	StyleProp = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(FHeartGraphNodeSparseClassData, EditorSlateStyle));
 
-void FHeartGraphNodeEditorDataTempCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructPropertyHandle,
-																   IDetailChildrenBuilder& StructBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
-{
-	uint32 Children;
-	StructPropertyHandle->GetNumChildren(Children);
-
-	for (uint32 i = 0; i < Children; ++i)
+	if (StyleProp.IsValid())
 	{
-		TSharedPtr<IPropertyHandle> Prop = StructPropertyHandle->GetChildHandle(i);
+		DetailBuilder.HideProperty(StyleProp);
 
-		if (Prop->GetProperty()->GetFName() == GET_MEMBER_NAME_CHECKED(FHeartGraphNodeEditorDataTemp, EditorSlateStyle))
-		{
-			StyleProp = Prop;
+		IDetailCategoryBuilder& EditorCategory = DetailBuilder.EditCategory("Editor");
+		FDetailWidgetRow& EditorSlateStyleRow = EditorCategory.AddCustomRow(LOCTEXT("EditorSlateStyleSearchString", "Editor Slate Style"));
 
-			FDetailWidgetRow& EditorSlateStyleRow = StructBuilder.AddCustomRow(LOCTEXT("EditorSlateStyleSearchString", "Editor Slate Style"));
+		EditorSlateStyleRow.NameContent()
+			[
+				StyleProp->CreatePropertyNameWidget()
+			];
 
-			EditorSlateStyleRow.NameContent()
+		EditorSlateStyleRow.ValueContent()
+			[
+				SNew(SComboBox<FName>)
+				.OptionsSource(&StyleOptions)
+				.OnSelectionChanged(this, &FHeartGraphNodeCustomization::OnStyleSelectionChanged)
+				.OnGenerateWidget(this, &FHeartGraphNodeCustomization::OnGenerateStyleWidget)
 				[
-					Prop->CreatePropertyNameWidget()
-				];
-
-			EditorSlateStyleRow.ValueContent()
-				[
-					SNew(SComboBox<FName>)
-					.OptionsSource(&Options)
-					.OnSelectionChanged(this, &FHeartGraphNodeEditorDataTempCustomization::OnStyleSelectionChanged)
-					.OnGenerateWidget(this, &FHeartGraphNodeEditorDataTempCustomization::OnGenerateStyleWidget)
-					[
-						SNew(STextBlock)
-							.Text(this, &FHeartGraphNodeEditorDataTempCustomization::GetSelectedStyle)
-					]
-				];
-		}
-		else
-		{
-			StructBuilder.AddProperty(Prop.ToSharedRef());
-		}
+					SNew(STextBlock)
+						.Text(this, &FHeartGraphNodeCustomization::GetSelectedStyle)
+				]
+			];
 	}
 }
 
-void FHeartGraphNodeEditorDataTempCustomization::OnStyleSelectionChanged(const FName Name, ESelectInfo::Type SelectInfo)
+void FHeartGraphNodeCustomization::OnStyleSelectionChanged(const FName Name, ESelectInfo::Type SelectInfo)
 {
 	if (StyleProp.IsValid())
 	{
@@ -76,11 +61,11 @@ void FHeartGraphNodeEditorDataTempCustomization::OnStyleSelectionChanged(const F
 	}
 }
 
-TSharedRef<SWidget> FHeartGraphNodeEditorDataTempCustomization::OnGenerateStyleWidget(const FName Style)
+TSharedRef<SWidget> FHeartGraphNodeCustomization::OnGenerateStyleWidget(const FName Style)
 {
 	FText Tooltip;
 
-	if (Style == FName("GraphDefault"))
+	if (Style == Heart::GraphUtils::DefaultStyle)
 	{
 		Tooltip = LOCTEXT("DefaultOptionTooltip", "Use the Default Editor Style of the graph's Schema");
 	}
@@ -90,23 +75,15 @@ TSharedRef<SWidget> FHeartGraphNodeEditorDataTempCustomization::OnGenerateStyleW
 		.ToolTipText(Tooltip);
 }
 
-FText FHeartGraphNodeEditorDataTempCustomization::GetSelectedStyle() const
+FText FHeartGraphNodeCustomization::GetSelectedStyle() const
 {
 	FName Value;
 	if (StyleProp.IsValid())
 	{
 		StyleProp->GetValue(Value);
 	}
+
 	return FText::FromString(FName::NameToDisplayString(Value.ToString(), false));
 }
 
 #undef LOCTEXT_NAMESPACE
-
-TSharedRef<IDetailCustomization> FHeartGraphNodeCustomization::MakeInstance()
-{
-	return MakeShareable(new FHeartGraphNodeCustomization);
-}
-
-void FHeartGraphNodeCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
-{
-}

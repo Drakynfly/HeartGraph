@@ -19,6 +19,11 @@ class UHeartGraph;
 class UHeartGraphCanvas;
 class UHeartGraphNode;
 
+namespace Heart
+{
+	class IEdNodeInterface;
+}
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, const FHeartPinGuid&, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
@@ -36,30 +41,6 @@ enum class EHeartNodeNameContext : uint8
 	Palette,
 };
 
-// @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
-// If/when Epic fixes that, these properties should be moved back into the sparse class struct below
-USTRUCT()
-struct FHeartGraphNodeEditorDataTemp
-{
-	GENERATED_BODY()
-
-#if WITH_EDITORONLY_DATA
-	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
-	bool OverrideCanCreateInEditor = false;
-
-	// Can this node be created by the editor even if it cannot be created otherwise.
-	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
-	bool CanCreateInEditor = false;
-
-	// BP properties that trigger reconstruction of SGraphNodes
-	// @todo long term solution is to replace this with custom metadata on the BP properties that adds TriggersReconstruct
-	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	TArray<FName> PropertiesTriggeringNodeReconstruction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	FName EditorSlateStyle;
-#endif
-};
 
 /**
  * Class data for UHeartGraphNode
@@ -78,7 +59,6 @@ struct FHeartGraphNodeSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	uint8 DefaultInstancedOutputs = 0;
 
-	/*
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
 	bool OverrideCanCreateInEditor = false;
@@ -95,7 +75,6 @@ struct FHeartGraphNodeSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	FName EditorSlateStyle;
 #endif
-	*/
 };
 
 /**
@@ -118,7 +97,6 @@ public:
 	virtual void PostLoad() override;
 
 #if WITH_EDITOR
-	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
@@ -235,6 +213,7 @@ public:
 	----------------------------*/
 public:
 #if WITH_EDITOR
+	// @todo move this to EdGraphNode class
 	virtual bool CanCreate_Editor() const;
 #endif
 
@@ -318,21 +297,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnGraphNodeLocationChanged OnNodeLocationChanged;
 
-#if WITH_EDITORONLY_DATA
-protected:
-	DECLARE_DELEGATE(FOnNodeRefreshRequested)
-	FOnNodeRefreshRequested OnReconstructionRequested;
-
-	// @todo temp while sparse struct is broken, see above comment on this
-	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	FHeartGraphNodeEditorDataTemp EditorData;
-public:
-	auto GetOverrideCanCreateInEditor() const { return EditorData.OverrideCanCreateInEditor; }
-	auto GetCanCreateInEditor() const { return EditorData.CanCreateInEditor; }
-	auto GetPropertiesTriggeringNodeReconstruction() const { return EditorData.PropertiesTriggeringNodeReconstruction; }
-	auto GetEditorSlateStyle() const { return EditorData.EditorSlateStyle; }
-#endif
-
 protected:
 	// The object that this graph node represents. Contains the data and functionality of a spawned instance.
 	UPROPERTY(VisibleInstanceOnly)
@@ -355,6 +319,11 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	uint8 InstancedOutputs = 0;
+
+#if WITH_EDITOR
+private:
+	Heart::IEdNodeInterface* EdGraphNodePointer;
+#endif
 };
 
 

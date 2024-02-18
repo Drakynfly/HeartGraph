@@ -253,6 +253,11 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	}
 }
 
+void UHeartEdGraphNode::OnPropertyChanged()
+{
+	OnNodeRequestReconstruction();
+}
+
 void UHeartEdGraphNode::PostCopyNode()
 {
 	// Make sure this HeartGraphNode is owned by the HeartGraph it's being pasted into
@@ -272,7 +277,7 @@ void UHeartEdGraphNode::SubscribeToExternalChanges()
 {
 	if (HeartGraphNode)
 	{
-		HeartGraphNode->OnReconstructionRequested.BindUObject(this, &ThisClass::OnNodeRequestReconstruction);
+		HeartGraphNode->EdGraphNodePointer = this;
 
 		// blueprint nodes
 		if (HeartGraphNode->GetClass()->ClassGeneratedBy && GEditor)
@@ -641,7 +646,7 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 	{
 		FName VisualWidgetType = HeartGraphNode->GetEditorSlateStyle();
 
-		if (VisualWidgetType == "GraphDefault")
+		if (VisualWidgetType == Heart::GraphUtils::DefaultStyle)
 		{
 			VisualWidgetType = HeartGraphNode->GetGraph()->GetSchema()->GetDefaultEditorStyle();
 		}
@@ -879,7 +884,8 @@ bool UHeartEdGraphNode::CanUserRemoveOutput(const UEdGraphPin* Pin) const
 		}
 	}
 
-	return true;}
+	return true;
+}
 
 void UHeartEdGraphNode::AddUserInput()
 {

@@ -50,7 +50,7 @@ namespace Heart::GraphUtils
 		if (!HeartGraph->GetEdGraph())
 		{
 			UE_LOG(LogHeartEditor, Error, TEXT("HeartEdGraph is invalid for HeartGraph '%s'!"), *HeartGraph->GetName())
-			return nullptr;
+			//return nullptr;
 		}
 
 		TSharedRef<AssetEditor::FHeartGraphEditor> NewHeartGraphAssetEditor(new AssetEditor::FHeartGraphEditor());

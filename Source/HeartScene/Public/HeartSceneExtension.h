@@ -16,11 +16,10 @@ class HEARTSCENE_API UHeartSceneExtension : public UHeartGraphExtension
 	GENERATED_BODY()
 
 public:
-
 #if WITH_EDITOR
 	UClass* GetConfigClass() const { return DefaultConfigClass.TryLoadClass<UClass>(); }
 
-	TSubclassOf<AHeartSceneActor> GetSceneClass() const { return DefaultSceneClass; }
+	TSubclassOf<AHeartSceneActor> GetSceneClass() const { return DefaultSceneClass.LoadSynchronous(); }
 #endif
 
 protected:
@@ -30,6 +29,6 @@ protected:
 	FSoftClassPath DefaultConfigClass;
 
 	UPROPERTY(EditAnywhere, Category = "Config")
-	TSubclassOf<AHeartSceneActor> DefaultSceneClass;
+	TSoftClassPtr<AHeartSceneActor> DefaultSceneClass;
 #endif
 };

@@ -5,6 +5,7 @@
 #include "EdGraph/EdGraphNode.h"
 #include "EdGraph/EdGraphPin.h"
 #include "HeartBreakpoint.h"
+#include "Model/HeartEdNodeInterface.h"
 #include "Model/HeartGraphPinDesc.h"
 
 #include "HeartEdGraphNode.generated.h"
@@ -16,7 +17,7 @@ class UHeartGraphNode;
  * Graph representation of a Heart Node in an EdGraph
  */
 UCLASS()
-class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode
+class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode, public Heart::IEdNodeInterface
 {
 	GENERATED_BODY()
 
@@ -43,6 +44,12 @@ public:
 	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
     // --
 
+private:
+	// Heart::IEdNodeInterface
+	virtual void OnPropertyChanged() override;
+	// --
+
+public:
 	void PostCopyNode();
 
 private:

@@ -39,6 +39,7 @@
 #include "AssetToolsModule.h"
 #include "AssetEditor/ApplicationMode_Editor.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
+#include "Model/HeartGraph.h"
 
 
 static const FName PropertyEditorModuleName("PropertyEditor");
@@ -259,9 +260,6 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 
 	Customizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));
-
-	Customizations.Add(FHeartGraphNodeEditorDataTemp::StaticStruct()->GetFName(),
-		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGraphNodeEditorDataTempCustomization::MakeInstance));
 
 	// Register property customizations
 	for (auto&& Customization : Customizations)

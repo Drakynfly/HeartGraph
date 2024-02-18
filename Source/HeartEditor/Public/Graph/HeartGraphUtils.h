@@ -13,6 +13,8 @@ namespace Heart
 
 	namespace GraphUtils
 	{
+		static FName DefaultStyle("GraphDefault");
+
 		void JumpToClassDefinition(const UClass* Class);
 
 		TSharedPtr<AssetEditor::FHeartGraphEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
