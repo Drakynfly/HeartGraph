@@ -8,6 +8,8 @@
 #include "UI/HeartUMGContextObject.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasActionDragDropOperation)
+
 bool UHeartCanvasActionDragDropOperation::SetupDragDropOperation()
 {
 	return IsValid(Action);

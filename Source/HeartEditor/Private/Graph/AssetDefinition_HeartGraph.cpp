@@ -8,6 +8,8 @@
 #include "HeartEditorShared.h"
 #include "Graph/HeartGraphUtils.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(AssetDefinition_HeartGraph)
+
 #define LOCTEXT_NAMESPACE "AssetDefinition_HeartGraph"
 
 FText UAssetDefinition_HeartGraph::GetAssetDisplayName() const

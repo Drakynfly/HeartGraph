@@ -5,6 +5,8 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeSortingLibrary)
+
 TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::SortNodes(const TArray<UHeartGraphNode*>& Nodes,
 	const FHeartNodeComparePredicate& Predicate)
 {

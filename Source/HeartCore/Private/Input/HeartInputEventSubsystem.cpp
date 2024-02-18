@@ -3,6 +3,8 @@
 #include "Input/HeartInputEventSubsystem.h"
 #include "Input/HeartCoreInputPreprocessor.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputEventSubsystem)
+
 void UHeartInputEventSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);

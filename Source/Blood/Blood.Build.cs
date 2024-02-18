@@ -8,6 +8,8 @@ public class Blood : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+        ApplySharedModuleSetup(this, Target);
+
         // IDK, something about this module is broken, and if Unity is enabled it blows up :?
         bUseUnity = false;
 
@@ -28,5 +30,16 @@ public class Blood : ModuleRules
                 "SlateCore"
             }
         );
+    }
+
+    public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)
+    {
+        // This is to emulate engine installation and verify includes during development
+        if (Target.Configuration == UnrealTargetConfiguration.DebugGame
+            || Target.Configuration == UnrealTargetConfiguration.Debug)
+        {
+            Module.bUseUnity = false;
+            Module.bTreatAsEngineModule = true;
+        }
     }
 }

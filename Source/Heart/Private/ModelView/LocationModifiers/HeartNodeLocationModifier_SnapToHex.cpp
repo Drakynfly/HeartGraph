@@ -3,6 +3,8 @@
 #include "ModelView/LocationModifiers/HeartNodeLocationModifier_SnapToHex.h"
 #include "General/HeartHex.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeLocationModifier_SnapToHex)
+
 FVector2D UHeartNodeLocationModifier_SnapToHex::LocationToProxy(const FVector2D& Location) const
 {
 	return Heart::Hex::SnapToNearestHex(Location, GridSize);

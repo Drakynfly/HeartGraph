@@ -4,6 +4,8 @@
 
 #include "Components/Widget.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNamedFunctionEvent)
+
 FReply UHeartNamedFunctionEvent::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
 {
 	if (IsValid(Widget))

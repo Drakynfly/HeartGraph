@@ -4,6 +4,8 @@
 #include "HeartCanvasPaletteCategory.h"
 #include "Components/PanelWidget.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphWidgetBase)
+
 UHeartGraphWidgetBase::UHeartGraphWidgetBase(const FObjectInitializer& ObjectInitializer)
   : Super(ObjectInitializer)
 {

@@ -8,6 +8,8 @@
 #include "ModelView/HeartGraphSchema.h"
 #include "View/PinConnectionStatusInterface.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPinConnectionDragDropOperation)
+
 bool UHeartPinConnectionDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
 {
 	return Widget && Widget->IsA<UHeartGraphCanvasPin>();

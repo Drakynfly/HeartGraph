@@ -12,6 +12,8 @@
 
 #include "AssetRegistry/AssetRegistryModule.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartRegistryRuntimeSubsystem)
+
 DEFINE_LOG_CATEGORY(LogHeartNodeRegistry)
 
 bool UHeartRegistryRuntimeSubsystem::ShouldCreateSubsystem(UObject* Outer) const
@@ -179,7 +181,12 @@ void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(UGraphNodeRegistrar* Regis
 	{
 		if (const TSubclassOf<UHeartGraph> Class = ClassPath.TryLoadClass<UHeartGraph>())
 		{
-			GetRegistry_Internal(Class)->AddRegistrar(Registrar);
+			auto&& Registry = GetRegistry_Internal(Class);
+			check(Registry);
+			if (!Registry->ContainedRegistrars.Contains(Registrar))
+			{
+				Registry->AddRegistrar(Registrar);
+			}
 		}
 	}
 }

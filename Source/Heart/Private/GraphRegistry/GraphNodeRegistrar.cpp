@@ -5,6 +5,8 @@
 
 #if WITH_EDITOR
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(GraphNodeRegistrar)
+
 /**
  * We always unregister ourself before we are edited. This will prevent the registry from holding onto stuff we are no
  * longer registering. We then have to re-auto-register ourself after the edit.

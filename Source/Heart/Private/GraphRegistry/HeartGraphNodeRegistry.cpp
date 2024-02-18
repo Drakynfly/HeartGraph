@@ -1,10 +1,12 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
+#include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
 #include "View/HeartVisualizerInterfaces.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNodeRegistry)
 
 namespace Heart
 {
@@ -557,8 +559,7 @@ void UHeartGraphNodeRegistry::AddRegistrar(UGraphNodeRegistrar* Registrar)
 	// Only allow registry once
 	if (ContainedRegistrars.Contains(Registrar))
 	{
-		// We really can't warn against this, since the editor tries to re-add everything occasionally
-		//UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Tried to add Registrar that was already registered!"));
+		UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Tried to add Registrar that was already registered: '%s'!"), *Registrar->GetName());
 		return;
 	}
 

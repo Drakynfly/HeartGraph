@@ -4,6 +4,8 @@
 
 #define LOCTEXT_NAMESPACE "BloodBlueprintLibrary"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(BloodBlueprintLibrary)
+
 void UBloodBlueprintLibrary::ReadProperty(const UObject*, FName Property, uint8& Value)
 {
 	// Does not function. Stub for execPropertyToBlood

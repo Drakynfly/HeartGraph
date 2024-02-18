@@ -4,6 +4,8 @@
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphSettings)
+
 #if WITH_EDITOR
 void UHeartGraphSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {

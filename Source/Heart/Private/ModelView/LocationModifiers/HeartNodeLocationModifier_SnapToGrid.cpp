@@ -2,6 +2,8 @@
 
 #include "ModelView/LocationModifiers/HeartNodeLocationModifier_SnapToGrid.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeLocationModifier_SnapToGrid)
+
 template <typename T>
 static T Snap(T Value, T Grid)
 {

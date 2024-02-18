@@ -9,6 +9,8 @@
 #include "Engine/Font.h"
 #include "Fonts/FontCache.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGeneralUtils)
+
 DEFINE_LOG_CATEGORY(LogHeartGeneral)
 
 UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)

@@ -3,6 +3,8 @@
 #include "UMG/HeartGraphCanvasPanel.h"
 #include "HeartCanvasPaletteCategory.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasPanel)
+
 UHeartGraphCanvasPanel::UHeartGraphCanvasPanel()
 {
 	// Canvas graph panels should always intercept input

@@ -3,6 +3,8 @@
 #include "UI/HeartWidgetInputBindingContainer.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputBindingContainer)
+
 void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 {
 	check(InOuter);

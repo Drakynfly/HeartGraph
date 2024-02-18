@@ -2,6 +2,8 @@
 
 #include "ModelView/LocationModifiers/HeartNodeLocationModifier_CartesianToPolar.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeLocationModifier_CartesianToPolar)
+
 FVector2D UHeartNodeLocationModifier_CartesianToPolar::LocationToProxy(const FVector2D& Location) const
 {
 	double Radius;

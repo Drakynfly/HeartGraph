@@ -4,6 +4,8 @@
 #include "UMG/HeartGraphCanvas.h"
 #include "ModelView/HeartLayoutHelper.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasAction_AutoLayout)
+
 FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
 	UObject* ContextObject)
 {

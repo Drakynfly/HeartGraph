@@ -8,6 +8,8 @@ public class HeartCoreEditor : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+        HeartCore.ApplySharedModuleSetup(this, Target);
+
         PublicDependencyModuleNames.AddRange(
             new []
             {

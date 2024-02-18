@@ -26,6 +26,8 @@
 #include "Graph/HeartGraphUtils.h"
 #include "ModelView/HeartGraphSchema.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)
+
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
 
 UHeartEdGraphNode::UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer)

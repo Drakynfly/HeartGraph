@@ -23,7 +23,6 @@ public:
 	}
 
 protected:
-
 	// SNodePanel::SNode
 	virtual void GetNodeInfoPopups(FNodeInfoContext* Context, TArray<FGraphInformationPopupInfo>& Popups) const override;
 	virtual const FSlateBrush* GetShadowBrush(bool bSelected) const override;

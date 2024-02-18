@@ -24,7 +24,7 @@ class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode, public Heart::IEd
 public:
 	UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-//////////////////////////////////////////////////////////////////////////
+
 // Heart Graph Node
 
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
@@ -61,7 +61,7 @@ private:
 	UFUNCTION()
 	void OnNodeRequestReconstruction();
 
-//////////////////////////////////////////////////////////////////////////
+
 // Graph node
 
 public:
@@ -104,9 +104,8 @@ public:
 	virtual void JumpToDefinition() const override;
 	// --
 
-//////////////////////////////////////////////////////////////////////////
-// Utils
 
+// Utils
 	virtual void GetPopupMessages(TArray<TPair<FString, FLinearColor>>& Messages) const;
 
 	// @todo this data needs to be exposed better. maybe not even made here, but using out data. what about UHeartEdGraphNode make the FEdGraphPinType
@@ -114,9 +113,8 @@ public:
 
 	void JumpToNodeDefinition() const;
 
-//////////////////////////////////////////////////////////////////////////
-// Pins
 
+// Pins
 public:
 	void CreateInputPin(const FHeartGraphPinDesc& PinDesc);
 	void CreateOutputPin(const FHeartGraphPinDesc& PinDesc);
@@ -138,9 +136,8 @@ public:
 	// Call node and graph updates manually, if using bBatchRemoval
 	void RemoveInstancePin(UEdGraphPin* Pin);
 
-//////////////////////////////////////////////////////////////////////////
-// Breakpoints
 
+// Breakpoints
 public:
 	void OnInputTriggered(const int32 Index);
 	void OnOutputTriggered(const int32 Index);

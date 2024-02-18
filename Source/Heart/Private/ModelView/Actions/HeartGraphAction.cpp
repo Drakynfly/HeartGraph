@@ -5,6 +5,8 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinInterface.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphAction)
+
 bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (auto&& Graph = Cast<UHeartGraph>(Object))
@@ -61,4 +63,3 @@ void UHeartGraphActionBlueprintBase::ExecuteOnPin(const TScriptInterface<IHeartG
 		BP_ExecuteOnPin(Pin, Activation, ContextObject);
 	}
 }
-

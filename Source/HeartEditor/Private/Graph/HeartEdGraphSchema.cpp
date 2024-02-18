@@ -18,6 +18,8 @@
 
 #include "ScopedTransaction.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema)
+
 #define LOCTEXT_NAMESPACE "HeartGraphSchema"
 
 namespace Heart::Editor

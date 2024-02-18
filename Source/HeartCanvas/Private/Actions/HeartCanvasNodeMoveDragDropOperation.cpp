@@ -10,6 +10,8 @@
 
 #include "Components/CanvasPanelSlot.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasNodeMoveDragDropOperation)
+
 bool UHeartCanvasNodeMoveDragDropOperation::CanRunOnWidget(const UWidget* Widget) const
 {
 	return Widget && Widget->IsA<UHeartGraphCanvasNode>();

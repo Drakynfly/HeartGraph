@@ -5,6 +5,8 @@
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasDragDropOperation)
+
 bool UHeartCanvasDragDropOperation::OnHoverWidget(UWidget* Widget)
 {
 	// Return false if there is nothing hovered

@@ -41,6 +41,7 @@ public:
 	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, bool InProgressMove);
 };
 
+
 UCLASS()
 class HEART_API UHeartNodeLocationAccessorLibrary : public UBlueprintFunctionLibrary
 {
@@ -62,6 +63,7 @@ public:
 		UHeartGraphNode3D* Node, const FVector& Location, bool InProgressMove);
 };
 
+
 UCLASS(Abstract, const, EditInlineNew, CollapseCategories)
 class HEART_API UHeartNodeLocationModifier : public UObject
 {
@@ -75,9 +77,7 @@ public:
 	virtual FVector ProxyToLocation3D(const FVector& Proxy) const PURE_VIRTUAL(UHeartNodeLocationProxyLayer::ProxyToLocation3D, return FVector(); )
 };
 
-/*
- * A pass-through class for redirecting an accessor through proxy function to alter the location.
- */
+
 UCLASS(NotEditInlineNew, CollapseCategories)
 class HEART_API UHeartNodeLocationModifierStack : public UHeartNodeLocationModifier
 {

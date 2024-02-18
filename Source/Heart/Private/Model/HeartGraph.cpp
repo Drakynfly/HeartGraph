@@ -8,6 +8,8 @@
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "UObject/ObjectSaveContext.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraph)
+
 #define LOCTEXT_NAMESPACE "HeartGraph"
 
 DEFINE_LOG_CATEGORY(LogHeartGraph)

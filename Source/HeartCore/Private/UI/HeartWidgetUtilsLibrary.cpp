@@ -1,9 +1,10 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetUtilsLibrary.h"
-#include "UI/HeartInputActivation.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
 #include "UI/HeartWidgetInputLinker.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetUtilsLibrary)
 
 namespace Heart::UI
 {
@@ -19,7 +20,8 @@ namespace Heart::UI
 
 FVector2D UHeartWidgetUtilsLibrary::UINavigationToVector(const EUINavigation Navigation)
 {
-	switch (Navigation) {
+	switch (Navigation)
+	{
 	case EUINavigation::Left: return Heart::UI::Vectors::Left;
 	case EUINavigation::Right: return Heart::UI::Vectors::Right;
 	case EUINavigation::Up: return Heart::UI::Vectors::Up;

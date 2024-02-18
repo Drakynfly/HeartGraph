@@ -5,6 +5,8 @@
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasAction)
+
 FText UHeartGraphCanvasAction::GetDescription(const UObject* Object) const
 {
 	if (auto&& Widget = Cast<UHeartGraphWidgetBase>(Object))
@@ -104,4 +106,3 @@ FEventReply UHeartGraphCanvasActionBlueprintBase::ExecuteOnPin(UHeartGraphCanvas
 	}
 	return false;
 }
-

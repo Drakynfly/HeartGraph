@@ -5,6 +5,8 @@
 #include "UI/HeartWidgetInputHandlerAsset.h"
 #include "HeartEditorShared.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(AssetDefinition_HeartWidgetInputHandlerAsset)
+
 #define LOCTEXT_NAMESPACE "AssetDefinition_HeartWidgetInputHandlerAsset"
 
 FText UAssetDefinition_HeartWidgetInputHandlerAsset::GetAssetDisplayName() const

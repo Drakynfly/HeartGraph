@@ -11,6 +11,8 @@
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "UMG/HeartGraphCanvasConnection.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasNode)
+
 DECLARE_CYCLE_STAT(TEXT("RebuildPinConnections"), STAT_RebuildPinConnections, STATGROUP_HeartCanvas);
 
 void UHeartGraphCanvasNode::NativeDestruct()

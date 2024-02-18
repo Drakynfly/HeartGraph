@@ -17,6 +17,8 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SWindow.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputHandlerAssetFactory)
+
 #define LOCTEXT_NAMESPACE "HeartWidgetInputHandlerAssetFactory"
 
 // ------------------------------------------------------------------------------
@@ -67,22 +69,22 @@ public:
 										.SlotPadding(FAppStyle::GetMargin("StandardDialog.SlotPadding"))
 										.MinDesiredSlotWidth(FAppStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
 										.MinDesiredSlotHeight(FAppStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
-										+ SUniformGridPanel::Slot(0, 0)
-											[
-												SNew(SButton)
+									+ SUniformGridPanel::Slot(0, 0)
+									[
+										SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 													.OnClicked(this, &SHeartWidgetInputHandlerAssetCreateDialog::OkClicked)
 													.Text(LOCTEXT("CreateHeartAssetOk", "OK"))
-											]
-										+ SUniformGridPanel::Slot(1, 0)
-											[
-												SNew(SButton)
+									]
+									+ SUniformGridPanel::Slot(1, 0)
+									[
+										SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 													.OnClicked(this, &SHeartWidgetInputHandlerAssetCreateDialog::CancelClicked)
 													.Text(LOCTEXT("CreateHeartAssetCancel", "Cancel"))
-											]
+									]
 								]
 						]
 				]

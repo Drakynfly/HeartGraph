@@ -7,6 +7,8 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinInterface.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphUtils)
+
 UHeartGraphNode* UHeartGraphUtils::FindNodeOfClass(const TScriptInterface<IHeartGraphInterface>& Graph,
                                                    TSubclassOf<UHeartGraphNode> Class)
 {

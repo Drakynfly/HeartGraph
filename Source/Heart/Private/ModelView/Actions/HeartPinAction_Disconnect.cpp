@@ -7,6 +7,8 @@
 
 #include "Model/HeartGraphNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPinAction_Disconnect)
+
 bool UHeartPinAction_Disconnect::CanExecute(const UObject* Object) const
 {
 	return Object->Implements<UHeartGraphPinInterface>();

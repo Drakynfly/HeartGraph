@@ -9,6 +9,8 @@
 #include "Nodes/HeartEdGraphNode.h"
 #include "View/HeartVisualizerInterfaces.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartRegistryEditorSubsystem)
+
 void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);

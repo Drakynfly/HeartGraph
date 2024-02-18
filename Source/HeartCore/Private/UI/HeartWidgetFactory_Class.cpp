@@ -2,6 +2,8 @@
 
 #include "UI/HeartWidgetFactory_Class.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetFactory_Class)
+
 TSubclassOf<UUserWidget> UHeartWidgetFactory_Class::FindWidgetClassForData_Implementation(const UObject* Data) const
 {
 	if (auto&& StartingClass = Cast<UClass>(Data))

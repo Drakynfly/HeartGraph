@@ -4,6 +4,8 @@
 
 #include "HeartBreakpoint.generated.h"
 
+// @todo revisit breakpoint system. it isn't really even being used. either remove, or expand usability
+
 USTRUCT()
 struct HEARTEDITOR_API FHeartBreakpoint
 {

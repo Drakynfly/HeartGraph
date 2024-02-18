@@ -2,6 +2,8 @@
 
 #include "UI/HeartWidgetInputTrigger.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputTrigger)
+
 TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyDown::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;

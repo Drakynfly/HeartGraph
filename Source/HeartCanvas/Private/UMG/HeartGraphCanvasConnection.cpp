@@ -3,6 +3,8 @@
 #include "UMG/HeartGraphCanvasConnection.h"
 #include "UMG/HeartGraphCanvas.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasConnection)
+
 UHeartWidgetInputLinker* UHeartGraphCanvasConnection::ResolveLinker_Implementation() const
 {
 	return Execute_ResolveLinker(GraphCanvas.Get());

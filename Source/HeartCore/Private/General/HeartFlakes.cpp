@@ -5,6 +5,8 @@
 
 #include "Compression/OodleDataCompressionUtil.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartFlakes)
+
 static const FName SkippedObjectMarker("_SKIP_");
 
 FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)

@@ -4,6 +4,8 @@
 #include "ModelView/HeartNodeLocationAccessor.h"
 #include "Model/HeartGraph.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayoutHelper)
+
 bool UHeartLayoutHelper::Layout(IHeartNodeLocationAccessor* Accessor) const
 {
 	const UHeartGraph* Graph = Accessor->GetHeartGraph();

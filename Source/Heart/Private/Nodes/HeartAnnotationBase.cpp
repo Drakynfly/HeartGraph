@@ -1,7 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-
 #include "Nodes/HeartAnnotationBase.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAnnotationBase)
 
 FText UHeartComment_Text::GetCommentText() const
 {

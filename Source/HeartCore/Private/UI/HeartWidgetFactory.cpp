@@ -2,6 +2,8 @@
 
 #include "UI/HeartWidgetFactory.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetFactory)
+
 TSubclassOf<UUserWidget> UHeartWidgetFactory::FindWidgetClassForData_Implementation(const UObject* Data) const
 {
 	return TSubclassOf<UUserWidget>();

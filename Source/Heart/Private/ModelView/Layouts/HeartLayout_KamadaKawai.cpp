@@ -7,6 +7,8 @@
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartNodeLocationAccessor.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayout_KamadaKawai)
+
 bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const
 {
 	// @TODO THIS IS ALL KINDA AWFUL. REFACTOR AT EARLIEST CONVENIENCE

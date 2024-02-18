@@ -5,7 +5,6 @@
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/HeartGraphUtils.h"
 #include "Graph/HeartEdGraph.h"
-#include "Graph/HeartEdGraphSchema.h"
 #include "Nodes/HeartEdGraphNode.h"
 
 #include "Model/HeartGraph.h"
@@ -16,9 +15,10 @@
 #include "HeartRegistryEditorSubsystem.h"
 #include "ScopedTransaction.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema_Actions)
+
 #define LOCTEXT_NAMESPACE "HeartEdGraphSchema_Actions"
 
-/////////////////////////////////////////////////////
 // Heart Graph Node
 
 UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin,
@@ -119,7 +119,6 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	return NewEdGraphNode;
 }
 
-/////////////////////////////////////////////////////
 // Paste Node
 
 UEdGraphNode* FHeartGraphSchemaAction_Paste::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode/* = true*/)
@@ -133,7 +132,6 @@ UEdGraphNode* FHeartGraphSchemaAction_Paste::PerformAction(class UEdGraph* Paren
 	return nullptr;
 }
 
-/////////////////////////////////////////////////////
 // Comment Node
 
 UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode/* = true*/)

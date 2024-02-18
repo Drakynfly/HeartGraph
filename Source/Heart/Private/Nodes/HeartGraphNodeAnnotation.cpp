@@ -4,6 +4,8 @@
 
 #include "Nodes/HeartAnnotationBase.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNodeAnnotation)
+
 #define LOCTEXT_NAMESPACE "HeartGraphNodeAnnotation"
 
 FText UHeartGraphNodeAnnotation::GetNodeTitle_Implementation(const UObject* Node, EHeartNodeNameContext Context) const

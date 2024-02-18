@@ -273,11 +273,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TArray<TObjectPtr<UWidget>> Popups;
 
+	UPROPERTY(VisibleAnywhere, Instanced, Category = "Widgets", NoClear, meta = (ShowInnerProperties))
+	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
+
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
-
-	UPROPERTY(VisibleAnywhere, Instanced, Category = "Input", NoClear, meta = (ShowInnerProperties))
-	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Input")
 	TSet<FHeartNodeGuid> SelectedNodes;

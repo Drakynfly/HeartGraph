@@ -2,6 +2,8 @@
 
 #include "Nodes/HeartBreakpoint.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartBreakpoint)
+
 void FHeartBreakpoint::AddBreakpoint()
 {
 	if (!bHasBreakpoint)

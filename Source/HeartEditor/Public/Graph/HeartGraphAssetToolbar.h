@@ -11,7 +11,7 @@ namespace Heart::AssetEditor
 	class FHeartGraphEditor;
 }
 
-//////////////////////////////////////////////////////////////////////////
+
 // Heart Asset Breadcrumb
 
 struct HEARTEDITOR_API FHeartBreadcrumb
@@ -46,7 +46,7 @@ private:
 	TSharedPtr<SBreadcrumbTrail<FHeartBreadcrumb>> BreadcrumbTrail;
 };
 
-//////////////////////////////////////////////////////////////////////////
+
 // Heart Graph Asset Toolbar
 
 class HEARTEDITOR_API FHeartGraphAssetToolbar final : public TSharedFromThis<FHeartGraphAssetToolbar>

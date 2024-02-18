@@ -8,6 +8,7 @@
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "UI/HeartInputActivation.h"
 #include "UObject/ObjectSaveContext.h"
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphSchema)
 
 UHeartGraphSchema::UHeartGraphSchema()
 {

@@ -6,6 +6,8 @@
 #include "UI/HeartWidgetUtilsLibrary.h"
 #include "UMG/HeartGraphCanvasNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasConnectionVisualizer)
+
 // @todo move to blueprint function library
 class FGeometryHelper_TEMPEMULATOR
 {

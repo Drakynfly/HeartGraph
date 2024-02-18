@@ -31,7 +31,7 @@ struct BLOOD_API FBloodBool : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Byte"))
-struct BLOOD_API FBloodUI8: public FBloodDataBase
+struct BLOOD_API FBloodUI8 : public FBloodDataBase
 {
 	GENERATED_BODY()
 

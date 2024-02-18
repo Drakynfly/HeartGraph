@@ -4,6 +4,8 @@
 #include "UMG/HeartGraphCanvasNode.h"
 #include "Model/HeartGraphNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasPin)
+
 UHeartWidgetInputLinker* UHeartGraphCanvasPin::ResolveLinker_Implementation() const
 {
 	return Execute_ResolveLinker(GraphCanvasNode.Get());

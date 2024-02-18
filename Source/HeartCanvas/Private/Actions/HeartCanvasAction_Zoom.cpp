@@ -7,6 +7,8 @@
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasAction_Zoom)
+
 FEventReply UHeartCanvasAction_Zoom::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	HandleAddZoom(CanvasGraph, Activation);

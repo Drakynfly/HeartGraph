@@ -5,6 +5,8 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphStatics.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNode)
+
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
 
 UHeartGraphNode::UHeartGraphNode()

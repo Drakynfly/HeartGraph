@@ -2,6 +2,8 @@
 
 #include "HeartFlakeSaveFile.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartFlakeSaveFile)
+
 void UHeartFlakeSaveFile::SetObjectToSave(UObject* Obj)
 {
 	Flake = Heart::Flakes::CreateFlake(Obj);

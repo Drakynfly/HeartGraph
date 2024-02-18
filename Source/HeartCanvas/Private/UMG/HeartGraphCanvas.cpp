@@ -20,6 +20,8 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvas)
+
 DECLARE_CYCLE_STAT(TEXT("CanvasTick"),	STAT_CanvasTick, STATGROUP_HeartCanvas);
 DECLARE_CYCLE_STAT(TEXT("CanvasPaint"),	STAT_CanvasPaint, STATGROUP_HeartCanvas);
 

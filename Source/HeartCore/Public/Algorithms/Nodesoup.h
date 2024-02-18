@@ -34,5 +34,5 @@ namespace Nodesoup
         double EnergyThreshold = 1e-2);
 
     /** Assigns diameters to vertices based on their degree */
-    TArray<double> SizeRadii(FGraphView Graph, double MinRadius = 4.0, double Strength = 300.0);
+    HEARTCORE_API TArray<double> SizeRadii(FGraphView Graph, double MinRadius = 4.0, double Strength = 300.0);
 }

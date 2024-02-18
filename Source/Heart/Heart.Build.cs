@@ -8,6 +8,8 @@ public class Heart : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+		HeartCore.ApplySharedModuleSetup(this, Target);
+
         // Engine dependencies
 		PublicDependencyModuleNames.AddRange(
 			new []

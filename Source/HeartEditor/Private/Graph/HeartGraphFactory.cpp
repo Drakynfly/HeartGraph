@@ -10,6 +10,8 @@
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet2/SClassPickerDialog.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphFactory)
+
 #define LOCTEXT_NAMESPACE "HeartAssetFactory"
 
 class FAssetClassParentFilter : public IClassViewerFilter

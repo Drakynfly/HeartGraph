@@ -8,6 +8,8 @@ public class HeartCore : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+        ApplySharedModuleSetup(this, Target);
+
         // Engine dependencies
         PublicDependencyModuleNames.AddRange(
             new []
@@ -28,5 +30,17 @@ public class HeartCore : ModuleRules
                 "SlateCore"
             }
         );
+    }
+
+    public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)
+    {
+        // This is to emulate engine installation and verify includes during development
+        if (Target.Configuration == UnrealTargetConfiguration.DebugGame
+            || Target.Configuration == UnrealTargetConfiguration.Debug)
+        {
+            Module.bUseUnity = false;
+            Module.bTreatAsEngineModule = true;
+            Module.bEnableNonInlinedGenCppWarnings = true;
+        }
     }
 }

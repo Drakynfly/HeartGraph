@@ -2,6 +2,8 @@
 
 #include "HeartSceneNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneNode)
+
 UHeartSceneNode::UHeartSceneNode()
 {
 	PrimaryComponentTick.bCanEverTick = false;

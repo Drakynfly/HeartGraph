@@ -10,6 +10,8 @@
 #include "UI/HeartWidgetInputBindingAsset.h"
 #include "UI/HeartWidgetInputHandlerAsset.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputLinker)
+
 DECLARE_CYCLE_STAT(TEXT("HandleOnMouseWheel"),		STAT_HandleOnMouseWheel, STATGROUP_HeartCore);
 DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonDown"),	STAT_HandleOnMouseButtonDown, STATGROUP_HeartCore);
 DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonUp"),	STAT_HandleOnMouseButtonUp, STATGROUP_HeartCore);

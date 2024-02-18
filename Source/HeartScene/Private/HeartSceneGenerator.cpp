@@ -9,6 +9,8 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneGenerator)
+
 UHeartSceneGenerator::UHeartSceneGenerator()
 {
 	PrimaryComponentTick.bCanEverTick = false;

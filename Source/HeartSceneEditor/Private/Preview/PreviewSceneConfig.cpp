@@ -2,6 +2,8 @@
 
 #include "Preview/PreviewSceneConfig.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(PreviewSceneConfig)
+
 UPreviewSceneConfig::UPreviewSceneConfig()
 {
 	PrimaryComponentTick.bCanEverTick = false;

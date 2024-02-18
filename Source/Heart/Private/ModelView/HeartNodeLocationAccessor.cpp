@@ -6,6 +6,8 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeLocationAccessor)
+
 FVector2D IHeartNodeLocationAccessor::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
 	return GetHeartGraph()->GetNode(Node)->GetLocation();

@@ -21,6 +21,8 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SWindow.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphBlueprintFactory)
+
 #define LOCTEXT_NAMESPACE "HeartGraphBlueprintFactory"
 
 // ------------------------------------------------------------------------------
@@ -71,22 +73,22 @@ public:
 										.SlotPadding(FAppStyle::GetMargin("StandardDialog.SlotPadding"))
 										.MinDesiredSlotWidth(FAppStyle::GetFloat("StandardDialog.MinDesiredSlotWidth"))
 										.MinDesiredSlotHeight(FAppStyle::GetFloat("StandardDialog.MinDesiredSlotHeight"))
-										+ SUniformGridPanel::Slot(0, 0)
-											[
-												SNew(SButton)
+									+ SUniformGridPanel::Slot(0, 0)
+									[
+										SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 													.OnClicked(this, &SHeartGraphBlueprintCreateDialog::OkClicked)
 													.Text(LOCTEXT("CreateHeartGraphBlueprintOk", "OK"))
-											]
-										+ SUniformGridPanel::Slot(1, 0)
-											[
-												SNew(SButton)
+									]
+									+ SUniformGridPanel::Slot(1, 0)
+									[
+										SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
 													.OnClicked(this, &SHeartGraphBlueprintCreateDialog::CancelClicked)
 													.Text(LOCTEXT("CreateHeartGraphBlueprintCancel", "Cancel"))
-											]
+									]
 								]
 						]
 				]

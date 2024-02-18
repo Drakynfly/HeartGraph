@@ -4,6 +4,8 @@
 #include "Actions/HeartGraphCanvasAction.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasActionBinding)
+
 FText UHeartGraphCanvasActionBinding::GetDescription(const UWidget* TestWidget) const
 {
 	if (IsValid(ActionClass))

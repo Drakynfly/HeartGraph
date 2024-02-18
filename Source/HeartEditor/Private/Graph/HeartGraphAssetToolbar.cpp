@@ -26,7 +26,7 @@
 
 #define LOCTEXT_NAMESPACE "HeartDebuggerToolbar"
 
-//////////////////////////////////////////////////////////////////////////
+
 // Heart Graph Asset Breadcrumb
 
 void SHeartGraphAssetBreadcrumb::Construct(const FArguments& InArgs, const TWeakObjectPtr<UHeartGraph> InTemplateAsset)
@@ -84,7 +84,7 @@ FText SHeartGraphAssetBreadcrumb::GetBreadcrumbText(const TWeakObjectPtr<UHeartG
 	return HeartGraph.IsValid() ? FText::FromName(HeartGraph->GetFName()) : FText(); // @todo GetFName could be replaced by GetDisplayName, etc
 }
 
-//////////////////////////////////////////////////////////////////////////
+
 // Heart Graph Asset Toolbar
 
 FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> InAssetEditor, UToolMenu* ToolbarMenu)

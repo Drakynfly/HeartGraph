@@ -1,8 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Customizations/ItemsArrayCustomization.h"
+#include "IDetailChildrenBuilder.h"
 #include "PropertyCustomizationHelpers.h"
-#include "PropertyEditing.h"
 
 #define LOCTEXT_NAMESPACE "ItemsArrayCustomization"
 

@@ -4,6 +4,7 @@
 #include "UI/HeartWidgetInputLinker.h"
 #include "UI/HeartWidgetInputTrigger.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputBinding_DragDropOperationBase)
 
 bool UHeartWidgetInputBinding_DragDropOperationBase::Bind(UHeartWidgetInputLinker* Linker,
                                                            const TArray<FInstancedStruct>& InTriggers) const

@@ -4,6 +4,8 @@
 #include "Blueprint/UserWidget.h"
 #include "UI/HeartDragDropOperation.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputBinding_DragDropOperation)
+
 bool UHeartWidgetInputBinding_DragDropOperation::PassCondition(const UWidget* TestWidget) const
 {
 	bool Failed = !Super::PassCondition(TestWidget);

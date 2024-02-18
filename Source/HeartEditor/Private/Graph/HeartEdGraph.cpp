@@ -13,6 +13,8 @@
 #include "Model/HeartGraphNode.h"
 #include "Nodes/HeartEdGraphNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraph)
+
 UHeartEdGraph::UHeartEdGraph(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
