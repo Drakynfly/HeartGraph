@@ -35,6 +35,7 @@ public class HeartEditor : ModuleRules
                 "CoreUObject",
                 "EditorFramework",  // For FToolkitManager
                 "Engine",
+                "EngineAssetDefinitions",
                 "GraphEditor",      // For SGraphPalette
                 "InputCore",
                 "KismetWidgets",    // For SLevelOfDetailBranchNode
