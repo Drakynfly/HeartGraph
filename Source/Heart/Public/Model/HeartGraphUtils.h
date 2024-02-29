@@ -40,11 +40,11 @@ public:
 
 
 	// Gets the Heart Graph from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Graph", ExpandBoolAsExecs = "ReturnValue"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Graph", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))
 	static bool GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph);
 
 	// Gets the Node Object from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Object", ExpandBoolAsExecs = "ReturnValue"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Object", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))
 	static bool GetNodeObjectTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UObject> Class, UObject*& Object);
 
 
