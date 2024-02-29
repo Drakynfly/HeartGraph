@@ -10,7 +10,8 @@ class HEARTCORE_API FHeartMemoryWriter : public FMemoryWriter
 {
 public:
 	FHeartMemoryWriter(TArray<uint8>& OutBytes, UObject* Outer)
-		: FMemoryWriter(OutBytes), OuterStack({Outer}) {}
+	  : FMemoryWriter(OutBytes),
+		OuterStack({Outer}) {}
 
 	using FMemoryWriter::operator<<; // For visibility of the overloads we don't override
 
@@ -18,6 +19,7 @@ public:
 	virtual FArchive& operator<<(UObject*& Obj) override;
 	virtual FArchive& operator<<(FObjectPtr& Obj) override;
 	virtual FArchive& operator<<(FSoftObjectPtr& AssetPtr) override;
+	virtual FArchive& operator<<(FSoftObjectPath& Value) override;
 	virtual FArchive& operator<<(FWeakObjectPtr& Value) override;
 	virtual FString GetArchiveName() const override;
 	//~ End FArchive Interface
@@ -31,8 +33,16 @@ private:
 class HEARTCORE_API FHeartMemoryReader : public FMemoryReader
 {
 public:
-	FHeartMemoryReader(const TArray<uint8>& InBytes, bool bIsPersistent, UObject* Outer)
-		: FMemoryReader(InBytes, bIsPersistent), OuterStack({Outer}) {}
+	enum EOptions
+	{
+		None = 0,
+		ExecPostLoad = 1 << 0
+	};
+
+	FHeartMemoryReader(const TArray<uint8>& InBytes, bool bIsPersistent, UObject* Outer, EOptions Options)
+	  : FMemoryReader(InBytes, bIsPersistent),
+		OuterStack({Outer}),
+		Options(Options) {}
 
 	using FMemoryReader::operator<<; // For visibility of the overloads we don't override
 
@@ -40,14 +50,22 @@ public:
 	virtual FArchive& operator<<(UObject*& Obj) override;
 	virtual FArchive& operator<<(FObjectPtr& Obj) override;
 	virtual FArchive& operator<<(FSoftObjectPtr& AssetPtr) override;
+	virtual FArchive& operator<<(FSoftObjectPath& Value) override;
 	virtual FArchive& operator<<(FWeakObjectPtr& Value) override;
 	virtual FString GetArchiveName() const override;
 	//~ End FArchive Interface
 
+private:
 	// Tracks what objects are currently being deserialized. This allows us to reconstruct objects with their original
 	// outer.
 	TArray<UObject*> OuterStack;
+
+	TArray<UObject*> ObjectsCreated;
+
+	EOptions Options = EOptions::None;
 };
+
+ENUM_CLASS_FLAGS(FHeartMemoryReader::EOptions)
 
 USTRUCT(BlueprintType)
 struct HEARTCORE_API FHeartFlake
@@ -93,11 +111,22 @@ struct HEARTCORE_API FHeartFlake_Actor : public FHeartFlake
 
 namespace Heart::Flakes
 {
-	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct);
+	struct FReadOptions
+	{
+		FOodleDataCompression::ECompressor Compressor = FOodleDataCompression::ECompressor::Kraken;
+		FOodleDataCompression::ECompressionLevel CompressionLevel = FOodleDataCompression::ECompressionLevel::SuperFast;
+	};
 
-	HEARTCORE_API FHeartFlake CreateFlake(UObject* Object);
+	struct FWriteOptions
+	{
+		uint8 ExecPostLoad : 1;
+	};
 
-	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake);
+	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct, FReadOptions Options = {});
+
+	HEARTCORE_API FHeartFlake CreateFlake(UObject* Object, FReadOptions Options = {});
+
+	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake, FWriteOptions Options = {});
 
 	HEARTCORE_API UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
 
