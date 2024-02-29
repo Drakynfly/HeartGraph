@@ -525,6 +525,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 																	  UClass* VisualizerBase) const
 {
 	// @todo add ability to override the connection class to anything other than the default
+	// @todo also note that either From or To may be invalid in case of drawing a preview connection
 
 	// Try and retrieve a fallback visualizer
 	if (auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())

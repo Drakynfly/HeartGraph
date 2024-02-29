@@ -177,7 +177,7 @@ FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
 	{
 		return PinDescriptions[Pin];
 	}
-	return FHeartGraphPinDesc();
+	return Heart::Graph::InvalidPinDesc;
 }
 
 FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid& Pin) const

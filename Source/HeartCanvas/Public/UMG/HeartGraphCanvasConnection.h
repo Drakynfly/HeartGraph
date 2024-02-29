@@ -17,6 +17,7 @@ class HEARTCANVAS_API UHeartGraphCanvasConnection : public UHeartGraphWidgetBase
 {
 	GENERATED_BODY()
 
+	friend class UHeartGraphCanvas;
 	friend class UHeartGraphCanvasNode;
 
 public:

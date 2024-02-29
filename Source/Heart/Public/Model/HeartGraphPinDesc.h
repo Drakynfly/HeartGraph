@@ -52,3 +52,8 @@ struct FHeartGraphPinDesc
 		return !Name.IsNone() && Tag.IsValid() && Direction != EHeartPinDirection::None;
 	}
 };
+
+namespace Heart::Graph
+{
+	static FHeartGraphPinDesc InvalidPinDesc = FHeartGraphPinDesc();
+}

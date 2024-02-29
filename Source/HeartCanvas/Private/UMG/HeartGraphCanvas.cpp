@@ -94,6 +94,11 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	auto SuperLayerID = Super::NativePaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
 	                          bParentEnabled);
 
+	if (!UseDeprecatedPaintMethodToDrawConnections)
+	{
+		return SuperLayerID;
+	}
+
 	// Draw connections between pins
 	if (DisplayedNodes.IsEmpty())
 	{
@@ -200,11 +205,6 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
 		}
-	}
-
-	if (!UseDeprecatedPaintMethodToDrawConnections)
-	{
-		return SuperLayerID;
 	}
 
 	// Draw all regular connections
@@ -369,6 +369,24 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 	}
 }
 
+void UHeartGraphCanvas::CreatePreviewConnection()
+{
+	auto&& ConnectionVisualizer = GetVisualClassForPreviewConnection();
+	if (!IsValid(ConnectionVisualizer))
+	{
+		return;
+	}
+
+	PreviewConnection = CreateWidget<UHeartGraphCanvasConnection>(this, ConnectionVisualizer);
+	if (IsValid(PreviewConnection))
+	{
+		PreviewConnection->GraphCanvas = this;
+		PreviewConnection->FromPin = PreviewConnectionPin;
+
+		AddConnectionWidget(PreviewConnection);
+	}
+}
+
 void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget)
 {
 	// This function is only used internally, so Node should *always* be validated prior to this point.
@@ -496,9 +514,51 @@ TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Impl
 								->GetVisualizerClassForGraphNode<UHeartGraphCanvasNode>(Node->GetClass());
 }
 
+TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPreviewConnection_Implementation() const
+{
+	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	if (!IsValid(RegistrySubsystem))
+	{
+		UE_LOG(LogHeartGraphCanvas, Error,
+			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+					"This error occured in UHeartGraphCanvas::GetVisualClassForPreviewConnection. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		return nullptr;
+	}
+
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass());
+	auto&& PreviewNode = DisplayedGraph->GetNode(PreviewConnectionPin.NodeGuid);
+	if (!IsValid(PreviewNode))
+	{
+		return nullptr;
+	}
+
+	auto&& PreviewDesc = PreviewNode->GetPinDesc(PreviewConnectionPin.PinGuid);
+	if (!PreviewDesc.IsValid())
+	{
+		return nullptr;
+	}
+
+	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(PreviewDesc, Heart::Graph::InvalidPinDesc, UHeartGraphCanvasConnection::StaticClass());
+}
+
 void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Reference)
 {
-	PreviewConnectionPin = Reference;
+	if (PreviewConnectionPin != Reference)
+	{
+		if (PreviewConnection)
+		{
+			// Destroy existing connection widget
+			PreviewConnection->RemoveFromParent();
+			PreviewConnection = nullptr;
+		}
+
+		PreviewConnectionPin = Reference;
+		if (PreviewConnectionPin.IsValid())
+		{
+			CreatePreviewConnection();
+		}
+	}
 }
 
 UCanvasPanelSlot* UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget)

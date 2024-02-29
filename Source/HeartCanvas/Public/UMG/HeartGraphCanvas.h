@@ -127,6 +127,8 @@ protected:
 
 	void UpdateAfterSelectionChanged();
 
+	void CreatePreviewConnection();
+
 	void AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget);
 
 	void SetViewOffset(const FVector2D& Value);
@@ -141,6 +143,13 @@ protected:
 	 */
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
 	TSubclassOf<UHeartGraphCanvasNode> GetVisualClassForNode(const UHeartGraphNode* Node) const;
+
+	/**
+	 * Get the class used to display the preview connection on the Canvas Graph. This has a default implementation that fetches a
+	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
+	TSubclassOf<UHeartGraphCanvasConnection> GetVisualClassForPreviewConnection() const;
 
 	UFUNCTION()
 	void OnNodeAddedToGraph(UHeartGraphNode* Node);
@@ -272,6 +281,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TArray<TObjectPtr<UWidget>> Popups;
+
+	// Widget used to draw preview connections. Only valid when PreviewConnectionPin is set.
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
+	TObjectPtr<UHeartGraphCanvasConnection> PreviewConnection;
 
 	UPROPERTY(VisibleAnywhere, Instanced, Category = "Widgets", NoClear, meta = (ShowInnerProperties))
 	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
