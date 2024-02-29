@@ -15,6 +15,8 @@ UHeartSceneGenerator::UHeartSceneGenerator()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	UseWorldSpaceInModifiers = false;
+
+	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("LocationModifiers");
 }
 
 UHeartGraph* UHeartSceneGenerator::GetHeartGraph() const
