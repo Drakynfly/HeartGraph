@@ -23,6 +23,7 @@ struct BLOOD_API FBloodValue
 	template<typename TBloodData>
 	TArray<TBloodData> GetArrayValue() const
 	{
+		// @todo
 		unimplemented();
 		return {};
 	}
@@ -30,6 +31,7 @@ struct BLOOD_API FBloodValue
 	template<typename TBloodData>
 	TSet<TBloodData> GetSetValue() const
 	{
+		// @todo
 		unimplemented();
 		return {};
 	}
@@ -37,6 +39,7 @@ struct BLOOD_API FBloodValue
 	template<typename TBloodDataKey, typename TBloodDataValue>
 	TMap<TBloodDataKey, TBloodDataValue> GetMapValue() const
 	{
+		// @todo
 		unimplemented();
 		return {};
 	}

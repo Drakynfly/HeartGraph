@@ -4,7 +4,7 @@
 
 #include "InputCoreTypes.h"
 
-#define LOCTEXT_NAMESPACE "FPreviewSceneCommands"
+#define LOCTEXT_NAMESPACE "PreviewSceneCommands"
 
 namespace Heart::AssetEditor
 {
