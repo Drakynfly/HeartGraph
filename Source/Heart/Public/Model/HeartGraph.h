@@ -21,26 +21,6 @@ using FHeartGraphNodeEvent = TMulticastDelegate<void(UHeartGraphNode*)>;
 using FHeartGraphNodeMovedEvent = TMulticastDelegate<void(const FHeartNodeMoveEvent&)>;
 using FHeartGraphNodeConnectionEvent = TMulticastDelegate<void(const FHeartGraphConnectionEvent&)>;
 
-// @todo this struct only exists because of a bug in 5.2 preventing WITH_EDITORONLY_DATA from working in sparse
-// If/when Epic fixes that, these properties should be moved back into the sparse class struct below
-USTRUCT()
-struct FHeartGraphEditorDataTemp
-{
-	GENERATED_BODY()
-
-#if WITH_EDITORONLY_DATA
-
-	UPROPERTY(EditDefaultsOnly, Category = "Display")
-	FText GraphTypeName;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	bool CanCreateAssetFromFactory = false;
-
-	// Should this class be shown in the "Common" section when creating a new Heart Graph
-	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	bool DisplayClassAsCommonInFactory = false;
-#endif
-};
 
 /**
  * Class data for UHeartGraph
@@ -50,10 +30,11 @@ struct FHeartGraphSparseClassData
 {
 	GENERATED_BODY()
 
+#if WITH_EDITORONLY_DATA
 	/**
 	 * The displayed name of graphs in the Unreal Editor graph window corner text. By default, will read "Heart" unless
-	 * changed by a subclass, either in BP via the details panel, or in C++ by settings EditorData.GraphTypeName in the
-	 * constructor.
+	 * changed by a subclass, either in BP via the details panel, or in C++ by settings
+	 * GetHeartGraphSparseClassData()->GraphTypeName in the constructor.
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
@@ -65,6 +46,7 @@ struct FHeartGraphSparseClassData
 	// Should this class be shown in the "Common" section when creating a new Heart Graph
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	bool DisplayClassAsCommonInFactory = false;
+#endif
 };
 
 /**
@@ -278,12 +260,6 @@ private:
 	// Always castable to UHeartEdGraph. Only valid for HeartGraphs created by the editor.
 	UPROPERTY()
 	TObjectPtr<UEdGraph> HeartEdGraph;
-
-public:
-	// @todo temp while sparse struct is broken, see above comment on this
-	UPROPERTY(EditDefaultsOnly, Category = "Editor")
-	FHeartGraphEditorDataTemp EditorData;
-private:
 #endif
 
 private:
