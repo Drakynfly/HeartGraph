@@ -68,6 +68,10 @@
 			"Optional": true
 		},
 		{
+			"Name": "EngineAssetDefinitions",
+			"Enabled": true
+		},
+		{
 			"Name": "GameplayTagsEditor",
 			"Enabled": true
 		},
