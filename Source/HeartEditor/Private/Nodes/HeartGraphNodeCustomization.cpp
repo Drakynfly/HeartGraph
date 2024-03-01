@@ -25,31 +25,44 @@ FHeartGraphNodeCustomization::FHeartGraphNodeCustomization()
 
 void FHeartGraphNodeCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	StyleProp = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(FHeartGraphNodeSparseClassData, EditorSlateStyle));
+	TArray<TWeakObjectPtr<UObject>> Objects;
+	DetailBuilder.GetObjectsBeingCustomized(Objects);
 
-	if (StyleProp.IsValid())
+	if (Objects.IsEmpty())
 	{
-		DetailBuilder.HideProperty(StyleProp);
+		return;
+	}
 
-		IDetailCategoryBuilder& EditorCategory = DetailBuilder.EditCategory("Editor");
-		FDetailWidgetRow& EditorSlateStyleRow = EditorCategory.AddCustomRow(LOCTEXT("EditorSlateStyleSearchString", "Editor Slate Style"));
+	const bool EditingAsset = Objects[0]->IsAsset();
 
-		EditorSlateStyleRow.NameContent()
-			[
-				StyleProp->CreatePropertyNameWidget()
-			];
+	if (EditingAsset)
+	{
+		StyleProp = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(FHeartGraphNodeSparseClassData, EditorSlateStyle));
 
-		EditorSlateStyleRow.ValueContent()
-			[
-				SNew(SComboBox<FName>)
-				.OptionsSource(&StyleOptions)
-				.OnSelectionChanged(this, &FHeartGraphNodeCustomization::OnStyleSelectionChanged)
-				.OnGenerateWidget(this, &FHeartGraphNodeCustomization::OnGenerateStyleWidget)
+		if (StyleProp.IsValid())
+		{
+			DetailBuilder.HideProperty(StyleProp);
+
+			IDetailCategoryBuilder& EditorCategory = DetailBuilder.EditCategory("Editor");
+			FDetailWidgetRow& EditorSlateStyleRow = EditorCategory.AddCustomRow(LOCTEXT("EditorSlateStyleSearchString", "Editor Slate Style"));
+
+			EditorSlateStyleRow.NameContent()
 				[
-					SNew(STextBlock)
-						.Text(this, &FHeartGraphNodeCustomization::GetSelectedStyle)
-				]
-			];
+					StyleProp->CreatePropertyNameWidget()
+				];
+
+			EditorSlateStyleRow.ValueContent()
+				[
+					SNew(SComboBox<FName>)
+					.OptionsSource(&StyleOptions)
+					.OnSelectionChanged(this, &FHeartGraphNodeCustomization::OnStyleSelectionChanged)
+					.OnGenerateWidget(this, &FHeartGraphNodeCustomization::OnGenerateStyleWidget)
+					[
+						SNew(STextBlock)
+							.Text(this, &FHeartGraphNodeCustomization::GetSelectedStyle)
+					]
+				];
+		}
 	}
 }
 
