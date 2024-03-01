@@ -136,6 +136,12 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 
 			FRootNodeKey& NodeKey = NodeRootTable.FindOrAdd(FHeartNodeSource(NodeObject));
 			NodeKey.SelfRegistryCounter++;
+
+			if (FilterObjectForRegistration(NodeObjectList.Key))
+			{
+				// @todo this kinda obliterates any previous value! what to do??
+				NodeKey.GraphNode = NodeObjectList.Key;
+			}
 		}
 	}
 
