@@ -70,10 +70,10 @@ TArray<UClass*> UHeartRegistryEditorSubsystem::GetFactoryCommonClasses()
 		});
 }
 
-TSharedPtr<SGraphNode> UHeartRegistryEditorSubsystem::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
+TSharedPtr<SGraphNode> UHeartRegistryEditorSubsystem::MakeSlateWidget(const FName Style, UHeartEdGraphNode* Node) const
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
-	return HeartEditorModule.MakeVisualWidget(Style, Node);
+	return HeartEditorModule.MakeSlateWidget(Style, Node);
 }
 
 UClass* UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(

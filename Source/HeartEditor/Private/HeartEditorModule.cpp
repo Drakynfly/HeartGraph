@@ -189,7 +189,7 @@ TArray<FName> FHeartEditorModule::GetSlateStyles() const
 	return Out;
 }
 
-TSharedPtr<SGraphNode> FHeartEditorModule::MakeVisualWidget(const FName Style, UHeartEdGraphNode* Node) const
+TSharedPtr<SGraphNode> FHeartEditorModule::MakeSlateWidget(const FName Style, UHeartEdGraphNode* Node) const
 {
 	if (const FOnGetSlateGraphWidgetInstance* Callback = EditorSlateCallbacks.Find(Style))
 	{

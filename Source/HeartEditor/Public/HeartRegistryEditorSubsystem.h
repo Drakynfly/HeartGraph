@@ -29,7 +29,7 @@ public:
 	/**
 	 * Creates a slate widget for a EdGraphNode, by looking up a style registered with the Module.
 	 */
-	TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
+	TSharedPtr<SGraphNode> MakeSlateWidget(FName Style, UHeartEdGraphNode* Node) const;
 
 	/**
 	 * Get the class of UEdGraphNode to represent a given class of UHeartGraphNode

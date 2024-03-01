@@ -646,15 +646,15 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 {
 	if (HeartGraphNode)
 	{
-		FName VisualWidgetType = HeartGraphNode->GetEditorSlateStyle();
+		FName SlateStyle = HeartGraphNode->GetEditorSlateStyle();
 
-		if (VisualWidgetType == Heart::GraphUtils::DefaultStyle)
+		if (SlateStyle == Heart::GraphUtils::DefaultStyle)
 		{
-			VisualWidgetType = HeartGraphNode->GetGraph()->GetSchema()->GetDefaultEditorStyle();
+			SlateStyle = HeartGraphNode->GetGraph()->GetSchema()->GetDefaultEditorStyle();
 		}
 
 		auto&& EditorRegister = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();
-		return EditorRegister->MakeVisualWidget(VisualWidgetType, this);
+		return EditorRegister->MakeSlateWidget(SlateStyle, this);
 	}
 
 	return Super::CreateVisualWidget();

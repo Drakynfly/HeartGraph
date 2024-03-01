@@ -43,7 +43,7 @@ public:
     void RegisterSlateEditorWidget(FName Style, const FOnGetSlateGraphWidgetInstance& Callback);
     void DeregisterSlateEditorWidget(FName Style);
     TArray<FName> GetSlateStyles() const;
-    TSharedPtr<SGraphNode> MakeVisualWidget(FName Style, UHeartEdGraphNode* Node) const;
+    TSharedPtr<SGraphNode> MakeSlateWidget(FName Style, UHeartEdGraphNode* Node) const;
 
     void RegisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass, TSubclassOf<UHeartEdGraphNode> EdClass);
     void DeregisterEdGraphNode(TSubclassOf<UHeartGraphNode> HeartClass);
