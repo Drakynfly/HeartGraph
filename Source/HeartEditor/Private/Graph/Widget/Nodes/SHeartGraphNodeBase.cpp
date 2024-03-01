@@ -146,7 +146,7 @@ TSharedRef<SWidget> SHeartGraphNodeBase::CreateTitleWidget(TSharedPtr<SNodeTitle
 		.OnTextCommitted(this, &SHeartGraphNodeBase::OnNameTextCommited)
 		.IsReadOnly(this, &SHeartGraphNodeBase::IsNameReadOnly)
 		.IsSelected(this, &SHeartGraphNodeBase::IsSelectedExclusively);
-		InlineEditableText->SetColorAndOpacity(TAttribute<FLinearColor>::Create(TAttribute<FLinearColor>::FGetter::CreateSP(this, &SHeartGraphNodeBase::GetNodeTitleTextColor)));
+	InlineEditableText->SetColorAndOpacity(TAttribute<FLinearColor>::Create(TAttribute<FLinearColor>::FGetter::CreateSP(this, &SHeartGraphNodeBase::GetNodeTitleTextColor)));
 
 	return InlineEditableText.ToSharedRef();
 }
@@ -206,8 +206,8 @@ TSharedPtr<SWidget> SHeartGraphNodeBase::CreateAddInputButton()
 		SAssignNew(AddPinWidget, SHorizontalBox)
 		+ SHorizontalBox::Slot()
 		.AutoWidth()
-		. VAlign(VAlign_Center)
-		. Padding( 0,0,7,0 )
+		.VAlign(VAlign_Center)
+		.Padding( 0, 0, 7, 0 )
 		[
 			SNew(SImage)
 			.Image(FAppStyle::GetBrush(TEXT("Icons.PlusCircle")))
@@ -242,7 +242,7 @@ TSharedPtr<SWidget> SHeartGraphNodeBase::CreateAddOutputButton()
 		+ SHorizontalBox::Slot()
 		.AutoWidth()
 		.VAlign(VAlign_Center)
-		.Padding(7,0,0,0)
+		.Padding(7, 0, 0, 0)
 		[
 			SNew(SImage)
 			.Image(FAppStyle::GetBrush(TEXT("Icons.PlusCircle")))

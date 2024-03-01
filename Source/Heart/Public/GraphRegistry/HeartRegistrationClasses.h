@@ -11,9 +11,11 @@ struct FHeartRegisteredClass
 {
 	GENERATED_BODY()
 
+	// Register this class if it is not abstract.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowAbstract = true))
 	TObjectPtr<UClass> Class;
 
+	// Register all non-abstract children of Class.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Recursive = false;
 };
@@ -45,7 +47,7 @@ struct FHeartRegistrationClasses
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<TSubclassOf<UHeartGraphNode>, FClassList> GraphNodeLists;
 
-	//  Maps graph node classes to individual objects to register to be placed as nodes.
+	// Maps graph node classes to individual objects to register to be placed as nodes.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<TSubclassOf<UHeartGraphNode>, FHeartObjectList> IndividualObjects;
 

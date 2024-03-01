@@ -48,7 +48,8 @@ TSharedRef<SWidget> SHeartGraphNode_Vertical::CreateNodeContentArea()
 			[
 				SAssignNew(BottomNodeBox, SHorizontalBox)
 			]
-		];}
+		];
+}
 
 void SHeartGraphNode_Vertical::AddPin(const TSharedRef<SGraphPin>& PinToAdd)
 {
