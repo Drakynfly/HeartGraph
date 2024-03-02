@@ -1173,7 +1173,7 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanJumpToGraphNodeDefinition() const
 	{
-		if (!GetSelectedHeartGraphNodes().Num() == 1)
+		if (GetSelectedHeartGraphNodes().Num() != 1)
 		{
 			return false;
 		}
@@ -1199,7 +1199,7 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanJumpToNodeObjectDefinition() const
 	{
-		if (!GetSelectedHeartGraphNodes().Num() == 1)
+		if (GetSelectedHeartGraphNodes().Num() != 1)
 	    {
     		return false;
 	    }
