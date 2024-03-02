@@ -235,9 +235,9 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
 
 	Registry->ForEachNodeObjectClass(
-		[&CategoryName, &ActionMenuBuilder](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeClass)
+		[&CategoryName, &ActionMenuBuilder](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeSource)
 		{
-			if (NodeClass.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return true;
+			if (NodeSource.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return true;
 
 			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(GraphNodeClass);
 
@@ -246,9 +246,9 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 				if (GraphNodeDefault->CanCreate_Editor())
 				{
 					if (CategoryName.IsEmpty() ||
-						CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeClass).ToString()))
+						CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeSource).ToString()))
 					{
-						const TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeClass, GraphNodeDefault));
+						const TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeSource, GraphNodeDefault));
 						ActionMenuBuilder.AddAction(NewNodeAction);
 					}
 				}

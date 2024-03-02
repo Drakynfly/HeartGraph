@@ -21,7 +21,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	FHeartGraphSchemaAction_NewNode(const FHeartNodeSource NodeSource, const UHeartGraphNode* GraphNode)
 	  : FEdGraphSchemaAction(
 			GraphNode->GetDefaultNodeCategory(NodeSource),
-			GraphNode->GetDefaultNodeTitle<EHeartNodeNameContext::Palette>(NodeSource),
+			GraphNode->GetPreviewNodeTitle(NodeSource, EHeartPreviewNodeNameContext::Palette),
 			GraphNode->GetDefaultNodeTooltip(NodeSource),
 			0, // Grouping
 			FText::FromString(NodeSource.ThisClass()->GetMetaData("Keywords"))),

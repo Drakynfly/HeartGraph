@@ -103,27 +103,23 @@ FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource NodeSource) 
 	return GetNodeToolTip(NodeSource.GetDefaultObject());
 }
 
-FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node, const EHeartNodeNameContext Context) const
+FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node) const
 {
-	switch (Context)
+	if (IsValid(Node))
+    {
+    	return FText::FromString(Node->GetName());
+    }
+
+    return LOCTEXT("GetNodeTitle_Invalid", "[Invalid NodeObject]");
+}
+
+FText UHeartGraphNode::GetPreviewNodeTitle_Implementation(const FHeartNodeSource NodeSource, EHeartPreviewNodeNameContext Context) const
+{
+	if (NodeSource.IsValid())
 	{
-	case EHeartNodeNameContext::NodeInstance:
-		if (Node)
-		{
-			return FText::FromString(Node->GetName());
-		}
-
-		return LOCTEXT("GetNodeTitle_Invalid", "Invalid NodeObject!");
-	case EHeartNodeNameContext::Default:
-	case EHeartNodeNameContext::Palette:
-	default:
-		if (Node)
-		{
-			return FText::FromString(Node->GetName());
-		}
-
-		return FText::FromString(GetClass()->GetName());
+		return FText::FromString(NodeSource.As<UObject>()->GetName());
 	}
+	return LOCTEXT("GetPreviewNodeTitle_Invalid", "[Invalid NodeSource]");
 }
 
 FText UHeartGraphNode::GetNodeCategory_Implementation(const UObject* Node) const
@@ -149,11 +145,7 @@ void UHeartGraphNode::GetNodeMessages_Implementation(TArray<FHeartGraphNodeMessa
 
 FText UHeartGraphNode::GetInstanceTitle() const
 {
-	if (IsValid(NodeObject))
-	{
-		return GetNodeTitle(NodeObject, EHeartNodeNameContext::NodeInstance);
-	}
-	return FText::AsCultureInvariant(TEXT("<<INVALID_INSTANCE>>"));
+	return GetNodeTitle(NodeObject);
 }
 
 uint8 UHeartGraphNode::GetInstancedInputNum() const

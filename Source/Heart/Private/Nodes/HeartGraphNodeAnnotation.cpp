@@ -8,30 +8,34 @@
 
 #define LOCTEXT_NAMESPACE "HeartGraphNodeAnnotation"
 
-FText UHeartGraphNodeAnnotation::GetNodeTitle_Implementation(const UObject* Node, EHeartNodeNameContext Context) const
+FText UHeartGraphNodeAnnotation::GetNodeTitle_Implementation(const UObject* Node) const
 {
-	switch (Context)
+	if (auto&& TextComment = Cast<UHeartComment_Text>(Node))
 	{
-	case EHeartNodeNameContext::NodeInstance:
-		if (auto&& TextComment = Cast<UHeartComment_Text>(Node))
-		{
-			return TextComment->GetCommentText();
-		}
+		return TextComment->GetCommentText();
+	}
+	if (auto&& ImageComment = Cast<UHeartComment_Image>(Node))
+	{
+		// Image annotations don't have a title.
 		return FText();
-	default:
-		{
-			if (auto&& TextComment = Cast<UHeartComment_Text>(Node))
-			{
-				return LOCTEXT("DefaultNodeTitle_Text", "Text Comment");
-			}
-			if (auto&& TextComment = Cast<UHeartComment_Image>(Node))
-			{
-				return LOCTEXT("DefaultNodeTitle_Image", "Image Comment");
-			}
-		}
 	}
 
-	return Super::GetNodeTitle_Implementation(Node, Context);
+	return Super::GetNodeTitle_Implementation(Node);
+}
+
+FText UHeartGraphNodeAnnotation::GetPreviewNodeTitle_Implementation(const FHeartNodeSource NodeSource, const EHeartPreviewNodeNameContext Context) const
+{
+	auto&& Class = NodeSource.ThisClass();
+	if (Class->IsChildOf<UHeartComment_Text>())
+	{
+		return LOCTEXT("DefaultNodeTitle_Text", "Text Comment");
+	}
+	if (Class->IsChildOf<UHeartComment_Image>())
+	{
+		return LOCTEXT("DefaultNodeTitle_Image", "Image Comment");
+	}
+
+	return Super::GetPreviewNodeTitle_Implementation(NodeSource, Context);
 }
 
 FText UHeartGraphNodeAnnotation::GetNodeCategory_Implementation(const UObject* Node) const

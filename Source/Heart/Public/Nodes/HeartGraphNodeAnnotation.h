@@ -14,7 +14,8 @@ class HEART_API UHeartGraphNodeAnnotation : public UHeartGraphNode
 	GENERATED_BODY()
 
 public:
-	virtual FText GetNodeTitle_Implementation(const UObject* Node, EHeartNodeNameContext Context) const override;
+	virtual FText GetNodeTitle_Implementation(const UObject* Node) const override;
+	virtual FText GetPreviewNodeTitle_Implementation(FHeartNodeSource NodeSource, EHeartPreviewNodeNameContext Context) const override;
 	virtual FText GetNodeCategory_Implementation(const UObject* Node) const override;
 };
 

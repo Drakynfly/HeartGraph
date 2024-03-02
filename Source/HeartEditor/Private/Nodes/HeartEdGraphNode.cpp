@@ -662,34 +662,63 @@ TSharedPtr<SGraphNode> UHeartEdGraphNode::CreateVisualWidget()
 
 FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) const
 {
+	// When called on CDO, fallback to super's default behavior.
+	if (IsTemplate())
+	{
+		return Super::GetNodeTitle(TitleType);
+	}
+
+	// Non-templates should always have a valid GraphNode & NodeObject
+
 	if (!ensure(IsValid(HeartGraphNode)))
 	{
 		// Display error with *our* name, in case we are a custom EdGraphNode that may help debug the situation.
 		return FText::Format(
-			LOCTEXT("GetNodeTitle_InvalidGraphNode", "Invalid HeartGraphNode ({0})"), FText::FromString(GetName()));
+			LOCTEXT("GetNodeTitle_InvalidGraphNode", "[Invalid GraphNode ({0})]"), FText::FromString(GetName()));
 	}
 
-	if (!(IsValid(HeartGraphNode->GetNodeObject())))
+	if (!IsValid(HeartGraphNode->GetNodeObject()))
 	{
 		// Display error with the GraphNode name, that may help debug the situation.
 		return FText::Format(
-			LOCTEXT("GetNodeTitle_InvalidNodeObject", "Invalid NodeObject ({0})"), FText::FromString(HeartGraphNode->GetName()));
+			LOCTEXT("GetNodeTitle_InvalidNodeObject", "[Invalid NodeObject ({0})]"), FText::FromString(HeartGraphNode->GetName()));
 	}
 
 	{
 		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
 		{
-			switch (TitleType) {
-			case ENodeTitleType::EditableTitle:
+			switch (TitleType)
+			{
 				// @todo support for EditableTitles when? :)
-			case ENodeTitleType::FullTitle:
+			case ENodeTitleType::EditableTitle:
+				{
+					return FText();
+				}
+
 				// @todo is full FullTitle only used for in-graph instances? i *think* so
-				return HeartGraphNode->GetNodeTitle(HeartGraphNode->GetNodeObject(), EHeartNodeNameContext::NodeInstance);
+			case ENodeTitleType::FullTitle:
+				return HeartGraphNode->GetInstanceTitle();
+
 			case ENodeTitleType::MenuTitle:
-				return HeartGraphNode->GetNodeTitle(nullptr, EHeartNodeNameContext::Palette);
+
+				// ListView is used by a few slate classes to get a short name from instanced nodes.
 			case ENodeTitleType::ListView:
 			default: ;
-				return HeartGraphNode->GetNodeTitle(nullptr, EHeartNodeNameContext::Default);
+				EHeartPreviewNodeNameContext Context = EHeartPreviewNodeNameContext::Default;
+
+				if (TitleType == ENodeTitleType::MenuTitle)
+				{
+					Context = EHeartPreviewNodeNameContext::Palette;
+				}
+
+				// If the NodeObject is outer'd this was created from a class source
+				if (HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode)
+				{
+					return HeartGraphNode->GetPreviewNodeTitle(FHeartNodeSource(HeartGraphNode->NodeObject->GetClass()), Context);
+				}
+
+				// Otherwise, the NodeObject itself is the source
+				return HeartGraphNode->GetPreviewNodeTitle(FHeartNodeSource(HeartGraphNode->NodeObject), Context);
 			}
 		}
 	}
