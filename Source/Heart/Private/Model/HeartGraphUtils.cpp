@@ -116,6 +116,59 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScript
 	return OutNodes;
 }
 
+bool UHeartGraphUtils::WouldConnectionCreateLoop(UHeartGraphNode* A, UHeartGraphNode* B)
+{
+	// This is based on the engine class FNodeVisitorCycleChecker found in both EdGraphSchema_BehaviorTree.cpp and ConversationGraphSchema.cpp
+
+	class FNodeVisitorCycleChecker
+	{
+	public:
+		/** Check whether a loop in the graph would be caused by linking the passed-in nodes */
+		bool CheckForLoop(const UHeartGraphNode* StartNode, const UHeartGraphNode* EndNode)
+		{
+			VisitedNodes.Add(EndNode);
+			return TraverseInputNodesToRoot(StartNode);
+		}
+
+	private:
+		/**
+		 * Helper function for CheckForLoop()
+		 * @param	Node	The node to start traversal at
+		 * @return true if we reached a root node (i.e. a node with no input pins), false if we encounter a node we have already seen
+		 */
+		bool TraverseInputNodesToRoot(const UHeartGraphNode* Node)
+		{
+			VisitedNodes.Add(Node);
+
+			const UHeartGraph* Graph = Node->GetGraph();
+
+			for (auto&& Inputs = Node->GetInputPins();
+				 auto Input : Inputs)
+			{
+				for (auto&& Links = Node->GetLinks(Input);
+					 auto&& Link : Links.Links)
+				{
+					if (Link.IsValid())
+					{
+						const UHeartGraphNode* OtherNode = Graph->GetNode(Link.NodeGuid);
+						if (VisitedNodes.Contains(OtherNode))
+						{
+							return false;
+						}
+						return TraverseInputNodesToRoot(OtherNode);
+					}
+				}
+			}
+
+			return true;
+		}
+
+		TSet<const UHeartGraphNode*> VisitedNodes;
+	};
+
+	return !FNodeVisitorCycleChecker().CheckForLoop(A, B);
+}
+
 bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph)
 {
 	if (Node.GetInterface())

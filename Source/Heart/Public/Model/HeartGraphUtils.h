@@ -51,6 +51,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	static TArray<UHeartGraphNode*> FindAllNodesByPredicate(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphNodePredicate& Predicate);
 
+	UFUNCTION(BlueprintPure, Category = "Heart|Graph")
+	static bool WouldConnectionCreateLoop(UHeartGraphNode* A, UHeartGraphNode* B);
+
 
 	// Gets the Heart Graph from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Graph", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))
