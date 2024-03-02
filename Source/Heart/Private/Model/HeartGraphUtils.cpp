@@ -9,8 +9,28 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphUtils)
 
+bool UHeartGraphUtils::Equal_HeartGuidHeartGuid(const FHeartGuid A, const FHeartGuid B)
+{
+	return A == B;
+}
+
+bool UHeartGraphUtils::NotEqual_HeartGuidHeartGuid(const FHeartGuid A, const FHeartGuid B)
+{
+	return A != B;
+}
+
+bool UHeartGraphUtils::Equal_PinReferencePinReference(FHeartGraphPinReference A, FHeartGraphPinReference B)
+{
+	return A == B;
+}
+
+bool UHeartGraphUtils::NotEqual_PinReferencePinReference(FHeartGraphPinReference A, FHeartGraphPinReference B)
+{
+	return A != B;
+}
+
 UHeartGraphNode* UHeartGraphUtils::FindNodeOfClass(const TScriptInterface<IHeartGraphInterface>& Graph,
-                                                   TSubclassOf<UHeartGraphNode> Class)
+												   TSubclassOf<UHeartGraphNode> Class)
 {
 	if (!Graph.GetInterface()) return nullptr;
 	if (!IsValid(Class)) return nullptr;
