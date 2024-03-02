@@ -4,8 +4,8 @@
 
 #include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
+#include "Graph/HeartEdGraphUtils.h"
 #include "Graph/HeartGraphAssetEditor.h"
-#include "Graph/HeartGraphUtils.h"
 
 #include "Model/HeartGraph.h"
 

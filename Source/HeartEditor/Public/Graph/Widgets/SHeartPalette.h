@@ -10,7 +10,6 @@ namespace Heart::AssetEditor
 }
 
 /** Widget displaying a single item  */
-// @todo, double-clicking on this should open up the node BP
 class HEARTEDITOR_API SHeartPaletteItem : public SGraphPaletteItem
 {
 public:
@@ -18,6 +17,7 @@ public:
 	SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs, FCreateWidgetForActionData* const InCreateData);
+	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent) override;
 
 private:
 	TSharedRef<SWidget> CreateHotkeyDisplayWidget(const FSlateFontInfo& NameFont, const TSharedPtr<const FInputChord> HotkeyChord) const;

@@ -1,6 +1,6 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Graph/HeartGraphUtils.h"
+#include "Graph/HeartEdGraphUtils.h"
 
 #include "HeartEditorModule.h"
 #include "Graph/HeartGraphAssetEditor.h"
@@ -15,7 +15,7 @@
 
 namespace Heart::GraphUtils
 {
-	void JumpToClassDefinition(const UClass* Class)
+	bool JumpToClassDefinition(const UClass* Class)
 	{
 		if (Class->IsNative())
 		{
@@ -24,7 +24,7 @@ namespace Heart::GraphUtils
 				const bool bSucceeded = FSourceCodeNavigation::NavigateToClass(Class);
 				if (bSucceeded)
 				{
-					return;
+					return true;
 				}
 			}
 
@@ -35,13 +35,76 @@ namespace Heart::GraphUtils
 			if (bFileFound)
 			{
 				const FString AbsNativeParentClassHeaderPath = FPaths::ConvertRelativePathToFull(NativeParentClassHeaderPath);
-				FSourceCodeNavigation::OpenSourceFile(AbsNativeParentClassHeaderPath);
+				return FSourceCodeNavigation::OpenSourceFile(AbsNativeParentClassHeaderPath);
 			}
 		}
 		else
 		{
+			// @todo unknown if this succeeds, it doesnt return a success value
 			FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(Class);
+			return true;
 		}
+
+		return false;
+	}
+
+	bool CheckForLoop(UEdGraphNode* A, UEdGraphNode* B)
+	{
+		// This is copied from a private engine class found in both EdGraphSchema_BehaviorTree.cpp and ConversationGraphSchema.cpp
+
+		class FNodeVisitorCycleChecker
+		{
+		public:
+			/** Check whether a loop in the graph would be caused by linking the passed-in nodes */
+			bool CheckForLoop(UEdGraphNode* StartNode, UEdGraphNode* EndNode)
+			{
+				VisitedNodes.Add(EndNode);
+				return TraverseInputNodesToRoot(StartNode);
+			}
+
+		private:
+			/**
+			 * Helper function for CheckForLoop()
+			 * @param	Node	The node to start traversal at
+			 * @return true if we reached a root node (i.e. a node with no input pins), false if we encounter a node we have already seen
+			 */
+			bool TraverseInputNodesToRoot(UEdGraphNode* Node)
+			{
+				VisitedNodes.Add(Node);
+
+				// Follow every input pin until we cant any more ('root') or we reach a node we have seen (cycle)
+				for (int32 PinIndex = 0; PinIndex < Node->Pins.Num(); ++PinIndex)
+				{
+					UEdGraphPin* MyPin = Node->Pins[PinIndex];
+
+					if (MyPin->Direction == EGPD_Input)
+					{
+						for (int32 LinkedPinIndex = 0; LinkedPinIndex < MyPin->LinkedTo.Num(); ++LinkedPinIndex)
+						{
+							UEdGraphPin* OtherPin = MyPin->LinkedTo[LinkedPinIndex];
+							if (OtherPin)
+							{
+								UEdGraphNode* OtherNode = OtherPin->GetOwningNode();
+								if (VisitedNodes.Contains(OtherNode))
+								{
+									return false;
+								}
+								else
+								{
+									return TraverseInputNodesToRoot(OtherNode);
+								}
+							}
+						}
+					}
+				}
+
+				return true;
+			}
+
+			TSet<UEdGraphNode*> VisitedNodes;
+		};
+
+		return FNodeVisitorCycleChecker().CheckForLoop(A, B);
 	}
 
 	TSharedPtr<AssetEditor::FHeartGraphEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode,

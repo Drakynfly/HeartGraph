@@ -15,7 +15,9 @@ namespace Heart
 	{
 		static FName DefaultStyle("GraphDefault");
 
-		void JumpToClassDefinition(const UClass* Class);
+		bool JumpToClassDefinition(const UClass* Class);
+
+		bool CheckForLoop(UEdGraphNode* A, UEdGraphNode* B);
 
 		TSharedPtr<AssetEditor::FHeartGraphEditor> CreateHeartGraphAssetEditor(const EToolkitMode::Type Mode, const TSharedPtr<IToolkitHost>& InitToolkitHost, UHeartGraph* HeartGraph);
 

@@ -6,6 +6,7 @@
 #include "HeartEditorCommands.h"
 #include "Graph/HeartEdGraph.h"
 #include "Graph/HeartEdGraphSchema.h"
+#include "Graph/HeartEdGraphUtils.h"
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
@@ -23,7 +24,6 @@
 #include "ScopedTransaction.h"
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
-#include "Graph/HeartGraphUtils.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)

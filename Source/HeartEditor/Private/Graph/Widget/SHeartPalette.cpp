@@ -2,15 +2,16 @@
 
 #include "Graph/Widgets/SHeartPalette.h"
 #include "Graph/HeartGraphAssetEditor.h"
-#include "HeartEditorCommands.h"
-#include "HeartRegistryEditorSubsystem.h"
-#include "AssetEditor/TabSpawners.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartEdGraphSchema_Actions.h"
+#include "Graph/HeartEdGraphUtils.h"
+#include "HeartEditorCommands.h"
+#include "HeartRegistryEditorSubsystem.h"
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
+#include "AssetEditor/TabSpawners.h"
 #include "Fonts/SlateFontInfo.h"
 #include "Styling/CoreStyle.h"
 #include "Styling/SlateBrush.h"
@@ -80,6 +81,29 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 				HotkeyDisplayWidget
 			]
 	];
+}
+
+FReply SHeartPaletteItem::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	// Our super checks for an explicitely bound Double-click action, which we want to respect first.
+	if (FReply SuperReply = SGraphPaletteItem::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
+		SuperReply.IsEventHandled())
+	{
+		return SuperReply;
+	}
+
+	// But if that isn't set, handle it ourself.
+
+	auto&& Action = StaticCastWeakPtr<FHeartGraphSchemaAction_NewNode>(ActionPtr);
+	if (auto&& NewNodeAction = Action.Pin())
+	{
+		if (Heart::GraphUtils::JumpToClassDefinition(NewNodeAction->GetNodeClass()))
+		{
+			return FReply::Handled();
+		}
+	}
+
+	return FReply::Unhandled();
 }
 
 TSharedRef<SWidget> SHeartPaletteItem::CreateHotkeyDisplayWidget(const FSlateFontInfo& NameFont, const TSharedPtr<const FInputChord> HotkeyChord) const

@@ -5,7 +5,7 @@
 #include "DetailLayoutBuilder.h"
 #include "DetailWidgetRow.h"
 #include "HeartEditorModule.h"
-#include "Graph/HeartGraphUtils.h"
+#include "Graph/HeartEdGraphUtils.h"
 #include "Model/HeartGraphNode.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphNodeCustomization"

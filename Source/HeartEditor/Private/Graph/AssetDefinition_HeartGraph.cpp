@@ -1,12 +1,12 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/AssetDefinition_HeartGraph.h"
+#include "Graph/HeartEdGraphUtils.h"
 
 #include "Model/HeartGraph.h"
 
 #include "Toolkits/IToolkit.h"
 #include "HeartEditorShared.h"
-#include "Graph/HeartGraphUtils.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(AssetDefinition_HeartGraph)
 
