@@ -8,6 +8,7 @@
 
 #include "HeartGraphUtils.generated.h"
 
+struct FHeartGraphPinDesc;
 struct FHeartGuid;
 struct FHeartGraphPinReference;
 class IHeartGraphInterface;
@@ -66,6 +67,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Heart|GraphPin")
 	static FHeartGraphPinReference MakeReference(const TScriptInterface<IHeartGraphNodeInterface>& Node, const TScriptInterface<IHeartGraphPinInterface>& Pin);
+
+	// @todo enable UFUNCTION in 5.4
+	//UFUNCTION(BlueprintPure, Category = "Heart|GraphPin")
+	static TOptional<FHeartGraphPinDesc> ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference);
 
 	// Gets the Heart Node from an object representing a Heart Graph Pin, and attempts to cast it to the requested class.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Node", ExpandBoolAsExecs = "ReturnValue"))

@@ -194,6 +194,23 @@ FHeartGraphPinReference UHeartGraphUtils::MakeReference(const TScriptInterface<I
 	return FHeartGraphPinReference{Node->GetHeartGraphNode()->GetGuid(), Pin->GetPinGuid()};
 }
 
+TOptional<FHeartGraphPinDesc> UHeartGraphUtils::ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference)
+{
+	auto&& HeartGraph = Graph->GetHeartGraph();
+	if (!IsValid(HeartGraph))
+	{
+		return {};
+	}
+
+	auto&& Node = HeartGraph->GetNode(Reference.NodeGuid);
+	if (!IsValid(Node))
+	{
+		return {};
+	}
+
+	return Node->GetPinDesc(Reference.PinGuid);
+}
+
 bool UHeartGraphUtils::GetGraphNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
 {
 	if (Pin.GetInterface())
