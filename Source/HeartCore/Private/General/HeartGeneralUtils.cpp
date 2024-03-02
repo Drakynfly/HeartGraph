@@ -27,8 +27,8 @@ bool UHeartGeneralUtils::AddObjectToActorReplicateSubObjectList(AActor* Actor, U
 			UE_LOG(LogHeartGeneral, Warning,
 				TEXT("AddObjectToActorReplicateSubObjectList: Should not register Object to Actor that does not own it."
 						" GivenActor: '%s', Object: '%s' DirectOuter: '%s', FirstActorOuter: '%s'"),
-						*Actor->GetName(), *Object->GetName(), *Object->GetOuter()->GetName(),
-						*Object->GetTypedOuter<AActor>()->GetName())
+				*Actor->GetName(), *Object->GetName(), *Object->GetOuter()->GetName(),
+				*Object->GetTypedOuter<AActor>()->GetName())
 			return false;
 		}
 
@@ -107,6 +107,8 @@ int32 UHeartGeneralUtils::LevenshteinDistance(const FString& A, const FString& B
 	return Algo::LevenshteinDistance(A, B);
 }
 
+constexpr float FontScale = 1.0f;
+
 bool UHeartGeneralUtils::FontSupportsChar(const UFont* Font, const TCHAR Char)
 {
 	switch (Font->FontCacheType)
@@ -118,16 +120,14 @@ bool UHeartGeneralUtils::FontSupportsChar(const UFont* Font, const TCHAR Char)
 	case EFontCacheType::Runtime:
 		{
 			const TSharedPtr<FSlateFontCache> FontCache = FEngineFontServices::Get().GetFontCache();
-
 			if (FontCache.IsValid())
 			{
-				const float FontScale = 1.0f;
-				const FSlateFontInfo LegacyFontInfo = Font->GetLegacySlateFontInfo();
-				FCharacterList& CharacterList = FontCache->GetCharacterList(LegacyFontInfo, FontScale);
-				return CharacterList.GetCharacter(Char, LegacyFontInfo.FontFallback).Valid;
+				return false;
 			}
 
-			return false;
+			const FSlateFontInfo LegacyFontInfo = Font->GetLegacySlateFontInfo();
+			FCharacterList& CharacterList = FontCache->GetCharacterList(LegacyFontInfo, FontScale);
+			return CharacterList.GetCharacter(Char, LegacyFontInfo.FontFallback).Valid;
 		}
 	default: return false;
 	}
@@ -135,10 +135,34 @@ bool UHeartGeneralUtils::FontSupportsChar(const UFont* Font, const TCHAR Char)
 
 bool UHeartGeneralUtils::FontSupportsString(const UFont* Font, const FString& String)
 {
-	for (const TCHAR Char : String)
+	switch (Font->FontCacheType)
 	{
-		if (!FontSupportsChar(Font, Char)) return false;
-	}
+	case EFontCacheType::Offline:
+		{
+			for (const TCHAR Char : String)
+			{
+				if (Font->RemapChar(Char) == UFont::NULLCHARACTER) return false;
+			}
+			return true;
+		}
+	case EFontCacheType::Runtime:
+		{
+			const TSharedPtr<FSlateFontCache> FontCache = FEngineFontServices::Get().GetFontCache();
+			if (FontCache.IsValid())
+			{
+				return false;
+			}
 
-	return true;
+			const FSlateFontInfo LegacyFontInfo = Font->GetLegacySlateFontInfo();
+			FCharacterList& CharacterList = FontCache->GetCharacterList(LegacyFontInfo, FontScale);
+
+			for (const TCHAR Char : String)
+			{
+				if (!CharacterList.GetCharacter(Char, LegacyFontInfo.FontFallback).Valid) return false;
+			}
+
+			return true;
+		}
+	default: return false;
+	}
 }
