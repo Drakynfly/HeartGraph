@@ -4,10 +4,10 @@
 
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "Model/HeartGraph.h"
-#include "Model/HeartGraphNode.h"
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "UI/HeartInputActivation.h"
 #include "UObject/ObjectSaveContext.h"
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphSchema)
 
 UHeartGraphSchema::UHeartGraphSchema()
@@ -77,9 +77,13 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 		HeartGraph->RemoveExtension(Class);
 	}
 
-	if (IsValid(EditorPreSaveAction))
+	// If we are not running on a CDO or trying to cook, execute the EditorPreSaveAction
+	if (!IsTemplate() && !SaveContext.IsCooking())
 	{
-		UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
+		if (IsValid(EditorPreSaveAction))
+		{
+			UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
+		}
 	}
 #endif
 }

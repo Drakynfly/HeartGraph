@@ -189,7 +189,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	FName DefaultEditorStyle;
 
-	// Action to run on the graph during PreSave
+	// Action to run on the graph during PreSave.
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	TSubclassOf<UHeartGraphAction> EditorPreSaveAction;
 #endif
