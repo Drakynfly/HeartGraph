@@ -34,10 +34,10 @@ public:
 	static bool NotEqual_HeartGuidHeartGuid(FHeartGuid A, FHeartGuid B);
 
 	UFUNCTION(BlueprintPure, Category = "Heart|Graph", meta = (DisplayName = "Equal (PinReference)", CompactNodeTitle = "==", ScriptMethod = "Equals", ScriptOperator = "==", Keywords = "== equal"))
-	static bool Equal_PinReferencePinReference(FHeartGraphPinReference A, FHeartGraphPinReference B);
+	static bool Equal_PinReferencePinReference(const FHeartGraphPinReference& A, const FHeartGraphPinReference& B);
 
 	UFUNCTION(BlueprintPure, Category = "Heart|Graph", meta = (DisplayName = "Not Equal (PinReference)", CompactNodeTitle = "!=", ScriptMethod = "NotEqual", ScriptOperator = "!=", Keywords = "!= not equal"))
-	static bool NotEqual_PinReferencePinReference(FHeartGraphPinReference A, FHeartGraphPinReference B);
+	static bool NotEqual_PinReferencePinReference(const FHeartGraphPinReference& A, const FHeartGraphPinReference& B);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
 	static UHeartGraphNode* FindNodeOfClass(const TScriptInterface<IHeartGraphInterface>& Graph, TSubclassOf<UHeartGraphNode> Class);

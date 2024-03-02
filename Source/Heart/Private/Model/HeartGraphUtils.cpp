@@ -19,12 +19,12 @@ bool UHeartGraphUtils::NotEqual_HeartGuidHeartGuid(const FHeartGuid A, const FHe
 	return A != B;
 }
 
-bool UHeartGraphUtils::Equal_PinReferencePinReference(FHeartGraphPinReference A, FHeartGraphPinReference B)
+bool UHeartGraphUtils::Equal_PinReferencePinReference(const FHeartGraphPinReference& A, const FHeartGraphPinReference& B)
 {
 	return A == B;
 }
 
-bool UHeartGraphUtils::NotEqual_PinReferencePinReference(FHeartGraphPinReference A, FHeartGraphPinReference B)
+bool UHeartGraphUtils::NotEqual_PinReferencePinReference(const FHeartGraphPinReference& A, const FHeartGraphPinReference& B)
 {
 	return A != B;
 }

@@ -55,5 +55,5 @@ struct FHeartGraphPinDesc
 
 namespace Heart::Graph
 {
-	static FHeartGraphPinDesc InvalidPinDesc = FHeartGraphPinDesc();
+	static const FHeartGraphPinDesc InvalidPinDesc = FHeartGraphPinDesc();
 }
