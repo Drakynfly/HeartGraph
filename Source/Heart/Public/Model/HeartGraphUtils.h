@@ -17,6 +17,15 @@ class IHeartGraphPinInterface;
 class UHeartGraph;
 class UHeartGraphNode;
 
+
+namespace Heart::Utils
+{
+	HEART_API [[nodiscard]] TArray<UHeartGraphNode*> FindAllNodesOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
+
+	HEART_API [[nodiscard]] TOptional<FHeartGraphPinDesc> ResolvePinDesc(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
+}
+
+
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, UHeartGraphNode*, Node);
 
 /**

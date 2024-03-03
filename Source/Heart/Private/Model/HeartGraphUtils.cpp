@@ -9,6 +9,46 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphUtils)
 
+namespace Heart::Utils
+{
+	TArray<UHeartGraphNode*> FindAllNodesOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class)
+	{
+		check(Graph);
+		if (!IsValid(Class)) return {};
+
+		TArray<UHeartGraphNode*> OutNodes;
+
+		// Find first node of the given class
+		Graph->ForEachNode(
+			[Class, &OutNodes](UHeartGraphNode* Node)
+			{
+				if (Node->IsA(Class))
+				{
+					OutNodes.Add(Node);
+				}
+				return true;
+			});
+
+		return OutNodes;
+	}
+
+	TOptional<FHeartGraphPinDesc> ResolvePinDesc(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference)
+	{
+		if (!IsValid(Graph))
+		{
+			return {};
+		}
+
+		auto&& Node = Graph->GetNode(Reference.NodeGuid);
+		if (!IsValid(Node))
+		{
+			return {};
+		}
+
+		return Node->GetPinDesc(Reference.PinGuid);
+	}
+}
+
 bool UHeartGraphUtils::Equal_HeartGuidHeartGuid(const FHeartGuid A, const FHeartGuid B)
 {
 	return A == B;
@@ -74,25 +114,10 @@ UHeartGraphNode* UHeartGraphUtils::FindNodeByPredicate(const TScriptInterface<IH
 }
 
 TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInterface<IHeartGraphInterface>& Graph,
-                                                               TSubclassOf<UHeartGraphNode> Class)
+															   const TSubclassOf<UHeartGraphNode> Class)
 {
 	if (!Graph.GetInterface()) return {};
-	if (!IsValid(Class)) return {};
-
-	TArray<UHeartGraphNode*> OutNodes;
-
-	// Find first node of the given class
-	Graph->GetHeartGraph()->ForEachNode(
-		[Class, &OutNodes](UHeartGraphNode* Node)
-		{
-			if (Node->IsA(Class))
-			{
-				OutNodes.Add(Node);
-			}
-			return true;
-		});
-
-	return OutNodes;
+	return Heart::Utils::FindAllNodesOfClass(Graph->GetHeartGraph(), Class);
 }
 
 TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScriptInterface<IHeartGraphInterface>& Graph,
@@ -196,19 +221,7 @@ FHeartGraphPinReference UHeartGraphUtils::MakeReference(const TScriptInterface<I
 
 TOptional<FHeartGraphPinDesc> UHeartGraphUtils::ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference)
 {
-	auto&& HeartGraph = Graph->GetHeartGraph();
-	if (!IsValid(HeartGraph))
-	{
-		return {};
-	}
-
-	auto&& Node = HeartGraph->GetNode(Reference.NodeGuid);
-	if (!IsValid(Node))
-	{
-		return {};
-	}
-
-	return Node->GetPinDesc(Reference.PinGuid);
+	return Heart::Utils::ResolvePinDesc(Graph->GetHeartGraph(), Reference);
 }
 
 bool UHeartGraphUtils::GetGraphNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node)
