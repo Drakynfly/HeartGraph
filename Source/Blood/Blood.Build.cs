@@ -17,7 +17,7 @@ public class Blood : ModuleRules
             new []
             {
                 "Core",
-                "StructUtils",
+                "StructUtils"
             }
         );
 
@@ -25,9 +25,7 @@ public class Blood : ModuleRules
             new []
             {
                 "CoreUObject",
-                "Engine",
-                "Slate",
-                "SlateCore"
+                "Engine"
             }
         );
     }
