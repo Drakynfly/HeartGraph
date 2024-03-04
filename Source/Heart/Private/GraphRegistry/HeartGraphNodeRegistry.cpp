@@ -99,23 +99,23 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 				continue;
 			}
 
-			FRootNodeKey& NodeKey = NodeRootTable.FindOrAdd(FHeartNodeSource(Element.Class));
-			NodeKey.SelfRegistryCounter++;
+			FNodeSourceEntry& Entry = NodeRootTable.FindOrAdd(FHeartNodeSource(Element.Class));
+			Entry.SelfRegistryCounter++;
 
 			if (FilterObjectForRegistration(GraphNodeList.Key))
 			{
 				// @todo this kinda obliterates any previous value! what to do??
-				NodeKey.GraphNode = GraphNodeList.Key;
+				Entry.GraphNode = GraphNodeList.Key;
 			}
 
 			if (Element.Recursive)
 			{
-				if (NodeKey.RecursiveRegistryCounter == 0)
+				if (Entry.RecursiveRegistryCounter == 0)
 				{
-					GetDerivedClasses(Element.Class, NodeKey.RecursiveChildren);
+					GetDerivedClasses(Element.Class, Entry.RecursiveChildren);
 				}
 
-				NodeKey.RecursiveRegistryCounter++;
+				Entry.RecursiveRegistryCounter++;
 			}
 		}
 	}
@@ -134,13 +134,13 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 				continue;
 			}
 
-			FRootNodeKey& NodeKey = NodeRootTable.FindOrAdd(FHeartNodeSource(NodeObject));
-			NodeKey.SelfRegistryCounter++;
+			FNodeSourceEntry& Entry = NodeRootTable.FindOrAdd(FHeartNodeSource(NodeObject));
+			Entry.SelfRegistryCounter++;
 
 			if (FilterObjectForRegistration(NodeObjectList.Key))
 			{
 				// @todo this kinda obliterates any previous value! what to do??
-				NodeKey.GraphNode = NodeObjectList.Key;
+				Entry.GraphNode = NodeObjectList.Key;
 			}
 		}
 	}
@@ -188,18 +188,18 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 		{
 			FHeartNodeSource SrcClass(Object.Class);
 
-			auto* Key = NodeRootTable.Find(SrcClass);
-			if (Key == nullptr) continue;
+			auto* Entry = NodeRootTable.Find(SrcClass);
+			if (Entry == nullptr) continue;
 
-			if (--Key->SelfRegistryCounter == 0)
+			if (--Entry->SelfRegistryCounter == 0)
 			{
 				NodeRootTable.Remove(SrcClass);
 			}
 			else if (Object.Recursive)
 			{
-				if (--Key->RecursiveRegistryCounter == 0)
+				if (--Entry->RecursiveRegistryCounter == 0)
 				{
-					Key->RecursiveChildren.Empty();
+					Entry->RecursiveChildren.Empty();
 				}
 			}
 		}
@@ -211,10 +211,10 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 		{
 			FHeartNodeSource SrcObj(Object);
 
-			auto* Key = NodeRootTable.Find(SrcObj);
-			if (Key == nullptr) continue;
+			auto* Entry = NodeRootTable.Find(SrcObj);
+			if (Entry == nullptr) continue;
 
-			if (--Key->SelfRegistryCounter == 0)
+			if (--Entry->SelfRegistryCounter == 0)
 			{
 				NodeRootTable.Remove(SrcObj);
 			}
@@ -273,7 +273,7 @@ bool UHeartGraphNodeRegistry::IsRegistered(const UGraphNodeRegistrar* Registrar)
 
 void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const
 {
-	for (const TTuple<FHeartNodeSource, FRootNodeKey>& Element : NodeRootTable)
+	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
 		TSubclassOf<UHeartGraphNode> GraphNodeClass = Element.Value.GraphNode;
 		if (!ensure(IsValid(GraphNodeClass))) continue;
@@ -318,7 +318,7 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 
 void UHeartGraphNodeRegistry::GetAllNodeSources(TArray<FHeartNodeSource>& OutNodeSources) const
 {
-	for (const TTuple<FHeartNodeSource, FRootNodeKey>& Element : NodeRootTable)
+	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
 		OutNodeSources.Add(Element.Key);
 		OutNodeSources.Append(Element.Value.RecursiveChildren);
@@ -328,7 +328,7 @@ void UHeartGraphNodeRegistry::GetAllNodeSources(TArray<FHeartNodeSource>& OutNod
 void UHeartGraphNodeRegistry::GetAllGraphNodeClassesAndNodeSources(
 	TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const
 {
-	for (const TTuple<FHeartNodeSource, FRootNodeKey>& Element : NodeRootTable)
+	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
 		OutClasses.Add(Element.Key, Element.Value.GraphNode);
 		for (TObjectPtr<UClass> Child : Element.Value.RecursiveChildren)
@@ -432,7 +432,7 @@ TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(c
 		Test.IsValid() && Test != FHeartNodeSource(UObject::StaticClass());
 		Test = FHeartNodeSource(Test.NextClass()))
 	{
-		if (const FRootNodeKey* Entry = NodeRootTable.Find(Test))
+		if (const FNodeSourceEntry* Entry = NodeRootTable.Find(Test))
 		{
 			return Entry->GraphNode;
 		}

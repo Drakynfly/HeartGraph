@@ -151,7 +151,7 @@ private:
 	// Broadcast on any change to registered class lists.
 	FHeartGraphNodeRegistryEventNative OnRegistryChangedNative;
 
-	struct FRootNodeKey
+	struct FNodeSourceEntry
 	{
 		TSubclassOf<UHeartGraphNode> GraphNode;
 		TArray<TObjectPtr<UClass>> RecursiveChildren;
@@ -159,7 +159,7 @@ private:
 		uint32 RecursiveRegistryCounter = 0;
 	};
 
-	TMap<FHeartNodeSource, FRootNodeKey> NodeRootTable;
+	TMap<FHeartNodeSource, FNodeSourceEntry> NodeRootTable;
 
 	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.
 	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, uint32>> NodeVisualizerMap;
