@@ -50,6 +50,11 @@ TOptional<FHeartGraphPinDesc> FHeartNodePinData::GetPinDesc(const FHeartPinGuid 
 	return Heart::Graph::InvalidPinDesc;
 }
 
+FHeartGraphPinDesc& FHeartNodePinData::GetPinDesc(const FHeartPinGuid Key)
+{
+	return PinDescriptions.FindChecked(Key);
+}
+
 TOptional<FHeartGraphPinConnections> FHeartNodePinData::GetConnections(const FHeartPinGuid Key) const
 {
 	return PinConnections.Contains(Key) ? PinConnections[Key] : FHeartGraphPinConnections();
@@ -309,6 +314,16 @@ void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Dire
 bool UHeartGraphNode::HasConnections(const FHeartPinGuid& Pin) const
 {
 	return PinData.HasConnections(Pin);
+}
+
+TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin) const
+{
+	if (auto Links = PinData.GetConnections(Pin);
+		Links.IsSet())
+	{
+		return Links.GetValue().Links;
+	}
+	return {};
 }
 
 TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDirection Direction) const

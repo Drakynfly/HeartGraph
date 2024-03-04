@@ -66,6 +66,7 @@ struct FHeartNodePinData
 	bool HasConnections(FHeartPinGuid Key) const;
 
 	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Pin) const;
+	FHeartGraphPinDesc& GetPinDesc(FHeartPinGuid Key);
 
 	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
 	FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
@@ -126,11 +127,11 @@ struct FHeartNodePinData
 		template <typename Predicate>
 		FPinQueryResult& Filter(Predicate Pred)
 		{
-			for (auto&& Key : Result)
+			for (auto It = Result.CreateIterator(); It; ++It)
 			{
-				if (!Pred({Key, Reference.PinDescriptions[Key]})) // @todo this is copying the description ! stop that
+				if (!Pred({*It, Reference.PinDescriptions[*It]})) // @todo this is copying the description ! stop that
 				{
-					Result.Remove(Key);
+					It.RemoveCurrentSwap();
 				}
 			}
 
@@ -372,6 +373,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool HasConnections(const FHeartPinGuid& Pin) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin) const;
 
 	// @todo this function is a good candidate to move to a library
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
