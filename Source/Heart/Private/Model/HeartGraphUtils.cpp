@@ -170,7 +170,7 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(UHeartGraphNode* A, UHeartGraph
 			for (auto&& Inputs = Node->GetInputPins();
 				 auto Input : Inputs)
 			{
-				for (auto&& Links = Node->GetLinks(Input);
+				for (auto&& Links = Node->GetLinks(Input, true);
 					 auto&& Link : Links.Links)
 				{
 					if (Link.IsValid())

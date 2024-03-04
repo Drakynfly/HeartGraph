@@ -193,13 +193,13 @@ void UHeartEdGraph::OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& H
 
 	if (EdNodeA && EdNodeB)
 	{
-		auto&& EdGraphPinA = EdNodeA->FindPin(NodeA->GetPinDesc(PinAGuid).Name);
-		auto&& EdGraphPinB = EdNodeB->FindPin(NodeB->GetPinDesc(PinBGuid).Name);
+		auto&& EdGraphPinA = EdNodeA->FindPin(NodeA->GetPinDescChecked(PinAGuid).Name);
+		auto&& EdGraphPinB = EdNodeB->FindPin(NodeB->GetPinDescChecked(PinBGuid).Name);
 
 		if (EdGraphPinA && EdGraphPinB)
 		{
-			if (NodeA->GetLinks(PinAGuid).Links.Contains(NodeB->GetPinReference(PinBGuid)) &&
-				NodeB->GetLinks(PinBGuid).Links.Contains(NodeA->GetPinReference(PinAGuid)))
+			if (NodeA->GetLinks(PinAGuid, true).Links.Contains(NodeB->GetPinReference(PinBGuid)) &&
+				NodeB->GetLinks(PinBGuid, true).Links.Contains(NodeA->GetPinReference(PinAGuid)))
 			{
 				EdGraphPinA->MakeLinkTo(EdGraphPinB);
 			}

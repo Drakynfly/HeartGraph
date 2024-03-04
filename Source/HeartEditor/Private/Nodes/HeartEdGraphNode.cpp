@@ -198,19 +198,20 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			continue;
 		}
 
-		const FHeartGraphPinDesc& LinkedPin = LinkedNode->GetPinDesc(LinkedRef.PinGuid);
-		if (!LinkedPin.IsValid())
+		auto&& LinkedPin = LinkedNode->GetPinDesc(LinkedRef.PinGuid);
+		if (!LinkedPin.IsSet())
 		{
 			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
 				*HeartGraphNode.GetName(), *LinkedNode->GetName())
 			continue;
 		}
 
-		LinkedPins.Add(LinkedPin);
+		LinkedPins.Add(LinkedPin.GetValue());
 
-		if (!Pin->LinkedTo.ContainsByPredicate([LinkedPin](const UEdGraphPin* EdGraphPin)
+		if (!Pin->LinkedTo.ContainsByPredicate(
+			[Desc = LinkedPin.GetValue()](const UEdGraphPin* EdGraphPin)
 			{
-				return LinkedPin.Name == EdGraphPin->PinName;
+				return Desc.Name == EdGraphPin->PinName;
 			}))
 		{
 			// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
@@ -458,7 +459,7 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 			continue;
 		}
 
-		CreateInputPin(HeartGraphNode->GetPinDesc(InputPin));
+		CreateInputPin(HeartGraphNode->GetPinDescChecked(InputPin));
 	}
 
 	for (const FHeartPinGuid& OutputPin : ExistingOutputPins)
@@ -468,7 +469,7 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 			continue;
 		}
 
-		CreateOutputPin(HeartGraphNode->GetPinDesc(OutputPin));
+		CreateOutputPin(HeartGraphNode->GetPinDescChecked(OutputPin));
 	}
 }
 
@@ -939,14 +940,14 @@ void UHeartEdGraphNode::AddInstancePin(const EEdGraphPinDirection Direction)
 	if (Direction == EGPD_Input)
 	{
 		const FHeartPinGuid& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Input);
-		const auto Desc = HeartGraphNode->GetPinDesc(NewInstancePin);
+		auto&& Desc = HeartGraphNode->GetPinDescChecked(NewInstancePin);
 		CreateInputPin(Desc);
 		HeartGraphNode->AddPin(Desc);
 	}
 	else
 	{
 		const FHeartPinGuid& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Output);
-		const auto Desc = HeartGraphNode->GetPinDesc(NewInstancePin);
+		auto&& Desc = HeartGraphNode->GetPinDescChecked(NewInstancePin);
 		CreateOutputPin(Desc);
 		HeartGraphNode->AddPin(Desc);
 	}

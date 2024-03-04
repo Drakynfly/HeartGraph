@@ -16,7 +16,6 @@
 
 struct FHeartGraphNodeMessage;
 class UHeartGraph;
-class UHeartGraphCanvas;
 class UHeartGraphNode;
 
 namespace Heart
@@ -51,6 +50,154 @@ enum class EHeartPreviewNodeNameContext : uint8
 
 	// Name shown in palettes or other lists
 	Palette
+};
+
+
+USTRUCT(BlueprintType)
+struct FHeartNodePinData
+{
+	GENERATED_BODY()
+
+	void AddPin(FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc);
+	bool RemovePin(FHeartPinGuid Key);
+
+	bool Contains(FHeartPinGuid Key) const;
+	int32 GetPinIndex(FHeartPinGuid Key) const;
+	bool HasConnections(FHeartPinGuid Key) const;
+
+	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Pin) const;
+
+	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
+	FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
+
+	template <typename Predicate>
+	TOptional<FHeartPinGuid> Find(Predicate Pred) const
+	{
+		for (auto&& Element : PinDescriptions)
+		{
+			if (auto Result = Pred(Element);
+				Result.IsSet())
+			{
+				return Result.GetValue();
+			}
+		}
+		return {};
+	}
+
+	template <typename Predicate>
+	TArray<FHeartPinGuid> Filter(Predicate Pred) const
+	{
+		TArray<FHeartPinGuid> Out;
+
+		for (auto&& Element : PinDescriptions)
+		{
+			if (Pred(Element))
+			{
+				Out.Add(Element.Key);
+			}
+		}
+
+		return Out;
+	}
+
+	template <typename Predicate>
+	void ForEach(Predicate Pred) const
+	{
+		for (auto&& Element : PinDescriptions)
+		{
+			if (!Pred(Element))
+			{
+				return;
+			}
+		}
+	}
+
+	struct FPinQueryResult
+	{
+		FPinQueryResult(const FHeartNodePinData& Src)
+			: Reference(Src)
+		{
+			Src.PinOrder.GetKeys(Result);
+		}
+
+		const FHeartNodePinData& Reference;
+		TArray<FHeartPinGuid> Result;
+
+		template <typename Predicate>
+		FPinQueryResult& Filter(Predicate Pred)
+		{
+			for (auto&& Key : Result)
+			{
+				if (!Pred({Key, Reference.PinDescriptions[Key]})) // @todo this is copying the description ! stop that
+				{
+					Result.Remove(Key);
+				}
+			}
+
+			return *this;
+		}
+
+		template <typename Predicate>
+		FPinQueryResult& ForEach(Predicate Pred)
+		{
+			for (auto&& Key : Result)
+			{
+				Pred(Reference.PinDescriptions[Key]);
+			}
+
+			return *this;
+		}
+
+		// Sort the results by their Pin Order
+		FPinQueryResult& Sort()
+		{
+			Algo::SortBy(Result,
+				[this](const FHeartPinGuid& Key)
+				{
+					return Reference.PinOrder[Key];
+				});
+
+			return *this;
+		}
+
+		// Inline sort if boolean is true
+		FPinQueryResult& Sort(const bool bShouldSort)
+		{
+			return bShouldSort ? Sort() : *this;
+		}
+
+		template <typename Predicate>
+		TOptional<FHeartPinGuid> Find(Predicate Pred) const
+		{
+			for (auto&& Key : Result)
+			{
+				if (auto Result = Pred(Reference.PinDescriptions[Key]);
+					Result.IsSet())
+				{
+					return Result.GetValue();
+				}
+			}
+			return {};
+		}
+	};
+
+	FPinQueryResult Query() const
+	{
+		return FPinQueryResult(*this);
+	}
+
+protected:
+	// Maps pins to their Pin Description, which carries all unique instance data about
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
+
+	// Maps pins to their connections in other nodes.
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
+
+	// Maintains the original order of pins as added to the node.
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TMap<FHeartPinGuid, int32> PinOrder;
 };
 
 
@@ -190,8 +337,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FVector2D GetLocation() const { return Location; }
 
+	// @todo enable UFUNCTION in 5.4
+	//UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin) const;
+	FHeartGraphPinDesc GetPinDescChecked(const FHeartPinGuid& Pin) const;
+
+	UE_DEPRECATED(5.3, "Replace with either GetPinDescChecked or (after 5.4) GetPinDesc")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartGraphPinReference GetPinReference(const FHeartPinGuid& Pin) const;
@@ -200,13 +355,13 @@ public:
 	FHeartPinGuid GetPinByName(const FName& Name) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	TArray<FHeartPinGuid> GetPinsOfDirection(EHeartPinDirection Direction) const;
+	TArray<FHeartPinGuid> GetPinsOfDirection(EHeartPinDirection Direction, bool bSorted = false) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	TArray<FHeartPinGuid> GetInputPins() const;
+	TArray<FHeartPinGuid> GetInputPins(bool bSorted = false) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	TArray<FHeartPinGuid> GetOutputPins() const;
+	TArray<FHeartPinGuid> GetOutputPins(bool bSorted = false) const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphNode")
 	TArray<FHeartGraphPinDesc> GetDynamicPins() const;
@@ -218,6 +373,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool HasConnections(const FHeartPinGuid& Pin) const;
 
+	// @todo this function is a good candidate to move to a library
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 
@@ -258,15 +414,20 @@ public:
 	----------------------------*/
 
 	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
-	FHeartGraphPinConnections GetLinks(const FHeartPinGuid& Pin) const;
 
-	// Get all pins that match the predicate.
-	template <typename Predicate>
-	TArray<FHeartPinGuid> FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const;
+	TOptional<FHeartGraphPinConnections> GetLinks(const FHeartPinGuid& Pin) const;
 
-	// Count all pins that match the predicate. Returns num of pins counted.
+	UE_DEPRECATED(5.4, "Use a different version of GetLinks please")
+	FHeartGraphPinConnections GetLinks(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
+
+	FHeartNodePinData::FPinQueryResult QueryPins() const { return PinData.Query(); }
+
+	// Get all pins that match the direction.
+	FHeartNodePinData::FPinQueryResult FindPinsByDirection(EHeartPinDirection Direction) const;
+
+	// Get all pins that match the direction and custom predicate.
 	template <typename Predicate>
-	int32 CountPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const;
+	FHeartNodePinData::FPinQueryResult FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const;
 
 	// Remove all pins that match the predicate. Returns num of pins removed.
 	template <typename Predicate>
@@ -322,16 +483,21 @@ protected:
 	UPROPERTY()
 	FVector2D Location;
 
-	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
+	UE_DEPRECATED(5.3, "Use PinData instead")
+	UPROPERTY()
 	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
 
-	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly)
+	UE_DEPRECATED(5.3, "Use PinData instead")
+	UPROPERTY()
 	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "Heart|GraphNode")
+	FHeartNodePinData PinData;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphNode")
 	uint8 InstancedInputs = 0;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphNode")
 	uint8 InstancedOutputs = 0;
 
 #if WITH_EDITOR
@@ -346,47 +512,20 @@ private:
 ----------------------------*/
 
 template <typename Predicate>
-TArray<FHeartPinGuid> UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
+FHeartNodePinData::FPinQueryResult UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
 {
-	TArray<FHeartPinGuid> MatchedPins;
-
-	for (const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& PinPair : PinDescriptions)
-	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value.Direction))
-		{
-			if (Pred(PinPair))
+	return PinData.Query()
+		.Filter([Direction](const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& PinPair)
 			{
-				MatchedPins.Add(PinPair.Key);
-			}
-		}
-	}
-
-	return MatchedPins;
-}
-
-template <typename Predicate>
-int32 UHeartGraphNode::CountPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
-{
-	int32 PinCount = 0;
-
-	for (auto&& PinPair : PinDescriptions)
-	{
-		if (EnumHasAnyFlags(Direction, PinPair.Value.Direction))
-		{
-			if (Pred(PinPair))
-			{
-				PinCount++;
-			}
-		}
-	}
-
-	return PinCount;
+				return EnumHasAnyFlags(Direction, PinPair.Value.Direction);
+			})
+		.Filter(Pred);
 }
 
 template <typename Predicate>
 int32 UHeartGraphNode::RemovePinsByPredicate(const EHeartPinDirection Direction, Predicate Pred)
 {
-	TArray<FHeartPinGuid> PinsToRemove = FindPinsByPredicate(Direction, Pred);
+	TArray<FHeartPinGuid> PinsToRemove = FindPinsByPredicate(Direction, Pred).Result;
 
 	for (auto&& ToRemove : PinsToRemove)
 	{

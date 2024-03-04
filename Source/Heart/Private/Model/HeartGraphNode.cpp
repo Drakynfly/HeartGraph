@@ -9,6 +9,57 @@
 
 #define LOCTEXT_NAMESPACE "HeartGraphNode"
 
+void FHeartNodePinData::AddPin(const FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc)
+{
+	PinDescriptions.Add(NewKey, Desc);
+	PinOrder.Add(NewKey);
+}
+
+bool FHeartNodePinData::RemovePin(const FHeartPinGuid Key)
+{
+	PinDescriptions.Remove(Key);
+	PinConnections.Remove(Key);
+	return !!PinOrder.Remove(Key);
+}
+
+bool FHeartNodePinData::Contains(const FHeartPinGuid Key) const
+{
+	return PinDescriptions.Contains(Key);
+}
+
+int32 FHeartNodePinData::GetPinIndex(const FHeartPinGuid Key) const
+{
+	return PinOrder[Key];
+}
+
+bool FHeartNodePinData::HasConnections(const FHeartPinGuid Key) const
+{
+	if (PinConnections.Contains(Key))
+	{
+		return !PinConnections[Key].Links.IsEmpty();
+	}
+	return false;
+}
+
+TOptional<FHeartGraphPinDesc> FHeartNodePinData::GetPinDesc(const FHeartPinGuid Pin) const
+{
+	if (Pin.IsValid() && PinDescriptions.Contains(Pin))
+	{
+		return PinDescriptions[Pin];
+	}
+	return Heart::Graph::InvalidPinDesc;
+}
+
+TOptional<FHeartGraphPinConnections> FHeartNodePinData::GetConnections(const FHeartPinGuid Key) const
+{
+	return PinConnections.Contains(Key) ? PinConnections[Key] : FHeartGraphPinConnections();
+}
+
+FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartPinGuid Key)
+{
+	return PinConnections.FindOrAdd(Key);
+}
+
 UHeartGraphNode::UHeartGraphNode()
 {
 #if WITH_EDITOR
@@ -37,6 +88,26 @@ UWorld* UHeartGraphNode::GetWorld() const
 void UHeartGraphNode::PostLoad()
 {
 	Super::PostLoad();
+
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	if (!PinDescriptions.IsEmpty())
+	{
+		for (auto&& Element : PinDescriptions)
+		{
+			PinData.AddPin(Element.Key, Element.Value);
+		}
+		PinDescriptions.Empty();
+	}
+
+	if (!PinConnections.IsEmpty())
+	{
+		for (auto&& Element : PinConnections)
+		{
+			PinData.GetConnections(Element.Key) = Element.Value;
+		}
+		PinConnections.Empty();
+	}
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	if (!IsTemplate())
 	{
@@ -163,60 +234,66 @@ UHeartGraph* UHeartGraphNode::GetGraph() const
 	return CastChecked<UHeartGraph>(GetOuter());
 }
 
-FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
+TOptional<FHeartGraphPinDesc> UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
 {
-	if (Pin.IsValid() && PinDescriptions.Contains(Pin))
+	return PinData.GetPinDesc(Pin);
+}
+
+FHeartGraphPinDesc UHeartGraphNode::GetPinDescChecked(const FHeartPinGuid& Pin) const
+{
+	if (auto Desc = PinData.GetPinDesc(Pin))
 	{
-		return PinDescriptions[Pin];
+		checkSlow(Desc.IsSet());
+		return Desc.GetValue();
 	}
 	return Heart::Graph::InvalidPinDesc;
 }
 
+FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin, bool) const
+{
+	return GetPinDescChecked(Pin);
+}
+
 FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid& Pin) const
 {
-	if (PinDescriptions.Contains(Pin))
-	{
-		return {Guid, Pin};
-	}
-	return FHeartGraphPinReference();
+	return PinData.Contains(Pin) ? FHeartGraphPinReference{Guid, Pin} : FHeartGraphPinReference();
 }
 
 FHeartPinGuid UHeartGraphNode::GetPinByName(const FName& Name) const
 {
-	for (auto&& Pin : PinDescriptions)
-	{
-		if (Pin.Value.Name == Name)
+	// @todo make TOptional the return type here
+
+	auto&& RetVal = PinData.Find(
+		[Name](const TPair<FHeartPinGuid, FHeartGraphPinDesc>& Desc) -> TOptional<FHeartPinGuid>
 		{
-			return Pin.Key;
-		}
+			if (Desc.Value.Name == Name)
+			{
+				return Desc.Key;
+			}
+			return {};
+		});
+
+	if (RetVal.IsSet())
+	{
+		return RetVal.GetValue();
 	}
 
 	return FHeartPinGuid();
 }
 
-TArray<FHeartPinGuid> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirection Direction) const
+TArray<FHeartPinGuid> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirection Direction, const bool bSorted) const
 {
-	TArray<FHeartPinGuid> ReturnPins;
-
-	for (auto&& PinPair : PinDescriptions)
-	{
-		if (EnumHasAnyFlags(PinPair.Value.Direction, Direction))
-		{
-			ReturnPins.Add(PinPair.Key);
-		}
-	}
-
-	return ReturnPins;
+	return FindPinsByDirection(Direction).Sort(bSorted).Result;
 }
 
-TArray<FHeartPinGuid> UHeartGraphNode::GetInputPins() const
+TArray<FHeartPinGuid> UHeartGraphNode::GetInputPins(const bool bSorted) const
 {
-	return GetPinsOfDirection(EHeartPinDirection::Input);
+	return GetPinsOfDirection(EHeartPinDirection::Input, bSorted);
 }
 
-TArray<FHeartPinGuid> UHeartGraphNode::GetOutputPins() const
+TArray<FHeartPinGuid> UHeartGraphNode::GetOutputPins(const bool bSorted) const
 {
-	return GetPinsOfDirection(EHeartPinDirection::Output);
+	return GetPinsOfDirection(EHeartPinDirection::Output, bSorted);
 }
 
 TArray<FHeartGraphPinDesc> UHeartGraphNode::GetDynamicPins_Implementation() const
@@ -231,11 +308,7 @@ void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Dire
 
 bool UHeartGraphNode::HasConnections(const FHeartPinGuid& Pin) const
 {
-	if (PinConnections.Contains(Pin))
-	{
-		return !PinConnections[Pin].Links.IsEmpty();
-	}
-	return false;
+	return PinData.HasConnections(Pin);
 }
 
 TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDirection Direction) const
@@ -245,19 +318,13 @@ TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDi
 
 	TSet<UHeartGraphNode*> UniqueConnections;
 
-	for (const TTuple<FHeartPinGuid, FHeartGraphPinConnections>& Element : PinConnections)
+	for (auto&& Pins = FindPinsByDirection(Direction);
+		 auto&& Pin : Pins.Result)
 	{
-		if (!PinDescriptions.Contains(Element.Key))
-		{
-			continue;
-		}
+		auto&& Links = PinData.GetConnections(Pin);
+		if (!Links.IsSet()) continue;
 
-		if (!EnumHasAnyFlags(PinDescriptions[Element.Key].Direction, Direction))
-		{
-			continue;
-		}
-
-		for (FHeartGraphPinReference Link : Element.Value.Links)
+		for (auto&& Link : Links.GetValue().Links)
 		{
 			if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
 			{
@@ -315,12 +382,31 @@ bool UHeartGraphNode::CanDuplicate_Implementation() const
 
 FHeartGraphPinConnections& UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin)
 {
-	return PinConnections.FindOrAdd(Pin);
+	return PinData.GetConnections(Pin);
 }
 
-FHeartGraphPinConnections UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin) const
+TOptional<FHeartGraphPinConnections> UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin) const
 {
-	return PinConnections.Contains(Pin) ? PinConnections[Pin] : FHeartGraphPinConnections();
+	return PinData.GetConnections(Pin);
+}
+
+FHeartGraphPinConnections UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin, bool) const
+{
+	if (auto&& Links = PinData.GetConnections(Pin);
+		Links.IsSet())
+	{
+		return Links.GetValue();
+	}
+	return {};
+}
+
+FHeartNodePinData::FPinQueryResult UHeartGraphNode::FindPinsByDirection(EHeartPinDirection Direction) const
+{
+	return PinData.Query().Filter(
+		[Direction](const TPair<FHeartPinGuid, FHeartGraphPinDesc>& Desc)
+		{
+			return EnumHasAnyFlags(Desc.Value.Direction, Direction);
+		});
 }
 
 FHeartPinGuid UHeartGraphNode::AddPin(const FHeartGraphPinDesc& Desc)
@@ -332,7 +418,7 @@ FHeartPinGuid UHeartGraphNode::AddPin(const FHeartGraphPinDesc& Desc)
 
 	const FHeartPinGuid NewKey = FHeartPinGuid::New();
 
-	PinDescriptions.Add(NewKey, Desc);
+	PinData.AddPin(NewKey, Desc);
 
 	OnNodePinsChanged.Broadcast(this);
 
@@ -346,14 +432,13 @@ bool UHeartGraphNode::RemovePin(const FHeartPinGuid& Pin)
 		return false;
 	}
 
-	auto&& Removed = PinDescriptions.Remove(Pin);
-	PinConnections.Remove(Pin);
-	if (Removed > 0)
+	if (PinData.RemovePin(Pin))
 	{
 		OnNodePinsChanged.Broadcast(this);
+		return true;
 	}
 
-	return Removed > 0;
+	return false;
 }
 
 FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction)
@@ -423,9 +508,8 @@ void UHeartGraphNode::OnCreate()
 
 void UHeartGraphNode::ReconstructPins()
 {
-	PinDescriptions.Empty();
-
 	//@todo this will dump everything in PinConnections. either we need to reconstruct while preserving FGuids, or just use FNames
+	PinData = FHeartNodePinData();
 
 	TArray<FHeartGraphPinDesc> DefaultPins = GetDefaultPins();
 	TArray<FHeartGraphPinDesc> DynamicPins = GetDynamicPins();

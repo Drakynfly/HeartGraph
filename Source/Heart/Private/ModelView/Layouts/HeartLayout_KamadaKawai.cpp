@@ -29,9 +29,13 @@ bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, cons
 
 		for (auto&& Pin : Pins)
 		{
-			TSet<FHeartGraphPinReference> Connections = Node->GetLinks(Pin).Links;
+			auto&& Connections = Node->GetLinks(Pin);
+			if (!Connections.IsSet())
+			{
+				continue;
+			}
 
-			for (auto&& Connection : Connections)
+			for (auto&& Connection : Connections.GetValue().Links)
 			{
 				TEMPARRAY.Add(Nodes.Find(Node->GetGraph()->GetNode(Connection.NodeGuid)));
 			}

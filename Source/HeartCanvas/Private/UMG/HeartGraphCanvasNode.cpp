@@ -97,7 +97,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 		}
 	}
 
-	const FHeartGraphPinDesc& ThisDesc = GraphNode->GetPinDesc(Pin);
+	const FHeartGraphPinDesc& ThisDesc = GraphNode->GetPinDescChecked(Pin);
 
 	if (ThisDesc.Direction != EHeartPinDirection::Output) return;
 
@@ -125,7 +125,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 	const TSet<FHeartGraphPinReference>& Connections = GraphNode->GetLinks(Pin).Links;
 	for (const FHeartGraphPinReference& Connection : Connections)
 	{
-		const FHeartGraphPinDesc& ConnectionDesc = GraphNode->GetPinDesc(Connection.PinGuid);
+		const FHeartGraphPinDesc& ConnectionDesc = GraphNode->GetPinDescChecked(Connection.PinGuid);
 
 		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(ThisDesc, ConnectionDesc, UHeartGraphCanvasConnection::StaticClass());
 		if (!IsValid(ConnectionVisualizer))
@@ -159,7 +159,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::GetPinWidget(const FHeartPinGuid& P
 
 UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid& Pin)
 {
-	const FHeartGraphPinDesc Desc = GraphNode->GetPinDesc(Pin);
+	const FHeartGraphPinDesc Desc = GraphNode->GetPinDescChecked(Pin);
 
 	if (!Desc.IsValid())
 	{

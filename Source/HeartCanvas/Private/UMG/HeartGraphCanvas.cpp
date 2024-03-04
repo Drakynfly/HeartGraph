@@ -9,7 +9,6 @@
 #include "HeartCanvasPrivate.h"
 
 #include "HeartCanvasConnectionVisualizer.h"
-#include "ModelView/HeartGraphSchema.h"
 #include "Model/HeartGraph.h"
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
@@ -109,7 +108,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 	if (DisplayedGraph.IsValid())
 	{
-		ConnectionVisualizer = DisplayedGraph->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
+		//ConnectionVisualizer = DisplayedGraph->GetSchema()->GetConnectionVisualizer<UHeartCanvasConnectionVisualizer>();
 	}
 
 	if (!ensure(IsValid(ConnectionVisualizer)))
@@ -534,12 +533,12 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPre
 	}
 
 	auto&& PreviewDesc = PreviewNode->GetPinDesc(PreviewConnectionPin.PinGuid);
-	if (!PreviewDesc.IsValid())
+	if (!PreviewDesc.IsSet())
 	{
 		return nullptr;
 	}
 
-	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(PreviewDesc, Heart::Graph::InvalidPinDesc, UHeartGraphCanvasConnection::StaticClass());
+	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(PreviewDesc.GetValue(), Heart::Graph::InvalidPinDesc, UHeartGraphCanvasConnection::StaticClass());
 }
 
 void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Reference)
