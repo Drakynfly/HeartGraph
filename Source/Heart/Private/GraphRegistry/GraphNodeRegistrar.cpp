@@ -45,7 +45,7 @@ void UGraphNodeRegistrar::PostEditChangeChainProperty(FPropertyChangedChainEvent
 bool UGraphNodeRegistrar::ShouldRegister() const
 {
 	// Children of the base class should attempt to register their CDO.
-	return GetClass() != UGraphNodeRegistrar::StaticClass();
+	return IsAsset() || GetClass() != UGraphNodeRegistrar::StaticClass();
 }
 
 void UGraphNodeRegistrar::OnRegistered(UHeartGraphNodeRegistry* Registry) const
