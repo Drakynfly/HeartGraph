@@ -8,6 +8,8 @@
 #include "HeartGraphPinDesc.h"
 #include "HeartGraphPinTag.h"
 #include "HeartGraphPinReference.h"
+#include "HeartPinData.h"
+#include "HeartQueries.h"
 #include "GraphRegistry/HeartNodeSource.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartPinDirection.h"
@@ -50,155 +52,6 @@ enum class EHeartPreviewNodeNameContext : uint8
 
 	// Name shown in palettes or other lists
 	Palette
-};
-
-
-USTRUCT(BlueprintType)
-struct FHeartNodePinData
-{
-	GENERATED_BODY()
-
-	void AddPin(FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc);
-	bool RemovePin(FHeartPinGuid Key);
-
-	bool Contains(FHeartPinGuid Key) const;
-	int32 GetPinIndex(FHeartPinGuid Key) const;
-	bool HasConnections(FHeartPinGuid Key) const;
-
-	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Pin) const;
-	FHeartGraphPinDesc& GetPinDesc(FHeartPinGuid Key);
-
-	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
-	FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
-
-	template <typename Predicate>
-	TOptional<FHeartPinGuid> Find(Predicate Pred) const
-	{
-		for (auto&& Element : PinDescriptions)
-		{
-			if (auto Result = Pred(Element);
-				Result.IsSet())
-			{
-				return Result.GetValue();
-			}
-		}
-		return {};
-	}
-
-	template <typename Predicate>
-	TArray<FHeartPinGuid> Filter(Predicate Pred) const
-	{
-		TArray<FHeartPinGuid> Out;
-
-		for (auto&& Element : PinDescriptions)
-		{
-			if (Pred(Element))
-			{
-				Out.Add(Element.Key);
-			}
-		}
-
-		return Out;
-	}
-
-	template <typename Predicate>
-	void ForEach(Predicate Pred) const
-	{
-		for (auto&& Element : PinDescriptions)
-		{
-			if (!Pred(Element))
-			{
-				return;
-			}
-		}
-	}
-
-	struct FPinQueryResult
-	{
-		FPinQueryResult(const FHeartNodePinData& Src)
-			: Reference(Src)
-		{
-			Src.PinOrder.GetKeys(Result);
-		}
-
-		const FHeartNodePinData& Reference;
-		TArray<FHeartPinGuid> Result;
-
-		template <typename Predicate>
-		FPinQueryResult& Filter(Predicate Pred)
-		{
-			for (auto It = Result.CreateIterator(); It; ++It)
-			{
-				if (!Pred({*It, Reference.PinDescriptions[*It]})) // @todo this is copying the description ! stop that
-				{
-					It.RemoveCurrentSwap();
-				}
-			}
-
-			return *this;
-		}
-
-		template <typename Predicate>
-		FPinQueryResult& ForEach(Predicate Pred)
-		{
-			for (auto&& Key : Result)
-			{
-				Pred(Reference.PinDescriptions[Key]);
-			}
-
-			return *this;
-		}
-
-		// Sort the results by their Pin Order
-		FPinQueryResult& Sort()
-		{
-			Algo::SortBy(Result,
-				[this](const FHeartPinGuid& Key)
-				{
-					return Reference.PinOrder[Key];
-				});
-
-			return *this;
-		}
-
-		// Inline sort if boolean is true
-		FPinQueryResult& Sort(const bool bShouldSort)
-		{
-			return bShouldSort ? Sort() : *this;
-		}
-
-		template <typename Predicate>
-		TOptional<FHeartPinGuid> Find(Predicate Pred) const
-		{
-			for (auto&& Key : Result)
-			{
-				if (auto Result = Pred(Reference.PinDescriptions[Key]);
-					Result.IsSet())
-				{
-					return Result.GetValue();
-				}
-			}
-			return {};
-		}
-	};
-
-	FPinQueryResult Query() const
-	{
-		return FPinQueryResult(*this);
-	}
-
-protected:
-	// Maps pins to their Pin Description, which carries all unique instance data about
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
-
-	// Maps pins to their connections in other nodes.
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
-
-	// Maintains the original order of pins as added to the node.
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TMap<FHeartPinGuid, int32> PinOrder;
 };
 
 
@@ -424,14 +277,14 @@ public:
 	UE_DEPRECATED(5.4, "Use a different version of GetLinks please")
 	FHeartGraphPinConnections GetLinks(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
 
-	FHeartNodePinData::FPinQueryResult QueryPins() const { return PinData.Query(); }
+	Heart::Query::FPinQueryResult QueryPins() const { return Heart::Query::FPinQueryResult(PinData); }
 
 	// Get all pins that match the direction.
-	FHeartNodePinData::FPinQueryResult FindPinsByDirection(EHeartPinDirection Direction) const;
+	Heart::Query::FPinQueryResult FindPinsByDirection(EHeartPinDirection Direction) const;
 
 	// Get all pins that match the direction and custom predicate.
 	template <typename Predicate>
-	FHeartNodePinData::FPinQueryResult FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const;
+	Heart::Query::FPinQueryResult FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const;
 
 	// Remove all pins that match the predicate. Returns num of pins removed.
 	template <typename Predicate>
@@ -516,12 +369,12 @@ private:
 ----------------------------*/
 
 template <typename Predicate>
-FHeartNodePinData::FPinQueryResult UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
+Heart::Query::FPinQueryResult UHeartGraphNode::FindPinsByPredicate(const EHeartPinDirection Direction, Predicate Pred) const
 {
-	return PinData.Query()
-		.Filter([Direction](const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& PinPair)
+	return Heart::Query::FPinQueryResult(PinData)
+		.Filter([Direction](const FHeartGraphPinDesc& Desc)
 			{
-				return EnumHasAnyFlags(Direction, PinPair.Value.Direction);
+				return EnumHasAnyFlags(Direction, Desc.Direction);
 			})
 		.Filter(Pred);
 }
@@ -529,7 +382,7 @@ FHeartNodePinData::FPinQueryResult UHeartGraphNode::FindPinsByPredicate(const EH
 template <typename Predicate>
 int32 UHeartGraphNode::RemovePinsByPredicate(const EHeartPinDirection Direction, Predicate Pred)
 {
-	TArray<FHeartPinGuid> PinsToRemove = FindPinsByPredicate(Direction, Pred).Result;
+	TArray<FHeartPinGuid> PinsToRemove = FindPinsByPredicate(Direction, Pred).Get();
 
 	for (auto&& ToRemove : PinsToRemove)
 	{

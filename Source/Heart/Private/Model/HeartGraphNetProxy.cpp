@@ -202,17 +202,9 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, GraphClass, this);
 	GraphClass = SourceGraph->GetClass();
 
-	SourceGraph->ForEachNode(
-		[this](UHeartGraphNode* Node)
-		{
-			if (ShouldReplicateNode(Node))
-			{
-				UpdateReplicatedNodeData(Node);
-			}
-
-			// Continue iterating
-			return true;
-		});
+	Heart::Query::FNodeQueryResult(SourceGraph)
+		.Filter_UObject(this, &ThisClass::ShouldReplicateNode)
+		.ForEach_UObject(this, &ThisClass::UpdateReplicatedNodeData);
 
 	return true;
 }

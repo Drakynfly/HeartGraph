@@ -171,6 +171,11 @@ UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
 	return Result ? *Result : nullptr;
 }
 
+void UHeartGraph::GetNodeGuids(TArray<FHeartNodeGuid>& OutGuids) const
+{
+	Nodes.GenerateKeyArray(OutGuids);
+}
+
 void UHeartGraph::GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
 {
 	// *le sign* epic templates mess this up . . .

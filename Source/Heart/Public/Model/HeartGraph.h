@@ -75,10 +75,12 @@ public:
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 	/* UObject */
 
+private:
 	/* IHeartGraphInterface */
 	virtual UHeartGraph* GetHeartGraph() const override final;
 	/* IHeartGraphInterface */
 
+public:
 	// Called after node locations have changed.
 	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
 
@@ -120,6 +122,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	UHeartGraphNode* GetNode(const FHeartNodeGuid& NodeGuid) const;
+
+	const TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>& GetNodes() const { return Nodes; }
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "GetNodes"))
+	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return reinterpret_cast<const TMap<FHeartNodeGuid, UHeartGraphNode*>&>(Nodes); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
+	void GetNodeGuids(TArray<FHeartNodeGuid>& OutGuids) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
 	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const;

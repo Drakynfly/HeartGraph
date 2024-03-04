@@ -984,9 +984,9 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 	}
 
 	HeartGraphNode->RemovePinsByPredicate(Pin->Direction == EGPD_Output ? EHeartPinDirection::Output : EHeartPinDirection::Input,
-		[Pin](const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& PinAndDesc)
+		[Pin](FHeartPinGuid, const FHeartGraphPinDesc& Desc)
 			{
-				return Pin->PinName == PinAndDesc.Value.Name;
+				return Pin->PinName == Desc.Name;
 			});
 
 	ReconstructNode();

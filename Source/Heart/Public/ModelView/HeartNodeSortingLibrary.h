@@ -69,7 +69,7 @@ struct HEART_API FNodeLooseToTreeArgs
 
 	// Allow the same node to appear in multiple places in the tree.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool AllowDuplicates = false;
+	bool AllowDuplicates = true;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	EHeartPinDirection Direction = EHeartPinDirection::None;

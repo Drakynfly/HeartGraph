@@ -4,6 +4,7 @@
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartQueries.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeSortingLibrary)
 
@@ -109,28 +110,47 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 	TArray<UHeartGraphNode*> RootNodes = Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
 	{
 		return Node->FindPinsByPredicate(Args.Direction,
-			[Node](const TTuple<FHeartPinGuid, FHeartGraphPinDesc>& Pin)
+			[Node](const FHeartPinGuid Pin, const FHeartGraphPinDesc&)
 			{
-				return !Node->GetLinks(Pin.Key, true).Links.IsEmpty();
-			}).Result.Num() == 0;
+				return Node->HasConnections(Pin);
+			}).Get().Num() == 0;
 	});
 
 	EHeartPinDirection InverseDirection = Args.Direction == EHeartPinDirection::Input ? EHeartPinDirection::Output : EHeartPinDirection::Input;
 
+	TSet<UHeartGraphNode*> TrackedNodes;
+
 	// Recursive function for building tree nodes
 	TFunction<FHeartTreeNode(UHeartGraphNode*)> BuildTreeNode;
-	BuildTreeNode = [InverseDirection, &BuildTreeNode](const UHeartGraphNode* Node)
+	BuildTreeNode = [InverseDirection, &BuildTreeNode, &TrackedNodes, AllowDuplicates = Args.AllowDuplicates](const UHeartGraphNode* Node)
 	{
 		FHeartTreeNode OutTreeNode;
 		OutTreeNode.Node = Node->GetGuid();
-		auto&& Pins = Node->FindPinsByDirection(InverseDirection);
-		for (auto&& Pin : Pins.Result)
+		for (auto&& Pins = Node->FindPinsByDirection(InverseDirection).Get();
+			auto&& Pin : Pins)
 		{
-			auto&& ConnectedPins = Node->GetLinks(Pin, true).Links;
-			for (auto&& ConnectedPin : ConnectedPins)
+			auto&& Connections = Node->GetLinks(Pin);
+			if (!Connections.IsSet())
+			{
+				continue;
+			}
+
+			for (auto&& ConnectedPin : Connections.GetValue().Links)
 			{
 				if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
 				{
+					if (TrackedNodes.Contains(ConnectedNode))
+					{
+						if (!AllowDuplicates)
+						{
+							continue;
+						}
+					}
+					else
+					{
+						TrackedNodes.Add(ConnectedNode);
+					}
+
 					OutTreeNode.Children.Add(TInstancedStruct<FHeartTreeNode>::Make(BuildTreeNode(ConnectedNode)));
 				}
 			}
