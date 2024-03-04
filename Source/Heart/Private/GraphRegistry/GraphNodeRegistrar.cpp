@@ -3,9 +3,9 @@
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
-#if WITH_EDITOR
-
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GraphNodeRegistrar)
+
+#if WITH_EDITOR
 
 /**
  * We always unregister ourself before we are edited. This will prevent the registry from holding onto stuff we are no
@@ -54,8 +54,8 @@ void UGraphNodeRegistrar::OnRegistered(UHeartGraphNodeRegistry* Registry) const
 
 #if WITH_EDITOR
 	FEditorScriptExecutionGuard ScriptExecutionGuard;
-	BP_Register(Registry);
 #endif
+	BP_Register(Registry);
 }
 
 void UGraphNodeRegistrar::OnDeregistered(UHeartGraphNodeRegistry* Registry) const
@@ -64,6 +64,6 @@ void UGraphNodeRegistrar::OnDeregistered(UHeartGraphNodeRegistry* Registry) cons
 
 #if WITH_EDITOR
 	FEditorScriptExecutionGuard ScriptExecutionGuard;
-	BP_Register(Registry);
 #endif
+	BP_Deregister(Registry);
 }
