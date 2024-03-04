@@ -129,7 +129,7 @@ private:
 		Options.DisplayMode = EClassViewerDisplayMode::TreeView;
 		Options.bIsBlueprintBaseOnly = true;
 
-		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShareable(new FHeartDefaultClassFilter);
+		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShared<FHeartDefaultClassFilter>();
 
 		// All child child classes of UHeartGraphNode are valid
 		Filter->AllowedChildrenOfClasses.Add(UHeartGraphNode::StaticClass());

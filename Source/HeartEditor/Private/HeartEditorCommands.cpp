@@ -145,7 +145,7 @@ TSharedPtr<FEdGraphSchemaAction> FHeartSpawnNodeCommands::GetActionByClass(const
 {
 	if (NodeClass == UHeartGraphNode::StaticClass())
 	{
-		return MakeShareable(new FHeartGraphSchemaAction_NewComment);
+		return MakeShared<FHeartGraphSchemaAction_NewComment>();
 	}
 	else
 	{

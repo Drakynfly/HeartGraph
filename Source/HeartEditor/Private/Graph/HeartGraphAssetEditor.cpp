@@ -216,7 +216,7 @@ namespace Heart::AssetEditor
 
 		if (FoundMenu)
 		{
-			AssetToolbar = MakeShareable(new FHeartGraphAssetToolbar(SharedThis(this), FoundMenu));
+			AssetToolbar = MakeShared<FHeartGraphAssetToolbar>(SharedThis(this), FoundMenu);
 		}
 	}
 

@@ -33,7 +33,7 @@ FVector UHeartSceneGenerator::GetNodeLocation3D(const FHeartNodeGuid& Node) cons
 
 	if (ensure(IsValid(LocationModifiers)))
 	{
-		const auto SceneNode = SceneNodes[Node];
+		auto&& SceneNode = SceneNodes[Node];
 		return LocationModifiers->ProxyToLocation3D(UseWorldSpaceInModifiers ? SceneNode->GetComponentLocation() : SceneNode->GetRelativeLocation());
 	}
 
@@ -49,7 +49,7 @@ void UHeartSceneGenerator::SetNodeLocation3D(const FHeartNodeGuid& Node, const F
 
 	if (ensure(IsValid(LocationModifiers)))
 	{
-		const auto SceneNode = SceneNodes[Node];
+		auto&& SceneNode = SceneNodes[Node];
 
 		const FVector Proxy = LocationModifiers->LocationToProxy3D(Location);
 

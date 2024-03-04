@@ -12,7 +12,7 @@
 
 TSharedRef<IDetailCustomization> FHeartGraphSchemaCustomization::MakeInstance()
 {
-	return MakeShareable(new FHeartGraphSchemaCustomization);
+	return MakeShared<FHeartGraphSchemaCustomization>();
 }
 
 FHeartGraphSchemaCustomization::FHeartGraphSchemaCustomization()

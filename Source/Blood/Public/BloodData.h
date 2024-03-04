@@ -166,7 +166,7 @@ struct BLOOD_API FBloodSoftObject : public FBloodDataBase
 	GENERATED_BODY()
 
 	FBloodSoftObject() {}
-	FBloodSoftObject(const TSoftObjectPtr<UObject> Value) : Value(Value) {}
+	FBloodSoftObject(const TSoftObjectPtr<UObject>& Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
 	TSoftObjectPtr<UObject> Value = nullptr;
@@ -183,7 +183,7 @@ struct BLOOD_API FBloodSoftClass : public FBloodDataBase
 	GENERATED_BODY()
 
 	FBloodSoftClass() {}
-	FBloodSoftClass(const TSoftClassPtr<UObject> Value) : Value(Value) {}
+	FBloodSoftClass(const TSoftClassPtr<UObject>& Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
 	TSoftClassPtr<UObject> Value = nullptr;

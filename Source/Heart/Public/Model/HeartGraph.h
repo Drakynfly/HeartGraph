@@ -69,9 +69,15 @@ public:
 
 	virtual UWorld* GetWorld() const override;
 
+	/* UObject */
 	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
 	virtual void PostLoad() override;
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
+	/* UObject */
+
+	/* IHeartGraphInterface */
+	virtual UHeartGraph* GetHeartGraph() const override final;
+	/* IHeartGraphInterface */
 
 	// Called after node locations have changed.
 	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
@@ -81,11 +87,6 @@ public:
 
 	// Called after a pin connection change has been made.
 	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
-
-	//* IHeartGraphInterface */
-	virtual UHeartGraph* GetHeartGraph() const override final;
-	//* IHeartGraphInterface */
-
 
 	// Return true in Iter to continue iterating
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;

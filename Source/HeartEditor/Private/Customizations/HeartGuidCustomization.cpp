@@ -8,7 +8,7 @@
 
 TSharedRef<IPropertyTypeCustomization> FHeartGuidCustomization::MakeInstance()
 {
-	return MakeShareable(new FHeartGuidCustomization);
+	return MakeShared<FHeartGuidCustomization>();
 }
 
 void FHeartGuidCustomization::CustomizeHeader(TSharedRef<IPropertyHandle> StructPropertyHandle,

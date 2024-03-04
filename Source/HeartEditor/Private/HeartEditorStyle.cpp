@@ -20,7 +20,7 @@ FName FHeartEditorStyle::GetStyleSetName()
 
 void FHeartEditorStyle::Initialize()
 {
-	StyleSet = MakeShareable(new FSlateStyleSet(TEXT("HeartEditorStyle")));
+	StyleSet = MakeShared<FSlateStyleSet>(TEXT("HeartEditorStyle"));
 
 	const FVector2D Icon16(16.0f, 16.0f);
 	const FVector2D Icon20(20.0f, 20.0f);

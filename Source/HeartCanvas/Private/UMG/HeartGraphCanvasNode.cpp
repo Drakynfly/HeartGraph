@@ -17,7 +17,7 @@ DECLARE_CYCLE_STAT(TEXT("RebuildPinConnections"), STAT_RebuildPinConnections, ST
 
 void UHeartGraphCanvasNode::NativeDestruct()
 {
-	for (const auto Element : ConnectionWidgets)
+	for (auto&& Element : ConnectionWidgets)
 	{
 		Element->RemoveFromParent();
 	}

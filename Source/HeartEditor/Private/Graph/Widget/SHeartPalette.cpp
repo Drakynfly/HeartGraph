@@ -231,7 +231,7 @@ void SHeartPalette::Refresh()
 
 void SHeartPalette::UpdateCategoryNames()
 {
-	CategoryNames = {MakeShareable(new FString(TEXT("All")))};
+	CategoryNames = {MakeShared<FString>(TEXT("All"))};
 
 	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
 	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())

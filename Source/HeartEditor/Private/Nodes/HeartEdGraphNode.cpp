@@ -247,6 +247,9 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 			if (HeartGraph->ConnectPins(SelfReference, {HeartNodeConnectedInEditor->GetGuid(), ConnectedHeartPin}))
 			{
+				// Allow implementations of BP_OnConnectionsChanged to run in editor
+				FEditorScriptExecutionGuard ScriptExecutionGuard;
+
 				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
 				HeartNodeConnectedInEditor->NotifyPinConnectionsChanged(ConnectedHeartPin);
 				HeartGraph->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});

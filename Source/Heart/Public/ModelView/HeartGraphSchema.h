@@ -161,6 +161,7 @@ public:
 	FHeartConnectPinsResponse CanPinsConnect(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
 	// AKA, setup function called on all graphs when they are created.
+	// @todo maybe convert this into a UHeartGraphAction like EditorPreSaveAction
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	void CreateDefaultNodesForGraph(UHeartGraph* Graph) const;
 

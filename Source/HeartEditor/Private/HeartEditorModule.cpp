@@ -58,8 +58,8 @@ void FHeartEditorModule::StartupModule()
 
 	FHeartEditorStyle::Initialize();
 
-	MenuExtensibilityManager = MakeShareable(new FExtensibilityManager);
-	ToolBarExtensibilityManager = MakeShareable(new FExtensibilityManager);
+	MenuExtensibilityManager = MakeShared<FExtensibilityManager>();
+	ToolBarExtensibilityManager = MakeShared<FExtensibilityManager>();
 
 	// @TODO BEGIN TEMP STUFF
 	{
@@ -75,8 +75,8 @@ void FHeartEditorModule::StartupModule()
 			}
 		}
 
-		RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphBlueprint()));
-		RegisteredAssetActions.Add(MakeShareable(new FAssetTypeActions_HeartGraphNodeBlueprint()));
+		RegisteredAssetActions.Add(MakeShared<FAssetTypeActions_HeartGraphBlueprint>());
+		RegisteredAssetActions.Add(MakeShared<FAssetTypeActions_HeartGraphNodeBlueprint>());
 
 		for (auto&& TypeActions : RegisteredAssetActions)
 		{
@@ -123,7 +123,7 @@ void FHeartEditorModule::StartupModule()
 	EditorMode.CreateModeInstance.BindLambda(
 		[](const TSharedRef<FHeartGraphEditor>& Editor)
 		{
-			return MakeShareable(new FApplicationMode_Editor(Editor));
+			return MakeShared<FApplicationMode_Editor>(Editor);
 		});
 	EditorMode.SupportsAsset.BindLambda(
 		[](const UHeartGraph* Asset)

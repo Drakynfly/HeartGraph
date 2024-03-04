@@ -201,9 +201,9 @@ void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 
 	const UHeartEdGraph* HeartEdGraph = Cast<UHeartEdGraph>(&Graph);
 	check(HeartEdGraph);
-
-	UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
+UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
 	check(HeartGraph);
+
 
 	const UHeartGraphSchema* HeartSchema = HeartGraph->GetSchema();
 	check(HeartSchema);
@@ -223,7 +223,7 @@ TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(con
 	{
 		if (!Category.IsEmpty())
 		{
-			Result.Emplace(MakeShareable(new FString(Category)));
+			Result.Emplace(MakeShared<FString>(Category));
 		}
 	}
 
