@@ -105,14 +105,10 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 public:
 	UHeartGraphNode();
 
+	/** UObject */
 	virtual UWorld* GetWorld() const override;
-
 	virtual void PostLoad() override;
-
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
-#endif
+	/** UObject */
 
 	/** IHeartGraphNodeInterface */
 	virtual UHeartGraphNode* GetHeartGraphNode() const override final;
@@ -356,11 +352,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphNode")
 	uint8 InstancedOutputs = 0;
-
-#if WITH_EDITOR
-private:
-	Heart::IEdNodeInterface* EdGraphNodePointer;
-#endif
 };
 
 

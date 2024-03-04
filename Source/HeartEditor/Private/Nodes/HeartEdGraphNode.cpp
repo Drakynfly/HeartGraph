@@ -24,6 +24,7 @@
 #include "ScopedTransaction.h"
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
+#include "HeartGraphStatics.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)
@@ -37,6 +38,11 @@ UHeartEdGraphNode::UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer
 	, bNeedsFullReconstruction(false)
 {
 	OrphanedPinSaveMode = ESaveOrphanPinMode::SaveAll;
+}
+
+UHeartEdGraphNode::~UHeartEdGraphNode()
+{
+	UnsubscribeToExternalChanges();
 }
 
 void UHeartEdGraphNode::SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode)
@@ -58,7 +64,7 @@ void UHeartEdGraphNode::PostLoad()
 {
 	Super::PostLoad();
 
-	if (ensure(IsValid(HeartGraphNode)))
+	if (!IsTemplate())
 	{
 		SubscribeToExternalChanges();
 
@@ -259,9 +265,19 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	}
 }
 
-void UHeartEdGraphNode::OnPropertyChanged()
+void UHeartEdGraphNode::OnHeartGraphNodePropertyChanged(UObject* Obj, FPropertyChangedEvent& PropertyChangedEvent)
 {
-	OnNodeRequestReconstruction();
+	if (Obj != HeartGraphNode)
+	{
+		return;
+	}
+
+	if (PropertyChangedEvent.MemberProperty &&
+	   (PropertyChangedEvent.MemberProperty->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
+		HeartGraphNode->GetPropertiesTriggeringNodeReconstruction().Contains(PropertyChangedEvent.GetPropertyName())))
+	{
+		OnNodeRequestReconstruction();
+	}
 }
 
 void UHeartEdGraphNode::PostCopyNode()
@@ -281,9 +297,9 @@ void UHeartEdGraphNode::PostCopyNode()
 
 void UHeartEdGraphNode::SubscribeToExternalChanges()
 {
-	if (HeartGraphNode)
+	if (ensure(IsValid(HeartGraphNode)))
 	{
-		HeartGraphNode->EdGraphNodePointer = this;
+		FCoreUObjectDelegates::OnObjectPropertyChanged.AddUObject(this, &ThisClass::OnHeartGraphNodePropertyChanged);
 
 		// blueprint nodes
 		if (HeartGraphNode->GetClass()->ClassGeneratedBy && GEditor)
@@ -291,6 +307,20 @@ void UHeartEdGraphNode::SubscribeToExternalChanges()
 			GEditor->OnBlueprintPreCompile().AddUObject(this, &UHeartEdGraphNode::OnBlueprintPreCompile);
 			GEditor->OnBlueprintCompiled().AddUObject(this, &UHeartEdGraphNode::OnBlueprintCompiled);
 		}
+	}
+}
+
+void UHeartEdGraphNode::UnsubscribeToExternalChanges()
+{
+	if (UObjectInitialized())
+	{
+		FCoreUObjectDelegates::OnObjectPropertyChanged.RemoveAll(this);
+	}
+
+	if (GEditor)
+	{
+		GEditor->OnBlueprintPreCompile().RemoveAll(this);
+		GEditor->OnBlueprintCompiled().RemoveAll(this);
 	}
 }
 

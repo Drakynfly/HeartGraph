@@ -1,9 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartEdNodeInterface.h"
 #include "Model/HeartGraph.h"
-#include "Model/HeartGraphStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNode)
 
@@ -67,44 +65,6 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 		}
 	}
 }
-
-#if WITH_EDITOR
-
-void UHeartGraphNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-
-	if (PropertyChangedEvent.MemberProperty &&
-	   (PropertyChangedEvent.MemberProperty->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
-		GetPropertiesTriggeringNodeReconstruction().Contains(PropertyChangedEvent.GetPropertyName())))
-	{
-		if (EdGraphNodePointer)
-		{
-			EdGraphNodePointer->OnPropertyChanged();
-		}
-	}
-}
-
-void UHeartGraphNode::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-
-	if (auto&& Head = PropertyChangedEvent.PropertyChain.GetHead())
-	{
-		const FProperty* Property = Head->GetValue();
-
-		if (Property && (Property->HasMetaData(Heart::Graph::Metadata_TriggersReconstruct) ||
-		   	GetPropertiesTriggeringNodeReconstruction().Contains(Property->GetFName())))
-		{
-			if (EdGraphNodePointer)
-			{
-				EdGraphNodePointer->OnPropertyChanged();
-			}
-		}
-	}
-}
-
-#endif
 
 UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 {

@@ -283,7 +283,7 @@ namespace Heart::Input
 }
 
 /**
- * Place this macro after the GENERATED_BODY or constructor of a UWidget derived class you wish to implement an InputLinker for
+ * Place this macro after the GENERATED_BODY or constructor of a UWidget derived class you wish to implement an InputLinker on.
  */
 #define HEART_WIDGET_INPUT_LINKER_HEADER()\
 protected:\
