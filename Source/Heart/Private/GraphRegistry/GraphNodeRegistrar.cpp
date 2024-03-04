@@ -39,4 +39,31 @@ void UGraphNodeRegistrar::PostEditChangeChainProperty(FPropertyChangedChainEvent
 
 	GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->AutoAddRegistrar(this);
 }
+
 #endif
+
+bool UGraphNodeRegistrar::ShouldRegister() const
+{
+	// Children of the base class should attempt to register their CDO.
+	return GetClass() != UGraphNodeRegistrar::StaticClass();
+}
+
+void UGraphNodeRegistrar::OnRegistered(UHeartGraphNodeRegistry* Registry) const
+{
+	Registry->AddRegistrationList(Registration);
+
+#if WITH_EDITOR
+	FEditorScriptExecutionGuard ScriptExecutionGuard;
+	BP_Register(Registry);
+#endif
+}
+
+void UGraphNodeRegistrar::OnDeregistered(UHeartGraphNodeRegistry* Registry) const
+{
+	Registry->RemoveRegistrationList(Registration);
+
+#if WITH_EDITOR
+	FEditorScriptExecutionGuard ScriptExecutionGuard;
+	BP_Register(Registry);
+#endif
+}

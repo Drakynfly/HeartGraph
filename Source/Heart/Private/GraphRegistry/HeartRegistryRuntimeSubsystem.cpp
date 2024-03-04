@@ -31,6 +31,8 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 
 	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem Initialized"))
 
+	FetchNativeRegistrars();
+
 	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
 
 	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
@@ -39,7 +41,7 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 
 	LoadFallbackRegistrar();
 
-	FetchAssetRegistryAssets();
+	FetchAssetRegistrars();
 }
 
 void UHeartRegistryRuntimeSubsystem::Deinitialize()
@@ -65,7 +67,7 @@ void UHeartRegistryRuntimeSubsystem::OnFilesLoaded()
 {
 	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnFilesLoaded"))
 
-	FetchAssetRegistryAssets();
+	FetchAssetRegistrars();
 }
 
 void UHeartRegistryRuntimeSubsystem::OnAssetAdded(const FAssetData& AssetData)
@@ -110,7 +112,31 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 	}
 }
 
-void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
+void UHeartRegistryRuntimeSubsystem::FetchNativeRegistrars()
+{
+	static constexpr EClassFlags BannedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
+
+	TArray<UClass*> Classes;
+	GetDerivedClasses(UGraphNodeRegistrar::StaticClass(), Classes);
+
+	for (auto&& Class : Classes)
+	{
+		TSubclassOf<UGraphNodeRegistrar> RegistarClass = Class;
+		if (IsValid(RegistarClass))
+		{
+			// Skip classes with banned flags
+			if (RegistarClass->HasAnyClassFlags(BannedClassFlags))
+			{
+				continue;
+			}
+
+			const UGraphNodeRegistrar* RegistrarDefault = GetDefault<UGraphNodeRegistrar>(RegistarClass);
+			AutoAddRegistrar(RegistrarDefault);
+		}
+	}
+}
+
+void UHeartRegistryRuntimeSubsystem::FetchAssetRegistrars(const bool ForceReload)
 {
 	// @todo this is a hack to prevent this function from being recursively triggered. I'd like a cleaner solution, but this'll do...
 	static bool IsFetchingRegistryAssets = false;
@@ -135,6 +161,11 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistryAssets()
 	{
 		if (auto&& Registrar = Cast<UGraphNodeRegistrar>(RegistrarAsset.GetAsset()))
 		{
+			if (ForceReload)
+			{
+				AutoRemoveRegistrar(Registrar);
+			}
+
 			AutoAddRegistrar(Registrar);
 		}
 	}
@@ -165,7 +196,7 @@ UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(co
 	Registries.Add(Path, NewRegistry);
 	BroadcastPostRegistryAdded(NewRegistry);
 
-	NewRegistry->OnRegistryChangedNative.AddUObject(this, &ThisClass::OnRegistryChanged);
+	NewRegistry->GetOnRegistryChangedNative().AddUObject(this, &ThisClass::OnRegistryChanged);
 
 	return NewRegistry;
 }
@@ -175,15 +206,20 @@ void UHeartRegistryRuntimeSubsystem::OnRegistryChanged(UHeartGraphNodeRegistry* 
 	BroadcastOnAnyRegistryChanged(Registry);
 }
 
-void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(UGraphNodeRegistrar* Registrar)
+void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(const UGraphNodeRegistrar* Registrar)
 {
+	if (!Registrar->ShouldRegister())
+	{
+		return;
+	}
+
 	for (auto&& ClassPath : Registrar->AutoRegisterWith)
 	{
 		if (const TSubclassOf<UHeartGraph> Class = ClassPath.TryLoadClass<UHeartGraph>())
 		{
 			auto&& Registry = GetRegistry_Internal(Class);
 			check(Registry);
-			if (!Registry->ContainedRegistrars.Contains(Registrar))
+			if (!Registry->IsRegistered(Registrar))
 			{
 				Registry->AddRegistrar(Registrar);
 			}

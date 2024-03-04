@@ -12,6 +12,7 @@
 
 struct FHeartGraphPinDesc;
 class UHeartGraphNode;
+class UGraphNodeRegistrar;
 
 class UHeartGraphNodeRegistry;
 using FHeartGraphNodeRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
@@ -50,7 +51,6 @@ struct HEART_API FHeartRegistryQuery
 	FNodeSourceScore Score;
 };
 
-class UGraphNodeRegistrar;
 
 /**
  * Stores a list of nodes, graph nodes, usable by a Graph, along with their internal graph representations and
@@ -63,17 +63,22 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 {
 	GENERATED_BODY()
 
-	friend class UHeartRegistryRuntimeSubsystem;
+	// Registrar is allowed to call AddRegistrationList/RemoveRegistrationList
+	friend class UGraphNodeRegistrar;
 
 protected:
 	bool FilterObjectForRegistration(const UObject* Object) const;
 
-	void AddRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast);
-	void RemoveRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast);
+	void AddRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast = true);
+	void RemoveRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast = true);
 
 	void BroadcastChange();
 
 public:
+	bool IsRegistered(const UGraphNodeRegistrar* Registrar) const;
+
+	FHeartGraphNodeRegistryEventNative& GetOnRegistryChangedNative() { return OnRegistryChangedNative; }
+
 	void ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
@@ -133,13 +138,10 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	void AddRegistrar(UGraphNodeRegistrar* Registrar);
+	void AddRegistrar(const UGraphNodeRegistrar* Registrar);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	void RemoveRegistrar(UGraphNodeRegistrar* Registrar);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
-	void DeregisterAll();
+	void RemoveRegistrar(const UGraphNodeRegistrar* Registrar);
 
 	// Broadcast on any change to registered class lists.
 	UPROPERTY(BlueprintAssignable, Category = "Heart|GraphNodeRegistry|Events")
@@ -167,5 +169,5 @@ private:
 
 	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TMaps
 	UPROPERTY()
-	TArray<TObjectPtr<UGraphNodeRegistrar>> ContainedRegistrars;
+	TArray<TObjectPtr<const UGraphNodeRegistrar>> ContainedRegistrars;
 };

@@ -138,22 +138,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	TSubclassOf<UHeartGraphNodeRegistry> GetRegistryClass() const;
 
-	// @todo this visualizer stuff should absolutely not be part of UHeartGraphSchema. what if we wanted to visualize the same graph in multiple ways?
-	// @todo maybe make a interface, or base class for visualizers, so this isn't just a UObject pointer?
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|Schema")
-	UObject* GetConnectionVisualizer() const;
-
-	template <typename TConnectionVisualizer>
-	TConnectionVisualizer* GetConnectionVisualizer() const
-	{
-		return Cast<TConnectionVisualizer>(GetConnectionVisualizer());
-	}
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
-	UClass* GetConnectionVisualizerClass() const;
-
-
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|Schema")
 	bool TryConnectPins(UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 

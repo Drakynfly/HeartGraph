@@ -46,7 +46,12 @@ protected:
 	void OnAssetAdded(const FAssetData& AssetData);
 	void OnAssetRemoved(const FAssetData& AssetData);
 
-	void FetchAssetRegistryAssets();
+	// Search for Registrars defined in code. This is called once on startup of this subsystem.
+	void FetchNativeRegistrars();
+
+	// Search for Registrars defined as BP assets. This is called occasionally by the editor to reload registrars as they
+	// are edited.
+	void FetchAssetRegistrars(bool ForceReload = false);
 
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph> Class);
 
@@ -54,7 +59,10 @@ protected:
 
 	UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
 
-	void AutoAddRegistrar(UGraphNodeRegistrar* Registrar);
+	// Add a registrar to every registry for the classes that the register lists in AutoRegisterWith
+	void AutoAddRegistrar(const UGraphNodeRegistrar* Registrar);
+
+	// Remove a registrar from every registry for the classes that the register lists in AutoRegisterWith
 	void AutoRemoveRegistrar(UGraphNodeRegistrar* Registrar);
 
 	void BroadcastPostRegistryAdded(UHeartGraphNodeRegistry* Registry);

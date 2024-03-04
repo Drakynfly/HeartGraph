@@ -64,8 +64,8 @@ bool UHeartGraphNodeRegistry::FilterObjectForRegistration(const UObject* Object)
 		return false;
 	}
 
-	static EClassFlags BannedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
-	static EObjectFlags BannedObjectFlags = RF_NewerVersionExists | RF_BeginDestroyed | RF_FinishDestroyed;
+	static constexpr EClassFlags BannedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
+	static constexpr EObjectFlags BannedObjectFlags = RF_NewerVersionExists | RF_BeginDestroyed | RF_FinishDestroyed;
 
 	if (const UClass* AsClass = Cast<UClass>(Object))
 	{
@@ -266,6 +266,11 @@ void UHeartGraphNodeRegistry::BroadcastChange()
 	OnRegistryChanged.Broadcast(this);
 }
 
+bool UHeartGraphNodeRegistry::IsRegistered(const UGraphNodeRegistrar* Registrar) const
+{
+	return ContainedRegistrars.Contains(Registrar);
+}
+
 void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const
 {
 	for (const TTuple<FHeartNodeSource, FRootNodeKey>& Element : NodeRootTable)
@@ -462,7 +467,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
-			for (auto&& FallbackClass : Fallback->Registration.NodeVisualizerClasses)
+			for (auto&& FallbackClass : Fallback->GetRegistrationList().NodeVisualizerClasses)
 			{
 				ensure(IsValid(FallbackClass));
 
@@ -509,7 +514,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const FHeartGraph
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
-			for (auto&& FallbackClass : Fallback->Registration.PinVisualizerClasses)
+			for (auto&& FallbackClass : Fallback->GetRegistrationList().PinVisualizerClasses)
 			{
 				ensure(IsValid(FallbackClass));
 
@@ -538,7 +543,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 	{
 		if (auto&& Fallback = Subsystem->GetFallbackRegistrar())
 		{
-			for (auto&& FallbackClass : Fallback->Registration.ConnectionVisualizerClasses)
+			for (auto&& FallbackClass : Fallback->GetRegistrationList().ConnectionVisualizerClasses)
 			{
 				ensure(IsValid(FallbackClass));
 
@@ -556,7 +561,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 	return nullptr;
 }
 
-void UHeartGraphNodeRegistry::AddRegistrar(UGraphNodeRegistrar* Registrar)
+void UHeartGraphNodeRegistry::AddRegistrar(const UGraphNodeRegistrar* Registrar)
 {
 	if (!ensure(IsValid(Registrar)))
 	{
@@ -572,12 +577,12 @@ void UHeartGraphNodeRegistry::AddRegistrar(UGraphNodeRegistrar* Registrar)
 
 	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartGraphNodeRegistry adding registrar '%s'"), *Registrar->GetName())
 
-	AddRegistrationList(Registrar->Registration, true);
+	Registrar->OnRegistered(this);
 
 	ContainedRegistrars.Add(Registrar);
 }
 
-void UHeartGraphNodeRegistry::RemoveRegistrar(UGraphNodeRegistrar* Registrar)
+void UHeartGraphNodeRegistry::RemoveRegistrar(const UGraphNodeRegistrar* Registrar)
 {
 	if (!ensure(IsValid(Registrar)))
 	{
@@ -593,15 +598,7 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(UGraphNodeRegistrar* Registrar)
 
 	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartGraphNodeRegistry removing registrar '%s'"), *Registrar->GetName())
 
-	RemoveRegistrationList(Registrar->Registration, true);
+	Registrar->OnDeregistered(this);
 
 	ContainedRegistrars.Remove(Registrar);
-}
-
-void UHeartGraphNodeRegistry::DeregisterAll()
-{
-	NodeRootTable.Empty();
-	NodeVisualizerMap.Empty();
-	PinVisualizerMap.Empty();
-	ContainedRegistrars.Empty();
 }

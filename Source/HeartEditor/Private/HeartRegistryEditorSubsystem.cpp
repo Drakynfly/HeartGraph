@@ -87,13 +87,7 @@ void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
 {
 	auto&& RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 
-	// Flush all registries so it won't disregard re-added registrars.
-	for (auto&& Registry : RuntimeSubsystem->Registries)
-	{
-		Registry.Value->DeregisterAll();
-	}
-
-	RuntimeSubsystem->FetchAssetRegistryAssets();
+	RuntimeSubsystem->FetchAssetRegistrars(true);
 
 	OnRefreshPalettes.Broadcast();
 }

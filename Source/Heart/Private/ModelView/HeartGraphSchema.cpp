@@ -88,16 +88,6 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 #endif
 }
 
-UObject* UHeartGraphSchema::GetConnectionVisualizer() const
-{
-	if (auto&& Class = GetConnectionVisualizerClass())
-	{
-		return Class->GetDefaultObject();
-	}
-
-	return nullptr;
-}
-
 bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB) const
 {
 	bool bModified = false;
@@ -153,9 +143,4 @@ FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(const
 void UHeartGraphSchema::CreateDefaultNodesForGraph_Implementation(UHeartGraph* Graph) const
 {
 	// Does nothing by default
-}
-
-UClass* UHeartGraphSchema::GetConnectionVisualizerClass_Implementation() const
-{
-	return nullptr;
 }
