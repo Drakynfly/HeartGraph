@@ -136,7 +136,7 @@ namespace Blood
 		FBloodProperty Type;
 	};
 
-	template<typename TBloodData, typename Container = TSingle>
+	template <typename TBloodData, typename Container = TSingle>
 	struct CreatePin : FBloodPropertyFactory
 	{
 		CreatePin(const FName Name)
@@ -144,7 +144,7 @@ namespace Blood
 		{}
 	};
 
-	template<typename Container>
+	template <typename Container>
 	struct CreatePin<void, Container> : FBloodPropertyFactory
 	{
 		CreatePin(const FName Name, UStruct* Struct = nullptr)
@@ -153,7 +153,7 @@ namespace Blood
 	};
 
 	// Specialization for TObjectPtr
-	template<typename T, typename Container>
+	template <typename T, typename Container>
 	struct CreatePin<TObjectPtr<T>, Container> : FBloodPropertyFactory
 	{
 		CreatePin(const FName Name)
@@ -161,7 +161,7 @@ namespace Blood
 	};
 
 	// Specialization for TSubclassOf
-	template<typename T, typename Container>
+	template <typename T, typename Container>
 	struct CreatePin<TSubclassOf<T>, Container> : FBloodPropertyFactory
 	{
 		CreatePin(const FName Name)
@@ -169,7 +169,7 @@ namespace Blood
 	};
 
 	// Specialization for TSoftObjectPtr
-	template<typename T, typename Container>
+	template <typename T, typename Container>
 	struct CreatePin<TSoftObjectPtr<T>, Container> : FBloodPropertyFactory
 	{
 		CreatePin(const FName Name)
@@ -177,7 +177,7 @@ namespace Blood
 	};
 
 	// Specialization for TSoftClassPtr
-	template<typename T, typename Container>
+	template <typename T, typename Container>
 	struct CreatePin<TSoftClassPtr<T>, Container> : FBloodPropertyFactory
 	{
 		CreatePin(const FName Name)

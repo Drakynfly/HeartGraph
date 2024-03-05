@@ -14,13 +14,13 @@ struct BLOOD_API FBloodValue
 	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
 	FInstancedStruct Data;
 
-	template<typename TBloodDataType>
+	template <typename TBloodDataType>
 	TBloodDataType GetValue() const
 	{
 		return Blood::TDataConverter<TBloodDataType>::Value(Data);
 	}
 
-	template<typename TBloodData>
+	template <typename TBloodData>
 	TArray<TBloodData> GetArrayValue() const
 	{
 		// @todo
@@ -28,7 +28,7 @@ struct BLOOD_API FBloodValue
 		return {};
 	}
 
-	template<typename TBloodData>
+	template <typename TBloodData>
 	TSet<TBloodData> GetSetValue() const
 	{
 		// @todo
@@ -36,7 +36,7 @@ struct BLOOD_API FBloodValue
 		return {};
 	}
 
-	template<typename TBloodDataKey, typename TBloodDataValue>
+	template <typename TBloodDataKey, typename TBloodDataValue>
 	TMap<TBloodDataKey, TBloodDataValue> GetMapValue() const
 	{
 		// @todo

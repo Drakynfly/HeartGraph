@@ -158,7 +158,7 @@ public:
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
 	/** Find the first extension of the template type. */
-	template<typename TExtensionClass>
+	template <typename TExtensionClass>
 	TExtensionClass* GetExtension() const
 	{
 		return CastChecked<TExtensionClass>(GetExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
@@ -169,7 +169,7 @@ public:
 	UHeartGraphExtension* GetExtension(TSubclassOf<UHeartGraphExtension> Class) const;
 
 	/** Add the extension of the template class. */
-	template<typename TExtensionClass>
+	template <typename TExtensionClass>
 	TExtensionClass* AddExtension()
 	{
 		return CastChecked<TExtensionClass>(AddExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
@@ -188,7 +188,7 @@ public:
 	void RemoveExtension(TSubclassOf<UHeartGraphExtension> Class);
 
 	/** Remove extension of the template class. */
-	template<typename ExtensionType>
+	template <typename ExtensionType>
 	void RemoveExtension()
 	{
 		return RemoveExtension(ExtensionType::StaticClass());

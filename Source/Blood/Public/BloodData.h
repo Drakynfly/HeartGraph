@@ -234,7 +234,7 @@ namespace Blood
 
 	// Macro for binding a templated data type to its Blood wrapper struct
 	#define BIND_BLOOD_TYPE_TEMPLATED(Wrapper, StructType)\
-		template<typename T> struct TDataConverter<Wrapper<T>>\
+		template <typename T> struct TDataConverter<Wrapper<T>>\
 		{\
 			static UScriptStruct* Type() { return StructType::StaticStruct(); }\
 			\
