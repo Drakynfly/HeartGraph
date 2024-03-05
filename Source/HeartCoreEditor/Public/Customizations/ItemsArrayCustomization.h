@@ -17,7 +17,7 @@ namespace Heart
         };
 
 	private:
-		friend SharedPointerInternals::TIntrusiveReferenceController;
+		friend SharedPointerInternals::TIntrusiveReferenceController<FItemsArrayCustomization, ESPMode::ThreadSafe>;
 
 		FItemsArrayCustomization(const FArgs& Args)
 		  : Customization(Args) {}

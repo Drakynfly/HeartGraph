@@ -284,8 +284,8 @@ namespace Heart::Query
 		FPinQueryResult& DefaultSort();
 
 	private:
-		FORCEINLINE void Internal_GetOptions(TArray<FHeartPinGuid>& Options) const;
-		FORCEINLINE const TMap<FHeartPinGuid, FHeartGraphPinDesc>& Internal_GetMap() const;
+		void Internal_GetOptions(TArray<FHeartPinGuid>& Options) const;
+		const TMap<FHeartPinGuid, FHeartGraphPinDesc>& Internal_GetMap() const;
 
 		const FHeartNodePinData& Reference;
 	};
