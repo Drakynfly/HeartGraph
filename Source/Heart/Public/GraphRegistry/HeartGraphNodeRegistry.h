@@ -5,6 +5,7 @@
 #include "UObject/Object.h"
 #include "HeartNodeSource.h"
 #include "HeartRegistrationClasses.h"
+#include "General/CountedPtr.h"
 #include "Model/HeartGraphPinTag.h"
 #include "Model/HeartGraphNode.h"
 
@@ -100,8 +101,15 @@ public:
 	/**
 	 * Get the graph node class that we use to represent the given arbitrary class.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
+	UE_DEPRECATED(5.4, TEXT("Please use GetGraphNodeClassesForNode or another method of determining a NodeSource's graph node"))
+	UFUNCTION(BlueprintCallable)
 	virtual TSubclassOf<UHeartGraphNode> GetGraphNodeClassForNode(const FHeartNodeSource NodeSource) const;
+
+	/**
+	 * Get the graph node classes that we can use to represent the given arbitrary class.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
+	virtual TArray<TSubclassOf<UHeartGraphNode>> GetGraphNodeClassesForNode(const FHeartNodeSource NodeSource) const;
 
 	/**
 	 * Get the visualizer class that we use to represent the given node class.
@@ -153,19 +161,18 @@ private:
 
 	struct FNodeSourceEntry
 	{
-		TSubclassOf<UHeartGraphNode> GraphNode;
+		TSet<Heart::Containers::TCountedWeakClassPtr<UHeartGraphNode>> GraphNodes;
 		TArray<TObjectPtr<UClass>> RecursiveChildren;
-		uint32 SelfRegistryCounter = 0;
 		uint32 RecursiveRegistryCounter = 0;
 	};
 
 	TMap<FHeartNodeSource, FNodeSourceEntry> NodeRootTable;
 
 	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.
-	TMap<TSubclassOf<UHeartGraphNode>, TMap<TObjectPtr<UClass>, uint32>> NodeVisualizerMap;
+	TMap<TSubclassOf<UHeartGraphNode>, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> NodeVisualizerMap;
 
 	// Maps Graph Pin classes to the visualizer class that can represent them in an interactive graph.
-	TMap<FHeartGraphPinTag, TMap<TObjectPtr<UClass>, uint32>> PinVisualizerMap;
+	TMap<FHeartGraphPinTag, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> PinVisualizerMap;
 
 	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TMaps
 	UPROPERTY()

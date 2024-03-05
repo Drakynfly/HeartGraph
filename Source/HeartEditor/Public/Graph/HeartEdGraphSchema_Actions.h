@@ -15,9 +15,6 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 
 	FHeartGraphSchemaAction_NewNode() {}
 
-	FHeartGraphSchemaAction_NewNode(const UClass* Node)
-	  :  NodeSource(Node) {}
-
 	FHeartGraphSchemaAction_NewNode(const FHeartNodeSource NodeSource, const UHeartGraphNode* GraphNode)
 	  : FEdGraphSchemaAction(
 			GraphNode->GetDefaultNodeCategory(NodeSource),
@@ -25,7 +22,16 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 			GraphNode->GetDefaultNodeTooltip(NodeSource),
 			0, // Grouping
 			FText::FromString(NodeSource.ThisClass()->GetMetaData("Keywords"))),
-		NodeSource(NodeSource) {}
+		NodeSource({NodeSource, GraphNode->GetClass()}) {}
+
+	FHeartGraphSchemaAction_NewNode(const FHeartNodeSourceAndGraphNode NodeSourceAndGraphNode)
+	  : FEdGraphSchemaAction(
+			NodeSourceAndGraphNode.GraphNode.GetDefaultObject()->GetDefaultNodeCategory(NodeSourceAndGraphNode.Source),
+			NodeSourceAndGraphNode.GraphNode.GetDefaultObject()->GetPreviewNodeTitle(NodeSourceAndGraphNode.Source, EHeartPreviewNodeNameContext::Palette),
+			NodeSourceAndGraphNode.GraphNode.GetDefaultObject()->GetDefaultNodeTooltip(NodeSourceAndGraphNode.Source),
+			0, // Grouping
+			FText::FromString(NodeSourceAndGraphNode.Source.ThisClass()->GetMetaData("Keywords"))),
+		NodeSource(NodeSourceAndGraphNode) {}
 
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
@@ -38,13 +44,13 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	// FEdGraphSchemaAction
 
-	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeSource NodeSource, const FVector2D Location, const bool bSelectNewNode = true);
+	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeSourceAndGraphNode NodeSource, const FVector2D Location, const bool bSelectNewNode = true);
 
-	const UClass* GetNodeClass() const { return NodeSource.As<UClass>(); }
+	const UClass* GetNodeClass() const { return NodeSource.Source.As<UClass>(); }
 
 private:
 	UPROPERTY()
-	FHeartNodeSource NodeSource;
+	FHeartNodeSourceAndGraphNode NodeSource;
 };
 
 /** Action to paste clipboard contents into the graph */

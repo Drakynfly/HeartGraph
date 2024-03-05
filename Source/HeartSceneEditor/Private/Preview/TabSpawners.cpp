@@ -28,13 +28,13 @@ namespace Heart::AssetEditor
 		ViewMenuDescription = LOCTEXT("PreviewScene_Description", "");
 		ViewMenuTooltip = LOCTEXT("PreviewScene_ToolTip", "");
 
-		PreviewViewport = SNew(SPreviewSceneViewport, AssetEditor, MakeShareable(
-			new FHeartPreviewScene(
+		PreviewViewport = SNew(SPreviewSceneViewport, AssetEditor,
+			MakeShared<FHeartPreviewScene>(
 				FPreviewScene::ConstructionValues()
 				.AllowAudioPlayback(true)
 				.ShouldSimulatePhysics(true)
 				.ForceUseMovementComponentInNonGameWorld(true),
-				AssetEditor.ToSharedRef())));
+				AssetEditor.ToSharedRef()));
 
 		OnPreviewSceneCreated.Execute(PreviewViewport.ToSharedRef());
 	}

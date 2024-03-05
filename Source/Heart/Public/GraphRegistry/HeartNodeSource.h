@@ -86,3 +86,20 @@ public:
 		return GetTypeHash(SourceObject.NodeObj);
 	}
 };
+
+
+class UHeartGraphNode;
+
+USTRUCT()
+struct FHeartNodeSourceAndGraphNode
+{
+	GENERATED_BODY()
+
+	// The source to create a NodeObject from
+	UPROPERTY()
+	FHeartNodeSource Source;
+
+	// The class to instance a GraphNode with
+	UPROPERTY()
+	TSubclassOf<UHeartGraphNode> GraphNode;
+};

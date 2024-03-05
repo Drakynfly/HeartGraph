@@ -87,7 +87,8 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 {
 	for (auto&& GraphNodeList : Registration.GraphNodeLists)
 	{
-		if (GraphNodeList.Value.Classes.IsEmpty())
+		if (GraphNodeList.Value.Classes.IsEmpty() ||
+			!FilterObjectForRegistration(GraphNodeList.Key))
 		{
 			continue;
 		}
@@ -100,14 +101,11 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			}
 
 			FNodeSourceEntry& Entry = NodeRootTable.FindOrAdd(FHeartNodeSource(Element.Class));
-			Entry.SelfRegistryCounter++;
 
-			if (FilterObjectForRegistration(GraphNodeList.Key))
-			{
-				// @todo this kinda obliterates any previous value! what to do??
-				Entry.GraphNode = GraphNodeList.Key;
-			}
+			++Entry.GraphNodes.FindOrAdd(
+				Heart::Containers::TCountedWeakClassPtr<UHeartGraphNode>(GraphNodeList.Key));
 
+			// Recursive elements increment a Recursivity counter that gathers derived classes while > 0
 			if (Element.Recursive)
 			{
 				if (Entry.RecursiveRegistryCounter == 0)
@@ -122,7 +120,8 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 
 	for (auto&& NodeObjectList : Registration.IndividualObjects)
 	{
-		if (NodeObjectList.Value.Objects.IsEmpty())
+		if (NodeObjectList.Value.Objects.IsEmpty() ||
+			!FilterObjectForRegistration(NodeObjectList.Key))
 		{
 			continue;
 		}
@@ -134,14 +133,8 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 				continue;
 			}
 
-			FNodeSourceEntry& Entry = NodeRootTable.FindOrAdd(FHeartNodeSource(NodeObject));
-			Entry.SelfRegistryCounter++;
-
-			if (FilterObjectForRegistration(NodeObjectList.Key))
-			{
-				// @todo this kinda obliterates any previous value! what to do??
-				Entry.GraphNode = NodeObjectList.Key;
-			}
+			++NodeRootTable.FindOrAdd(FHeartNodeSource(NodeObject))
+				.GraphNodes.FindOrAdd(Heart::Containers::TCountedWeakClassPtr<UHeartGraphNode>(NodeObjectList.Key));
 		}
 	}
 
@@ -153,9 +146,10 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 		}
 
 		if (UClass* SupportedClass =
-				IGraphNodeVisualizerInterface::Execute_GetSupportedGraphNodeClass(NodeVisualizerClass->GetDefaultObject()))
+				IGraphNodeVisualizerInterface::Execute_GetSupportedGraphNodeClass(NodeVisualizerClass->GetDefaultObject());
+			IsValid(SupportedClass))
 		{
-			NodeVisualizerMap.FindOrAdd(SupportedClass).FindOrAdd(NodeVisualizerClass)++;
+			++NodeVisualizerMap.FindOrAdd(SupportedClass).FindOrAdd({NodeVisualizerClass.Get()});
 		}
 	}
 
@@ -166,11 +160,11 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			continue;
 		}
 
-		FHeartGraphPinTag SupportedTag =
-			IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinTag(PinVisualizerClass->GetDefaultObject());
-		if (SupportedTag.IsValid())
+		if (FHeartGraphPinTag SupportedTag =
+				IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinTag(PinVisualizerClass->GetDefaultObject());
+			SupportedTag.IsValid())
 		{
-			PinVisualizerMap.FindOrAdd(SupportedTag).FindOrAdd(PinVisualizerClass)++;
+			++PinVisualizerMap.FindOrAdd(SupportedTag).FindOrAdd({PinVisualizerClass.Get()});
 		}
 	}
 
@@ -191,12 +185,23 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 			auto* Entry = NodeRootTable.Find(SrcClass);
 			if (Entry == nullptr) continue;
 
-			if (--Entry->SelfRegistryCounter == 0)
+			if (auto&& ObjPtr = Entry->GraphNodes.Find(Element.Key))
 			{
-				NodeRootTable.Remove(SrcClass);
+				if ((--*ObjPtr).Count == 0)
+				{
+					Entry->GraphNodes.Remove(Element.Key);
+					if (Entry->GraphNodes.IsEmpty())
+					{
+						NodeRootTable.Remove(SrcClass);
+						continue;
+					}
+				}
 			}
-			else if (Object.Recursive)
+
+			// Recursive Elements decrement their own counter, and remove RecursiveChildren at 0.
+			if (Object.Recursive)
 			{
+				checkSlow(Entry->RecursiveRegistryCounter > 0);
 				if (--Entry->RecursiveRegistryCounter == 0)
 				{
 					Entry->RecursiveChildren.Empty();
@@ -207,16 +212,23 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 
 	for (const TTuple<TSubclassOf<UHeartGraphNode>, FHeartObjectList>& Element : Registration.IndividualObjects)
 	{
-		for (auto Object : Element.Value.Objects)
+		for (auto&& Object : Element.Value.Objects)
 		{
 			FHeartNodeSource SrcObj(Object);
 
 			auto* Entry = NodeRootTable.Find(SrcObj);
 			if (Entry == nullptr) continue;
 
-			if (--Entry->SelfRegistryCounter == 0)
+			if (auto&& ObjPtr = Entry->GraphNodes.Find(Element.Key))
 			{
-				NodeRootTable.Remove(SrcObj);
+				if ((--*ObjPtr).Count == 0)
+				{
+					Entry->GraphNodes.Remove(Element.Key);
+					if (Entry->GraphNodes.IsEmpty())
+					{
+						NodeRootTable.Remove(SrcObj);
+					}
+				}
 			}
 		}
 	}
@@ -228,10 +240,24 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 			continue;
 		}
 
-		if (UClass* SupportedClass =
-			IGraphNodeVisualizerInterface::Execute_GetSupportedGraphNodeClass(NodeVisualizerClass->GetDefaultObject()))
+		if (TSubclassOf<UHeartGraphNode> SupportedClass =
+				IGraphNodeVisualizerInterface::Execute_GetSupportedGraphNodeClass(NodeVisualizerClass->GetDefaultObject());
+			IsValid(SupportedClass))
 		{
-			NodeVisualizerMap.Remove(SupportedClass);
+			if (auto&& ObjPtrs = NodeVisualizerMap.Find(SupportedClass))
+			{
+				if (auto&& ObjPtr = ObjPtrs->Find(NodeVisualizerClass.Get()))
+				{
+					if ((--*ObjPtr).Count == 0)
+					{
+						ObjPtrs->Remove(*ObjPtr);
+						if (ObjPtrs->IsEmpty())
+						{
+							NodeVisualizerMap.Remove(SupportedClass);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -242,11 +268,24 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 			continue;
 		}
 
-		FHeartGraphPinTag SupportedTag =
-			IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinTag(PinVisualizerClass->GetDefaultObject());
-		if (SupportedTag.IsValid())
+		if (const FHeartGraphPinTag SupportedTag =
+				IGraphPinVisualizerInterface::Execute_GetSupportedGraphPinTag(PinVisualizerClass->GetDefaultObject());
+			SupportedTag.IsValid())
 		{
-			PinVisualizerMap.Remove(SupportedTag);
+			if (auto&& ObjPtrs = PinVisualizerMap.Find(SupportedTag))
+			{
+				if (auto&& ObjPtr = ObjPtrs->Find(PinVisualizerClass.Get()))
+				{
+					if ((--*ObjPtr).Count == 0)
+					{
+						ObjPtrs->Remove(*ObjPtr);
+						if (ObjPtrs->IsEmpty())
+						{
+							PinVisualizerMap.Remove(SupportedTag);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -275,22 +314,25 @@ void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSu
 {
 	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
-		TSubclassOf<UHeartGraphNode> GraphNodeClass = Element.Value.GraphNode;
-		if (!ensure(IsValid(GraphNodeClass))) continue;
-
-		if (!Iter(GraphNodeClass, Element.Key))
+		for (auto&& GraphNode : Element.Value.GraphNodes)
 		{
-			return;
-		}
+			TSubclassOf<UHeartGraphNode> GraphNodeClass = GraphNode.Obj.Get();
+			if (!ensure(IsValid(GraphNodeClass))) continue;
 
-		for (const UClass* Child : Element.Value.RecursiveChildren)
-		{
-			FHeartNodeSource NodeSource(Child);
-			if (!ensure(NodeSource.IsValid())) continue;
-
-			if (!Iter(GraphNodeClass, NodeSource))
+			if (!Iter(GraphNodeClass, Element.Key))
 			{
 				return;
+			}
+
+			for (const UClass* Child : Element.Value.RecursiveChildren)
+			{
+				FHeartNodeSource NodeSource(Child);
+				if (!ensure(NodeSource.IsValid())) continue;
+
+				if (!Iter(GraphNodeClass, NodeSource))
+				{
+					return;
+				}
 			}
 		}
 	}
@@ -330,10 +372,19 @@ void UHeartGraphNodeRegistry::GetAllGraphNodeClassesAndNodeSources(
 {
 	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
-		OutClasses.Add(Element.Key, Element.Value.GraphNode);
-		for (TObjectPtr<UClass> Child : Element.Value.RecursiveChildren)
+		for (auto&& GraphNodePtr : Element.Value.GraphNodes)
 		{
-			OutClasses.Add(FHeartNodeSource(Child), Element.Value.GraphNode);
+			auto&& GraphNode = GraphNodePtr.Obj.Get();
+			if (!IsValid(GraphNode))
+			{
+				continue;
+			}
+
+			OutClasses.Add(Element.Key, GraphNode);
+			for (TObjectPtr<UClass> Child : Element.Value.RecursiveChildren)
+			{
+				OutClasses.Add(FHeartNodeSource(Child), GraphNode);
+			}
 		}
 	}
 }
@@ -434,29 +485,58 @@ TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(c
 	{
 		if (const FNodeSourceEntry* Entry = NodeRootTable.Find(Test))
 		{
-			return Entry->GraphNode;
+			return Entry->GraphNodes.Get(FSetElementId::FromInteger(0)).Obj.Get();
 		}
 	}
 
 	return nullptr;
 }
 
+TArray<TSubclassOf<UHeartGraphNode>> UHeartGraphNodeRegistry::GetGraphNodeClassesForNode(
+	const FHeartNodeSource NodeSource) const
+{
+	// Cursed for-loop, but it works :)
+	for (FHeartNodeSource Test = NodeSource;
+		Test.IsValid() && Test != FHeartNodeSource(UObject::StaticClass());
+		Test = FHeartNodeSource(Test.NextClass()))
+	{
+		if (const FNodeSourceEntry* Entry = NodeRootTable.Find(Test))
+		{
+			TArray<TSubclassOf<UHeartGraphNode>> GraphNodes;
+			for (auto GraphNode : Entry->GraphNodes)
+			{
+				if (GraphNode.Obj.IsValid())
+				{
+					GraphNodes.Add(GraphNode.Obj.Get());
+				}
+			}
+			return GraphNodes;
+		}
+	}
+
+	return {};
+}
+
 UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase) const
 {
-	for (UClass* Class = GraphNodeClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
+	if (!NodeVisualizerMap.IsEmpty())
 	{
-		if (auto&& ClassMap = NodeVisualizerMap.Find(Class))
+		for (UClass* Class = GraphNodeClass; Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 		{
-			for (auto&& CountedClass : *ClassMap)
+			if (auto&& ClassMap = NodeVisualizerMap.Find(Class))
 			{
-				if (!IsValid(VisualizerBase))
+				for (auto&& CountedClass : *ClassMap)
 				{
-					return CountedClass.Key;
-				}
+					if (!CountedClass.Obj.IsValid())
+					{
+						continue;
+					}
 
-				if (CountedClass.Key->IsChildOf(VisualizerBase))
-				{
-					return CountedClass.Key;
+					if (!IsValid(VisualizerBase) ||
+						CountedClass.Obj->IsChildOf(VisualizerBase))
+					{
+						return CountedClass.Obj.Get();
+					}
 				}
 			}
 		}
@@ -471,7 +551,8 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 			{
 				ensure(IsValid(FallbackClass));
 
-				if (!IsValid(VisualizerBase) || FallbackClass->IsChildOf(VisualizerBase))
+				if (!IsValid(VisualizerBase) ||
+					FallbackClass->IsChildOf(VisualizerBase))
 				{
 					return FallbackClass;
 				}
@@ -495,14 +576,15 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const FHeartGraph
 			{
 				for (auto&& CountedClass : *ClassMap)
 				{
-					if (!IsValid(VisualizerBase))
+					if (!CountedClass.Obj.IsValid())
 					{
-						return CountedClass.Key;
+						continue;
 					}
 
-					if (CountedClass.Key->IsChildOf(VisualizerBase))
+					if (!IsValid(VisualizerBase) ||
+						CountedClass.Obj->IsChildOf(VisualizerBase))
 					{
-						return CountedClass.Key;
+						return CountedClass.Obj.Get();
 					}
 				}
 			}
@@ -518,7 +600,8 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const FHeartGraph
 			{
 				ensure(IsValid(FallbackClass));
 
-				if (!IsValid(VisualizerBase) || FallbackClass->IsChildOf(VisualizerBase))
+				if (!IsValid(VisualizerBase) ||
+					FallbackClass->IsChildOf(VisualizerBase))
 				{
 					return FallbackClass;
 				}
@@ -547,7 +630,8 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 			{
 				ensure(IsValid(FallbackClass));
 
-				if (!IsValid(VisualizerBase) || FallbackClass->IsChildOf(VisualizerBase))
+				if (!IsValid(VisualizerBase) ||
+					FallbackClass->IsChildOf(VisualizerBase))
 				{
 					return FallbackClass;
 				}

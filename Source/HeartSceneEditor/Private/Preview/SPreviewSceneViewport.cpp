@@ -33,7 +33,7 @@ namespace Heart::AssetEditor
 
 	TSharedPtr<FExtender> SPreviewSceneViewport::GetExtenders() const
 	{
-		TSharedPtr<FExtender> Result(MakeShareable(new FExtender));
+		TSharedPtr<FExtender> Result(MakeShared<FExtender>());
 		return Result;
 	}
 
@@ -53,7 +53,7 @@ namespace Heart::AssetEditor
 
 	TSharedRef<FEditorViewportClient> SPreviewSceneViewport::MakeEditorViewportClient()
 	{
-		ViewportClient = MakeShareable(new FPreviewSceneViewportClient(SharedThis(this), PreviewScene.ToSharedRef()));
+		ViewportClient = MakeShared<FPreviewSceneViewportClient>(SharedThis(this), PreviewScene.ToSharedRef());
 		return ViewportClient.ToSharedRef();
 	}
 

@@ -116,7 +116,7 @@ namespace Heart::GraphUtils
 			//return nullptr;
 		}
 
-		TSharedRef<AssetEditor::FHeartGraphEditor> NewHeartGraphAssetEditor(new AssetEditor::FHeartGraphEditor());
+		TSharedRef<AssetEditor::FHeartGraphEditor> NewHeartGraphAssetEditor = MakeShared<AssetEditor::FHeartGraphEditor>();
 		NewHeartGraphAssetEditor->InitAssetEditor(Mode, InitToolkitHost, HeartGraph);
 		return NewHeartGraphAssetEditor;
 	}

@@ -126,7 +126,7 @@ private:
 		Options.bIsBlueprintBaseOnly = false;
 		Options.bShowUnloadedBlueprints = true;
 
-		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShareable(new FHeartDefaultClassFilter);
+		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShared<FHeartDefaultClassFilter>();
 
 		Filter->AllowedChildrenOfClasses.Add(UHeartWidgetInputHandlerAsset::StaticClass());
 		Options.ClassFilters = {Filter.ToSharedRef()};

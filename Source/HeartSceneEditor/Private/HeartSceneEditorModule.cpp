@@ -22,7 +22,7 @@ void FHeartSceneEditorModule::StartupModule()
 	PreviewScene.CreateModeInstance.BindLambda(
 		[](const TSharedRef<FHeartGraphEditor>& Editor)
 		{
-			return MakeShareable(new FApplicationMode_PreviewScene(Editor));
+			return MakeShared<FApplicationMode_PreviewScene>(Editor);
 		});
 	PreviewScene.SupportsAsset.BindLambda(
 		[](const UHeartGraph* Asset)

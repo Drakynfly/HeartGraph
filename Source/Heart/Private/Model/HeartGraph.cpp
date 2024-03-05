@@ -259,33 +259,67 @@ void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
 	}
 }
 
-UHeartGraphNode* UHeartGraph::CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location)
 {
-	TSubclassOf<UHeartGraphNode> GraphNodeClass;
+	checkSlow(IsValid(GraphNodeClass));
+	checkSlow(IsValid(NodeObject));
 
-	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
-	{
-		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
-	}
-
-	if (!IsValid(GraphNodeClass))
-	{
-		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeObject->GetClass()->GetName())
-		return nullptr;
-	}
-
-	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
+	UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
 	NewGraphNode->Guid = FHeartNodeGuid::New();
+	NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeObjectClass);
 	NewGraphNode->Location = Location;
-	NewGraphNode->NodeObject = NodeObject;
 
 	NewGraphNode->OnCreate();
 
 	return NewGraphNode;
 }
 
-UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location)
 {
+	checkSlow(IsValid(GraphNodeClass));
+	checkSlow(IsValid(NodeObject));
+
+	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
+	NewGraphNode->Guid = FHeartNodeGuid::New();
+	NewGraphNode->NodeObject = NodeObject;
+	NewGraphNode->Location = Location;
+
+	NewGraphNode->OnCreate();
+
+	return NewGraphNode;
+}
+
+UHeartGraphNode* UHeartGraph::CreateNode_Instanced(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
+												   const UClass* NodeObjectClass, const FVector2D& Location)
+{
+	if (!ensure(IsValid(GraphNodeClass) &&
+				IsValid(NodeObjectClass)))
+	{
+		return nullptr;
+	}
+
+	return Internal_CreateNode_Instanced(GraphNodeClass, NodeObjectClass, Location);
+}
+
+UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
+												   UObject* NodeObject, const FVector2D& Location)
+{
+	if (!ensure(IsValid(GraphNodeClass) &&
+				IsValid(NodeObject)))
+	{
+		return nullptr;
+	}
+
+	return Internal_CreateNode_Reference(GraphNodeClass, NodeObject, Location);
+}
+
+UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location)
+{
+	if (!ensure(IsValid(NodeClass)))
+	{
+		return nullptr;
+	}
+
 	TSubclassOf<UHeartGraphNode> GraphNodeClass;
 
 	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
@@ -299,24 +333,8 @@ UHeartGraphNode* UHeartGraph::CreateNodeForNodeClass(const UClass* NodeClass, co
 		return nullptr;
 	}
 
-	UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
-	NewGraphNode->Guid = FHeartNodeGuid::New();
-	NewGraphNode->Location = Location;
-	NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeClass);
+	return Internal_CreateNode_Instanced(GraphNodeClass, NodeClass, Location);
 
-	NewGraphNode->OnCreate();
-
-	return NewGraphNode;
-}
-
-UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location)
-{
-	if (!ensure(IsValid(NodeClass)))
-	{
-		return nullptr;
-	}
-
-	return CreateNodeForNodeClass(NodeClass, Location);
 }
 
 UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
@@ -326,7 +344,14 @@ UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FV
 		return nullptr;
 	}
 
-	return CreateNodeForNodeObject(NodeObject, Location);
+	TSubclassOf<UHeartGraphNode> GraphNodeClass;
+
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	{
+		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
+	}
+
+	return CreateNode_Reference(GraphNodeClass, NodeObject, Location);
 }
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
@@ -337,6 +362,7 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 		return;
 	}
 
+	// @todo uncomment this and if something is tripping it, solve that!
 	/*
 	if (!ensure(IsValid(Node->GetNodeObject())))
 	{

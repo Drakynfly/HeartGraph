@@ -13,7 +13,7 @@ TSharedRef<IPropertyTypeCustomization> Heart::FItemsArrayCustomization::MakeInst
 
 TSharedRef<IPropertyTypeCustomization> Heart::FItemsArrayCustomization::MakeInstance(FArgs Args)
 {
-	return MakeShareable(new FItemsArrayCustomization(Args));
+	return MakeShared<FItemsArrayCustomization>(Args);
 }
 
 void Heart::FItemsArrayCustomization::CustomizeHeader(const TSharedRef<IPropertyHandle> PropertyHandle,
@@ -68,8 +68,10 @@ void Heart::FItemsArrayCustomization::CustomizeChildren(const TSharedRef<IProper
 
 	check(ArrayHandle.IsValid())
 
-	const TSharedRef<FDetailArrayBuilder> ArrayBuilder = MakeShareable(
-		new FDetailArrayBuilder(ArrayHandle.ToSharedRef(), false, true, false));
+	constexpr bool GenerateHeader = false;
+	constexpr bool DisplayResetToDefault = true;
+	constexpr bool DisplayElementNum = false;
+	const TSharedRef<FDetailArrayBuilder> ArrayBuilder = MakeShared<FDetailArrayBuilder>(ArrayHandle.ToSharedRef(), GenerateHeader, DisplayResetToDefault, DisplayElementNum);
 
 	ArrayBuilder->OnGenerateArrayElementWidget(FOnGenerateArrayElementWidget::CreateSP(this, &FItemsArrayCustomization::OnGenerateElement));
 

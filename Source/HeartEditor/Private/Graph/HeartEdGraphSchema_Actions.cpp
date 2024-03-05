@@ -30,7 +30,7 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 		return nullptr;
 	}
 
-	if (NodeSource.IsValid())
+	if (ensure(NodeSource.Source.IsValid() && IsValid(NodeSource.GraphNode)))
 	{
 		return CreateNode(ParentGraph, FromPin, NodeSource, Location, bSelectNewNode);
 	}
@@ -39,9 +39,8 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 }
 
 UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FHeartNodeSource NodeSource, const FVector2D Location, const bool bSelectNewNode /*= true*/)
+	const FHeartNodeSourceAndGraphNode NodeSource, const FVector2D Location, const bool bSelectNewNode /*= true*/)
 {
-	check(NodeSource.IsValid());
 	if (!ensure(GEditor)) return nullptr;
 
 	auto&& EditorSubsystem = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();
@@ -69,13 +68,13 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	/**-----------------------------*/
 
 	UHeartGraphNode* NewGraphNode;
-	if (const UClass* AsClass = NodeSource.As<UClass>())
+	if (const UClass* AsClass = NodeSource.Source.As<UClass>())
 	{
-		NewGraphNode = HeartGraph->CreateNodeFromClass(AsClass, Location);
+		NewGraphNode = HeartGraph->CreateNode_Instanced(NodeSource.GraphNode, AsClass, Location);
 	}
 	else
 	{
-		NewGraphNode = HeartGraph->CreateNodeFromObject(NodeSource.As<UObject>(), Location);
+		NewGraphNode = HeartGraph->CreateNode_Reference(NodeSource.GraphNode, NodeSource.Source.As<UObject>(), Location);
 	}
 	check(NewGraphNode)
 

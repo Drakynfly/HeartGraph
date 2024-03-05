@@ -40,6 +40,8 @@ public:
     virtual void StartupModule() override;
     virtual void ShutdownModule() override;
 
+    // @todo this is great stuff to move to the EDITOR REGISTRY tho
+
     void RegisterSlateEditorWidget(FName Style, const FOnGetSlateGraphWidgetInstance& Callback);
     void DeregisterSlateEditorWidget(FName Style);
     TArray<FName> GetSlateStyles() const;

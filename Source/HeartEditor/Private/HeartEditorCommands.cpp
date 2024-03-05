@@ -149,8 +149,10 @@ TSharedPtr<FEdGraphSchemaAction> FHeartSpawnNodeCommands::GetActionByClass(const
 	}
 	else
 	{
-		TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeClass));
-		return NewNodeAction;
+		return nullptr;
+		// #todo if we are going to support Chord-based node spawning we need to have a better way to register them
+		//TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction = MakeShared<FHeartGraphSchemaAction_NewNode>(NodeClass);
+		//return NewNodeAction;
 	}
 }
 

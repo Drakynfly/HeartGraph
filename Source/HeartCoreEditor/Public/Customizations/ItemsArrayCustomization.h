@@ -17,6 +17,8 @@ namespace Heart
         };
 
 	private:
+		friend SharedPointerInternals::TIntrusiveReferenceController;
+
 		FItemsArrayCustomization(const FArgs& Args)
 		  : Customization(Args) {}
 

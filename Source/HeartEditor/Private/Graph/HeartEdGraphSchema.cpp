@@ -47,7 +47,8 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 
 	if (!ContextMenuBuilder.FromPin && Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph)->CanPasteNodes())
 	{
-		const TSharedPtr<FHeartGraphSchemaAction_Paste> NewAction(new FHeartGraphSchemaAction_Paste(FText::GetEmpty(), LOCTEXT("PasteHereAction", "Paste here"), FText::GetEmpty(), 0));
+		const TSharedPtr<FHeartGraphSchemaAction_Paste> NewAction =
+			MakeShared<FHeartGraphSchemaAction_Paste>(FText::GetEmpty(), LOCTEXT("PasteHereAction", "Paste here"), FText::GetEmpty(), 0);
 		ContextMenuBuilder.AddAction(NewAction);
 	}
 }
@@ -180,7 +181,7 @@ int32 UHeartEdGraphSchema::GetNodeSelectionCount(const UEdGraph* Graph) const
 
 TSharedPtr<FEdGraphSchemaAction> UHeartEdGraphSchema::GetCreateCommentAction() const
 {
-	return TSharedPtr<FEdGraphSchemaAction>(static_cast<FEdGraphSchemaAction*>(new FHeartGraphSchemaAction_NewComment));
+	return MakeShared<FHeartGraphSchemaAction_NewComment>();
 }
 
 void UHeartEdGraphSchema::OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB,
@@ -248,8 +249,7 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 					if (CategoryName.IsEmpty() ||
 						CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeSource).ToString()))
 					{
-						const TSharedPtr<FHeartGraphSchemaAction_NewNode> NewNodeAction(new FHeartGraphSchemaAction_NewNode(NodeSource, GraphNodeDefault));
-						ActionMenuBuilder.AddAction(NewNodeAction);
+						ActionMenuBuilder.AddAction(MakeShared<FHeartGraphSchemaAction_NewNode>(NodeSource, GraphNodeDefault));
 					}
 				}
 			}
@@ -267,8 +267,7 @@ void UHeartEdGraphSchema::GetCommentAction(FGraphActionMenuBuilder& ActionMenuBu
 		const FText MenuDescription = bIsManyNodesSelected ? LOCTEXT("CreateCommentAction", "Create Comment from Selection") : LOCTEXT("AddCommentAction", "Add Comment...");
 		const FText ToolTip = LOCTEXT("CreateCommentToolTip", "Creates a comment.");
 
-		const TSharedPtr<FHeartGraphSchemaAction_NewComment> NewAction(new FHeartGraphSchemaAction_NewComment(FText::GetEmpty(), MenuDescription, ToolTip, 0));
-		ActionMenuBuilder.AddAction(NewAction);
+		ActionMenuBuilder.AddAction(MakeShared<FHeartGraphSchemaAction_NewComment>(FText::GetEmpty(), MenuDescription, ToolTip, 0));
 	}
 }
 

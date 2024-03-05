@@ -199,8 +199,11 @@ public:
 			NODE EDITING
 	----------------------------*/
 private:
-	UHeartGraphNode* CreateNodeForNodeObject(UObject* NodeObject, const FVector2D& Location);
-	UHeartGraphNode* CreateNodeForNodeClass(const UClass* NodeClass, const FVector2D& Location);
+	// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
+	UHeartGraphNode* Internal_CreateNode_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
+
+	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
+	UHeartGraphNode* Internal_CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location);
 
 public:
 	// Create from template graph class and node object
@@ -209,7 +212,7 @@ public:
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
 		checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNodeForNodeObject(NodeObject, Location));
+		return Cast<THeartGraphNode>(CreateNode_Reference(THeartGraphNode::StaticClass(), NodeObject, Location));
 	}
 
 	// Create from template node class and attempt to cast the return to the template graph class
@@ -219,7 +222,7 @@ public:
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
 		static_assert(!TIsDerivedFrom<THeartNode, UHeartGraphNode>::IsDerived, "THeartNode must not derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(CreateNodeForNodeClass(THeartNode::StaticClass(), Location));
+		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), THeartNode::StaticClass(), Location));
 	}
 
 	// Create from node class and attempt to cast the return to the template graph class
@@ -229,18 +232,28 @@ public:
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
 		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNodeForNodeClass(NodeClass, Location));
+		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location));
 	}
+
+	// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (instanced)"))
+	UHeartGraphNode* CreateNode_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
+
+	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (reference)"))
+	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location);
 
 	/**
 	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
 	 */
+	UE_DEPRECATED(5.3, TEXT("Use CreateNode_Instanced instead"))
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphNode* CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location);
 
 	/**
 	 * Create a new node, using the provided NodeObject
 	 */
+	UE_DEPRECATED(5.3, TEXT("Use CreateNode_Reference instead"))
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
 
