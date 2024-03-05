@@ -6,6 +6,7 @@
 #include "InstancedStruct.h"
 #include "HeartInputActivation.generated.h"
 
+// @todo this is extremely limiting. maybe pass an InstancedStruct through? or a FInputActionValue if we will depend on EnhancedInput
 USTRUCT(BlueprintType)
 struct FHeartManualEvent
 {

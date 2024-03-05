@@ -68,7 +68,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 {
-	return const_cast<UHeartGraphNode*>(this);
+	return const_cast<ThisClass*>(this);
 }
 
 FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource NodeSource) const

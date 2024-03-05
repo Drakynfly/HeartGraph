@@ -137,7 +137,7 @@ void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent&
 
 UHeartGraph* UHeartGraph::GetHeartGraph() const
 {
-	return const_cast<UHeartGraph*>(this);
+	return const_cast<ThisClass*>(this);
 }
 
 void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const

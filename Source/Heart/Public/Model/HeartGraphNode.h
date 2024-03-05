@@ -99,7 +99,6 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 	GENERATED_BODY()
 
 	friend class UHeartGraph;
-	friend class UHeartGraphSchema;
 	friend class UHeartEdGraphNode;
 
 public:
@@ -110,11 +109,13 @@ public:
 	virtual void PostLoad() override;
 	/** UObject */
 
+private:
 	/** IHeartGraphNodeInterface */
 	virtual UHeartGraphNode* GetHeartGraphNode() const override final;
 	/** IHeartGraphNodeInterface */
 
 
+public:
 	/*----------------------------
 			REFLECTION
 	----------------------------*/
@@ -201,15 +202,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartGraphPinReference GetPinReference(const FHeartPinGuid& Pin) const;
 
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (AutoCreateRefTerm = "Name"))
 	FHeartPinGuid GetPinByName(const FName& Name) const;
 
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetPinsOfDirection(EHeartPinDirection Direction, bool bSorted = false) const;
 
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetInputPins(bool bSorted = false) const;
 
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetOutputPins(bool bSorted = false) const;
 
@@ -226,7 +231,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin) const;
 
-	// @todo this function is a good candidate to move to a library
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 
@@ -276,9 +281,11 @@ public:
 	Heart::Query::FPinQueryResult QueryPins() const { return Heart::Query::FPinQueryResult(PinData); }
 
 	// Get all pins that match the direction.
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	Heart::Query::FPinQueryResult FindPinsByDirection(EHeartPinDirection Direction) const;
 
 	// Get all pins that match the direction and custom predicate.
+	// @todo non-virtual non-trivial accessors should be moved to a Library
 	template <typename Predicate>
 	Heart::Query::FPinQueryResult FindPinsByPredicate(EHeartPinDirection Direction, Predicate Pred) const;
 
