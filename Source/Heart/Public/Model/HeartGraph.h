@@ -246,14 +246,14 @@ public:
 	/**
 	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
 	 */
-	UE_DEPRECATED(5.3, TEXT("Use CreateNode_Instanced instead"))
+	UE_DEPRECATED(5.3, "Use CreateNode_Instanced instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphNode* CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location);
 
 	/**
 	 * Create a new node, using the provided NodeObject
 	 */
-	UE_DEPRECATED(5.3, TEXT("Use CreateNode_Reference instead"))
+	UE_DEPRECATED(5.3, "Use CreateNode_Reference instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
 
