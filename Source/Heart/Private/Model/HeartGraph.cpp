@@ -324,7 +324,9 @@ UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const
 
 	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeClass));
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	}
 
 	if (!IsValid(GraphNodeClass))
@@ -348,7 +350,9 @@ UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FV
 
 	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
 	{
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	}
 
 	return CreateNode_Reference(GraphNodeClass, NodeObject, Location);
