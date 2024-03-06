@@ -212,7 +212,7 @@ namespace Heart::Query
 			return {};
 		}
 
-		GENERATE_MEMBER_FUNCTION_CHECK(DefaultSort, void, , );
+		GENERATE_MEMBER_FUNCTION_CHECK(DefaultSort, QueryType&, , );
 
 		// Sort the results by their default order
 		QueryType& Sort()
@@ -302,8 +302,8 @@ namespace Heart::Query
 		FNodeQueryResult(const TConstArrayView<TObjectPtr<UHeartGraphNode>>& Src);
 
 	private:
-		FORCEINLINE void Internal_GetOptions(TArray<FHeartNodeGuid>& Options) const;
-		FORCEINLINE const TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>& Internal_GetMap() const;
+		void Internal_GetOptions(TArray<FHeartNodeGuid>& Options) const;
+		const TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>& Internal_GetMap() const;
 
 		using AsGraph = const UHeartGraph*;
 		using AsLoose = TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>;
