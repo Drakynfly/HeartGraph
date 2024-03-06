@@ -205,9 +205,10 @@ TArray<FHeartPinGuid> UHeartGraphNode::GetOutputPins(const bool bSorted) const
 	return GetPinsOfDirection(EHeartPinDirection::Output, bSorted);
 }
 
-TArray<FHeartGraphPinDesc> UHeartGraphNode::GetDynamicPins_Implementation() const
+TArray<FHeartGraphPinDesc> UHeartGraphNode::CreateDynamicPins()
 {
-	return {};
+	checkSlow(!this->IsTemplate())
+	return BP_GetDynamicPins();
 }
 
 void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Direction, FHeartGraphPinTag& Tag,
@@ -431,7 +432,7 @@ void UHeartGraphNode::ReconstructPins()
 	PinData = FHeartNodePinData();
 
 	TArray<FHeartGraphPinDesc> DefaultPins = GetDefaultPins();
-	TArray<FHeartGraphPinDesc> DynamicPins = GetDynamicPins();
+	TArray<FHeartGraphPinDesc> DynamicPins = CreateDynamicPins();
 	const uint8 InstancedInputNum = InstancedInputs;
 	const uint8 InstancedOutputNum = InstancedOutputs;
 	InstancedInputs = 0;

@@ -218,8 +218,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetOutputPins(bool bSorted = false) const;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphNode")
-	TArray<FHeartGraphPinDesc> GetDynamicPins() const;
+	virtual TArray<FHeartGraphPinDesc> CreateDynamicPins();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", meta = (DisplayName = "Get Dynamic Pins"))
+	TArray<FHeartGraphPinDesc> BP_GetDynamicPins() const;
 
 	// Declare the pin typed used for instanced pins. Overriding this is required for User Input/Output to work.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
