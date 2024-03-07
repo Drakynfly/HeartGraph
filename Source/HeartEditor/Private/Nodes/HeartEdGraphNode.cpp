@@ -479,8 +479,8 @@ void UHeartEdGraphNode::AllocateDefaultPins()
 		return;
 	}
 
-	TArray<FHeartPinGuid> ExistingInputPins = HeartGraphNode->GetInputPins();
-	TArray<FHeartPinGuid> ExistingOutputPins = HeartGraphNode->GetOutputPins();
+	TArray<FHeartPinGuid> ExistingInputPins = HeartGraphNode->GetInputPins(true);
+	TArray<FHeartPinGuid> ExistingOutputPins = HeartGraphNode->GetOutputPins(true);
 
 	for (const FHeartPinGuid& InputPin : ExistingInputPins)
 	{
