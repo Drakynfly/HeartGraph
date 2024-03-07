@@ -1,0 +1,37 @@
+﻿using UnrealBuildTool;
+
+public class HeartNet : ModuleRules
+{
+    public HeartNet(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+        HeartCore.ApplySharedModuleSetup(this, Target);
+
+        // Engine dependencies
+        PublicDependencyModuleNames.AddRange(
+            new []
+            {
+                "Core",
+                "GameplayTags",
+                "NetCore"
+            }
+        );
+
+        // Plugin dependencies
+        PublicDependencyModuleNames.AddRange(
+            new []
+            {
+                "Heart",
+                "HeartCore"
+            });
+
+        PrivateDependencyModuleNames.AddRange(
+            new []
+            {
+                "CoreUObject",
+                "Engine"
+            }
+        );
+    }
+}

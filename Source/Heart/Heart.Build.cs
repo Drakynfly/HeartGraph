@@ -18,7 +18,6 @@ public class Heart : ModuleRules
 				"DeveloperSettings",
 				"GameplayTags",
 				"InputCore",
-				"NetCore",
 				"StructUtils"
 			});
 

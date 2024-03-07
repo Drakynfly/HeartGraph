@@ -46,6 +46,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "HeartCanvasEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "HeartScene",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
@@ -56,8 +61,8 @@
 			"LoadingPhase": "Default"
 		},
 		{
-			"Name": "HeartCanvasEditor",
-			"Type": "Editor",
+			"Name": "HeartNet",
+			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
 	],

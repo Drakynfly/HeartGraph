@@ -24,11 +24,16 @@ An alternative visualization method using scene components, allowing for full 3D
 ### HeartEditor
 A (currently WIP) asset authoring tool for Heart graphs using Unreal's native UEdGraph toolset. Such a workflow allows for creating a graph inside the Unreal Engine Editor, and viewing it using HeartCanvas at runtime (such as a perk tree).
 
+### HeartNet
+A (currently WIP) addition to Heart that enables replication support of a HeartGraph.
 
 ## Engine Plugin Dependencies
 
 ### AssetSearch
 I want to implement an asset search feature similar to Flow Graph's implementation. Not implemented yet...
+
+### EngineAssetDefinitions
+Core engine module that is a plugin for some reason.
 
 ### GameplayTagsEditor
 A "plugin dependency" by a technicality. I don't know why the main module is part of core engine, but this module isn't. Anyway.

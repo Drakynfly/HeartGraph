@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "HeartGraphNetProxy.h"
 #include "HeartGuids.h"
 
 struct FHeartGraphPinDesc;

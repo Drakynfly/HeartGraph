@@ -2,10 +2,15 @@
 
 #pragma once
 
-#include "HeartGraph.h"
 #include "General/HeartFlakes.h"
+#include "Model/HeartGuids.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "HeartGraphNetProxy.generated.h"
+
+struct FHeartGraphConnectionEvent;
+struct FHeartNodeMoveEvent;
+class UHeartGraphNode;
+class UHeartGraph;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartNet, Log, All)
 
@@ -69,7 +74,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartNetProxyNodeEvent, UHeartGraph
  * This class represents a Heart Graph over the network, and can replicate its data between connections.
  */
 UCLASS(BlueprintType, Within = Actor)
-class HEART_API UHeartGraphNetProxy : public UObject
+class HEARTNET_API UHeartGraphNetProxy : public UObject
 {
 	GENERATED_BODY()
 

@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Model/HeartGraphNetProxy.h"
+#include "GraphProxy/HeartGraphNetProxy.h"
+#include "Model/HeartGraph.h"
 
 #include "Model/HeartGraphNode.h"
 #include "Net/UnrealNetwork.h"
