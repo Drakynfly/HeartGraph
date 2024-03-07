@@ -12,8 +12,6 @@ struct FHeartNodeMoveEvent;
 class UHeartGraphNode;
 class UHeartGraph;
 
-DECLARE_LOG_CATEGORY_EXTERN(LogHeartNet, Log, All)
-
 struct FHeartReplicatedGraphNodes;
 
 USTRUCT()

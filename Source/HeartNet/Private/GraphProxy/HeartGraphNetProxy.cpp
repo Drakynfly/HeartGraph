@@ -1,14 +1,13 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "GraphProxy/HeartGraphNetProxy.h"
+#include "LogHeartNet.h"
 #include "Model/HeartGraph.h"
 
 #include "Model/HeartGraphNode.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNetProxy)
-
-DEFINE_LOG_CATEGORY(LogHeartNet)
 
 void FHeartReplicatedNodeData::PostReplicatedAdd(const FHeartReplicatedGraphNodes& Array)
 {

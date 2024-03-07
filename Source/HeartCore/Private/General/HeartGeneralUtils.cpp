@@ -18,48 +18,6 @@ UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 	return DuplicateObject(Source, Outer);
 }
 
-bool UHeartGeneralUtils::IsObjectInActorReplicateSubObjectList(const AActor* Actor, const UObject* Object)
-{
-	if (IsValid(Object) && IsValid(Actor))
-	{
-		return Actor->IsReplicatedSubObjectRegistered(Object);
-	}
-	return false;
-}
-
-bool UHeartGeneralUtils::AddObjectToActorReplicateSubObjectList(AActor* Actor, UObject* Object)
-{
-	if (IsValid(Object) && IsValid(Actor))
-	{
-		if (Object->GetTypedOuter<AActor>() != Actor)
-		{
-			UE_LOG(LogHeartGeneral, Warning,
-				TEXT("AddObjectToActorReplicateSubObjectList: Should not register Object to Actor that does not own it."
-						" GivenActor: '%s', Object: '%s' DirectOuter: '%s', FirstActorOuter: '%s'"),
-				*Actor->GetName(), *Object->GetName(), *Object->GetOuter()->GetName(),
-				*Object->GetTypedOuter<AActor>()->GetName())
-			return false;
-		}
-
-		Actor->AddReplicatedSubObject(Object);
-		return Actor->IsReplicatedSubObjectRegistered(Object);
-	}
-	return false;
-}
-
-bool UHeartGeneralUtils::RemoveObjectFromActorReplicateSubObjectList(AActor* Actor, UObject* Object)
-{
-	if (IsValid(Object) && IsValid(Actor))
-	{
-		if (Actor->IsReplicatedSubObjectRegistered(Object))
-		{
-			Actor->RemoveReplicatedSubObject(Object);
-			return true;
-		}
-	}
-	return false;
-}
-
 UClass* UHeartGeneralUtils::GetParentClass(const UClass* Class)
 {
 	return IsValid(Class) ? Class->GetSuperClass() : nullptr;

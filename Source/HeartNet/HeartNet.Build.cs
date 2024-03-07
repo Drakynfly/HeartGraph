@@ -1,4 +1,6 @@
-﻿using UnrealBuildTool;
+﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
+
+using UnrealBuildTool;
 
 public class HeartNet : ModuleRules
 {
