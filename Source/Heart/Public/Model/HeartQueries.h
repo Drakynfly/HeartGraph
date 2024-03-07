@@ -21,8 +21,11 @@ namespace Heart::Query
 		/**
 		 * Removes all results from the query that fail a predicate.
 		 */
-		template <typename Predicate>
-		typename TEnableIf<std::is_invocable_r_v<bool, Predicate, const ValueType&>, QueryType&>::Type Filter(Predicate Pred)
+		template <
+			typename Predicate
+			UE_REQUIRES(std::is_invocable_r_v<bool, Predicate, const ValueType&>)
+		>
+		QueryType& Filter(Predicate Pred)
 		{
 			AsType().InitResults();
 
@@ -40,8 +43,11 @@ namespace Heart::Query
 		/**
 		 * Removes all results from the query that fail a predicate.
 		 */
-		template <typename Predicate>
-		typename TEnableIf<std::is_invocable_r_v<bool, Predicate, DataType, const ValueType&>, QueryType&>::Type Filter(Predicate Pred)
+		template <
+			typename Predicate
+			UE_REQUIRES(std::is_invocable_r_v<bool, Predicate, DataType, const ValueType&>)
+		>
+		QueryType& Filter(Predicate Pred)
 		{
 			AsType().InitResults();
 
