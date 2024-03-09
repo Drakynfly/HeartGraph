@@ -43,7 +43,7 @@ FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)
 		break;
 	case EHeartMemoryObj::Internal:
 		{
-			FSoftClassPath Class = FSoftClassPath(Obj->GetClass());
+			FSoftClassPath Class(Obj->GetClass());
 			*this << Class;
 
 			OuterStack.Push(Obj); // Track that we are serializing this object

@@ -22,17 +22,17 @@ namespace Heart::Utils
 {
 	using FFindNodePredicate = TDelegate<bool(const UHeartGraphNode*)>;
 
-	UE_NODISCARD HEART_API UHeartGraphNode* FindNodeOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
+	[[nodiscard]] HEART_API UHeartGraphNode* FindNodeOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
 
-	UE_NODISCARD HEART_API UHeartGraphNode* FindNodeByPredicate(const UHeartGraph* Graph, const FFindNodePredicate& Predicate);
+	[[nodiscard]] HEART_API UHeartGraphNode* FindNodeByPredicate(const UHeartGraph* Graph, const FFindNodePredicate& Predicate);
 
-	UE_NODISCARD HEART_API TArray<UHeartGraphNode*> FindAllNodesOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
+	[[nodiscard]] HEART_API TArray<UHeartGraphNode*> FindAllNodesOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
 
-	UE_NODISCARD HEART_API TArray<UHeartGraphNode*> FindAllNodesByPredicate(const UHeartGraph* Graph, const FFindNodePredicate& Predicate);
+	[[nodiscard]] HEART_API TArray<UHeartGraphNode*> FindAllNodesByPredicate(const UHeartGraph* Graph, const FFindNodePredicate& Predicate);
 
-	UE_NODISCARD HEART_API Query::FPinQueryResult FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
+	[[nodiscard]] HEART_API Query::FPinQueryResult FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
 
-	UE_NODISCARD HEART_API TOptional<FHeartGraphPinDesc> ResolvePinDesc(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
+	[[nodiscard]] HEART_API TOptional<FHeartGraphPinDesc> ResolvePinDesc(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
 }
 
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, const UHeartGraphNode*, Node);
