@@ -179,14 +179,13 @@ namespace Heart::Flakes
 		TArray<uint8> Raw;
 		FHeartMemoryWriter MemoryWriter(Raw, nullptr);
 		const_cast<FInstancedStruct&>(Struct).Serialize(MemoryWriter);
+		MemoryWriter.FlushCache();
+		MemoryWriter.Close();
 
 		FOodleCompressedArray::CompressTArray(
 			Flake.Data, Raw,
 			Options.Compressor,
 			Options.CompressionLevel);
-
-		MemoryWriter.FlushCache();
-		MemoryWriter.Close();
 
 		return Flake;
 	}
@@ -199,21 +198,37 @@ namespace Heart::Flakes
 		TArray<uint8> Raw;
 		FHeartMemoryWriter MemoryWriter(Raw, Object);
 		Object->Serialize(MemoryWriter);
+		MemoryWriter.FlushCache();
+		MemoryWriter.Close();
 
 		FOodleCompressedArray::CompressTArray(
 			Flake.Data, Raw,
 			Options.Compressor,
 			Options.CompressionLevel);
 
-		MemoryWriter.FlushCache();
-		MemoryWriter.Close();
-
 		return Flake;
+	}
+
+	void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
+	{
+		TArray<uint8> Raw;
+		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+
+		FHeartMemoryReader MemoryReader(Raw, true, nullptr, FHeartMemoryReader::None);
+		Struct.Serialize(MemoryReader);
+		MemoryReader.FlushCache();
+		MemoryReader.Close();
+
+		if (Options.ExecPostLoadOrPostScriptConstruct)
+		{
+			check(Struct.GetScriptStruct())
+			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMutableMemory());
+		}
 	}
 
 	void WriteObject(UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
-		if (!ensureMsgf(Object->IsA(Cast<UClass>(Flake.Struct.TryLoad())), TEXT("A")))
+		if (!ensure(Object->IsA(Cast<UClass>(Flake.Struct.TryLoad()))))
 		{
 			return;
 		}
@@ -223,14 +238,13 @@ namespace Heart::Flakes
 		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
 
 		FHeartMemoryReader::EOptions ReaderOptions = FHeartMemoryReader::EOptions::None;
-		if (Options.ExecPostLoad)
+		if (Options.ExecPostLoadOrPostScriptConstruct)
 		{
 			ReaderOptions |= FHeartMemoryReader::EOptions::ExecPostLoad;
 		}
 
 		FHeartMemoryReader MemoryReader(Raw, true, Object, ReaderOptions);
 		Object->Serialize(MemoryReader);
-
 		MemoryReader.FlushCache();
 		MemoryReader.Close();
 	}

@@ -119,12 +119,15 @@ namespace Heart::Flakes
 
 	struct FWriteOptions
 	{
-		uint8 ExecPostLoad : 1;
+		// Calls PostLoad on the outermost UObject after deserialization, or PostScriptConstruct when deserializing structs.
+		uint8 ExecPostLoadOrPostScriptConstruct : 1;
 	};
 
 	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct, FReadOptions Options = {});
 
 	HEARTCORE_API FHeartFlake CreateFlake(UObject* Object, FReadOptions Options = {});
+
+	HEARTCORE_API void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, FWriteOptions Options = {});
 
 	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake, FWriteOptions Options = {});
 
