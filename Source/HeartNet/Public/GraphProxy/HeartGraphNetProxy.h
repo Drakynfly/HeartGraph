@@ -2,71 +2,35 @@
 
 #pragma once
 
-#include "General/HeartFlakes.h"
+#include "HeartReplicateNodeData.h"
+#include "NativeGameplayTags.h"
 #include "Model/HeartGuids.h"
-#include "Net/Serialization/FastArraySerializer.h"
 #include "HeartGraphNetProxy.generated.h"
 
-struct FHeartGraphConnectionEvent;
 struct FHeartNodeMoveEvent;
+struct FHeartGraphConnectionEvent;
+struct FHeartGraphConnectionEvent_Net;
+struct FHeartNodeMoveEvent_Net;
+class UHeartNetClient;
 class UHeartGraphNode;
 class UHeartGraph;
 
-struct FHeartReplicatedGraphNodes;
-
-USTRUCT()
-struct FHeartReplicatedNodeData : public FFastArraySerializerItem
+namespace Heart::Net::Tags
 {
-	GENERATED_BODY()
+	// Tags used to identify types of replicated changes.
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_Added)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_Removed)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_Moved)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_ConnectionsChanged)
 
-	UPROPERTY()
-	FHeartNodeGuid NodeGuid;
+	// This tag can be used for custom replicating events, but its suggested to create unique tags.
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Other)
 
-	UPROPERTY()
-	FHeartFlake FlakeData;
+	// Permissions-only tag for allowing any kind of client edit.
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Permission_All)
+}
 
-	void PostReplicatedAdd(const FHeartReplicatedGraphNodes& Array);
-	void PostReplicatedChange(const FHeartReplicatedGraphNodes& Array);
-	void PreReplicatedRemove(const FHeartReplicatedGraphNodes& Array);
-
-	void PostReplicatedReceive(const FFastArraySerializer::FPostReplicatedReceiveParameters& Parameters);
-
-	FString GetDebugString();
-};
-
-USTRUCT()
-struct FHeartReplicatedGraphNodes : public FFastArraySerializer
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TArray<FHeartReplicatedNodeData> Items;
-
-	int32 IndexOf(const FHeartNodeGuid& Guid) const;
-	void Operate(const FHeartNodeGuid& Guid, const TFunctionRef<void(FHeartReplicatedNodeData&)>& Func);
-	bool Delete(const FHeartNodeGuid& Guid);
-
-	TWeakObjectPtr<class UHeartGraphNetProxy> OwningProxy;
-
-	void PostReplicatedChange(const TArrayView<int32>& ChangedIndices, int32 FinalSize) {}
-
-	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
-	{
-		return FastArrayDeltaSerialize<FHeartReplicatedNodeData, FHeartReplicatedGraphNodes>(Items, DeltaParms, *this);
-	}
-};
-
-template<>
-struct TStructOpsTypeTraits<FHeartReplicatedGraphNodes> : public TStructOpsTypeTraitsBase2<FHeartReplicatedGraphNodes>
-{
-	enum
-	{
-		WithNetDeltaSerializer = true,
-    };
-};
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartNetProxyNodeEvent, UHeartGraphNode*, Node);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartNetProxyNodeEvent, UHeartGraphNode*, Node, FGameplayTag, EditType);
 
 /**
  * This class represents a Heart Graph over the network, and can replicate its data between connections.
@@ -77,6 +41,7 @@ class HEARTNET_API UHeartGraphNetProxy : public UObject
 	GENERATED_BODY()
 
 	friend FHeartReplicatedNodeData;
+	friend UHeartNetClient;
 
 public:
 	UHeartGraphNetProxy();
@@ -100,8 +65,12 @@ public:
 	/*		NET LIFETIME		*/
 	/**-------------------------*/
 public:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy")
-	static UHeartGraphNetProxy* CreateHeartNetProxy(AActor* Owner, UHeartGraph* SourceGraph);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy", meta = (AdvancedDisplay = 2))
+	static UHeartGraphNetProxy* CreateHeartNetProxy(AActor* Owner, UHeartGraph* SourceGraph, TSubclassOf<UHeartGraphNetProxy> ProxyClassOverride);
+
+	// Set the net client used to replicate local changes to this graph to the server.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
+	void SetLocalClient(UHeartNetClient* NetClient);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy")
 	void Destroy();
@@ -121,6 +90,7 @@ public:
 protected:
 	bool SetupGraphProxy(UHeartGraph* InSourceGraph);
 
+	// These functions are callbacks for when the source graph is changed, which propogate via replication to clients.
 	virtual void OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode);
 	virtual void OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode);
@@ -130,6 +100,7 @@ protected:
 
 	void UpdateReplicatedNodeData(UHeartGraphNode* Node);
 	void RemoveReplicatedNodeData(const FHeartNodeGuid& Node);
+	void EditReplicatedNodeData(const FHeartNodeFlake& NodeData, FGameplayTag Type);
 
 
 	/**-------------------------*/
@@ -140,23 +111,67 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
 	UHeartGraph* GetProxiedGraph() const;
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy", meta = (Categories = "Heart.Net"))
+	void SetPermissions(const FGameplayTagContainer& Permissions);
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_GraphClass();
 
+	UFUNCTION()
+	virtual void OnRep_ClientPermissions(const FGameplayTagContainer& OldPermissions);
+
+	virtual bool CanClientPerformEvent(FGameplayTag RequestedEventType) const;
+
+	// These functions are callbacks for when the proxy graph is editing locally on the client machine.
 	virtual void OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode);
 	virtual void OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode);
 	virtual void OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
-	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData);
+	// These functions are called on the server via RPC when a client wants to edit things.
+	virtual void OnNodeAdded_Client(const FHeartNodeFlake& HeartGraphNode);
+	virtual void OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent);
+	virtual void OnNodeRemoved_Client(FHeartNodeGuid HeartGraphNode);
+	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
+
+	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, FGameplayTag EventType);
 	bool RemoveNodeProxy(const FHeartNodeGuid& Node);
 
+
+	/**-----------------------------*/
+	/*		NET PROXY EVENTS		*/
+	/**-----------------------------*/
+
 public:
+	// Called when clients edit source nodes via RPC.
+	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
+	FHeartNetProxyNodeEvent OnNodeSourceEdited;
+
+	// Called when server edits proxy nodes via replication.
 	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
 	FHeartNetProxyNodeEvent OnNodeProxyUpdated;
 
+
+	/**-------------------------*/
+	/*		PROXY CONFIG		*/
+	/**-------------------------*/
+
 protected:
+	// Container to setup the types of edits a client connection can make to the source graph. To allow all client edits
+	// simply add the "Heart.Net.AllPermissions" tag. Replicated to let client know what actions they can perform.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintSetter = "SetPermissions", ReplicatedUsing = "OnRep_ClientPermissions", Category = "Config", meta = (Categories = "Heart.Net"))
+	FGameplayTagContainer ClientPermissions;
+
+	// Client component used to RPC edits. Only ever valid on the client machine.
+	UPROPERTY(BlueprintReadOnly, Category = "Config")
+	TObjectPtr<UHeartNetClient> LocalClient;
+
+
+	/**-------------------------*/
+	/*		INTERNAL STATE		*/
+	/**-------------------------*/
+
 	// Original graph pointer. Only valid from the server.
 	UPROPERTY()
 	TObjectPtr<UHeartGraph> SourceGraph;
@@ -170,4 +185,6 @@ protected:
 
 	UPROPERTY(Replicated)
 	FHeartReplicatedGraphNodes ReplicatedNodes;
+
+	bool RecursionGuard = false;
 };
