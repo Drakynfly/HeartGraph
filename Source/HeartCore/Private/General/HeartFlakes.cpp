@@ -1,46 +1,63 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "General/HeartFlakes.h"
-#include "General/HeartFlakeInterface.h"
 
 #include "Compression/OodleDataCompressionUtil.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartFlakes)
+enum class EHeartMemoryObj : uint8
+{
+	None,
 
-static const FName SkippedObjectMarker("_SKIP_");
+	// Direct sub-objects are serialized with us
+	Internal,
+
+	// Any other object reference is treated as a SoftObjectRef
+	External,
+};
 
 FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)
 {
-	if (!IsValid(Obj))
+	// Don't serialize nulls, or things we are already writing
+	if (!IsValid(Obj) ||
+		OuterStack.Contains(Obj))
 	{
 		return *this;
 	}
 
-	// Only serialize UObjects if we are also serializing its outer.
-	const bool SkipObject = !OuterStack.Contains(Obj->GetOuter());
+	EHeartMemoryObj Op = EHeartMemoryObj::None;
 
-	FString ClassOrSkip;
-
-	if (SkipObject)
+	if (Obj->GetOuter() == OuterStack.Last())
 	{
-		ClassOrSkip = SkippedObjectMarker.ToString();
+		Op = EHeartMemoryObj::Internal;
 	}
 	else
 	{
-		ClassOrSkip = FSoftClassPath(Obj->GetClass()).ToString();
+		Op = EHeartMemoryObj::External;
 	}
 
-	*this << ClassOrSkip;
+	*this << Op;
 
-	if (!SkipObject)
+	switch (Op)
 	{
-		OuterStack.Push(Obj); // Track that we are serializing this object
-		if (Obj->Implements<UHeartFlakeInterface>())
+	case EHeartMemoryObj::None:
+		break;
+	case EHeartMemoryObj::Internal:
 		{
-			IHeartFlakeInterface::Execute_PreWrite(Obj);
+			FSoftClassPath Class = FSoftClassPath(Obj->GetClass());
+			*this << Class;
+
+			OuterStack.Push(Obj); // Track that we are serializing this object
+			Obj->Serialize(*this);
+			OuterStack.Pop(); // Untrack the object
 		}
-		Obj->Serialize(*this);
-		OuterStack.Pop(); // Untrack the object
+		break;
+	case EHeartMemoryObj::External:
+		{
+			FSoftObjectPath ExternalRef = Obj;
+			*this << ExternalRef;
+		}
+		break;
+	default: ;
 	}
 
 	return *this;
@@ -57,20 +74,17 @@ FArchive& FHeartMemoryWriter::operator<<(FObjectPtr& Obj)
 
 FArchive& FHeartMemoryWriter::operator<<(FSoftObjectPtr& AssetPtr)
 {
-	if (UObject* ObjPtr = AssetPtr.Get())
-	{
-		*this << ObjPtr;
-	}
-	return *this;
+	return FArchiveUObject::SerializeSoftObjectPtr(*this, AssetPtr);
+}
+
+FArchive& FHeartMemoryWriter::operator<<(FSoftObjectPath& Value)
+{
+	return FArchiveUObject::SerializeSoftObjectPath(*this, Value);
 }
 
 FArchive& FHeartMemoryWriter::operator<<(FWeakObjectPtr& Value)
 {
-	if (UObject* ObjPtr = Value.Get())
-	{
-		*this << ObjPtr;
-	}
-	return *this;
+	return FArchiveUObject::SerializeWeakObjectPtr(*this, Value);
 }
 
 FString FHeartMemoryWriter::GetArchiveName() const
@@ -80,31 +94,48 @@ FString FHeartMemoryWriter::GetArchiveName() const
 
 FArchive& FHeartMemoryReader::operator<<(UObject*& Obj)
 {
-	FString ClassOrSkip;
-	*this << ClassOrSkip;
+	EHeartMemoryObj Op;
+	*this << Op;
 
-	if (ClassOrSkip.IsEmpty())
+	switch (Op)
 	{
-		return *this;
-	}
-
-	if (*ClassOrSkip == SkippedObjectMarker)
-	{
-		return *this;
-	}
-
-	const UClass* ObjClass = FSoftClassPath(ClassOrSkip).TryLoadClass<UObject>();
-
-	if (IsValid(ObjClass))
-	{
-		Obj = NewObject<UObject>(OuterStack.Last(), ObjClass);
-		OuterStack.Push(Obj);
-		Obj->Serialize(*this);
-		if (Obj->Implements<UHeartFlakeInterface>())
+	case EHeartMemoryObj::Internal:
 		{
-			IHeartFlakeInterface::Execute_PostRead(Obj);
+			FSoftClassPath Class;
+			*this << Class;
+
+			if (const UClass* ObjClass = Class.TryLoadClass<UObject>())
+			{
+				Obj = ObjectsCreated.Add_GetRef(NewObject<UObject>(OuterStack.Last(), ObjClass));
+				OuterStack.Push(Obj);
+				Obj->Serialize(*this);
+				OuterStack.Pop();
+			}
 		}
-		OuterStack.Pop();
+		break;
+	case EHeartMemoryObj::External:
+		{
+			FSoftObjectPath ExternalRef;
+			*this << ExternalRef;
+			Obj = ExternalRef.TryLoad();
+		}
+		break;
+	case EHeartMemoryObj::None:
+	default: return *this;
+	}
+
+	// If the outer stack is 1 here, then we are exiting the serialize loop, and can perform final options.
+	if (OuterStack.Num() == 1)
+	{
+		if (EnumHasAnyFlags(Options, ExecPostLoad))
+		{
+			OuterStack[0]->PostLoad();
+
+			for (auto&& Object : ObjectsCreated)
+			{
+				Object->PostLoad();
+			}
+		}
 	}
 
 	return *this;
@@ -120,20 +151,17 @@ FArchive& FHeartMemoryReader::operator<<(FObjectPtr& Obj)
 
 FArchive& FHeartMemoryReader::operator<<(FSoftObjectPtr& AssetPtr)
 {
-	UObject* RawObj = nullptr;
-	*this << RawObj;
-	AssetPtr = RawObj;
-	return *this;
+	return FArchiveUObject::SerializeSoftObjectPtr(*this, AssetPtr);
+}
+
+FArchive& FHeartMemoryReader::operator<<(FSoftObjectPath& Value)
+{
+	return FArchiveUObject::SerializeSoftObjectPath(*this, Value);
 }
 
 FArchive& FHeartMemoryReader::operator<<(FWeakObjectPtr& Value)
 {
-	if (UObject* ObjPtr = Value.Get())
-	{
-		*this << ObjPtr;
-		UE_LOG(LogTemp, Warning, TEXT("FHeartMemoryReader << for <FWeakObjectPtr>: %s"), *ObjPtr->GetName());
-	}
-	return *this;
+	return FArchiveUObject::SerializeWeakObjectPtr(*this, Value);
 }
 
 FString FHeartMemoryReader::GetArchiveName() const
@@ -143,7 +171,7 @@ FString FHeartMemoryReader::GetArchiveName() const
 
 namespace Heart::Flakes
 {
-	FHeartFlake CreateFlake(const FInstancedStruct& Struct)
+	FHeartFlake CreateFlake(const FInstancedStruct& Struct, FReadOptions Options)
 	{
 		FHeartFlake Flake;
 		Flake.Struct = Struct.GetScriptStruct()->GetPathName();
@@ -154,9 +182,8 @@ namespace Heart::Flakes
 
 		FOodleCompressedArray::CompressTArray(
 			Flake.Data, Raw,
-			FOodleDataCompression::ECompressor::Kraken, // @todo expose as option
-			FOodleDataCompression::ECompressionLevel::SuperFast // @todo expose as option
-			);
+			Options.Compressor,
+			Options.CompressionLevel);
 
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
@@ -164,7 +191,7 @@ namespace Heart::Flakes
 		return Flake;
 	}
 
-	FHeartFlake CreateFlake(UObject* Object)
+	FHeartFlake CreateFlake(UObject* Object, const FReadOptions Options)
 	{
 		FHeartFlake Flake;
 		Flake.Struct = Object->GetClass()->GetPathName();
@@ -175,9 +202,8 @@ namespace Heart::Flakes
 
 		FOodleCompressedArray::CompressTArray(
 			Flake.Data, Raw,
-			FOodleDataCompression::ECompressor::Kraken, // @todo expose as option
-			FOodleDataCompression::ECompressionLevel::SuperFast // @todo expose as option
-			);
+			Options.Compressor,
+			Options.CompressionLevel);
 
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
@@ -185,13 +211,24 @@ namespace Heart::Flakes
 		return Flake;
 	}
 
-	void WriteObject(UObject* Object, const FHeartFlake& Flake)
+	void WriteObject(UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
+		if (!ensureMsgf(Object->IsA(Cast<UClass>(Flake.Struct.TryLoad())), TEXT("A")))
+		{
+			return;
+		}
+
 		TArray<uint8> Raw;
 
 		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
 
-		FHeartMemoryReader MemoryReader(Raw, true, Object);
+		FHeartMemoryReader::EOptions ReaderOptions = FHeartMemoryReader::EOptions::None;
+		if (Options.ExecPostLoad)
+		{
+			ReaderOptions |= FHeartMemoryReader::EOptions::ExecPostLoad;
+		}
+
+		FHeartMemoryReader MemoryReader(Raw, true, Object, ReaderOptions);
 		Object->Serialize(MemoryReader);
 
 		MemoryReader.FlushCache();
