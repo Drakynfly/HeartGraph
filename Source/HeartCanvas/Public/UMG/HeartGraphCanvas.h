@@ -33,6 +33,19 @@ enum class EHeartGraphZoomAlgorithm : uint8
 	GraphRelative,
 };
 
+UENUM()
+enum class EHeartGraphCanvasInvalidateType : uint8
+{
+	// Completely rebuild of the canvas widget
+	Full,
+
+	// Update canvas node with underlying node's location
+	NodeLocation,
+
+	// Rebuild node connections
+	Connections,
+};
+
 USTRUCT(BlueprintType)
 struct FHeartDragIntoViewSettings
 {
@@ -197,10 +210,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D UnscalePositionToCanvasZoom(const FVector2D& Position) const;
 
-	// Reconstruct the display for this node. Useful for force updates on nodes that are known to have changed, but
-	// don't have specific bindings available. Try not to use to much however, as this isn't the cheapest operation.
+	// Reconstruct the display for this node. Useful for forcing updates on nodes that are known to have changed, but
+	// don't have specific bindings available. Try not to use Type = Full too much however, as this isn't the cheapest operation.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	void InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid);
+	void InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid, EHeartGraphCanvasInvalidateType Type = EHeartGraphCanvasInvalidateType::Full);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	UHeartGraphCanvasPin* ResolvePinReference(const FHeartGraphPinReference& PinReference) const;

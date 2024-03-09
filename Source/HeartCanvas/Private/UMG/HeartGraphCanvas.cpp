@@ -294,7 +294,7 @@ void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* 
 	auto&& Node = CanvasNode->GetGraphNode();
 	auto&& NodeLocation = Node->GetLocation();
 
-	if (NodeLocation.ContainsNaN())
+	if (UNLIKELY(NodeLocation.ContainsNaN()))
 	{
 		NodeLocation = FVector2D::ZeroVector;
 	}
@@ -651,18 +651,37 @@ FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Positi
 	return SafeDivide(Position, View.Z) - FVector2D(View);
 }
 
-void UHeartGraphCanvas::InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid)
+void UHeartGraphCanvas::InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid, const EHeartGraphCanvasInvalidateType Type)
 {
 	UHeartGraphNode* GraphNode = GetGraph()->GetNode(NodeGuid);
 
-	const bool Selected = SelectedNodes.Contains(NodeGuid);
-
-	OnNodeRemovedFromGraph(GraphNode);
-	OnNodeAddedToGraph(GraphNode);
-
-	if (Selected && IsValid(GraphNode))
+	switch (Type)
 	{
-		SelectNode(NodeGuid);
+	case EHeartGraphCanvasInvalidateType::Full:
+		{
+			const bool Selected = SelectedNodes.Contains(NodeGuid);
+
+			OnNodeRemovedFromGraph(GraphNode);
+			OnNodeAddedToGraph(GraphNode);
+
+			if (Selected && IsValid(GraphNode))
+			{
+				SelectNode(NodeGuid);
+			}
+		}
+		break;
+	case EHeartGraphCanvasInvalidateType::NodeLocation:
+		if (auto&& CanvasNode = GetCanvasNode(NodeGuid))
+		{
+			UpdateNodePositionOnCanvas(CanvasNode);
+		}
+		break;
+	case EHeartGraphCanvasInvalidateType::Connections:
+		if (auto&& CanvasNode = GetCanvasNode(NodeGuid))
+		{
+			CanvasNode->RebuildAllPinConnections();
+		}
+		break;
 	}
 }
 
