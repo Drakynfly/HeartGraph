@@ -52,10 +52,15 @@ FHeartGraphPinDesc& FHeartNodePinData::GetPinDesc(const FHeartPinGuid Key)
 
 TOptional<FHeartGraphPinConnections> FHeartNodePinData::GetConnections(const FHeartPinGuid Key) const
 {
-	return PinConnections.Contains(Key) ? PinConnections[Key] : FHeartGraphPinConnections();
+	return PinConnections.Contains(Key) ? PinConnections[Key] : TOptional<FHeartGraphPinConnections>{};
 }
 
-FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartPinGuid Key)
+FHeartGraphPinConnections& FHeartNodePinData::GetConnectionsMutable(const FHeartPinGuid Key)
 {
 	return PinConnections.FindOrAdd(Key);
+}
+
+const FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartPinGuid Key)
+{
+	return PinConnections.FindChecked(Key);
 }

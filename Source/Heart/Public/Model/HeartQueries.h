@@ -17,13 +17,27 @@ namespace Heart::Query
 		FORCEINLINE		  QueryType& AsType()		{ return *static_cast<		QueryType*>(this); }
 		FORCEINLINE const QueryType& AsType() const { return *static_cast<const QueryType*>(this); }
 
+		template <typename Predicate, typename RetVal = void>
+		struct TIsPredicate
+		{
+			static constexpr bool IsKeyPredicate = std::is_invocable_r_v<RetVal, Predicate, DataType>;
+			static constexpr bool IsValuePredicate = std::is_invocable_r_v<RetVal, Predicate, const ValueType&>;
+			static constexpr bool IsKeyValuePredicate = std::is_invocable_r_v<RetVal, Predicate, DataType, const ValueType&>;
+			static constexpr bool IsValidPredicate = IsKeyPredicate || IsValuePredicate ||IsKeyValuePredicate;
+
+			enum
+			{
+				Value = IsValidPredicate
+			};
+		};
+
 	public:
 		/**
 		 * Removes all results from the query that fail a predicate.
 		 */
 		template <
 			typename Predicate
-			UE_REQUIRES(std::is_invocable_r_v<bool, Predicate, const ValueType&>)
+			UE_REQUIRES(TIsPredicate<Predicate, bool>::Value)
 		>
 		QueryType& Filter(Predicate Pred)
 		{
@@ -31,31 +45,28 @@ namespace Heart::Query
 
 			for (auto It = Results.GetValue().CreateIterator(); It; ++It)
 			{
-				if (!Pred(AsType().Internal_GetMap()[*It]))
+				if constexpr (TIsPredicate<Predicate, bool>::IsKeyPredicate)
 				{
-					It.RemoveCurrentSwap();
+					if (!Pred(*It))
+					{
+						It.RemoveCurrentSwap();
+					}
 				}
-			}
 
-			return AsType();
-		}
-
-		/**
-		 * Removes all results from the query that fail a predicate.
-		 */
-		template <
-			typename Predicate
-			UE_REQUIRES(std::is_invocable_r_v<bool, Predicate, DataType, const ValueType&>)
-		>
-		QueryType& Filter(Predicate Pred)
-		{
-			AsType().InitResults();
-
-			for (auto It = Results.GetValue().CreateIterator(); It; ++It)
-			{
-				if (!Pred(*It, AsType().Internal_GetMap()[*It]))
+				if constexpr (TIsPredicate<Predicate, bool>::IsValuePredicate)
 				{
-					It.RemoveCurrentSwap();
+					if (!Pred(AsType().Internal_GetMap()[*It]))
+					{
+						It.RemoveCurrentSwap();
+					}
+				}
+
+				if constexpr (TIsPredicate<Predicate, bool>::IsKeyValuePredicate)
+				{
+					if (!Pred(*It, AsType().Internal_GetMap()[*It]))
+					{
+						It.RemoveCurrentSwap();
+					}
 				}
 			}
 
@@ -111,21 +122,50 @@ namespace Heart::Query
 		/**
 		 * Iterate over all results currently in the query.
 		 */
-		template <typename Predicate>
+		template <
+			typename Predicate
+			UE_REQUIRES(TIsPredicate<Predicate>::Value)
+		>
 		QueryType& ForEach(Predicate Pred)
 		{
 			if (Results.IsSet())
 			{
 				for (auto&& Key : Results.GetValue())
 				{
-					Pred(AsType().Internal_GetMap()[Key]);
+					if constexpr (TIsPredicate<Predicate>::IsKeyPredicate)
+					{
+						Pred(Key);
+					}
+
+					if constexpr (TIsPredicate<Predicate>::IsValuePredicate)
+					{
+						Pred(AsType().Internal_GetMap()[Key]);
+					}
+
+					if constexpr (TIsPredicate<Predicate>::IsKeyValuePredicate)
+					{
+						Pred(Key, AsType().Internal_GetMap()[Key]);
+					}
 				}
 			}
 			else
 			{
-				for (auto&& Key : AsType().Internal_GetMap())
+				for (auto&& Element : AsType().Internal_GetMap())
 				{
-					Pred(Key.Value);
+					if constexpr (TIsPredicate<Predicate>::IsKeyPredicate)
+					{
+						Pred(Element.Key);
+					}
+
+					if constexpr (TIsPredicate<Predicate>::IsValuePredicate)
+					{
+						Pred(Element.Value);
+					}
+
+					if constexpr (TIsPredicate<Predicate>::IsKeyValuePredicate)
+					{
+						Pred(Element.Key, Element.Value);
+					}
 				}
 			}
 

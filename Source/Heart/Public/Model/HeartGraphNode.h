@@ -230,8 +230,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool HasConnections(const FHeartPinGuid& Pin) const;
 
+	// @todo enable UFUNCTION in 5.4
+	//UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TOptional<FHeartGraphPinConnections> GetConnections(const FHeartPinGuid& Pin) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	bool FindConnections(const FHeartPinGuid& Pin, TSet<FHeartGraphPinReference>& Connections) const;
+
+	UE_DEPRECATED(5.4, "Please use FindConnections or native GetConnections instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin) const;
+	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin, bool Deprecated) const;
 
 	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
@@ -273,12 +281,8 @@ public:
 			PIN EDITING
 	----------------------------*/
 
+	UE_DEPRECATED(5.4, "Use Get/Find Connections instead")
 	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
-
-	TOptional<FHeartGraphPinConnections> GetLinks(const FHeartPinGuid& Pin) const;
-
-	UE_DEPRECATED(5.4, "Use a different version of GetLinks please")
-	FHeartGraphPinConnections GetLinks(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
 
 	Heart::Query::FPinQueryResult QueryPins() const { return Heart::Query::FPinQueryResult(PinData); }
 

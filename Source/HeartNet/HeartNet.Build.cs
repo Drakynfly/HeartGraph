@@ -16,7 +16,8 @@ public class HeartNet : ModuleRules
             {
                 "Core",
                 "GameplayTags",
-                "NetCore"
+                "NetCore",
+                "StructUtils"
             }
         );
 

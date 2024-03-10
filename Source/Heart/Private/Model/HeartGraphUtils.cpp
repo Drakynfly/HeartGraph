@@ -206,7 +206,7 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 			for (auto&& Inputs = Node->GetInputPins();
 				 auto Input : Inputs)
 			{
-				auto&& Connections = Node->GetLinks(Input);
+				auto&& Connections = Node->GetConnections(Input);
 				if (!Connections.IsSet())
 				{
 					continue;

@@ -43,7 +43,8 @@ protected:
 	FHeartGraphPinDesc& GetPinDesc(FHeartPinGuid Key);
 
 	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
-	FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
+	FHeartGraphPinConnections& GetConnectionsMutable(FHeartPinGuid Key);
+	const FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
 
 	/**
 	 * Try to find a pin by a predicate. Quicker then using a Query, but cannot be chained.

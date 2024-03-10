@@ -5,6 +5,7 @@
 #include "GraphProxy/HeartGraphNetProxy.h"
 #include "GraphProxy/HeartNetReplicationTypes.h"
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphNode3D.h"
 #include "Model/HeartGraphTypes.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNetClient)
@@ -41,7 +42,15 @@ void UHeartNetClient::OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeM
 			{
 				FHeartNodeFlake NodeData;
 				NodeData.Guid = Node->GetGuid();
-				NodeData.Flake = Heart::Flakes::CreateFlake(Node);
+				if (auto&& Node3D = Cast<UHeartGraphNode3D>(Node))
+				{
+					NodeData.Flake = Heart::Flakes::CreateFlake<FVector>(Node3D->GetLocation3D());
+				}
+				else
+				{
+					NodeData.Flake = Heart::Flakes::CreateFlake<FVector2D>(Node->GetLocation());
+				}
+
 				UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
 					*Node->GetName(), NodeData.Flake.Data.Num());
 				return NodeData;
@@ -65,15 +74,32 @@ void UHeartNetClient::OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy,
 {
 	check(Proxy);
 
+	auto ByAffected = [&GraphConnectionEvent](const FHeartPinGuid Pin)
+		{
+			return GraphConnectionEvent.AffectedPins.Contains(Pin);
+		};
+
 	FHeartGraphConnectionEvent_Net Event;
 	Algo::Transform(GraphConnectionEvent.AffectedNodes, Event.AffectedNodes,
-		[](const TObjectPtr<UHeartGraphNode> Node)
+		[&ByAffected](const TObjectPtr<UHeartGraphNode> Node)
 		{
 			FHeartNodeFlake NodeData;
 			NodeData.Guid = Node->GetGuid();
-			NodeData.Flake = Heart::Flakes::CreateFlake(Node);
+
+			FHeartGraphConnectionEvent_Net_PinElement PinElement;
+			Node->QueryPins()
+				.Filter(ByAffected)
+				.ForEach([Node, &PinElement](const FHeartPinGuid Pin)
+				{
+					auto Connections = Node->GetConnections(Pin);
+					PinElement.PinConnections.Add(Pin, Connections.GetValue());
+				});
+
+			NodeData.Flake = Heart::Flakes::CreateFlake(PinElement);
+
 			UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
 				*Node->GetName(), NodeData.Flake.Data.Num());
+
 			return NodeData;
 		});
 

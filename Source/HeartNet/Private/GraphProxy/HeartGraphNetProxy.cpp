@@ -6,6 +6,7 @@
 #include "GraphProxy/HeartNetReplicationTypes.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphNode3D.h"
 
 #include "Net/UnrealNetwork.h"
 
@@ -250,15 +251,40 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartNodeFlake& NodeData
 	// Handle clients trying to move nodes
 	if (Type == Heart::Net::Tags::Node_Moved)
 	{
-		Heart::Flakes::WriteObject(ExistingNode, NodeData.Flake);
+		if (UHeartGraphNode3D* Node3D = Cast<UHeartGraphNode3D>(ExistingNode))
+		{
+			FVector Location;
+			Heart::Flakes::WriteStruct<FVector>(Location, NodeData.Flake);
+			Node3D->SetLocation3D(Location);
+		}
+		else
+		{
+			FVector2D Location;
+			Heart::Flakes::WriteStruct<FVector2D>(Location, NodeData.Flake);
+			ExistingNode->SetLocation(Location);
+		}
+
 		OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Node_Moved);
 		return;
 	}
 
-	// Handle clients trying to move nodes
+	// Handle clients trying to edit connections
 	if (Type == Heart::Net::Tags::Node_ConnectionsChanged)
 	{
-		Heart::Flakes::WriteObject(ExistingNode, NodeData.Flake);
+		FHeartGraphConnectionEvent_Net_PinElement PinElement;
+		Heart::Flakes::WriteStruct<FHeartGraphConnectionEvent_Net_PinElement>(PinElement, NodeData.Flake);
+
+		FHeartGraphConnectionEvent Event;
+
+		for (auto&& Element : PinElement.PinConnections)
+		{
+			ExistingNode->GetLinks(Element.Key) = Element.Value;
+			ExistingNode->NotifyPinConnectionsChanged(Element.Key);
+			Event.AffectedNodes.Add(ExistingNode);
+			Event.AffectedPins.Add(Element.Key);
+		}
+		ExistingNode->GetGraph()->NotifyNodeConnectionsChanged(Event);
+
 		OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Node_ConnectionsChanged);
 		return;
 	}

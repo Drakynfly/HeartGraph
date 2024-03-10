@@ -129,7 +129,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 		for (auto&& Pins = Node->FindPinsByDirection(InverseDirection).Get();
 			auto&& Pin : Pins)
 		{
-			auto&& Connections = Node->GetLinks(Pin);
+			auto&& Connections = Node->GetConnections(Pin);
 			if (!Connections.IsSet())
 			{
 				continue;

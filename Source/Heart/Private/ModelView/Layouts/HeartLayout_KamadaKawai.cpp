@@ -29,7 +29,7 @@ bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, cons
 
 		for (auto&& Pin : Pins)
 		{
-			auto&& Connections = Node->GetLinks(Pin);
+			auto&& Connections = Node->GetConnections(Pin);
 			if (!Connections.IsSet())
 			{
 				continue;

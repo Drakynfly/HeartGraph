@@ -50,7 +50,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	{
 		for (auto&& Element : PinConnections)
 		{
-			PinData.GetConnections(Element.Key) = Element.Value;
+			PinData.GetConnectionsMutable(Element.Key) = Element.Value;
 		}
 		PinConnections.Empty();
 	}
@@ -221,7 +221,23 @@ bool UHeartGraphNode::HasConnections(const FHeartPinGuid& Pin) const
 	return PinData.HasConnections(Pin);
 }
 
-TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin) const
+bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TSet<FHeartGraphPinReference>& Connections) const
+{
+	if (auto Links = PinData.GetConnections(Pin);
+		Links.IsSet())
+	{
+		Connections = Links.GetValue().Links;
+		return true;
+	}
+	return false;
+}
+
+TOptional<FHeartGraphPinConnections> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin) const
+{
+	return PinData.GetConnections(Pin);
+}
+
+TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin, bool) const
 {
 	if (auto Links = PinData.GetConnections(Pin);
 		Links.IsSet())
@@ -302,22 +318,7 @@ bool UHeartGraphNode::CanDuplicate_Implementation() const
 
 FHeartGraphPinConnections& UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin)
 {
-	return PinData.GetConnections(Pin);
-}
-
-TOptional<FHeartGraphPinConnections> UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin) const
-{
-	return PinData.GetConnections(Pin);
-}
-
-FHeartGraphPinConnections UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin, bool) const
-{
-	if (auto&& Links = PinData.GetConnections(Pin);
-		Links.IsSet())
-	{
-		return Links.GetValue();
-	}
-	return {};
+	return PinData.GetConnectionsMutable(Pin);
 }
 
 Heart::Query::FPinQueryResult UHeartGraphNode::FindPinsByDirection(EHeartPinDirection Direction) const

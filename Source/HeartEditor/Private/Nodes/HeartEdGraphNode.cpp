@@ -191,37 +191,41 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 		return;
 	}
 
-	// Resolve all linked pins
-	FHeartGraphPinConnections PinConnections = HeartGraphNode->GetLinks(HeartPin);
 	TArray<FHeartGraphPinDesc> LinkedPins;
-	for (auto&& LinkedRef : PinConnections.Links)
+
+	// Resolve all linked pins
+	if (TOptional<FHeartGraphPinConnections> PinConnections = HeartGraphNode->GetConnections(HeartPin);
+		PinConnections.IsSet())
 	{
-		const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
-		if (!IsValid(LinkedNode))
+		for (auto&& LinkedRef : PinConnections.GetValue().Links)
 		{
-			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
-				*HeartGraphNode.GetName())
-			continue;
-		}
-
-		auto&& LinkedPin = LinkedNode->GetPinDesc(LinkedRef.PinGuid);
-		if (!LinkedPin.IsSet())
-		{
-			UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
-				*HeartGraphNode.GetName(), *LinkedNode->GetName())
-			continue;
-		}
-
-		LinkedPins.Add(LinkedPin.GetValue());
-
-		if (!Pin->LinkedTo.ContainsByPredicate(
-			[Desc = LinkedPin.GetValue()](const UEdGraphPin* EdGraphPin)
+			const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
+			if (!IsValid(LinkedNode))
 			{
-				return Desc.Name == EdGraphPin->PinName;
-			}))
-		{
-			// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
-			HeartGraph->DisconnectPins(LinkedRef, SelfReference);
+				UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
+					*HeartGraphNode.GetName())
+				continue;
+			}
+
+			auto&& LinkedPin = LinkedNode->GetPinDesc(LinkedRef.PinGuid);
+			if (!LinkedPin.IsSet())
+			{
+				UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
+					*HeartGraphNode.GetName(), *LinkedNode->GetName())
+				continue;
+			}
+
+			LinkedPins.Add(LinkedPin.GetValue());
+
+			if (!Pin->LinkedTo.ContainsByPredicate(
+				[Desc = LinkedPin.GetValue()](const UEdGraphPin* EdGraphPin)
+				{
+					return Desc.Name == EdGraphPin->PinName;
+				}))
+			{
+				// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
+				HeartGraph->DisconnectPins(LinkedRef, SelfReference);
+			}
 		}
 	}
 

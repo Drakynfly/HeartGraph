@@ -4,6 +4,14 @@
 
 #include "Compression/OodleDataCompressionUtil.h"
 
+#if WITH_EDITOR
+TAutoConsoleVariable<bool> CVarLogCompressionStatistics{
+	TEXT("heart.LogCompressionStatistics"),
+	false,
+	TEXT("Log before/after byte counts when compressing flakes")
+};
+#endif
+
 enum class EHeartMemoryObj : uint8
 {
 	None,
@@ -171,6 +179,25 @@ FString FHeartMemoryReader::GetArchiveName() const
 
 namespace Heart::Flakes
 {
+	FORCEINLINE_DEBUGGABLE void CompressFlake(FHeartFlake& Flake, const TArray<uint8>& Raw,
+		const FOodleDataCompression::ECompressor Compressor,
+		const FOodleDataCompression::ECompressionLevel CompressionLevel)
+	{
+#if WITH_EDITOR
+		const auto BeforeCompression = Raw.Num();
+#endif
+
+		FOodleCompressedArray::CompressTArray(Flake.Data, Raw, Compressor, CompressionLevel);
+
+#if WITH_EDITOR
+		const auto AfterCompression = Flake.Data.Num();
+		if (CVarLogCompressionStatistics.GetValueOnGameThread())
+		{
+			UE_LOG(LogTemp, Log, TEXT("[Flake Compression Log]: Compressed '%i' bytes to '%i' bytes"), BeforeCompression, AfterCompression);
+		}
+#endif
+	}
+
 	FHeartFlake CreateFlake(const FInstancedStruct& Struct, FReadOptions Options)
 	{
 		FHeartFlake Flake;
@@ -182,15 +209,12 @@ namespace Heart::Flakes
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
 
-		FOodleCompressedArray::CompressTArray(
-			Flake.Data, Raw,
-			Options.Compressor,
-			Options.CompressionLevel);
+		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
 
 		return Flake;
 	}
 
-	FHeartFlake CreateFlake(UObject* Object, const FReadOptions Options)
+	FHeartFlake CreateFlake(UObject* Object, FReadOptions Options)
 	{
 		FHeartFlake Flake;
 		Flake.Struct = Object->GetClass()->GetPathName();
@@ -201,10 +225,7 @@ namespace Heart::Flakes
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
 
-		FOodleCompressedArray::CompressTArray(
-			Flake.Data, Raw,
-			Options.Compressor,
-			Options.CompressionLevel);
+		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
 
 		return Flake;
 	}

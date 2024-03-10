@@ -3,6 +3,7 @@
 #pragma once
 
 #include "InstancedStruct.h"
+#include "Concepts/BaseStructureProvider.h"
 
 #include "HeartFlakes.generated.h"
 
@@ -125,9 +126,34 @@ namespace Heart::Flakes
 
 	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct, FReadOptions Options = {});
 
+	template <
+		typename T
+		UE_REQUIRES(TModels_V<CBaseStructureProvider, T>)
+	>
+	FHeartFlake CreateFlake(const T& Struct, const FReadOptions Options = {})
+	{
+		return CreateFlake(FInstancedStruct::Make(Struct), Options);
+	}
+
 	HEARTCORE_API FHeartFlake CreateFlake(UObject* Object, FReadOptions Options = {});
 
 	HEARTCORE_API void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, FWriteOptions Options = {});
+
+	template <
+		typename T
+		UE_REQUIRES(TModels_V<CBaseStructureProvider, T>)
+	>
+	void WriteStruct(T& Struct, const FHeartFlake& Flake, const FWriteOptions Options = {})
+	{
+		if (Flake.Struct != TBaseStructure<T>::Get())
+		{
+			return;
+		}
+
+		FInstancedStruct InstancedStruct;
+		WriteStruct(InstancedStruct, Flake, Options);
+		Struct = InstancedStruct.Get<T>();
+	}
 
 	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake, FWriteOptions Options = {});
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartReplicateNodeData.h"
+#include "Model/HeartGraphPinReference.h"
 #include "HeartNetReplicationTypes.generated.h"
 
 USTRUCT()
@@ -17,6 +18,15 @@ struct FHeartNodeMoveEvent_Net
 	// Is the move "in-progress" or finished, typically during drag-drop style movement.
 	UPROPERTY()
 	bool MoveFinished = false;
+};
+
+USTRUCT()
+struct FHeartGraphConnectionEvent_Net_PinElement
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
 };
 
 USTRUCT()

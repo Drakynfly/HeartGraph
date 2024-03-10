@@ -216,7 +216,6 @@ public:
 	}
 
 	// Create from template node class and attempt to cast the return to the template graph class
-	// Note that this does not enforce the created GraphNode to be of the templated graph node class.
 	template <typename THeartGraphNode, typename THeartNode>
 	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
 	{
@@ -226,7 +225,6 @@ public:
 	}
 
 	// Create from node class and attempt to cast the return to the template graph class
-	// Note that this does not enforce the created GraphNode to be of the templated graph node class.
 	template <typename THeartGraphNode>
 	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 	{
