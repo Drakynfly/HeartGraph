@@ -84,10 +84,10 @@ void UHeartRegistryRuntimeSubsystem::OnAssetAdded(const FAssetData& AssetData)
 	{
 		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 		{
-			UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetAdded detected GraphNodeRegistrar"))
-
 			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
 			{
+				UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetAdded detected Registrar '%s'"), *NewRegistrar->GetName())
+
 				AutoAddRegistrar(NewRegistrar);
 			}
 		}
