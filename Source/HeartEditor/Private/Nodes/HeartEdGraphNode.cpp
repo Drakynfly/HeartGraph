@@ -731,7 +731,7 @@ FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) cons
 				// @todo support for EditableTitles when? :)
 			case ENodeTitleType::EditableTitle:
 				{
-					return FText();
+					return FText::GetEmpty();
 				}
 
 				// @todo is full FullTitle only used for in-graph instances? i *think* so

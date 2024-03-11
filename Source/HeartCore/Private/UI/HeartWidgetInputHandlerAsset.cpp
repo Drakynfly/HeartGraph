@@ -6,7 +6,7 @@
 
 FText UHeartWidgetInputHandlerAsset::GetDescription(const UWidget* TestWidget) const
 {
-	return FText();
+	return FText::GetEmpty();
 }
 
 bool UHeartWidgetInputHandlerAsset::PassCondition(const UWidget* TestWidget) const

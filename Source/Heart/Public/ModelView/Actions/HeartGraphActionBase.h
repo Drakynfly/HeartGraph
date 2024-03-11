@@ -42,7 +42,7 @@ protected:
 	bool Execute(UObject* Object, const FHeartInputActivation& Activation);
 
 public:
-	virtual FText GetDescription(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText(); )
+	virtual FText GetDescription(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText::GetEmpty(); )
 	virtual bool CanExecute(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
 	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
 };

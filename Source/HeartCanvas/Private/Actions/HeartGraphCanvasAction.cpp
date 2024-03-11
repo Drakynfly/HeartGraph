@@ -58,7 +58,7 @@ FReply UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widget, c
 
 FText UHeartGraphCanvasAction::GetDescription(const UHeartGraphWidgetBase* Widget) const
 {
-	return FText();
+	return FText::GetEmpty();
 }
 
 bool UHeartGraphCanvasAction::CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const

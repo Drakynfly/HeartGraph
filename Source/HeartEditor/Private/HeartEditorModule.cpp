@@ -309,10 +309,10 @@ void FHeartEditorModule::OnAssetManagerCreated()
 				LOCTEXT("MissingRuleForGraphNodeRegistrar", "Asset Manager does not have a rule for assets of type {0}. They will not be discoverable at runtime!"),
 				FText::FromName(UGraphNodeRegistrar::StaticClass()->GetFName()))))
 			->AddToken(FActionToken::Create(
-				LOCTEXT("AddRuleForGraphNodeRegistrar", "Add entry to PrimaryAssetTypesToScan?"), FText(),
+				LOCTEXT("AddRuleForGraphNodeRegistrar", "Add entry to PrimaryAssetTypesToScan?"), FText::GetEmpty(),
 				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::AddRegistrarPrimaryAssetRule), true))
 			->AddToken(FActionToken::Create(
-				LOCTEXT("DisableGraphNodeRegistrarError", "Disable this error, "), FText(),
+				LOCTEXT("DisableGraphNodeRegistrarError", "Disable this error, "), FText::GetEmpty(),
 				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::DisableGraphNodeRegistrarError), true));
 	}
 }

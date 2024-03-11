@@ -73,13 +73,13 @@ UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 
 FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource NodeSource) const
 {
-	if (!NodeSource.IsValid()) return FText();
+	if (!NodeSource.IsValid()) return FText::GetEmpty();
 	return GetNodeCategory(NodeSource.GetDefaultObject());
 }
 
 FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource NodeSource) const
 {
-	if (!NodeSource.IsValid()) return FText();
+	if (!NodeSource.IsValid()) return FText::GetEmpty();
 	return GetNodeToolTip(NodeSource.GetDefaultObject());
 }
 
@@ -106,12 +106,12 @@ FText UHeartGraphNode::GetNodeCategory_Implementation(const UObject* Node) const
 {
 	// There is no default category, return an empty text. It's up to the implementation of a graph to determine if the
 	// graph node class or the node object class sets the category.
-	return FText();
+	return FText::GetEmpty();
 }
 
 FText UHeartGraphNode::GetNodeToolTip_Implementation(const UObject* Node) const
 {
-	return FText();
+	return FText::GetEmpty();
 }
 
 FLinearColor UHeartGraphNode::GetNodeTitleColor_Implementation(const UObject* Node)

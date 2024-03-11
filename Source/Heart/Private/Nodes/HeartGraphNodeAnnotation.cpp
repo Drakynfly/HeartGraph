@@ -17,7 +17,7 @@ FText UHeartGraphNodeAnnotation::GetNodeTitle_Implementation(const UObject* Node
 	if (auto&& ImageComment = Cast<UHeartComment_Image>(Node))
 	{
 		// Image annotations don't have a title.
-		return FText();
+		return FText::GetEmpty();
 	}
 
 	return Super::GetNodeTitle_Implementation(Node);

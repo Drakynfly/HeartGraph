@@ -81,7 +81,7 @@ void SHeartGraphAssetBreadcrumb::OnCrumbClicked(const FHeartBreadcrumb& Item) co
 
 FText SHeartGraphAssetBreadcrumb::GetBreadcrumbText(const TWeakObjectPtr<UHeartGraph> HeartGraph) const
 {
-	return HeartGraph.IsValid() ? FText::FromName(HeartGraph->GetFName()) : FText(); // @todo GetFName could be replaced by GetDisplayName, etc
+	return HeartGraph.IsValid() ? FText::FromName(HeartGraph->GetFName()) : FText::GetEmpty(); // @todo GetFName could be replaced by GetDisplayName, etc
 }
 
 
@@ -245,13 +245,13 @@ TSharedRef<SWidget> FHeartGraphAssetToolbar::MakeDiffMenu() const
 		{
 			// if asset is null then this means that multiple assets are selected
 			FMenuBuilder MenuBuilder(true, nullptr);
-			MenuBuilder.AddMenuEntry(LOCTEXT("NoRevisionsForMultipleHeartGraphAssets", "Multiple Heart Graph Assets selected"), FText(), FSlateIcon(), FUIAction());
+			MenuBuilder.AddMenuEntry(LOCTEXT("NoRevisionsForMultipleHeartGraphAssets", "Multiple Heart Graph Assets selected"), FText::GetEmpty(), FSlateIcon(), FUIAction());
 			return MenuBuilder.MakeWidget();
 		}
 	}
 
 	FMenuBuilder MenuBuilder(true, nullptr);
-	MenuBuilder.AddMenuEntry(LOCTEXT("SourceControlDisabled", "Source control is disabled"), FText(), FSlateIcon(), FUIAction());
+	MenuBuilder.AddMenuEntry(LOCTEXT("SourceControlDisabled", "Source control is disabled"), FText::GetEmpty(), FSlateIcon(), FUIAction());
 	return MenuBuilder.MakeWidget();
 }
 
@@ -263,7 +263,7 @@ void FHeartGraphAssetToolbar::BuildDebuggerToolbar(UToolMenu* ToolbarMenu)
 	auto&& TemplateAsset = AssetEditor.Pin()->GetHeartGraph();
 
 	Breadcrumb = SNew(SHeartGraphAssetBreadcrumb, TemplateAsset);
-	Section.AddEntry(FToolMenuEntry::InitWidget("AssetBreadcrumb", Breadcrumb.ToSharedRef(), FText(), true));
+	Section.AddEntry(FToolMenuEntry::InitWidget("AssetBreadcrumb", Breadcrumb.ToSharedRef(), FText::GetEmpty(), true));
 }
 
 #undef LOCTEXT_NAMESPACE
