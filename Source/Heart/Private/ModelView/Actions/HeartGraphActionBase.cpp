@@ -14,6 +14,11 @@ bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGrap
 		return false;
 	}
 
+	if (!Class->GetDefaultObject<UHeartGraphActionBase>()->CanExecute(Target))
+	{
+		return false;
+	}
+
 	auto&& Action = CreateGraphAction(Class);
 	return Action->Execute(Target, FHeartInputActivation(Activation));
 }
@@ -22,6 +27,11 @@ bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf
                                                                UObject* Target, const FHeartManualEvent& Activation, UObject* Payload)
 {
 	if (!ensure(IsValid(Class)))
+	{
+		return false;
+	}
+
+	if (!Class->GetDefaultObject<UHeartGraphActionBase>()->CanExecute(Target))
 	{
 		return false;
 	}
@@ -44,6 +54,11 @@ bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UO
 {
 	if (ensure(Action))
 	{
+		if (!Action->CanExecute(Target))
+		{
+			return false;
+		}
+
 		return Action->Execute(Target, FHeartInputActivation(Activation));
 	}
 

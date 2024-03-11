@@ -21,7 +21,10 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 
 	if (IsValid(Action))
 	{
-		Action->Execute(GetHoveredWidget(), FHeartInputActivation(PointerEvent), Payload);
+		if (Action->CanExecute(GetHoveredWidget()))
+		{
+			Action->Execute(GetHoveredWidget(), FHeartInputActivation(PointerEvent), Payload);
+		}
 	}
 }
 

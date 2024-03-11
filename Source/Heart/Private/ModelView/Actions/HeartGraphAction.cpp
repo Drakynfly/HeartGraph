@@ -37,7 +37,11 @@ FText UHeartGraphActionBlueprintBase::GetDescription(const UObject* Object) cons
 
 bool UHeartGraphActionBlueprintBase::CanExecute(const UObject* Object) const
 {
-	return BP_CanExecuteOnObject(Object);
+	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_CanExecuteOnObject)))
+	{
+		return BP_CanExecuteOnObject(Object);
+	}
+	return true;
 }
 
 void UHeartGraphActionBlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)

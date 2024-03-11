@@ -75,9 +75,12 @@ bool UHeartGraphCanvasActionBlueprintBase::CanExecuteOnWidget(const UHeartGraphW
 {
 	if (ensure(IsValid(Widget)))
 	{
-		return BP_CanExecuteOnWidget(Widget);
+		if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_CanExecuteOnWidget)))
+		{
+			return BP_CanExecuteOnWidget(Widget);
+		}
 	}
-	return false;
+	return true;
 }
 
 FEventReply UHeartGraphCanvasActionBlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
