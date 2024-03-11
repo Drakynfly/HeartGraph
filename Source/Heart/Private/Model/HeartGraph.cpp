@@ -131,7 +131,12 @@ void UHeartGraph::NotifyNodeConnectionsChanged(const TSet<UHeartGraphNode*>& Aff
 
 void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event)
 {
-	BP_OnNodeConnectionsChanged(Event);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		BP_OnNodeConnectionsChanged(Event);
+	}
 	OnNodeConnectionsChanged.Broadcast(Event);
 }
 

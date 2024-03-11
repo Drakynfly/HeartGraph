@@ -391,7 +391,9 @@ FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction
 	}
 
 	{
+#if WITH_EDITOR
 		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
 		GetInstancedPinData(Direction, PinDesc.Tag, PinDesc.Metadata);
 	}
 
@@ -466,7 +468,12 @@ void UHeartGraphNode::ReconstructPins()
 
 void UHeartGraphNode::NotifyPinConnectionsChanged(const FHeartPinGuid& Pin)
 {
-	BP_OnConnectionsChanged(Pin);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		BP_OnConnectionsChanged(Pin);
+	}
 	OnPinConnectionsChanged.Broadcast(Pin);
 }
 

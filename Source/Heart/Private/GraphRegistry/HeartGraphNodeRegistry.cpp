@@ -298,11 +298,13 @@ void UHeartGraphNodeRegistry::RemoveRegistrationList(const FHeartRegistrationCla
 // ReSharper disable once CppMemberFunctionMayBeConst
 void UHeartGraphNodeRegistry::BroadcastChange()
 {
-#if WITH_EDITOR
-	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-#endif
 	OnRegistryChangedNative.Broadcast(this);
-	OnRegistryChanged.Broadcast(this);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+		OnRegistryChanged.Broadcast(this);
+	}
 }
 
 bool UHeartGraphNodeRegistry::IsRegistered(const UGraphNodeRegistrar* Registrar) const

@@ -240,29 +240,35 @@ void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(UGraphNodeRegistrar* Re
 
 void UHeartRegistryRuntimeSubsystem::BroadcastPostRegistryAdded(UHeartGraphNodeRegistry* Registry)
 {
-#if WITH_EDITOR
-	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-#endif
 	PostRegistryAddedNative.Broadcast(Registry);
-	PostRegistryAdded.Broadcast(Registry);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+		PostRegistryAdded.Broadcast(Registry);
+	}
 }
 
 void UHeartRegistryRuntimeSubsystem::BroadcastPreRegistryRemoved(UHeartGraphNodeRegistry* Registry)
 {
-#if WITH_EDITOR
-	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-#endif
 	PreRegistryRemovedNative.Broadcast(Registry);
-	PreRegistryRemoved.Broadcast(Registry);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+		PreRegistryRemoved.Broadcast(Registry);
+	}
 }
 
 void UHeartRegistryRuntimeSubsystem::BroadcastOnAnyRegistryChanged(UHeartGraphNodeRegistry* Registry)
 {
-#if WITH_EDITOR
-	FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-#endif
 	OnAnyRegistryChangedNative.Broadcast(Registry);
-	OnAnyRegistryChanged.Broadcast(Registry);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
+#endif
+		OnAnyRegistryChanged.Broadcast(Registry);
+	}
 }
 
 UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry(const TSubclassOf<UHeartGraph> Class)
