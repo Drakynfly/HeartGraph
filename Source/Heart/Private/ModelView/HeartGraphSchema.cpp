@@ -95,27 +95,31 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, const 
 	switch (CanPinsConnect(Graph, PinA, PinB).Response)
 	{
 	case EHeartCanConnectPinsResponse::Allow:
-		Graph->ConnectPins(PinA, PinB);
-		bModified = true;
+		bModified |= Graph->EditConnections()
+			.Connect(PinA, PinB)
+			.Modified();
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakA:
-		Graph->DisconnectAllPins(PinA);
-		Graph->ConnectPins(PinA, PinB);
-		bModified = true;
+		bModified |= Graph->EditConnections().
+			DisconnectAll(PinA).
+			Connect(PinA, PinB)
+			.Modified();
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakB:
-		Graph->DisconnectAllPins(PinB);
-		Graph->ConnectPins(PinA, PinB);
-		bModified = true;
+		bModified |= Graph->EditConnections()
+			.DisconnectAll(PinB)
+			.Connect(PinA, PinB)
+			.Modified();
 		break;
 
 	case EHeartCanConnectPinsResponse::AllowBreakAB:
-		Graph->DisconnectAllPins(PinA);
-		Graph->DisconnectAllPins(PinB);
-		Graph->ConnectPins(PinA, PinB);
-		bModified = true;
+		bModified |= Graph->EditConnections()
+			.DisconnectAll(PinA)
+			.DisconnectAll(PinB)
+			.Connect(PinA, PinB)
+			.Modified();
 		break;
 
 	/**

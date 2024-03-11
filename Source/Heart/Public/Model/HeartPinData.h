@@ -11,9 +11,17 @@
 
 #include "HeartPinData.generated.h"
 
-namespace Heart::Query
+namespace Heart
 {
-	class FPinQueryResult;
+	namespace Query
+	{
+		class FPinQueryResult;
+	}
+
+	namespace Connections
+	{
+		class FEdit;
+	}
 }
 
 // @todo this should not be BlueprintType. it only is temporarily until there is a way to view pins in the editor window without making PinData VisibleInstanceOnly
@@ -30,6 +38,7 @@ struct FHeartNodePinData
 
 	friend class UHeartGraphNode;
 	friend Heart::Query::FPinQueryResult;
+	friend Heart::Connections::FEdit;
 
 protected:
 	void AddPin(FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc);

@@ -21,3 +21,17 @@ void UHeartPinAction_Disconnect::ExecuteOnPin(const TScriptInterface<IHeartGraph
 		Node->GetGraph()->DisconnectAllPins({Node->GetGuid(), Pin->GetPinGuid()});
 	}
 }
+
+bool UHeartNodeAction_Disconnect::CanExecute(const UObject* Object) const
+{
+	return Object->Implements<UHeartGraphNodeInterface>();
+}
+
+void UHeartNodeAction_Disconnect::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+	UObject* ContextObject)
+{
+	if (IsValid(Node))
+	{
+		Node->GetGraph()->EditConnections().DisconnectAll(Node->GetGuid());
+	}
+}

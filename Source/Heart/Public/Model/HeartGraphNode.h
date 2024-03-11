@@ -8,6 +8,7 @@
 #include "HeartGraphPinDesc.h"
 #include "HeartGraphPinTag.h"
 #include "HeartGraphPinReference.h"
+#include "HeartPinConnectionEdit.h"
 #include "HeartPinData.h"
 #include "HeartQueries.h"
 #include "GraphRegistry/HeartNodeSource.h"
@@ -90,6 +91,7 @@ struct FHeartGraphNodeSparseClassData
 #endif
 };
 
+
 /**
  *
  */
@@ -100,6 +102,7 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 
 	friend class UHeartGraph;
 	friend class UHeartEdGraphNode;
+	friend class Heart::Connections::FEdit;
 
 public:
 	UHeartGraphNode();
@@ -313,9 +316,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void RemoveInstancePin(EHeartPinDirection Direction);
 
+protected:
 	virtual void NotifyPinConnectionsChanged(const FHeartPinGuid& Pin);
 
-protected:
 	// Called by the owning graph when we are created.
 	virtual void OnCreate();
 

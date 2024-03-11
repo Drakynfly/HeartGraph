@@ -274,16 +274,12 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartNodeFlake& NodeData
 		FHeartGraphConnectionEvent_Net_PinElement PinElement;
 		Heart::Flakes::WriteStruct<FHeartGraphConnectionEvent_Net_PinElement>(PinElement, NodeData.Flake);
 
-		FHeartGraphConnectionEvent Event;
+		Heart::Connections::FEdit Edit = ExistingNode->GetGraph()->EditConnections();
 
 		for (auto&& Element : PinElement.PinConnections)
 		{
-			ExistingNode->GetLinks(Element.Key) = Element.Value;
-			ExistingNode->NotifyPinConnectionsChanged(Element.Key);
-			Event.AffectedNodes.Add(ExistingNode);
-			Event.AffectedPins.Add(Element.Key);
+			Edit.Override({ NodeData.Guid, Element.Key}, Element.Value);
 		}
-		ExistingNode->GetGraph()->NotifyNodeConnectionsChanged(Event);
 
 		OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Node_ConnectionsChanged);
 		return;

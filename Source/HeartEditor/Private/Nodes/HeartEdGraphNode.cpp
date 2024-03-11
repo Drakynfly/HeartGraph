@@ -193,6 +193,8 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	TArray<FHeartGraphPinDesc> LinkedPins;
 
+	Heart::Connections::FEdit ConnectionEditor = HeartGraph->EditConnections();
+
 	// Resolve all linked pins
 	if (TOptional<FHeartGraphPinConnections> PinConnections = HeartGraphNode->GetConnections(HeartPin);
 		PinConnections.IsSet())
@@ -224,7 +226,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 				}))
 			{
 				// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
-				HeartGraph->DisconnectPins(LinkedRef, SelfReference);
+				ConnectionEditor.Disconnect(LinkedRef, SelfReference);
 			}
 		}
 	}
@@ -247,7 +249,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 		// If we failed to find a connection, then we need to connect the runtime pins
 		if (!FoundConnection)
 		{
-			UHeartGraphNode* HeartNodeConnectedInEditor = Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetHeartGraphNode();
+			const UHeartGraphNode* HeartNodeConnectedInEditor = Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetHeartGraphNode();
 			const FHeartPinGuid& ConnectedHeartPin = HeartNodeConnectedInEditor->GetPinByName(EdGraphPin->PinName);
 
 			if (!ensure(ConnectedHeartPin.IsValid()))
@@ -256,15 +258,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 				break;
 			}
 
-			if (HeartGraph->ConnectPins(SelfReference, {HeartNodeConnectedInEditor->GetGuid(), ConnectedHeartPin}))
-			{
-				// Allow implementations of BP_OnConnectionsChanged to run in editor
-				FEditorScriptExecutionGuard ScriptExecutionGuard;
-
-				HeartGraphNode->NotifyPinConnectionsChanged(HeartPin);
-				HeartNodeConnectedInEditor->NotifyPinConnectionsChanged(ConnectedHeartPin);
-				HeartGraph->NotifyNodeConnectionsChanged({HeartGraphNode, HeartNodeConnectedInEditor}, {HeartPin, ConnectedHeartPin});
-			}
+			ConnectionEditor.Connect(SelfReference, {HeartNodeConnectedInEditor->GetGuid(), ConnectedHeartPin});
 		}
 	}
 }

@@ -121,14 +121,6 @@ void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& Affec
 	OnNodeMoved.Broadcast(Event);
 }
 
-void UHeartGraph::NotifyNodeConnectionsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const TSet<FHeartPinGuid>& AffectedPins)
-{
-	FHeartGraphConnectionEvent Event;
-	Event.AffectedNodes = AffectedNodes;
-	Event.AffectedPins = AffectedPins;
-	NotifyNodeConnectionsChanged(Event);
-}
-
 void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event)
 {
 	{
@@ -400,82 +392,39 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 		return false;
 	}
 
-	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
-	auto&& Removed = Nodes.Remove(NodeGuid);
+	// Remove all connections that will be orphaned by removing this node
+	EditConnections().DisconnectAll(NodeGuid);
 
-	if (NodeBeingRemoved)
+	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
+	const int32 Removed = Nodes.Remove(NodeGuid);
+
+	if (IsValid(*NodeBeingRemoved))
 	{
 		OnNodeRemoved.Broadcast(*NodeBeingRemoved);
+		NodeBeingRemoved->Get()->MarkAsGarbage();
 	}
 
-	return Removed > 0;
+	return !!Removed;
+}
+
+Heart::Connections::FEdit UHeartGraph::EditConnections()
+{
+	return Heart::Connections::FEdit(this);
 }
 
 bool UHeartGraph::ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
 {
-	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
-	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
-
-	if (!ensure(IsValid(ANode) && IsValid(BNode)))
-	{
-		return false;
-	}
-
-	// Add to both lists
-	ANode->GetLinks(PinA.PinGuid).Links.Add(PinB);
-	BNode->GetLinks(PinB.PinGuid).Links.Add(PinA);
-
-	ANode->NotifyPinConnectionsChanged(PinA.PinGuid);
-	BNode->NotifyPinConnectionsChanged(PinB.PinGuid);
-	NotifyNodeConnectionsChanged({ANode, BNode}, {PinA.PinGuid, PinB.PinGuid});
-
-	return true;
+	return EditConnections().Connect(PinA, PinB).Modified();
 }
 
 bool UHeartGraph::DisconnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
 {
-	UHeartGraphNode* ANode = GetNode(PinA.NodeGuid);
-	UHeartGraphNode* BNode = GetNode(PinB.NodeGuid);
-
-	if (!ensureAlways(IsValid(ANode) && IsValid(BNode)))
-	{
-		return false;
-	}
-
-	auto& AConnections = ANode->GetLinks(PinA.PinGuid);
-	auto& BConnections = BNode->GetLinks(PinB.PinGuid);
-
-	// We assume that both of these are true, but proceed anyway if only one of them are...
-	if (AConnections.Links.Contains(PinB) ||
-		BConnections.Links.Contains(PinA))
-	{
-		AConnections.Links.Remove(PinB);
-		BConnections.Links.Remove(PinA);
-
-		ANode->NotifyPinConnectionsChanged(PinA.PinGuid);
-		BNode->NotifyPinConnectionsChanged(PinB.PinGuid);
-		NotifyNodeConnectionsChanged({ANode, BNode}, {PinA.PinGuid, PinB.PinGuid});
-	}
-
-	return true;
+	return EditConnections().Disconnect(PinA, PinB).Modified();
 }
 
-void UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
+bool UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
 {
-	UHeartGraphNode* ANode = GetNode(Pin.NodeGuid);
-
-	if (!ensure(IsValid(ANode)))
-	{
-		return;
-	}
-
-	const FHeartGraphPinConnections Connections = ANode->GetLinks(Pin.PinGuid);
-	if (Connections.Links.IsEmpty()) return;
-
-	for (const FHeartGraphPinReference& Link : Connections.Links)
-	{
-		DisconnectPins(Pin, Link);
-	}
+	return EditConnections().DisconnectAll(Pin).Modified();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -8,6 +8,7 @@
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
+#include "HeartPinConnectionEdit.h"
 #include "HeartGraph.generated.h"
 
 class UHeartGraph;
@@ -59,6 +60,7 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 
 	friend class UHeartEdGraph;
 	friend class UHeartGraphSchema;
+	friend class Heart::Connections::FEdit;
 
 public:
 	UHeartGraph();
@@ -84,17 +86,15 @@ public:
 	// Called after node locations have changed.
 	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
 
-	// Called after a pin connection change has been made.
-	void NotifyNodeConnectionsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const TSet<FHeartPinGuid>& AffectedPins);
-
-	// Called after a pin connection change has been made.
-	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
-
 	// Return true in Iter to continue iterating
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
 
 	// Return true in Iter to continue iterating
 	void ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const;
+
+protected:
+	// Called after a pin connection change has been made. Called by Heart::Connections::~FEdit
+	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
 
 
 	/*-----------------------
@@ -270,11 +270,13 @@ public:
 			PIN EDITING
 	----------------------------*/
 
+	Heart::Connections::FEdit EditConnections();
+
 	bool ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 
 	bool DisconnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 
-	void DisconnectAllPins(const FHeartGraphPinReference& Pin);
+	bool DisconnectAllPins(const FHeartGraphPinReference& Pin);
 
 
 #if WITH_EDITORONLY_DATA
