@@ -2,9 +2,9 @@
 
 #include "BloodBlueprintLibrary.h"
 
-#define LOCTEXT_NAMESPACE "BloodBlueprintLibrary"
-
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BloodBlueprintLibrary)
+
+#define LOCTEXT_NAMESPACE "BloodBlueprintLibrary"
 
 void UBloodBlueprintLibrary::ReadProperty(const UObject*, FName Property, uint8& Value)
 {
