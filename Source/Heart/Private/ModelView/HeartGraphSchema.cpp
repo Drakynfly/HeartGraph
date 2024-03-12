@@ -17,7 +17,7 @@ UHeartGraphSchema::UHeartGraphSchema()
 #endif
 }
 
-const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph> GraphClass)
+const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph>& GraphClass)
 {
 	if (!ensure(IsValid(GraphClass)))
 	{

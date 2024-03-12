@@ -20,31 +20,31 @@ namespace Heart
 			FilterMaxResults = Query.MaxResults > 0 ? Query.MaxResults : TNumericLimits<int32>::Max();
 
 			GraphNodeClassTest = IsValid(Query.HeartGraphNodeBaseClass) ?
-				FGraphNodeTest([&Query](const TSubclassOf<UHeartGraphNode> GraphNodeClass)
+				FGraphNodeTest([&Query](const TSubclassOf<UHeartGraphNode>& GraphNodeClass)
 				{
 					return GraphNodeClass->IsChildOf(Query.HeartGraphNodeBaseClass);
 				}) :
-				FGraphNodeTest([](const TSubclassOf<UHeartGraphNode>)
+				FGraphNodeTest([](const TSubclassOf<UHeartGraphNode>&)
 				{
 					return true;
 				});
 
 			NodeSourceClassTest = IsValid(Query.NodeObjectBaseClass) ?
-				FNodeSourceTest([&Query](const FHeartNodeSource NodeSource)
+				FNodeSourceTest([&Query](const FHeartNodeSource& NodeSource)
 				{
 					return NodeSource.IsAOrClassOf(Query.NodeObjectBaseClass);
 				}) :
-				FNodeSourceTest([](const FHeartNodeSource)
+				FNodeSourceTest([](const FHeartNodeSource&)
 				{
 					return true;
 				});
 
 			CustomFilterTest = Query.Filter.IsBound() ?
-				FNodeSourceTest([&Query](const FHeartNodeSource NodeSource)
+				FNodeSourceTest([&Query](const FHeartNodeSource& NodeSource)
 				{
 					return Query.Filter.Execute(NodeSource);
 				}) :
-				FNodeSourceTest([](const FHeartNodeSource)
+				FNodeSourceTest([](const FHeartNodeSource&)
 				{
 					return true;
 				});
@@ -345,7 +345,7 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 	TSet<FString> UnsortedCategories;
 
 	ForEachNodeObjectClass(
-		[&UnsortedCategories](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeSource)
+		[&UnsortedCategories](const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const FHeartNodeSource& NodeSource)
 		{
 			const UHeartGraphNode* GraphNodeCDO = GraphNodeClass->GetDefaultObject<UHeartGraphNode>();
 			const UObject* NodeSourceCDO = NodeSource.GetDefaultObject();
@@ -400,7 +400,7 @@ void UHeartGraphNodeRegistry::QueryNodeClasses(const FHeartRegistryQuery& Query,
 	Heart::FFilterLambdas FilterLambdas(Query);
 
 	ForEachNodeObjectClass(
-		[&OutNodeSources, &FilterLambdas](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeSource)
+		[&OutNodeSources, &FilterLambdas](const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const FHeartNodeSource& NodeSource)
 		{
 			if (FilterLambdas.GraphNodeClassTest(GraphNodeClass) &&
 				FilterLambdas.NodeSourceClassTest(NodeSource) &&
@@ -416,7 +416,7 @@ void UHeartGraphNodeRegistry::QueryNodeClasses(const FHeartRegistryQuery& Query,
 	if (Query.Sort.IsBound())
 	{
 		Algo::Sort(OutNodeSources,
-			[Callback = Query.Sort](const FHeartNodeSource A, const FHeartNodeSource B)
+			[Callback = Query.Sort](const FHeartNodeSource& A, const FHeartNodeSource& B)
 			{
 				return Callback.Execute(A, B);
 			});
@@ -431,7 +431,7 @@ void UHeartGraphNodeRegistry::QueryNodeClasses(const FHeartRegistryQuery& Query,
 		}
 
 		Algo::Sort(OutNodeSources,
-			[&Scores](const FHeartNodeSource A, const FHeartNodeSource B)
+			[&Scores](const FHeartNodeSource& A, const FHeartNodeSource& B)
 			{
 				return Scores[A] < Scores[B];
 			});
@@ -444,7 +444,7 @@ void UHeartGraphNodeRegistry::QueryGraphAndNodeClasses(const FHeartRegistryQuery
 	Heart::FFilterLambdas FilterLambdas(Query);
 
 	ForEachNodeObjectClass(
-		[&OutClasses, &FilterLambdas](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeSource)
+		[&OutClasses, &FilterLambdas](const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const FHeartNodeSource& NodeSource)
 		{
 			if (FilterLambdas.GraphNodeClassTest(GraphNodeClass) &&
 				FilterLambdas.NodeSourceClassTest(NodeSource) &&
@@ -460,7 +460,7 @@ void UHeartGraphNodeRegistry::QueryGraphAndNodeClasses(const FHeartRegistryQuery
 	if (Query.Sort.IsBound())
 	{
 		OutClasses.KeySort(
-			[Callback = Query.Sort](const FHeartNodeSource A, const FHeartNodeSource B)
+			[Callback = Query.Sort](const FHeartNodeSource& A, const FHeartNodeSource& B)
 			{
 				return Callback.Execute(A, B);
 			});
@@ -475,7 +475,7 @@ void UHeartGraphNodeRegistry::QueryGraphAndNodeClasses(const FHeartRegistryQuery
 		}
 
 		OutClasses.KeySort(
-			[&Scores](const FHeartNodeSource A, const FHeartNodeSource B)
+			[&Scores](const FHeartNodeSource& A, const FHeartNodeSource& B)
 			{
 				return Scores[A] < Scores[B];
 			});

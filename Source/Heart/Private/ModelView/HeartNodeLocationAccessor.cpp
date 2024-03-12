@@ -126,7 +126,7 @@ void UHeartNodeLocationProxy::SetNodeLocation3D(const FHeartNodeGuid& Node, cons
 }
 
 UHeartNodeLocationProxy* UHeartNodeLocationProxy::Create(UObject* ObjectToProxy,
-                                                        const TSubclassOf<UHeartNodeLocationProxy> LocationProxyClass)
+                                                        const TSubclassOf<UHeartNodeLocationProxy>& LocationProxyClass)
 {
 	if (!IsValid(ObjectToProxy) || !IsValid(LocationProxyClass))
 	{

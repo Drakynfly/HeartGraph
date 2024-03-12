@@ -113,7 +113,7 @@ public:
 	/* IHeartNodeLocationAccessor */
 
 public:
-	static UHeartNodeLocationProxy* Create(UObject* ObjectToProxy, TSubclassOf<UHeartNodeLocationProxy> LocationProxyClass);
+	static UHeartNodeLocationProxy* Create(UObject* ObjectToProxy, const TSubclassOf<UHeartNodeLocationProxy>& LocationProxyClass);
 
 protected:
 	UPROPERTY()

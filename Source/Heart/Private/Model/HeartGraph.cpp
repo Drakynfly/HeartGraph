@@ -256,7 +256,7 @@ void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
 	}
 }
 
-UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location)
 {
 	checkSlow(IsValid(GraphNodeClass));
 	checkSlow(IsValid(NodeObject));
@@ -271,7 +271,7 @@ UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UH
 	return NewGraphNode;
 }
 
-UHeartGraphNode* UHeartGraph::Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UObject* NodeObject, const FVector2D& Location)
 {
 	checkSlow(IsValid(GraphNodeClass));
 	checkSlow(IsValid(NodeObject));

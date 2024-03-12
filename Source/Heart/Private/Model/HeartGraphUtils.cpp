@@ -284,7 +284,7 @@ FHeartNodeSource UHeartGraphUtils::MakeNodeSourceFromObject(UObject* Object)
 	return FHeartNodeSource(Object);
 }
 
-const UClass* UHeartGraphUtils::NodeSourceToClass(const FHeartNodeSource NodeSource, const UClass* BaseClass)
+const UClass* UHeartGraphUtils::NodeSourceToClass(const FHeartNodeSource& NodeSource, const UClass* BaseClass)
 {
 	if (BaseClass == nullptr ||
 		BaseClass == UObject::StaticClass() ||
@@ -295,7 +295,7 @@ const UClass* UHeartGraphUtils::NodeSourceToClass(const FHeartNodeSource NodeSou
 	return nullptr;
 }
 
-const UObject* UHeartGraphUtils::NodeSourceToObject(const FHeartNodeSource NodeSource, const UClass* BaseClass)
+const UObject* UHeartGraphUtils::NodeSourceToObject(const FHeartNodeSource& NodeSource, const UClass* BaseClass)
 {
 	if (BaseClass == nullptr ||
 		BaseClass == UObject::StaticClass() ||

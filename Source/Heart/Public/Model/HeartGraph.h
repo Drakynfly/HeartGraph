@@ -200,10 +200,10 @@ public:
 	----------------------------*/
 private:
 	// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
-	UHeartGraphNode* Internal_CreateNode_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
+	UHeartGraphNode* Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
 
 	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
-	UHeartGraphNode* Internal_CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
+	UHeartGraphNode* Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
 
 public:
 	// Create from template graph class and node object

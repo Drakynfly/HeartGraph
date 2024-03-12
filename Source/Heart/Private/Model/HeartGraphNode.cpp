@@ -71,13 +71,13 @@ UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 	return const_cast<ThisClass*>(this);
 }
 
-FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource NodeSource) const
+FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource& NodeSource) const
 {
 	if (!NodeSource.IsValid()) return FText::GetEmpty();
 	return GetNodeCategory(NodeSource.GetDefaultObject());
 }
 
-FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource NodeSource) const
+FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource& NodeSource) const
 {
 	if (!NodeSource.IsValid()) return FText::GetEmpty();
 	return GetNodeToolTip(NodeSource.GetDefaultObject());

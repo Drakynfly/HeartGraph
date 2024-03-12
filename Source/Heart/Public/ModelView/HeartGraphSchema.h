@@ -93,7 +93,7 @@ class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 public:
 	UHeartGraphSchema();
 
-	static const UHeartGraphSchema* Get(const TSubclassOf<UHeartGraph> GraphClass);
+	static const UHeartGraphSchema* Get(const TSubclassOf<UHeartGraph>& GraphClass);
 
 	template <typename THeartGraph>
 	static const UHeartGraphSchema* Get()
