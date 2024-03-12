@@ -102,32 +102,33 @@ void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 	if (ThisDesc.Direction != EHeartPinDirection::Output) return;
 
 	auto GetConnectionWidget = [this, &RebuildPool](UClass* ConnectionVisualizer)
-	{
-		const TObjectPtr<UHeartGraphCanvasConnection>* FoundPoolWidget = RebuildPool.FindByPredicate(
-			[ConnectionVisualizer](const TObjectPtr<UHeartGraphCanvasConnection>& PoolWidget)
-			{
-				return PoolWidget->GetClass() == ConnectionVisualizer;
-			});
-
-		if (FoundPoolWidget != nullptr && IsValid(*FoundPoolWidget))
 		{
-			RebuildPool.Remove(FoundPoolWidget->Get());
-			return FoundPoolWidget->Get();
-		}
+			const TObjectPtr<UHeartGraphCanvasConnection>* FoundPoolWidget = RebuildPool.FindByPredicate(
+				[ConnectionVisualizer](const TObjectPtr<UHeartGraphCanvasConnection>& PoolWidget)
+				{
+					return PoolWidget->GetClass() == ConnectionVisualizer;
+				});
 
-		return CreateWidget<UHeartGraphCanvasConnection>(this, ConnectionVisualizer);
-	};
+			if (FoundPoolWidget != nullptr && IsValid(*FoundPoolWidget))
+			{
+				RebuildPool.Remove(FoundPoolWidget->Get());
+				return FoundPoolWidget->Get();
+			}
 
-	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-	auto&& CanvasGraphClass = GraphNode->GetGraph()->GetClass();
-	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(CanvasGraphClass);
+			return CreateWidget<UHeartGraphCanvasConnection>(this, ConnectionVisualizer);
+		};
 
-	const TSet<FHeartGraphPinReference>& Connections = GraphNode->GetLinks(Pin).Links;
-	for (const FHeartGraphPinReference& Connection : Connections)
+	auto&& Connections = GraphNode->GetConnections(Pin);
+	if (!Connections.IsSet())
+	{
+		return;
+	}
+
+	for (const FHeartGraphPinReference& Connection : Connections.GetValue().Links)
 	{
 		const FHeartGraphPinDesc& ConnectionDesc = GraphNode->GetPinDescChecked(Connection.PinGuid);
 
-		auto&& ConnectionVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphConnection(ThisDesc, ConnectionDesc, UHeartGraphCanvasConnection::StaticClass());
+		auto&& ConnectionVisualizer = GetCanvas()->GetVisualClassForConnection(ThisDesc, ConnectionDesc);
 		if (!IsValid(ConnectionVisualizer))
 		{
 			continue;
