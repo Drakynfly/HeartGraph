@@ -394,7 +394,7 @@ FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction
 #if WITH_EDITOR
 		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
 #endif
-		GetInstancedPinData(Direction, PinDesc.Tag, PinDesc.Metadata);
+		GetInstancedPinData(Direction, PinDesc.Tag, MutableView(PinDesc.Metadata));
 	}
 
 	return AddPin(PinDesc);

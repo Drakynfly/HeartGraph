@@ -110,7 +110,7 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 			{
 				if (Entry.RecursiveRegistryCounter == 0)
 				{
-					GetDerivedClasses(Element.Class, Entry.RecursiveChildren);
+					GetDerivedClasses(Element.Class, MutableView(Entry.RecursiveChildren));
 				}
 
 				Entry.RecursiveRegistryCounter++;
