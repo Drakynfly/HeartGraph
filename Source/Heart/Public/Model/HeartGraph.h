@@ -203,7 +203,7 @@ private:
 	UHeartGraphNode* Internal_CreateNode_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
 
 	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
-	UHeartGraphNode* Internal_CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location);
+	UHeartGraphNode* Internal_CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
 
 public:
 	// Create from template graph class and node object
@@ -239,7 +239,7 @@ public:
 
 	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (reference)"))
-	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location);
+	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
 
 	/**
 	 * Create a new node, spawning a new NodeObject from the NodeClass provided.

@@ -123,9 +123,9 @@ public:
 
 	// Converts a Node Source to a class or returns nullptr
 	UFUNCTION(BlueprintPure, Category = "Heart|Registry", meta = (DeterminesOutputType = "BaseClass"))
-	static UClass* NodeSourceToClass(FHeartNodeSource NodeSource, const UClass* BaseClass);
+	static const UClass* NodeSourceToClass(FHeartNodeSource NodeSource, const UClass* BaseClass);
 
 	// Converts a Node Source to a object or returns nullptr
 	UFUNCTION(BlueprintPure, Category = "Heart|Registry", meta = (DeterminesOutputType = "BaseClass"))
-	static UObject* NodeSourceToObject(FHeartNodeSource NodeSource, const UClass* BaseClass);
+	static const UObject* NodeSourceToObject(FHeartNodeSource NodeSource, const UClass* BaseClass);
 };
