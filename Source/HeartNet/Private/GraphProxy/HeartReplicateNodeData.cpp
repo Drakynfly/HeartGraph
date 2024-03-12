@@ -3,6 +3,8 @@
 #include "GraphProxy/HeartReplicateNodeData.h"
 #include "GraphProxy/HeartGraphNetProxy.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartReplicateNodeData)
+
 void FHeartReplicatedNodeData::PostReplicatedAdd(const FHeartReplicatedGraphNodes& Array)
 {
 	Array.OwningProxy->UpdateNodeProxy(*this, Heart::Net::Tags::Node_Added);

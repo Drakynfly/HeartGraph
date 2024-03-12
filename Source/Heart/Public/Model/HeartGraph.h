@@ -216,12 +216,12 @@ public:
 	}
 
 	// Create from template node class and attempt to cast the return to the template graph class
-	template <typename THeartGraphNode, typename THeartNode>
+	template <typename THeartGraphNode, typename TNodeObject>
 	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
-		static_assert(!TIsDerivedFrom<THeartNode, UHeartGraphNode>::IsDerived, "THeartNode must not derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), THeartNode::StaticClass(), Location));
+		static_assert(!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::IsDerived, "TNodeObject must not derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location));
 	}
 
 	// Create from node class and attempt to cast the return to the template graph class
