@@ -34,15 +34,19 @@ namespace Heart::Editor
 	}
 }
 
-void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const FString& CategoryName)
+void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const TOptional<FStringView>& CategoryName)
 {
 	GetHeartGraphNodeActions(ActionMenuBuilder, AssetClass->GetDefaultObject<UHeartGraph>(), CategoryName);
-	GetCommentAction(ActionMenuBuilder);
+
+	if (!CategoryName.IsSet())
+	{
+		GetCommentAction(ActionMenuBuilder);
+	}
 }
 
 void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
-	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetClassDefaults(ContextMenuBuilder.CurrentGraph), FString());
+	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetClassDefaults(ContextMenuBuilder.CurrentGraph), {});
 	GetCommentAction(ContextMenuBuilder, ContextMenuBuilder.CurrentGraph);
 
 	if (!ContextMenuBuilder.FromPin && Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph)->CanPasteNodes())
@@ -222,16 +226,13 @@ TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(con
 	Result.Reserve(SortedCategories.Num());
 	for (const FString& Category : SortedCategories)
 	{
-		if (!Category.IsEmpty())
-		{
-			Result.Emplace(MakeShared<FString>(Category));
-		}
+		Result.Emplace(MakeShared<FString>(Category));
 	}
 
 	return Result;
 }
 
-void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName)
+void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const TOptional<FStringView>& CategoryName)
 {
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
 
@@ -246,8 +247,8 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 			{
 				if (GraphNodeDefault->CanCreate_Editor())
 				{
-					if (CategoryName.IsEmpty() ||
-						CategoryName.Equals(GraphNodeDefault->GetDefaultNodeCategory(NodeSource).ToString()))
+					if (!CategoryName.IsSet() ||
+						CategoryName.GetValue() == GraphNodeDefault->GetDefaultNodeCategory(NodeSource).ToString())
 					{
 						ActionMenuBuilder.AddAction(MakeShared<FHeartGraphSchemaAction_NewNode>(NodeSource, GraphNodeDefault));
 					}

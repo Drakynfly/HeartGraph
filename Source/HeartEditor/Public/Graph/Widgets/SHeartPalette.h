@@ -20,7 +20,7 @@ public:
 	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent) override;
 
 private:
-	TSharedRef<SWidget> CreateHotkeyDisplayWidget(const FSlateFontInfo& NameFont, const TSharedPtr<const FInputChord> HotkeyChord) const;
+	TSharedRef<SWidget> CreateHotkeyDisplayWidget(const FSlateFontInfo& NameFont, const TSharedPtr<const FInputChord>& HotkeyChord) const;
 	virtual FText GetItemTooltip() const override;
 };
 
@@ -43,7 +43,7 @@ protected:
 	void Refresh();
 	void UpdateCategoryNames();
 
-	FString GetFilterCategoryName() const;
+	TOptional<FStringView> GetFilterCategoryName() const;
 	void CategorySelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo);
 
 	void OnActionSelected(const TArray<TSharedPtr<FEdGraphSchemaAction>>& InActions, ESelectInfo::Type InSelectionType) const;

@@ -350,7 +350,11 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 			const UHeartGraphNode* GraphNodeCDO = GraphNodeClass->GetDefaultObject<UHeartGraphNode>();
 			const UObject* NodeSourceCDO = NodeSource.GetDefaultObject();
 
-			UnsortedCategories.Emplace(GraphNodeCDO->GetNodeCategory(NodeSourceCDO).ToString());
+			if (const FString NodeCategory = GraphNodeCDO->GetNodeCategory(NodeSourceCDO).ToString();
+				!NodeCategory.IsEmpty())
+			{
+				UnsortedCategories.Emplace(NodeCategory);
+			}
 
 			return true;
 		});

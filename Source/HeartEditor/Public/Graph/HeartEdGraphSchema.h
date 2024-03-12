@@ -14,7 +14,7 @@ class HEARTEDITOR_API UHeartEdGraphSchema : public UEdGraphSchema
 	GENERATED_BODY()
 
 public:
-	static void GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const FString& CategoryName);
+	static void GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const TOptional<FStringView>& CategoryName);
 
 	//~ EdGraphSchema
 	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
@@ -38,7 +38,7 @@ public:
 	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
 
 private:
-	static void GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const FString& CategoryName);
+	static void GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const TOptional<FStringView>& CategoryName);
 	static void GetCommentAction(FGraphActionMenuBuilder& ActionMenuBuilder, const UEdGraph* CurrentGraph = nullptr);
 
 public:
