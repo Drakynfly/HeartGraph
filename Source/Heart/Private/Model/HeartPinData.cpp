@@ -78,3 +78,18 @@ const FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartP
 {
 	return PinConnections.FindChecked(Key);
 }
+
+bool FHeartNodePinData::RemoveConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin)
+{
+	if (FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
+	{
+		const int32 Removed = Connections->Links.Remove(Pin);
+		if (Connections->Links.IsEmpty())
+		{
+			PinConnections.Remove(Key);
+		}
+		return !!Removed;
+	}
+
+	return false;
+}

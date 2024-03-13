@@ -37,7 +37,7 @@ namespace Heart::Connections
 		[[nodiscard]] bool Modified() const { return !ChangedPins.IsEmpty(); }
 
 	private:
-		void Internal_Disconnect(UHeartGraphNode* NodeA, FHeartPinGuid PinA, UHeartGraphNode* NodeB, FHeartPinGuid PinB);
+		void Internal_Disconnect(UHeartGraphNode* NodeA, const FHeartGraphPinReference& PinA, UHeartGraphNode* NodeB, const FHeartGraphPinReference& PinB);
 
 		UHeartGraph* Graph;
 		TMultiMap<UHeartGraphNode*, FHeartPinGuid> ChangedPins;

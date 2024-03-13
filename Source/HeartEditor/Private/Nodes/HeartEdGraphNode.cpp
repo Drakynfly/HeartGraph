@@ -220,10 +220,10 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			LinkedPins.Add(LinkedPin.GetValue());
 
 			if (!Pin->LinkedTo.ContainsByPredicate(
-				[Desc = LinkedPin.GetValue()](const UEdGraphPin* EdGraphPin)
-				{
-					return Desc.Name == EdGraphPin->PinName;
-				}))
+					[Desc = LinkedPin.GetValue()](const UEdGraphPin* EdGraphPin)
+					{
+						return Desc.Name == EdGraphPin->PinName;
+					}))
 			{
 				// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
 				ConnectionEditor.Disconnect(LinkedRef, SelfReference);
