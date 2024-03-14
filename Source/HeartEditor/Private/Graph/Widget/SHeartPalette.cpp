@@ -106,7 +106,7 @@ FReply SHeartPaletteItem::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry
 	return FReply::Unhandled();
 }
 
-TSharedRef<SWidget> SHeartPaletteItem::CreateHotkeyDisplayWidget(const FSlateFontInfo& NameFont, const TSharedPtr<const FInputChord> HotkeyChord) const
+TSharedRef<SWidget> SHeartPaletteItem::CreateHotkeyDisplayWidget(const FSlateFontInfo& NameFont, const TSharedPtr<const FInputChord>& HotkeyChord) const
 {
 	FText HotkeyText;
 	if (HotkeyChord.IsValid())
@@ -240,14 +240,14 @@ void SHeartPalette::UpdateCategoryNames()
 	}
 }
 
-FString SHeartPalette::GetFilterCategoryName() const
+TOptional<FStringView> SHeartPalette::GetFilterCategoryName() const
 {
 	if (CategoryComboBox.IsValid() && CategoryComboBox->GetSelectedItem() != CategoryNames[0])
 	{
-		return *CategoryComboBox->GetSelectedItem();
+		return MakeStringView(*CategoryComboBox->GetSelectedItem());
 	}
 
-	return FString();
+	return {};
 }
 
 void SHeartPalette::CategorySelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)

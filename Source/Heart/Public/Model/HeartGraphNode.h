@@ -123,8 +123,8 @@ public:
 			REFLECTION
 	----------------------------*/
 
-	FText GetDefaultNodeCategory(FHeartNodeSource NodeSource) const;
-	FText GetDefaultNodeTooltip(FHeartNodeSource NodeSource) const;
+	FText GetDefaultNodeCategory(const FHeartNodeSource& NodeSource) const;
+	FText GetDefaultNodeTooltip(const FHeartNodeSource& NodeSource) const;
 
 	// Returns the node title used for nodes placed in a graph, which have a valid NodeObject from which to determine a title.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")

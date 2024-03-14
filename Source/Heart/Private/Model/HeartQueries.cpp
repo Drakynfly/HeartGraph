@@ -12,70 +12,27 @@ namespace Heart::Query
 	FPinQueryResult::FPinQueryResult(const FHeartNodePinData& Src)
 	  : Reference(Src) {}
 
-	void FPinQueryResult::Internal_GetOptions(TArray<FHeartPinGuid>& Options) const
-	{
-		Reference.PinOrder.GetKeys(Options);
-	}
-
 	FPinQueryResult& FPinQueryResult::DefaultSort()
 	{
-		InitResults();
-
-		Algo::SortBy(Results.GetValue(),
-			[this](const FHeartPinGuid& Key)
+		return SortBy([this](const FHeartPinGuid& Key)
 			{
 				return Reference.PinOrder[Key];
 			});
-
-		return *this;
 	}
 
-	const TMap<FHeartPinGuid, FHeartGraphPinDesc>& FPinQueryResult::Internal_GetMap() const
-	{
-		return Reference.PinDescriptions;
-	}
-
-	FNodeQueryResult::FNodeQueryResult(const UHeartGraph* Src)
-	  : Reference(TInPlaceType<AsGraph>(), Src) {}
-
-	FNodeQueryResult::FNodeQueryResult(const TConstArrayView<TObjectPtr<UHeartGraphNode>>& Src)
-	  : Reference(TInPlaceType<AsLoose>(),
-	  		[Src]()
-			{
-	  			AsLoose Loose;
-
-				for (auto Element : Src)
-				{
-					Loose.Add(Element->GetGuid(), Element);
-				}
-
-				return Loose;
-			}()) {}
-
-	void FNodeQueryResult::Internal_GetOptions(TArray<FHeartNodeGuid>& Options) const
-	{
-		if (Reference.IsType<AsGraph>())
+	TNodeQueryResult<FNodeMap>::TNodeQueryResult(const TConstArrayView<TObjectPtr<UHeartGraphNode>>& Src)
+		: Reference([Src]()
 		{
-			Reference.Get<AsGraph>()->GetNodeGuids(Options);
-		}
-		else if (Reference.IsType<AsLoose>())
-		{
-			Options.Reserve(Options.Num() + Reference.Get<AsLoose>().Num());
-			for (auto&& Element : Reference.Get<AsLoose>())
+			TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Loose;
+
+			for (auto Element : Src)
 			{
-				Options.Emplace(Element.Key);
+				Loose.Add(Element->GetGuid(), Element);
 			}
-		}
-	}
 
-	const TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>& FNodeQueryResult::Internal_GetMap() const
-	{
-		if (Reference.IsType<AsGraph>())
-		{
-			return Reference.Get<AsGraph>()->GetNodes();
-		}
+			return Loose;
+		}()) {}
 
-		check(Reference.IsType<AsLoose>());
-		return Reference.Get<AsLoose>();
-	}
+	TNodeQueryResult<UHeartGraph*>::TNodeQueryResult(const UHeartGraph* Src)
+	  : Reference(Src) {}
 }

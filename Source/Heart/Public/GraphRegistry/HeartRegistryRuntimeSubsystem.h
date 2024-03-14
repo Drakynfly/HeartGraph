@@ -53,7 +53,7 @@ protected:
 	// are edited.
 	void FetchAssetRegistrars(bool ForceReload = false);
 
-	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph> Class);
+	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph>& Class);
 
 	void OnRegistryChanged(UHeartGraphNodeRegistry* Registry);
 

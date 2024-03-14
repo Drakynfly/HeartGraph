@@ -200,10 +200,10 @@ public:
 	----------------------------*/
 private:
 	// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
-	UHeartGraphNode* Internal_CreateNode_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
+	UHeartGraphNode* Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
 
 	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
-	UHeartGraphNode* Internal_CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location);
+	UHeartGraphNode* Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
 
 public:
 	// Create from template graph class and node object
@@ -216,12 +216,12 @@ public:
 	}
 
 	// Create from template node class and attempt to cast the return to the template graph class
-	template <typename THeartGraphNode, typename THeartNode>
+	template <typename THeartGraphNode, typename TNodeObject>
 	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
 	{
 		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
-		static_assert(!TIsDerivedFrom<THeartNode, UHeartGraphNode>::IsDerived, "THeartNode must not derive from UHeartGraphNode");
-		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), THeartNode::StaticClass(), Location));
+		static_assert(!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::IsDerived, "TNodeObject must not derive from UHeartGraphNode");
+		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location));
 	}
 
 	// Create from node class and attempt to cast the return to the template graph class
@@ -239,7 +239,7 @@ public:
 
 	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (reference)"))
-	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location);
+	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
 
 	/**
 	 * Create a new node, spawning a new NodeObject from the NodeClass provided.

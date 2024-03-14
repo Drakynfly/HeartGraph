@@ -600,21 +600,7 @@ namespace Heart::AssetEditor
 	{
 		check(Node);
 
-		const UEdGraphSchema* Schema = nullptr;
-
-		// Ensure we mark parent graph modified
-		if (UEdGraph* GraphObj = Node->GetGraph())
-		{
-			GraphObj->Modify();
-			Schema = GraphObj->GetSchema();
-		}
-
 		Node->Modify();
-
-		if (Schema)
-		{
-			Schema->BreakNodeLinks(*Node);
-		}
 
 		// Try to remove the Runtime Node first, if there is one.
 		if (auto&& HeartEdGraphNode = Cast<UHeartEdGraphNode>(Node))

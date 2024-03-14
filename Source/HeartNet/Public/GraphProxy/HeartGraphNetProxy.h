@@ -7,13 +7,24 @@
 #include "Model/HeartGuids.h"
 #include "HeartGraphNetProxy.generated.h"
 
-struct FHeartNodeMoveEvent;
 struct FHeartGraphConnectionEvent;
 struct FHeartGraphConnectionEvent_Net;
+struct FHeartManualEvent;
+struct FHeartNodeMoveEvent;
 struct FHeartNodeMoveEvent_Net;
-class UHeartNetClient;
-class UHeartGraphNode;
+struct FHeartRemoteGraphActionArguments;
 class UHeartGraph;
+class UHeartGraphActionBase;
+class UHeartGraphNode;
+class UHeartNetClient;
+
+UENUM()
+enum class EHeartUpdateNodeType : uint8
+{
+	None UMETA(hidden),
+	HeartNode,
+	NodeObject
+};
 
 namespace Heart::Net::Tags
 {
@@ -23,8 +34,13 @@ namespace Heart::Net::Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_Moved)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_ConnectionsChanged)
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_ClientUpdateNodeObject)
+
 	// This tag can be used for custom replicating events, but its suggested to create unique tags.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Other)
+
+	// Permissions-only tag for allowing clients to run graph action edits.
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Permission_Actions)
 
 	// Permissions-only tag for allowing any kind of client edit.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Permission_All)
@@ -100,7 +116,7 @@ protected:
 
 	void UpdateReplicatedNodeData(UHeartGraphNode* Node);
 	void RemoveReplicatedNodeData(const FHeartNodeGuid& Node);
-	void EditReplicatedNodeData(const FHeartNodeFlake& NodeData, FGameplayTag Type);
+	void EditReplicatedNodeData(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
 
 
 	/**-------------------------*/
@@ -113,6 +129,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Heart|NetProxy", meta = (Categories = "Heart.Net"))
 	void SetPermissions(const FGameplayTagContainer& Permissions);
+
+	// A generic update function to send local node state to the server.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
+	void RequestUpdateNode_OnServer(FHeartNodeGuid NodeGuid, EHeartUpdateNodeType Type = EHeartUpdateNodeType::HeartNode);
+
+	// Use this to remote execute graph actions on the server, to make changes to the source graph.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
+	void ExecuteGraphActionOnServer(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
 
 protected:
 	UFUNCTION()
@@ -130,13 +154,16 @@ protected:
 	virtual void OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
 	// These functions are called on the server via RPC when a client wants to edit things.
-	virtual void OnNodeAdded_Client(const FHeartNodeFlake& HeartGraphNode);
+	virtual void OnNodeAdded_Client(const FHeartNodeFlake& NodeData);
 	virtual void OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent);
-	virtual void OnNodeRemoved_Client(FHeartNodeGuid HeartGraphNode);
+	virtual void OnNodeRemoved_Client(FHeartNodeGuid NodeGuid);
 	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 
+	virtual void UpdateNodeData_Client(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
+	virtual void ExecuteGraphAction_Client(const FHeartFlake& ActionData, const FHeartRemoteGraphActionArguments& Args);
+
 	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, FGameplayTag EventType);
-	bool RemoveNodeProxy(const FHeartNodeGuid& Node);
+	bool RemoveNodeProxy(const FHeartNodeGuid& NodeGuid);
 
 
 	/**-----------------------------*/

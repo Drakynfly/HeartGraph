@@ -6,14 +6,28 @@
 
 void FHeartNodePinData::AddPin(const FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc)
 {
+	PinOrder.Add(NewKey, PinOrder.Num());
 	PinDescriptions.Add(NewKey, Desc);
-	PinOrder.Add(NewKey);
 }
 
 bool FHeartNodePinData::RemovePin(const FHeartPinGuid Key)
 {
 	PinDescriptions.Remove(Key);
 	PinConnections.Remove(Key);
+
+	if (PinOrder.Contains(Key))
+	{
+		// @todo this is horrid
+		const int32 PinIndex = PinOrder[Key];
+		for (auto&& Element : PinOrder)
+		{
+			if (Element.Value > PinIndex)
+			{
+				Element.Value--;
+			}
+		}
+	}
+
 	return !!PinOrder.Remove(Key);
 }
 
@@ -63,4 +77,19 @@ FHeartGraphPinConnections& FHeartNodePinData::GetConnectionsMutable(const FHeart
 const FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartPinGuid Key)
 {
 	return PinConnections.FindChecked(Key);
+}
+
+bool FHeartNodePinData::RemoveConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin)
+{
+	if (FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
+	{
+		const int32 Removed = Connections->Links.Remove(Pin);
+		if (Connections->Links.IsEmpty())
+		{
+			PinConnections.Remove(Key);
+		}
+		return !!Removed;
+	}
+
+	return false;
 }

@@ -2,17 +2,21 @@
 
 #pragma once
 
+#include "HeartReplicateNodeData.h"
 #include "Components/ActorComponent.h"
 #include "Model/HeartGuids.h"
 #include "HeartNetClient.generated.h"
 
-struct FHeartGraphConnectionEvent_Net;
-struct FHeartNodeMoveEvent_Net;
+enum class EHeartUpdateNodeType : uint8;
+struct FHeartFlake;
 struct FHeartGraphConnectionEvent;
+struct FHeartGraphConnectionEvent_Net;
 struct FHeartNodeMoveEvent;
+struct FHeartNodeMoveEvent_Net;
+struct FHeartRemoteGraphActionArguments;
 struct FHeartReplicatedNodeData;
-class UHeartGraphNode;
 class UHeartGraphNetProxy;
+class UHeartGraphNode;
 
 
 /**
@@ -48,4 +52,10 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy, const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
+
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateGraphNode(UHeartGraphNetProxy* Proxy, const FHeartNodeFlake& NodeFlake, EHeartUpdateNodeType Type);
+
+	UFUNCTION(Server, Reliable)
+	void Server_ExecuteGraphAction(UHeartGraphNetProxy* Proxy, const FHeartFlake& ActionData, const FHeartRemoteGraphActionArguments& Args);
 };

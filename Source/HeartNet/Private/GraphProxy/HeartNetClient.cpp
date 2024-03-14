@@ -20,6 +20,7 @@ UHeartNetClient::UHeartNetClient()
 void UHeartNetClient::OnNodeAdded(UHeartGraphNetProxy* Proxy, UHeartGraphNode* HeartGraphNode)
 {
 	check(Proxy);
+	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
 
 	FHeartReplicatedNodeData NodeData;
 	NodeData.Data.Guid = HeartGraphNode->GetGuid();
@@ -33,6 +34,7 @@ void UHeartNetClient::OnNodeAdded(UHeartGraphNetProxy* Proxy, UHeartGraphNode* H
 void UHeartNetClient::OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeMoveEvent& NodeMoveEvent)
 {
 	check(Proxy);
+	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
 
 	if (NodeMoveEvent.MoveFinished)
 	{
@@ -65,6 +67,7 @@ void UHeartNetClient::OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeM
 void UHeartNetClient::OnNodeRemoved(UHeartGraphNetProxy* Proxy, UHeartGraphNode* HeartGraphNode)
 {
 	check(Proxy);
+	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
 
 	Server_OnNodeRemoved(Proxy, HeartGraphNode->GetGuid());
 }
@@ -73,6 +76,7 @@ void UHeartNetClient::OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy,
 	const FHeartGraphConnectionEvent& GraphConnectionEvent)
 {
 	check(Proxy);
+	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
 
 	auto ByAffected = [&GraphConnectionEvent](const FHeartPinGuid Pin)
 		{
@@ -106,6 +110,14 @@ void UHeartNetClient::OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy,
 	Server_OnNodeConnectionsChanged(Proxy, Event);
 }
 
+void UHeartNetClient::Server_UpdateGraphNode_Implementation(UHeartGraphNetProxy* Proxy,
+															const FHeartNodeFlake& NodeFlake, const EHeartUpdateNodeType Type)
+{
+	ensure(IsValid(Proxy));
+	UE_LOG(LogHeartNet, Log, TEXT("Server: Client updated node. (%i bytes) Type '%s'"), NodeFlake.Flake.Data.Num(), *StaticEnum<EHeartUpdateNodeType>()->GetValueAsString(Type))
+	Proxy->UpdateNodeData_Client(NodeFlake, Type == EHeartUpdateNodeType::NodeObject ? Heart::Net::Tags::Node_ClientUpdateNodeObject : Heart::Net::Tags::Other);
+}
+
 void UHeartNetClient::Server_OnNodeAdded_Implementation(UHeartGraphNetProxy* Proxy, const FHeartReplicatedNodeData& HeartGraphNode)
 {
 	ensure(IsValid(Proxy));
@@ -134,4 +146,12 @@ void UHeartNetClient::Server_OnNodeConnectionsChanged_Implementation(UHeartGraph
 	ensure(IsValid(Proxy));
 	UE_LOG(LogHeartNet, Log, TEXT("Server: Client changed node connections"))
 	Proxy->OnNodeConnectionsChanged_Client(GraphConnectionEvent);
+}
+
+void UHeartNetClient::Server_ExecuteGraphAction_Implementation(UHeartGraphNetProxy* Proxy, const FHeartFlake& ActionData,
+															   const FHeartRemoteGraphActionArguments& Args)
+{
+	ensure(IsValid(Proxy));
+	UE_LOG(LogHeartNet, Log, TEXT("Server: Client wants to run graph action '%s'"), *ActionData.Struct.ToString())
+	Proxy->ExecuteGraphAction_Client(ActionData, Args);
 }

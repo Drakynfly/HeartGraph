@@ -497,50 +497,6 @@ void UHeartGraphCanvas::AddToZoom(const double& Value)
 	}
 }
 
-TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Implementation(const UHeartGraphNode* Node) const
-{
-	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-
-	if (!IsValid(RegistrySubsystem))
-	{
-		UE_LOG(LogHeartGraphCanvas, Error,
-			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
-					"This error occured in UHeartGraphCanvas::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
-		return nullptr;
-	}
-
-	return RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass())
-								->GetVisualizerClassForGraphNode<UHeartGraphCanvasNode>(Node->GetClass());
-}
-
-TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPreviewConnection_Implementation() const
-{
-	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-
-	if (!IsValid(RegistrySubsystem))
-	{
-		UE_LOG(LogHeartGraphCanvas, Error,
-			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
-					"This error occured in UHeartGraphCanvas::GetVisualClassForPreviewConnection. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
-		return nullptr;
-	}
-
-	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass());
-	auto&& PreviewNode = DisplayedGraph->GetNode(PreviewConnectionPin.NodeGuid);
-	if (!IsValid(PreviewNode))
-	{
-		return nullptr;
-	}
-
-	auto&& PreviewDesc = PreviewNode->GetPinDesc(PreviewConnectionPin.PinGuid);
-	if (!PreviewDesc.IsSet())
-	{
-		return nullptr;
-	}
-
-	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(PreviewDesc.GetValue(), Heart::Graph::InvalidPinDesc, UHeartGraphCanvasConnection::StaticClass());
-}
-
 void UHeartGraphCanvas::SetPreviewConnection(const FHeartGraphPinReference& Reference)
 {
 	if (PreviewConnectionPin != Reference)
@@ -565,6 +521,66 @@ UCanvasPanelSlot* UHeartGraphCanvas::AddConnectionWidget(UHeartGraphCanvasConnec
 	UCanvasPanelSlot* ConnectionSlot = NodeCanvas->AddChildToCanvas(ConnectionWidget);
 	ConnectionSlot->SetZOrder(Heart::Canvas::ConnectionZOrder);
 	return ConnectionSlot;
+}
+
+TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Implementation(const UHeartGraphNode* Node) const
+{
+	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	if (!IsValid(RegistrySubsystem))
+	{
+		UE_LOG(LogHeartGraphCanvas, Error,
+			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+					"This error occured in UHeartGraphCanvas::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		return nullptr;
+	}
+
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass());
+	if (!IsValid(CanvasGraphRegistry))
+	{
+		return nullptr;
+	}
+
+	return CanvasGraphRegistry->GetVisualizerClassForGraphNode<UHeartGraphCanvasNode>(Node->GetClass());
+}
+
+TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForConnection_Implementation(
+	const FHeartGraphPinDesc& FromDesc, const FHeartGraphPinDesc& ToDesc) const
+{
+	auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
+
+	if (!IsValid(RegistrySubsystem))
+	{
+		UE_LOG(LogHeartGraphCanvas, Error,
+			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+					"This error occured in UHeartGraphCanvas::GetVisualClassForPreviewConnection. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		return nullptr;
+	}
+
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass());
+	if (!IsValid(CanvasGraphRegistry))
+	{
+		return nullptr;
+	}
+
+	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(FromDesc, ToDesc, UHeartGraphCanvasConnection::StaticClass());
+}
+
+TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPreviewConnection_Implementation() const
+{
+	auto&& PreviewNode = DisplayedGraph->GetNode(PreviewConnectionPin.NodeGuid);
+	if (!IsValid(PreviewNode))
+	{
+		return nullptr;
+	}
+
+	auto&& PreviewDesc = PreviewNode->GetPinDesc(PreviewConnectionPin.PinGuid);
+	if (!PreviewDesc.IsSet())
+	{
+		return nullptr;
+	}
+
+	return GetVisualClassForConnection(PreviewDesc.GetValue(), Heart::Graph::InvalidPinDesc);
 }
 
 bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const

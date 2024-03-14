@@ -107,13 +107,6 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 {
 	Modify();
 
-	/*
-	if (FromPin)
-	{
-		FromPin->Modify();
-	}
-	*/
-
 	auto&& HeartGraph = GetHeartGraph();
 	HeartGraph->Modify();
 
@@ -171,13 +164,15 @@ void UHeartEdGraph::OnNodeRemoved(UHeartGraphNode* HeartGraphNode)
 	{
 		if (auto&& EdGraphNode = FindEdGraphNodeForNode(HeartGraphNode))
 		{
-			RemoveNode(EdGraphNode);
+			EdGraphNode->DestroyNode();
 		}
 	}
 }
 
 void UHeartEdGraph::OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& HeartGraphConnectionEvent)
 {
+	// @todo this needs to be more robust, and not break with bulk ConnectionEvents
+
 	if (HeartGraphConnectionEvent.AffectedNodes.Num() != 2 ||
 		HeartGraphConnectionEvent.AffectedPins.Num() != 2)
 	{

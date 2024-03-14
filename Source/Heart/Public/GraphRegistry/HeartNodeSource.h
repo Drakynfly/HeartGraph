@@ -20,9 +20,9 @@ struct FHeartNodeSource
 	}
 
 	template <typename T>
-	T* As() const { return Cast<T>(NodeObj); }
+	const T* As() const { return Cast<T>(NodeObj); }
 
-	bool IsValid() const {return ::IsValid(NodeObj); }
+	bool IsValid() const { return ::IsValid(NodeObj); }
 
 	bool IsAOrClassOf(const UClass* Class) const
 	{
@@ -34,9 +34,9 @@ struct FHeartNodeSource
 	}
 
 	// Returns either the NodeObj if its a UClass, or the Class of the NodeObj otherwise
-	UClass* ThisClass() const
+	const UClass* ThisClass() const
 	{
-		if (UClass* AsClass = As<UClass>())
+		if (const UClass* AsClass = As<UClass>())
 		{
 			return AsClass;
 		}
@@ -44,7 +44,7 @@ struct FHeartNodeSource
 	}
 
 	// Returns either the SuperClass if its a UClass, or the Class of the NodeObj otherwise
-	UClass* NextClass() const
+	const UClass* NextClass() const
 	{
 		if (const UClass* AsClass = As<UClass>())
 		{

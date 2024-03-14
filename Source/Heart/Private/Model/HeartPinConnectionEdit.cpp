@@ -51,12 +51,7 @@ namespace Heart::Connections
 		UHeartGraphNode* ANode = Graph->GetNode(PinA.NodeGuid);
 		UHeartGraphNode* BNode = Graph->GetNode(PinB.NodeGuid);
 
-		if (!ensureAlways(IsValid(ANode) && IsValid(BNode)))
-		{
-			return *this;
-		}
-
-		Internal_Disconnect(ANode, PinA.PinGuid, BNode, PinB.PinGuid);
+		Internal_Disconnect(ANode, PinA, BNode, PinB);
 
 		return *this;
 	}
@@ -74,7 +69,7 @@ namespace Heart::Connections
 			const FHeartGraphPinReference& Link : Connections.Links)
 		{
 			UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);
-			Internal_Disconnect(Node, Pin.PinGuid, BNode, Link.PinGuid);
+			Internal_Disconnect(Node, Pin, BNode, Link);
 		}
 
 		return *this;
@@ -89,12 +84,13 @@ namespace Heart::Connections
 			return *this;
 		}
 
-		for (auto Element : Node->PinData.PinConnections)
+		for (auto Connections = Node->PinData.PinConnections;
+			 auto&& Element : Connections)
 		{
 			for (const FHeartGraphPinReference& Link : Element.Value.Links)
 			{
 				UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);
-				Internal_Disconnect(Node, Element.Key, BNode, Link.PinGuid);
+				Internal_Disconnect(Node, {NodeGuid, Element.Key}, BNode, Link);
 			}
 		}
 
@@ -117,22 +113,23 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	void FEdit::Internal_Disconnect(UHeartGraphNode* NodeA, const FHeartPinGuid PinA,
-									UHeartGraphNode* NodeB, const FHeartPinGuid PinB)
+	void FEdit::Internal_Disconnect(UHeartGraphNode* NodeA, const FHeartGraphPinReference& PinA,
+									UHeartGraphNode* NodeB, const FHeartGraphPinReference& PinB)
 	{
-		auto&& ConnectionsA = NodeA->PinData.GetConnectionsMutable(PinA).Links;
-		auto&& ConnectionsB = NodeB->PinData.GetConnectionsMutable(PinB).Links;
-
-		bool Removed = false;
-
-		Removed |= !!ConnectionsA.Remove({NodeB->Guid, PinB});
-		Removed |= !!ConnectionsB.Remove({NodeA->Guid, PinA});
-
-		// We would assume that both of these are true, but proceed anyway if only one of them are...
-		if (Removed)
+		if (IsValid(NodeA))
 		{
-			ChangedPins.Add(NodeA, PinA);
-			ChangedPins.Add(NodeB, PinB);
+			if (NodeA->PinData.RemoveConnection(PinA.PinGuid, PinB))
+			{
+				ChangedPins.Add(NodeA, PinA.PinGuid);
+			}
+		}
+
+		if (IsValid(NodeB))
+		{
+			if (NodeB->PinData.RemoveConnection(PinB.PinGuid, PinA))
+			{
+				ChangedPins.Add(NodeB, PinB.PinGuid);
+			}
 		}
 	}
 }

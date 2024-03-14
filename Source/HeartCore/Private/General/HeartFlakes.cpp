@@ -4,6 +4,8 @@
 
 #include "Compression/OodleDataCompressionUtil.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartFlakes)
+
 #if WITH_EDITOR
 TAutoConsoleVariable<bool> CVarLogCompressionStatistics{
 	TEXT("heart.LogCompressionStatistics"),

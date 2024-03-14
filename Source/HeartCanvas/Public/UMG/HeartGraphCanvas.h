@@ -125,6 +125,27 @@ public:
 
 	UCanvasPanelSlot* AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
 
+	/**
+	 * Get the class used to display a node on the Canvas Graph. This has a default implementation that fetches a
+	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
+	TSubclassOf<UHeartGraphCanvasNode> GetVisualClassForNode(const UHeartGraphNode* Node) const;
+
+	/**
+	 * Get the class used to display the node connections on the Canvas Graph. This has a default implementation that fetches a
+	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
+	TSubclassOf<UHeartGraphCanvasConnection> GetVisualClassForConnection(const FHeartGraphPinDesc& FromDesc, const FHeartGraphPinDesc& ToDesc) const;
+
+	/**
+	 * Get the class used to display the preview connection on the Canvas Graph. This has a default implementation that fetches a
+	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
+	TSubclassOf<UHeartGraphCanvasConnection> GetVisualClassForPreviewConnection() const;
+
 protected:
 	bool IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const;
 
@@ -149,20 +170,6 @@ protected:
 
 	void SetZoom(const double& Value);
 	void AddToZoom(const double& Value);
-
-	/**
-	 * Get the class used to display a node on the Canvas Graph. This has a default implementation that fetches a
-	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
-	 */
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
-	TSubclassOf<UHeartGraphCanvasNode> GetVisualClassForNode(const UHeartGraphNode* Node) const;
-
-	/**
-	 * Get the class used to display the preview connection on the Canvas Graph. This has a default implementation that fetches a
-	 * visualizer from the Runtime Subsystem Registry for the graph. Override to provide alternate/custom behavior.
-	 */
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|GraphCanvas")
-	TSubclassOf<UHeartGraphCanvasConnection> GetVisualClassForPreviewConnection() const;
 
 	UFUNCTION()
 	void OnNodeAddedToGraph(UHeartGraphNode* Node);

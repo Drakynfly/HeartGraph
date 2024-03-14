@@ -256,7 +256,7 @@ void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
 	}
 }
 
-UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location)
 {
 	checkSlow(IsValid(GraphNodeClass));
 	checkSlow(IsValid(NodeObject));
@@ -271,14 +271,14 @@ UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UH
 	return NewGraphNode;
 }
 
-UHeartGraphNode* UHeartGraph::Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass, UObject* NodeObject, const FVector2D& Location)
+UHeartGraphNode* UHeartGraph::Internal_CreateNode_Reference(const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const UObject* NodeObject, const FVector2D& Location)
 {
 	checkSlow(IsValid(GraphNodeClass));
 	checkSlow(IsValid(NodeObject));
 
 	auto&& NewGraphNode = NewObject<UHeartGraphNode>(this, GraphNodeClass);
 	NewGraphNode->Guid = FHeartNodeGuid::New();
-	NewGraphNode->NodeObject = NodeObject;
+	NewGraphNode->NodeObject = const_cast<UObject*>(NodeObject); // @todo temp const_cast in lieu of proper const safety enforcement
 	NewGraphNode->Location = Location;
 
 	NewGraphNode->OnCreate();
@@ -299,7 +299,7 @@ UHeartGraphNode* UHeartGraph::CreateNode_Instanced(const TSubclassOf<UHeartGraph
 }
 
 UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
-												   UObject* NodeObject, const FVector2D& Location)
+												   const UObject* NodeObject, const FVector2D& Location)
 {
 	if (!ensure(IsValid(GraphNodeClass) &&
 				IsValid(NodeObject)))

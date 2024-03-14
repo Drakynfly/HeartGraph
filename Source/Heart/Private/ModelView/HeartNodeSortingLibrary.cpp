@@ -107,14 +107,15 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(
 void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphNode*>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
 {
 	// Find all nodes that have no pins connections in the specified direction
-	TArray<UHeartGraphNode*> RootNodes = Nodes.FilterByPredicate([&Args](const UHeartGraphNode* Node)
-	{
-		return Node->FindPinsByPredicate(Args.Direction,
-			[Node](const FHeartPinGuid Pin, const FHeartGraphPinDesc&)
-			{
-				return Node->HasConnections(Pin);
-			}).Get().Num() == 0;
-	});
+	TArray<UHeartGraphNode*> RootNodes = Nodes.FilterByPredicate(
+		[&Args](const UHeartGraphNode* Node)
+		{
+			return Node->FindPinsByPredicate(Args.Direction,
+				[Node](const FHeartPinGuid Pin, const FHeartGraphPinDesc&)
+				{
+					return Node->HasConnections(Pin);
+				}).Num() == 0;
+		});
 
 	EHeartPinDirection InverseDirection = Args.Direction == EHeartPinDirection::Input ? EHeartPinDirection::Output : EHeartPinDirection::Input;
 
@@ -126,35 +127,35 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 	{
 		FHeartTreeNode OutTreeNode;
 		OutTreeNode.Node = Node->GetGuid();
-		for (auto&& Pins = Node->FindPinsByDirection(InverseDirection).Get();
-			auto&& Pin : Pins)
-		{
-			auto&& Connections = Node->GetConnections(Pin);
-			if (!Connections.IsSet())
+		Node->FindPinsByDirection(InverseDirection).ForEach(
+			[&](const FHeartPinGuid PinGuid)
 			{
-				continue;
-			}
-
-			for (auto&& ConnectedPin : Connections.GetValue().Links)
-			{
-				if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
+				auto&& Connections = Node->GetConnections(PinGuid);
+				if (!Connections.IsSet())
 				{
-					if (TrackedNodes.Contains(ConnectedNode))
-					{
-						if (!AllowDuplicates)
-						{
-							continue;
-						}
-					}
-					else
-					{
-						TrackedNodes.Add(ConnectedNode);
-					}
-
-					OutTreeNode.Children.Add(TInstancedStruct<FHeartTreeNode>::Make(BuildTreeNode(ConnectedNode)));
+					return;
 				}
-			}
-		}
+
+				for (auto&& ConnectedPin : Connections.GetValue().Links)
+				{
+					if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
+					{
+						if (TrackedNodes.Contains(ConnectedNode))
+						{
+							if (!AllowDuplicates)
+							{
+								continue;
+							}
+						}
+						else
+						{
+							TrackedNodes.Add(ConnectedNode);
+						}
+
+						OutTreeNode.Children.Add(TInstancedStruct<FHeartTreeNode>::Make(BuildTreeNode(ConnectedNode)));
+					}
+				}
+			});
 
 		return OutTreeNode;
 	};

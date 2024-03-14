@@ -173,7 +173,7 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistrars(const bool ForceReload
 	IsFetchingRegistryAssets = false;
 }
 
-UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const TSubclassOf<UHeartGraph> Class)
+UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const TSubclassOf<UHeartGraph>& Class)
 {
 	check(Class);
 

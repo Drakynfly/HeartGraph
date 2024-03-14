@@ -71,13 +71,13 @@ UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
 	return const_cast<ThisClass*>(this);
 }
 
-FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource NodeSource) const
+FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource& NodeSource) const
 {
 	if (!NodeSource.IsValid()) return FText::GetEmpty();
 	return GetNodeCategory(NodeSource.GetDefaultObject());
 }
 
-FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource NodeSource) const
+FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource& NodeSource) const
 {
 	if (!NodeSource.IsValid()) return FText::GetEmpty();
 	return GetNodeToolTip(NodeSource.GetDefaultObject());
@@ -192,7 +192,7 @@ FHeartPinGuid UHeartGraphNode::GetPinByName(const FName& Name) const
 
 TArray<FHeartPinGuid> UHeartGraphNode::GetPinsOfDirection(const EHeartPinDirection Direction, const bool bSorted) const
 {
-	return FindPinsByDirection(Direction).Sort(bSorted).Get();
+	return FindPinsByDirection(Direction).SortIf(bSorted).Get();
 }
 
 TArray<FHeartPinGuid> UHeartGraphNode::GetInputPins(const bool bSorted) const
@@ -254,20 +254,23 @@ TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDi
 
 	TSet<UHeartGraphNode*> UniqueConnections;
 
-	for (auto&& Pins = FindPinsByDirection(Direction).Get();
-		auto&& Pin : Pins)
-	{
-		auto&& Links = PinData.GetConnections(Pin);
-		if (!Links.IsSet()) continue;
-
-		for (auto&& Link : Links.GetValue().Links)
+	FindPinsByDirection(Direction).ForEach(
+		[&](const FHeartPinGuid PinGuid)
 		{
-			if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
+			auto&& Links = PinData.GetConnections(PinGuid);
+			if (!Links.IsSet())
 			{
-				UniqueConnections.Add(Node);
+				return;
 			}
-		}
-	}
+
+			for (auto&& Link : Links.GetValue().Links)
+			{
+				if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
+				{
+					UniqueConnections.Add(Node);
+				}
+			}
+		});
 
 	return UniqueConnections;
 }
@@ -394,7 +397,7 @@ FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction
 #if WITH_EDITOR
 		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
 #endif
-		GetInstancedPinData(Direction, PinDesc.Tag, PinDesc.Metadata);
+		GetInstancedPinData(Direction, PinDesc.Tag, MutableView(PinDesc.Metadata));
 	}
 
 	return AddPin(PinDesc);

@@ -126,7 +126,8 @@ UHeartNodePaletteCategory* UHeartNodePalette::FindOrCreateCategory(const FText& 
 
 UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSource NodeSource)
 {
-	UObject* Obj = NodeSource.As<UObject>();
+	// @todo we have to const_cast here unfortunately, because Blueprint doesn't understand const
+	UObject* Obj = const_cast<UObject*>(NodeSource.As<UObject>());
 
 	if (auto&& WidgetClass = WidgetFactory.GetWidgetClass(NodeSource.As<UObject>()))
 	{
