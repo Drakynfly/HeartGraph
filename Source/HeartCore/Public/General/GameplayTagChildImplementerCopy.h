@@ -4,7 +4,7 @@
 
 #include "GameplayTagsManager.h"
 
-// TODO THIS FILE IS COPIED FROM Plugins/Experimental/CommonUI/Source/CommonUI/Public/UITag.h
+// TODO THIS FILE IS COPIED FROM Plugins/Runtime/CommonUI/Source/CommonUI/Public/UITag.h
 // IF EPIC EVER MOVES THIS STUFF INTO GAMEPLAY TAGS PROPERLY, THEN DELETE THIS AND USE THAT INSTEAD
 
 /**
@@ -70,11 +70,17 @@ class TTypedTagStaticImplCopy
 
 	TTypedTagStaticImplCopy()
 	{
+		checkfSlow(!GEngine->IsInitialized(), TEXT("These should only be statically init during startup!"))
+		StaticImpl.RootTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagT::GetRootTagStr());
+
+		/*
 		LLM_SCOPE(ELLMTag::UI);
+
 		UGameplayTagsManager::OnLastChanceToAddNativeTags().AddLambda([this]()
 			{
 				StaticImpl.RootTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagT::GetRootTagStr());
 			});
+		*/
 	}
 	TagT RootTag;
 	static TTypedTagStaticImplCopy StaticImpl;
