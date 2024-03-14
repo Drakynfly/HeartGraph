@@ -27,7 +27,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "NodePaletteCategory")
 	UHeartNodePalette* GetPalette() const;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "NodePaletteCategory")
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "NodePaletteCategory")
 	UWidget* MakeWidgetForNode(FHeartNodeSource NodeSource);
 };
 
