@@ -74,7 +74,9 @@ struct FHeartGraphNodeSparseClassData
 	uint8 DefaultInstancedOutputs = 0;
 
 #if WITH_EDITORONLY_DATA
-	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (InlineEditConditionToggle))
+	// InlineEditConditionToggle crashes the editor due to being in a sparse class it seems
+	// It doesn't matter because, once we move to 5.4, change this to a TOptional anyway
+	UPROPERTY(EditDefaultsOnly, Category = "Editor" /*,(meta = InlineEditConditionToggle)*/)
 	bool OverrideCanCreateInEditor = false;
 
 	// Can this node be created by the editor even if it cannot be created otherwise.
