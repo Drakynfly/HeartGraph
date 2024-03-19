@@ -108,7 +108,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Heart|GraphPin")
 	static FHeartGraphPinReference MakeReference(const TScriptInterface<IHeartGraphNodeInterface>& Node, const TScriptInterface<IHeartGraphPinInterface>& Pin);
 
-	// @todo enable UFUNCTION in 5.4
+	// @todo enable UFUNCTION in whenever UE supports TOptional pins
 	//UFUNCTION(BlueprintPure, Category = "Heart|GraphPin")
 	static TOptional<FHeartGraphPinDesc> ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference);
 

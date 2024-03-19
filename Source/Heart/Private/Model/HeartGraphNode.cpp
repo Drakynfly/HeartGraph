@@ -114,7 +114,7 @@ FText UHeartGraphNode::GetNodeToolTip_Implementation(const UObject* Node) const
 	return FText::GetEmpty();
 }
 
-FLinearColor UHeartGraphNode::GetNodeTitleColor_Implementation(const UObject* Node)
+FLinearColor UHeartGraphNode::GetNodeTitleColor_Implementation(const UObject* Node) const
 {
 	return FLinearColor::White;
 }

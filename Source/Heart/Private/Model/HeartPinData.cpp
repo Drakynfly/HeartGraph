@@ -56,7 +56,7 @@ TOptional<FHeartGraphPinDesc> FHeartNodePinData::GetPinDesc(const FHeartPinGuid 
 	{
 		return PinDescriptions[Pin];
 	}
-	return Heart::Graph::InvalidPinDesc;
+	return {};
 }
 
 FHeartGraphPinDesc& FHeartNodePinData::GetPinDesc(const FHeartPinGuid Key)

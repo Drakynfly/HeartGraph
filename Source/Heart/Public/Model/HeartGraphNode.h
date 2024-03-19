@@ -143,7 +143,7 @@ public:
 	FText GetNodeToolTip(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FLinearColor GetNodeTitleColor(const UObject* Node);
+	FLinearColor GetNodeTitleColor(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	void GetNodeMessages(TArray<FHeartGraphNodeMessage>& Messages) const;
@@ -193,7 +193,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FVector2D GetLocation() const { return Location; }
 
-	// @todo enable UFUNCTION in 5.4
+	// @todo enable UFUNCTION in whenever UE supports TOptional pins
 	//UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
 
@@ -235,7 +235,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool HasConnections(const FHeartPinGuid& Pin) const;
 
-	// @todo enable UFUNCTION in 5.4
+	// @todo enable UFUNCTION in whenever UE supports TOptional pins
 	//UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	TOptional<FHeartGraphPinConnections> GetConnections(const FHeartPinGuid& Pin) const;
 

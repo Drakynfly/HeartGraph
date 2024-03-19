@@ -35,10 +35,7 @@ struct FHeartGraphPinReference
 
 FORCEINLINE uint32 GetTypeHash(const FHeartGraphPinReference& PinReference)
 {
-	uint32 KeyHash = 0;
-	KeyHash = HashCombine(KeyHash, GetTypeHash(PinReference.NodeGuid));
-	KeyHash = HashCombine(KeyHash, GetTypeHash(PinReference.PinGuid));
-	return KeyHash;
+	return HashCombine(GetTypeHash(PinReference.NodeGuid), GetTypeHash(PinReference.PinGuid));
 }
 
 USTRUCT(BlueprintType)
