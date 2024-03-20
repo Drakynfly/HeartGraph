@@ -87,6 +87,12 @@ int32 UHeartGeneralUtils::LevenshteinDistance(const FString& A, const FString& B
 	return Algo::LevenshteinDistance(A, B);
 }
 
+double UHeartGeneralUtils::LevenshteinScore(const FString& A, const FString& B)
+{
+	const double WorstCase = A.Len() + B.Len();
+	return 1.0 - (Algo::LevenshteinDistance(A, B) / WorstCase);
+}
+
 constexpr float FontScale = 1.0f;
 
 bool UHeartGeneralUtils::FontSupportsChar(const UFont* Font, const TCHAR Char)

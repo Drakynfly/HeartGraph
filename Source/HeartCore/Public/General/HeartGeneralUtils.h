@@ -72,6 +72,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math")
 	static int32 LevenshteinDistance(const FString& A, const FString& B);
 
+	/**
+	 * Return the score of a Levenshtein distance check
+	 */
+	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math")
+	static double LevenshteinScore(const FString& A, const FString& B);
+
 
 	/*------------------------
 			FONT UTILS
