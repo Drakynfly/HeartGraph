@@ -58,7 +58,7 @@ void UHeartNodePalette::Reset()
 	OnReset();
 }
 
-void UHeartNodePalette::Display(const TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& Classes)
+void UHeartNodePalette::Display(const TArray<FHeartNodeArchetype>& Classes)
 {
 	if (!ensure(IsValid(PalettePanel)))
 	{
@@ -67,31 +67,28 @@ void UHeartNodePalette::Display(const TMap<FHeartNodeSource, TSubclassOf<UHeartG
 
 	for (auto&& ClassPair : Classes)
 	{
-		FHeartNodeSource NodeSource = ClassPair.Key;
-		TSubclassOf<UHeartGraphNode> GraphNode = ClassPair.Value;
-
-		if (!ensure(NodeSource.IsValid() && IsValid(GraphNode)))
+		if (!ensure(ClassPair.Source.IsValid() && IsValid(ClassPair.GraphNode)))
 		{
 			continue;
 		}
 
-		if (!ShouldDisplayNode(NodeSource, GraphNode))
+		if (!ShouldDisplayNode(ClassPair))
 		{
 			continue;
 		}
 
 		if (IsValid(CategoryClass))
 		{
-			FText Category = GraphNode->GetDefaultObject<UHeartGraphNode>()->GetDefaultNodeCategory(NodeSource);
+			FText Category = ClassPair.GraphNode->GetDefaultObject<UHeartGraphNode>()->GetDefaultNodeCategory(ClassPair.Source);
 
 			if (UHeartNodePaletteCategory* CategoryWidget = FindOrCreateCategory(Category))
 			{
-				CategoryWidget->AddNode(NodeSource);
+				CategoryWidget->AddNode(ClassPair.Source);
 				continue;
 			}
 		}
 
-		if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(NodeSource))
+		if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(ClassPair.Source))
 		{
 			PalettePanel->AddChild(NewPaletteEntry);
 		}
@@ -157,16 +154,15 @@ UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSour
 void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
-	TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>> NodeClasses;
+	TArray<FHeartNodeArchetype> NodeClasses;
 	Query->Run(DisplayedRegistryGraph, NodeClasses);
 	Display(NodeClasses);
 }
 
-bool UHeartNodePalette::ShouldDisplayNode_Implementation(const FHeartNodeSource NodeClass,
-                                                         const TSubclassOf<UHeartGraphNode> GraphNodeClass)
+bool UHeartNodePalette::ShouldDisplayNode_Implementation(const FHeartNodeArchetype Archetype)
 {
-	if (NodeClass.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return false;
-	if (GraphNodeClass->HasAnyClassFlags(CLASS_Abstract)) return false;
+	if (Archetype.Source.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return false;
+	if (Archetype.GraphNode->HasAnyClassFlags(CLASS_Abstract)) return false;
 
-	return GetDefault<UHeartGraphNode>(GraphNodeClass)->CanCreate();
+	return GetDefault<UHeartGraphNode>(Archetype.GraphNode)->CanCreate();
 }

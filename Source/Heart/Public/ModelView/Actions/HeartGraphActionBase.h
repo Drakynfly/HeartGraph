@@ -11,7 +11,7 @@ struct FHeartInputActivation;
 /**
  *
  */
-UCLASS(Abstract, Const)
+UCLASS(Abstract)
 class HEART_API UHeartGraphActionBase : public UObject
 {
 	GENERATED_BODY()

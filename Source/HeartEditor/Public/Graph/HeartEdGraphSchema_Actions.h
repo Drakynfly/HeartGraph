@@ -15,23 +15,14 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 
 	FHeartGraphSchemaAction_NewNode() {}
 
-	FHeartGraphSchemaAction_NewNode(const FHeartNodeSource NodeSource, const UHeartGraphNode* GraphNode)
+	FHeartGraphSchemaAction_NewNode(const FHeartNodeArchetype Archetype)
 	  : FEdGraphSchemaAction(
-			GraphNode->GetDefaultNodeCategory(NodeSource),
-			GraphNode->GetPreviewNodeTitle(NodeSource, EHeartPreviewNodeNameContext::Palette),
-			GraphNode->GetDefaultNodeTooltip(NodeSource),
+			Archetype.GraphNode.GetDefaultObject()->GetDefaultNodeCategory(Archetype.Source),
+			Archetype.GraphNode.GetDefaultObject()->GetPreviewNodeTitle(Archetype.Source, EHeartPreviewNodeNameContext::Palette),
+			Archetype.GraphNode.GetDefaultObject()->GetDefaultNodeTooltip(Archetype.Source),
 			0, // Grouping
-			FText::FromString(NodeSource.ThisClass()->GetMetaData("Keywords"))),
-		NodeSource({NodeSource, GraphNode->GetClass()}) {}
-
-	FHeartGraphSchemaAction_NewNode(const FHeartNodeSourceAndGraphNode NodeSourceAndGraphNode)
-	  : FEdGraphSchemaAction(
-			NodeSourceAndGraphNode.GraphNode.GetDefaultObject()->GetDefaultNodeCategory(NodeSourceAndGraphNode.Source),
-			NodeSourceAndGraphNode.GraphNode.GetDefaultObject()->GetPreviewNodeTitle(NodeSourceAndGraphNode.Source, EHeartPreviewNodeNameContext::Palette),
-			NodeSourceAndGraphNode.GraphNode.GetDefaultObject()->GetDefaultNodeTooltip(NodeSourceAndGraphNode.Source),
-			0, // Grouping
-			FText::FromString(NodeSourceAndGraphNode.Source.ThisClass()->GetMetaData("Keywords"))),
-		NodeSource(NodeSourceAndGraphNode) {}
+			FText::FromString(Archetype.Source.ThisClass()->GetMetaData("Keywords"))),
+		Archetype(Archetype) {}
 
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
@@ -44,13 +35,13 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	// FEdGraphSchemaAction
 
-	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeSourceAndGraphNode NodeSource, const FVector2D Location, const bool bSelectNewNode = true);
+	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeArchetype Archetype, const FVector2D Location, const bool bSelectNewNode = true);
 
-	const UClass* GetNodeClass() const { return NodeSource.Source.As<UClass>(); }
+	const UClass* GetNodeClass() const { return Archetype.Source.As<UClass>(); }
 
 private:
 	UPROPERTY()
-	FHeartNodeSourceAndGraphNode NodeSource;
+	FHeartNodeArchetype Archetype;
 };
 
 /** Action to paste clipboard contents into the graph */

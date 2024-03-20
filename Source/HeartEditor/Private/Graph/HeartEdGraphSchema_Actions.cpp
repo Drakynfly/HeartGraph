@@ -30,16 +30,16 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 		return nullptr;
 	}
 
-	if (ensure(NodeSource.Source.IsValid() && IsValid(NodeSource.GraphNode)))
+	if (ensure(Archetype.Source.IsValid() && IsValid(Archetype.GraphNode)))
 	{
-		return CreateNode(ParentGraph, FromPin, NodeSource, Location, bSelectNewNode);
+		return CreateNode(ParentGraph, FromPin, Archetype, Location, bSelectNewNode);
 	}
 
 	return nullptr;
 }
 
 UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FHeartNodeSourceAndGraphNode NodeSource, const FVector2D Location, const bool bSelectNewNode /*= true*/)
+	const FHeartNodeArchetype Archetype, const FVector2D Location, const bool bSelectNewNode /*= true*/)
 {
 	if (!ensure(GEditor)) return nullptr;
 
@@ -68,13 +68,15 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	/**-----------------------------*/
 
 	UHeartGraphNode* NewGraphNode;
-	if (const UClass* AsClass = NodeSource.Source.As<UClass>())
+
+	// @todo this would not work, in the rare edge case of making a node with a UClass as an reference source
+	if (const UClass* AsClass = Archetype.Source.As<UClass>())
 	{
-		NewGraphNode = HeartGraph->CreateNode_Instanced(NodeSource.GraphNode, AsClass, Location);
+		NewGraphNode = HeartGraph->CreateNode_Instanced(Archetype.GraphNode, AsClass, Location);
 	}
 	else
 	{
-		NewGraphNode = HeartGraph->CreateNode_Reference(NodeSource.GraphNode, NodeSource.Source.As<UObject>(), Location);
+		NewGraphNode = HeartGraph->CreateNode_Reference(Archetype.GraphNode, Archetype.Source.As<UObject>(), Location);
 	}
 	check(NewGraphNode)
 

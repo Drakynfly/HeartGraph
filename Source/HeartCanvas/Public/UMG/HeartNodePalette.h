@@ -57,7 +57,7 @@ protected:
 	//~
 
 	virtual void Reset();
-	virtual void Display(const TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& Classes);
+	virtual void Display(const TArray<FHeartNodeArchetype>& Classes);
 
 	UHeartNodePaletteCategory* FindOrCreateCategory(const FText& Category);
 
@@ -74,7 +74,7 @@ public:
 	const FHeartWidgetFactoryRules& GetWidgetFactory() const { return WidgetFactory; }
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Node Palette")
-	bool ShouldDisplayNode(const FHeartNodeSource NodeSource, TSubclassOf<UHeartGraphNode> GraphNodeClass);
+	bool ShouldDisplayNode(FHeartNodeArchetype Archetype);
 
 	/** */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Node Palette")

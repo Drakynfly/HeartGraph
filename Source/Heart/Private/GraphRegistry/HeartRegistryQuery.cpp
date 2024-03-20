@@ -23,7 +23,7 @@ namespace Heart::Query
 	}
 }
 
-void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray<FHeartNodeSourceAndGraphNode>& Results)
+void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray<FHeartNodeArchetype>& Results)
 {
 	auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	if (!IsValid(Subsystem))
@@ -103,7 +103,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray
 	Query.ForEach(
 		[&Results](const Heart::Query::FRegistryValue& Value)
 		{
-			Results.Add({Value.Source, Value.GraphNode.Get()});
+			Results.Emplace(Value.GraphNode.Get(), Value.Source);
 		});
 }
 

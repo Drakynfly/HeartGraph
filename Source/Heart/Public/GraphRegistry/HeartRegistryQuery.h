@@ -207,7 +207,7 @@ class HEART_API UHeartRegistryQuery : public UHeartQueryObject
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
-	void Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray<FHeartNodeSourceAndGraphNode>& Results);
+	void Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray<FHeartNodeArchetype>& Results);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void AddFilter(const FHeartRegistryBlueprintFilter& Predicate);

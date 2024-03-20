@@ -52,9 +52,9 @@ class HEARTCANVAS_API UHeartGraphCanvasActionBlueprintBase final : public UHeart
 public:
 	virtual FText GetDescription(const UHeartGraphWidgetBase* Widget) const override;
 	virtual bool CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const override;
-	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
-	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
-	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
+	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Get Description"))
@@ -64,11 +64,11 @@ protected:
 	bool BP_CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Graph"))
-	FEventReply BP_ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject) const;
+	FEventReply BP_ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Node"))
-	FEventReply BP_ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject) const;
+	FEventReply BP_ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Pin"))
-	FEventReply BP_ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject) const;
+	FEventReply BP_ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject);
 };

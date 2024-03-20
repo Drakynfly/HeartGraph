@@ -237,20 +237,20 @@ void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& Acti
 	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
 
 	Registry->ForEachNodeObjectClass(
-		[&CategoryName, &ActionMenuBuilder](const TSubclassOf<UHeartGraphNode> GraphNodeClass, const FHeartNodeSource NodeSource)
+		[&CategoryName, &ActionMenuBuilder](const FHeartNodeArchetype& Archetype)
 		{
-			if (NodeSource.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return true;
+			if (Archetype.Source.ThisClass()->HasAnyClassFlags(CLASS_Abstract)) return true;
 
-			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(GraphNodeClass);
+			auto&& GraphNodeDefault = GetDefault<UHeartGraphNode>(Archetype.GraphNode);
 
 			if (ensure(IsValid(GraphNodeDefault)))
 			{
 				if (GraphNodeDefault->CanCreate_Editor())
 				{
 					if (!CategoryName.IsSet() ||
-						CategoryName.GetValue() == GraphNodeDefault->GetDefaultNodeCategory(NodeSource).ToString())
+						CategoryName.GetValue() == GraphNodeDefault->GetDefaultNodeCategory(Archetype.Source).ToString())
 					{
-						ActionMenuBuilder.AddAction(MakeShared<FHeartGraphSchemaAction_NewNode>(NodeSource, GraphNodeDefault));
+						ActionMenuBuilder.AddAction(MakeShared<FHeartGraphSchemaAction_NewNode>(Archetype));
 					}
 				}
 			}

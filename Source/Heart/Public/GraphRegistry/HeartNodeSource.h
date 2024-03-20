@@ -90,16 +90,19 @@ public:
 
 class UHeartGraphNode;
 
+/**
+ * A Node Archetype is all the data required to create a new node instance in a graph.
+ */
 USTRUCT(BlueprintType)
-struct FHeartNodeSourceAndGraphNode
+struct FHeartNodeArchetype
 {
 	GENERATED_BODY()
-
-	// The source to create a NodeObject from
-	UPROPERTY()
-	FHeartNodeSource Source;
 
 	// The class to instance a GraphNode with
 	UPROPERTY()
 	TSubclassOf<UHeartGraphNode> GraphNode;
+
+	// The UObject to create a NodeObject from
+	UPROPERTY()
+	FHeartNodeSource Source;
 };

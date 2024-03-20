@@ -264,13 +264,13 @@ Heart::Query::FRegistryQueryResult UHeartGraphNodeRegistry::QueryRegistry() cons
 	return Heart::Query::FRegistryQueryResult(this);
 }
 
-void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const
+void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(const FHeartNodeArchetype&)>& Iter) const
 {
 	for (auto It : Heart::Query::FRegistryQueryResult::FRange(this))
 	{
 		checkSlow(It.Value.GraphNode.Get());
 		checkSlow(It.Value.Source.IsValid());
-		if (!Iter(It.Value.GraphNode.Get(), It.Value.Source))
+		if (!Iter({It.Value.GraphNode.Get(), It.Value.Source}))
 		{
 			return;
 		}
@@ -304,10 +304,10 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 	TSet<FString> UnsortedCategories;
 
 	ForEachNodeObjectClass(
-		[&UnsortedCategories](const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const FHeartNodeSource& NodeSource)
+		[&UnsortedCategories](const FHeartNodeArchetype& Archetype)
 		{
-			const UHeartGraphNode* GraphNodeCDO = GraphNodeClass->GetDefaultObject<UHeartGraphNode>();
-			const UObject* NodeSourceCDO = NodeSource.GetDefaultObject();
+			const UHeartGraphNode* GraphNodeCDO = Archetype.GraphNode->GetDefaultObject<UHeartGraphNode>();
+			const UObject* NodeSourceCDO = Archetype.Source.GetDefaultObject();
 
 			if (const FString NodeCategory = GraphNodeCDO->GetNodeCategory(NodeSourceCDO).ToString();
 				!NodeCategory.IsEmpty())
@@ -333,10 +333,9 @@ void UHeartGraphNodeRegistry::GetAllNodeSources(TArray<FHeartNodeSource>& OutNod
 	}
 }
 
-void UHeartGraphNodeRegistry::GetAllGraphNodeClassesAndNodeSources(
-	TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const
+void UHeartGraphNodeRegistry::GetAllGraphNodeArchetypes(TArray<FHeartNodeArchetype>& OutArchetypes) const
 {
-	OutClasses.Empty(GetNumNodes(true));
+	OutArchetypes.Empty(GetNumNodes(true));
 	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
 		for (auto&& GraphNodePtr : Element.Value.GraphNodes)
@@ -347,10 +346,10 @@ void UHeartGraphNodeRegistry::GetAllGraphNodeClassesAndNodeSources(
 				continue;
 			}
 
-			OutClasses.Add(Element.Key, GraphNode);
+			OutArchetypes.Emplace(GraphNode, Element.Key);
 			for (TObjectPtr<UClass> Child : Element.Value.RecursiveChildren)
 			{
-				OutClasses.Add(FHeartNodeSource(Child), GraphNode);
+				OutArchetypes.Emplace(GraphNode, FHeartNodeSource(Child));
 			}
 		}
 	}

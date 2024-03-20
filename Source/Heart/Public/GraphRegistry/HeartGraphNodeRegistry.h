@@ -52,7 +52,7 @@ public:
 
 	Heart::Query::FRegistryQueryResult QueryRegistry() const;
 
-	void ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const;
+	void ForEachNodeObjectClass(const TFunctionRef<bool(const FHeartNodeArchetype&)>& Iter) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
 	bool IsRegistered(const UGraphNodeRegistrar* Registrar) const;
@@ -67,7 +67,7 @@ public:
 	void GetAllNodeSources(TArray<FHeartNodeSource>& OutNodeSources) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
-	void GetAllGraphNodeClassesAndNodeSources(TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
+	void GetAllGraphNodeArchetypes(TArray<FHeartNodeArchetype>& OutArchetypes) const;
 
 	/**
 	 * Get the graph node class that we use to represent the given arbitrary class.
