@@ -30,7 +30,8 @@ FVector UHeartNodeLocationModifier_SnapToGrid::LocationToProxy3D(const FVector& 
 	Proxy.X = SnapOnX ? Snap(Location.X, GridX) : Location.X;
 	Proxy.Y = SnapOnY ? Snap(Location.Y, GridY) : Location.Y;
 	Proxy.Z = SnapOnZ ? Snap(Location.Z, GridZ) : Location.Z;
-	return Proxy;}
+	return Proxy;
+}
 
 FVector UHeartNodeLocationModifier_SnapToGrid::ProxyToLocation3D(const FVector& Proxy) const
 {
