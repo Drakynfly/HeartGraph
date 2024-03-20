@@ -90,7 +90,7 @@ public:
 
 class UHeartGraphNode;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FHeartNodeSourceAndGraphNode
 {
 	GENERATED_BODY()

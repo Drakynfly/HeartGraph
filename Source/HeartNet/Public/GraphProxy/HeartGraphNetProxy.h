@@ -112,9 +112,9 @@ protected:
 	virtual void OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode);
 	virtual void OnNodeConnectionsChanged_Source(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
-	virtual bool ShouldReplicateNode(UHeartGraphNode* Node) const;
+	virtual bool ShouldReplicateNode(TObjectPtr<UHeartGraphNode> Node) const;
 
-	void UpdateReplicatedNodeData(UHeartGraphNode* Node);
+	void UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> Node);
 	void RemoveReplicatedNodeData(const FHeartNodeGuid& Node);
 	void EditReplicatedNodeData(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
 

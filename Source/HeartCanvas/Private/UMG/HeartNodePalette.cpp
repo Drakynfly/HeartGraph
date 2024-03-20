@@ -4,7 +4,7 @@
 
 #include "UMG/HeartGraphCanvas.h" // For log category
 #include "Components/PanelWidget.h"
-#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
+#include "GraphRegistry/HeartRegistryQuery.h"
 #include "Model/HeartGraphNode.h"
 #include "UI/HeartUMGContextObject.h"
 
@@ -20,6 +20,11 @@ UWidget* UHeartNodePaletteCategory::MakeWidgetForNode_Implementation(const FHear
 	auto&& Palette = GetPalette();
 	if (!IsValid(Palette)) return nullptr;
 	return Palette->CreateNodeWidgetFromFactory(NodeSource);
+}
+
+UHeartNodePalette::UHeartNodePalette()
+{
+	Query = CreateDefaultSubobject<UHeartRegistryQuery>(TEXT("Query"));
 }
 
 bool UHeartNodePalette::Initialize()
@@ -75,18 +80,20 @@ void UHeartNodePalette::Display(const TMap<FHeartNodeSource, TSubclassOf<UHeartG
 			continue;
 		}
 
-		FText Category = GraphNode->GetDefaultObject<UHeartGraphNode>()->GetDefaultNodeCategory(NodeSource);
+		if (IsValid(CategoryClass))
+		{
+			FText Category = GraphNode->GetDefaultObject<UHeartGraphNode>()->GetDefaultNodeCategory(NodeSource);
 
-		if (UHeartNodePaletteCategory* CategoryWidget = FindOrCreateCategory(Category))
-		{
-			CategoryWidget->AddNode(NodeSource);
-		}
-		else
-		{
-			if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(NodeSource))
+			if (UHeartNodePaletteCategory* CategoryWidget = FindOrCreateCategory(Category))
 			{
-				PalettePanel->AddChild(NewPaletteEntry);
+				CategoryWidget->AddNode(NodeSource);
+				continue;
 			}
+		}
+
+		if (auto&& NewPaletteEntry = CreateNodeWidgetFromFactory(NodeSource))
+		{
+			PalettePanel->AddChild(NewPaletteEntry);
 		}
 	}
 
@@ -150,37 +157,9 @@ UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSour
 void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
-
-	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-
-	if (auto&& Registry = NodeRegistrySubsystem->GetRegistry(DisplayedRegistryGraph))
-	{
-		TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>> NodeClasses;
-
-		Registry->QueryGraphAndNodeClasses(Query, NodeClasses);
-
-		Display(NodeClasses);
-	}
-}
-
-void UHeartNodePalette::SetFilter(const FNodeSourceFilter& NewFilter, const bool bRefreshPalette)
-{
-	Query.Filter = NewFilter;
-
-	if (bRefreshPalette)
-	{
-		RefreshPalette();
-	}
-}
-
-void UHeartNodePalette::ClearFilter(const bool bRefreshPalette)
-{
-	Query.Filter.Unbind();
-
-	if (bRefreshPalette)
-	{
-		RefreshPalette();
-	}
+	TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>> NodeClasses;
+	Query->Run(DisplayedRegistryGraph, NodeClasses);
+	Display(NodeClasses);
 }
 
 bool UHeartNodePalette::ShouldDisplayNode_Implementation(const FHeartNodeSource NodeClass,

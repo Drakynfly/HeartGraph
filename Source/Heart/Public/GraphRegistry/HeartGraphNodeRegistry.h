@@ -7,9 +7,13 @@
 #include "HeartRegistrationClasses.h"
 #include "General/CountedPtr.h"
 #include "Model/HeartGraphPinTag.h"
-#include "Model/HeartGraphNode.h"
 
 #include "HeartGraphNodeRegistry.generated.h"
+
+namespace Heart::Query
+{
+	class FRegistryQueryResult;
+}
 
 struct FHeartGraphPinDesc;
 class UHeartGraphNode;
@@ -18,39 +22,6 @@ class UGraphNodeRegistrar;
 class UHeartGraphNodeRegistry;
 using FHeartGraphNodeRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEvent, UHeartGraphNodeRegistry*, Registry);
-
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FNodeSourceFilter, const FHeartNodeSource, NodeSource);
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(bool, FNodeSourceSort, const FHeartNodeSource, NodeSourceA, const FHeartNodeSource, tNodeSourceB);
-DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(double, FNodeSourceScore, const FHeartNodeSource, tNodeSource);
-
-USTRUCT(BlueprintType)
-struct HEART_API FHeartRegistryQuery
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartRegistryQuery|Filter", NoClear)
-	TSubclassOf<UHeartGraphNode> HeartGraphNodeBaseClass = UHeartGraphNode::StaticClass();
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartRegistryQuery|Filter", NoClear)
-	UClass* NodeObjectBaseClass = UObject::StaticClass();
-
-	// Maximum Node Object classes to return. Set to 0 to allow unlimited results.
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartRegistryQuery|Filter", meta = (ClampMin = 0))
-	int32 MaxResults = 0;
-
-	// Callback to filter the Node Objects.
-	UPROPERTY(BlueprintReadWrite, Category = "HeartRegistryQuery|Filter")
-	FNodeSourceFilter Filter;
-
-	// Callback to sort a pair of Node Objects by Predicate, using Algo::Sort.
-	UPROPERTY(BlueprintReadWrite, Category = "HeartRegistryQuery|Sort")
-	FNodeSourceSort Sort;
-
-	// Callback to sort Node Objects by providing each a score, and arranging them highest to lowest.
-	// Will not be used if Sort is set.
-	UPROPERTY(BlueprintReadWrite, Category = "HeartRegistryQuery|Sort")
-	FNodeSourceScore Score;
-};
 
 
 /**
@@ -66,6 +37,7 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 
 	// Registrar is allowed to call AddRegistrationList/RemoveRegistrationList
 	friend class UGraphNodeRegistrar;
+	friend Heart::Query::FRegistryQueryResult;
 
 protected:
 	bool FilterObjectForRegistration(const UObject* Object) const;
@@ -76,11 +48,17 @@ protected:
 	void BroadcastChange();
 
 public:
-	bool IsRegistered(const UGraphNodeRegistrar* Registrar) const;
-
 	FHeartGraphNodeRegistryEventNative& GetOnRegistryChangedNative() { return OnRegistryChangedNative; }
 
+	Heart::Query::FRegistryQueryResult QueryRegistry() const;
+
 	void ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
+	bool IsRegistered(const UGraphNodeRegistrar* Registrar) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeRegistry")
+	int32 GetNumNodes(bool IncludeRecursive) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	TArray<FString> GetNodeCategories() const;
@@ -90,13 +68,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
 	void GetAllGraphNodeClassesAndNodeSources(TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
-	void QueryNodeClasses(const FHeartRegistryQuery& Query, TArray<FHeartNodeSource>& OutNodeSources) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNodeRegistry")
-	void QueryGraphAndNodeClasses(const FHeartRegistryQuery& Query, TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const;
-
 
 	/**
 	 * Get the graph node class that we use to represent the given arbitrary class.

@@ -3,9 +3,10 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
-#include "GraphRegistry/HeartGraphNodeRegistry.h"
+#include "GraphRegistry/HeartNodeSource.h"
 #include "UI/HeartWidgetFactory.h"
 #include "HeartNodePalette.generated.h"
+
 
 UCLASS(Abstract)
 class UHeartNodePaletteCategory : public UHeartGraphWidgetBase
@@ -33,6 +34,7 @@ protected:
 
 
 class UHeartGraph;
+class UHeartRegistryQuery;
 
 /**
  * Base widget class for panels that display a list of nodes available to place in a graph.
@@ -43,6 +45,9 @@ class HEARTCANVAS_API UHeartNodePalette : public UHeartGraphWidgetBase
 	GENERATED_BODY()
 
 	friend UHeartNodePaletteCategory;
+
+public:
+	UHeartNodePalette();
 
 protected:
 	virtual bool Initialize() override;
@@ -58,17 +63,12 @@ protected:
 
 	UUserWidget* CreateNodeWidgetFromFactory(FHeartNodeSource NodeSource);
 
+	UHeartRegistryQuery* GetQuery() const { return Query; }
+
 public:
-	/** Regenerate the list of nodes in the palette, triggering the filter for each node again. */
+	/** Regenerate the list of nodes in the palette, triggering the Query to run. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
 	void RefreshPalette();
-
-	/** Set a custom filter function. */
-	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
-	void SetFilter(const FNodeSourceFilter& NewFilter, bool bRefreshPalette);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
-	void ClearFilter(bool bRefreshPalette);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node Palette")
 	const FHeartWidgetFactoryRules& GetWidgetFactory() const { return WidgetFactory; }
@@ -102,9 +102,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
 
-	UPROPERTY(EditAnywhere, Category = "Events", meta = (IsBindableEvent = "True"))
-	FHeartRegistryQuery Query;
+	UPROPERTY(BlueprintReadOnly, Category = "NodePalette")
+	TObjectPtr<UHeartRegistryQuery> Query;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "NodePalette")
 	TMap<FString, TObjectPtr<UHeartNodePaletteCategory>> Categories;
 };

@@ -7,6 +7,7 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
+#include "Model/HeartNodeQuery.h"
 #include "ModelView/Actions/HeartGraphActionBase.h"
 
 #include "Net/UnrealNetwork.h"
@@ -168,7 +169,7 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, GraphClass, this);
 	GraphClass = SourceGraph->GetClass();
 
-	Heart::Query::TNodeQueryResult<UHeartGraph*>(SourceGraph)
+	Heart::Query::TNodeQueryResult<UHeartGraph>(SourceGraph)
 		.Filter_UObject(this, &ThisClass::ShouldReplicateNode)
 		.ForEach_UObject(this, &ThisClass::UpdateReplicatedNodeData);
 
@@ -204,12 +205,12 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Source(const FHeartGraphConne
 	}
 }
 
-bool UHeartGraphNetProxy::ShouldReplicateNode(UHeartGraphNode* Node) const
+bool UHeartGraphNetProxy::ShouldReplicateNode(TObjectPtr<UHeartGraphNode> Node) const
 {
 	return true;
 }
 
-void UHeartGraphNetProxy::UpdateReplicatedNodeData(UHeartGraphNode* Node)
+void UHeartGraphNetProxy::UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> Node)
 {
 	if (!IsValid(Node)) return;
 

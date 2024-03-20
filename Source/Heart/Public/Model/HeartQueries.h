@@ -2,41 +2,113 @@
 
 #pragma once
 
-#include "HeartGraph.h"
-#include "HeartGuids.h"
-#include "HeartGraphPinDesc.h"
-#include "HeartPinData.h"
-
-struct FHeartNodePinData;
-class UHeartGraphNode;
-class UHeartGraph;
+#include "Containers/Array.h"
+#include "Templates/ChooseClass.h"
+#include "Templates/UnrealTypeTraits.h"
 
 namespace Heart::Query
 {
-	class IMapQuery : public TSharedFromThis<IMapQuery> {}; // Stub for storing pointers to MapQueries
+	//class IMapQuery : public TSharedFromThis<IMapQuery> {}; // Stub for storing pointers to MapQueries
 
-	template <typename QueryType, typename KeyType, typename ValueType>
-	class TMapQueryBase : public IMapQuery
+	// Static query behavior flags
+	enum class EClassFlags
 	{
-		FORCEINLINE		  QueryType& AsType()		{ return *static_cast<		QueryType*>(this); }
-		FORCEINLINE const QueryType& AsType() const { return *static_cast<const QueryType*>(this); }
-		FORCEINLINE auto Lookup(KeyType Key) const { return AsType()[Key]; }
+		NoFlags = 0,
+		PassKeyByRef = 1 << 0,
+		PassValueByRef = 1 << 1,
+	};
+	ENUM_CLASS_FLAGS(EClassFlags)
 
-		FORCEINLINE int32 RefNum() const { return AsType().Num(); }
+	// Runtime query behavior flags
+	enum EFlags
+	{
+		NoFlags = 0,
+
+		// This is a potential optimization when calling Sort/SortBy with a potentially expensive callback.
+		// Instead of making redundantly calls, the projection results will be cached in a map, so each key is only ran
+		// through the callback once.
+		ProjectionCache = 1 << 0,
+	};
+	ENUM_CLASS_FLAGS(EFlags)
+
+	/**
+	 * Map Queries are classes that can filter/sort/iterate keys of a TMap or map-like data structure.
+	 * They *never* mutate the underlying data.
+	 */
+	template <typename QueryType, typename KeyType, typename ValueType, EClassFlags ClassFlags = EClassFlags::NoFlags>
+	class TMapQueryBase /*: public IMapQuery*/
+	{
+	public:
+		// Begin of templates/defines
+
+		// Check if the implementing type has certain functions implemented that enable optional behavior
+		struct FImplFeatures
+		{
+			using FSimpleData = TMap<KeyType, ValueType>;
+
+			// A function that return a TMap of the data to query. This is usually all that is required to implement for simple query types
+			GENERATE_MEMBER_FUNCTION_CHECK(SimpleData, const FSimpleData&, const, );
+
+			// Replaces the fallback Algo::Sort function with a custom one.
+			GENERATE_MEMBER_FUNCTION_CHECK(CustomSort, QueryType&,, );
+
+			static constexpr bool PassKeyByRef = EnumHasAnyFlags(ClassFlags, EClassFlags::PassKeyByRef);
+			static constexpr bool PassValueByRef = EnumHasAnyFlags(ClassFlags, EClassFlags::PassValueByRef);
+		};
+
+		template<typename T, int32 Size>
+		struct TLargerThan
+		{
+			enum
+			{
+				Value = sizeof(T) > Size
+			};
+		};
+
+		// If Key or Value type is larger than 8 bytes, pass-by-ref, otherwise, pass-by-value
+		using PassedKey = typename TChooseClass<TLargerThan<KeyType, 8>::Value || FImplFeatures::PassKeyByRef, const KeyType&, KeyType>::Result;
+		using PassedValue = typename TChooseClass<TLargerThan<ValueType, 8>::Value || FImplFeatures::PassValueByRef, const ValueType&, ValueType>::Result;
+		using FStorage = TArray<KeyType>;
 
 		template <typename Predicate, typename RetVal = void>
 		struct TIsPredicate
 		{
-			static constexpr bool IsKeyPredicate = std::is_invocable_r_v<RetVal, Predicate, KeyType>;
-			static constexpr bool IsValuePredicate = std::is_invocable_r_v<RetVal, Predicate, const ValueType&>;
-			static constexpr bool IsKeyValuePredicate = std::is_invocable_r_v<RetVal, Predicate, KeyType, const ValueType&>;
-			static constexpr bool IsValidPredicate = IsKeyPredicate || IsValuePredicate || IsKeyValuePredicate;
-
-			enum
-			{
-				Value = IsValidPredicate
-			};
+			static constexpr bool IsKeyPredicate = std::is_invocable_r_v<RetVal, Predicate, PassedKey>;
+			static constexpr bool IsValuePredicate = std::is_invocable_r_v<RetVal, Predicate, PassedValue>;
+			static constexpr bool IsKeyKeyPredicate = std::is_invocable_r_v<RetVal, Predicate, PassedKey, PassedKey>;
+			static constexpr bool IsKeyValuePredicate = std::is_invocable_r_v<RetVal, Predicate, PassedKey, PassedValue>;
+			static constexpr bool IsIterationPredicate = IsKeyPredicate || IsValuePredicate || IsKeyValuePredicate;
 		};
+
+		// End of templates/defines
+
+	private:
+		FORCEINLINE		  QueryType& AsType()		{ return *static_cast<		QueryType*>(this); }
+		FORCEINLINE const QueryType& AsType() const { return *static_cast<const QueryType*>(this); }
+
+		FORCEINLINE auto Lookup(KeyType Key) const
+		{
+			if constexpr (FImplFeatures::template THasMemberFunction_SimpleData<QueryType>::Value)
+			{
+				return AsType().SimpleData()[Key];
+			}
+			else
+			{
+				return AsType()[Key];
+			}
+		}
+
+		FORCEINLINE int32 RefNum() const
+		{
+			if constexpr (FImplFeatures::template THasMemberFunction_SimpleData<QueryType>::Value)
+			{
+				return AsType().SimpleData().Num();
+			}
+			else
+			{
+				return AsType().SrcNum();
+			}
+		}
 
 		// A for-each range for iterating over the reference data
 		struct FQueryRange
@@ -47,16 +119,51 @@ namespace Heart::Query
 			const TMapQueryBase* Query;
 		};
 
-		FORCEINLINE friend auto begin(const FQueryRange& Range) { return Range.Query->AsType().begin(); }
-		FORCEINLINE friend auto end  (const FQueryRange& Range) { return Range.Query->AsType().end(); }
+		FORCEINLINE friend auto begin(const FQueryRange& Range)
+		{
+			if constexpr (FImplFeatures::template THasMemberFunction_SimpleData<QueryType>::Value)
+			{
+				return Range.Query->AsType().SimpleData().begin();
+			}
+			else
+			{
+				return Range.Query->AsType().begin();
+			}
+		}
+
+		FORCEINLINE friend auto end(const FQueryRange& Range)
+		{
+			if constexpr (FImplFeatures::template THasMemberFunction_SimpleData<QueryType>::Value)
+			{
+				return Range.Query->AsType().SimpleData().end();
+			}
+			else
+			{
+				return Range.Query->AsType().end();
+			}
+		}
 
 	public:
+		// Enable query features
+		QueryType& Enable(const EFlags InFlags)
+		{
+			EnumAddFlags(Flags, InFlags);
+			return AsType();
+		}
+
+		// Enable query features
+		QueryType& Disable(const EFlags InFlags)
+		{
+			EnumRemoveFlags(Flags, InFlags);
+			return AsType();
+		}
+
 		/**
 		 * Removes all results from the query that fail a predicate.
 		 */
 		template <
 			typename Predicate
-			UE_REQUIRES(TIsPredicate<Predicate, bool>::Value)
+			UE_REQUIRES(TIsPredicate<Predicate, bool>::IsIterationPredicate)
 		>
 		QueryType& Filter(Predicate Pred)
 		{
@@ -92,8 +199,7 @@ namespace Heart::Query
 			return AsType();
 		}
 
-		//using FFilter = TDelegate<bool(const ValueType&)>;
-		using FFilter = TDelegate<bool(ValueType)>; // @todo stop copying the value
+		using FFilter = TDelegate<bool(PassedValue)>;
 
 		/**
 		 * Removes all results from the query that fail a delegate.
@@ -144,7 +250,7 @@ namespace Heart::Query
 		 */
 		template <
 			typename Predicate
-			UE_REQUIRES(TIsPredicate<Predicate>::Value)
+			UE_REQUIRES(TIsPredicate<Predicate>::IsIterationPredicate)
 		>
 		QueryType& ForEach(Predicate Pred)
 		{
@@ -192,8 +298,7 @@ namespace Heart::Query
 			return AsType();
 		}
 
-		//using FCallback = TDelegate<void(const ValueType&)>;
-		using FCallback = TDelegate<void(ValueType)>; // @todo stop copying the value
+		using FCallback = TDelegate<void(PassedValue)>;
 
 		/**
 		 * Iterate over all results currently in the query.
@@ -278,14 +383,12 @@ namespace Heart::Query
 			return {};
 		}
 
-		GENERATE_MEMBER_FUNCTION_CHECK(DefaultSort, QueryType&, , );
-
 		// Sort the results by their default order
 		QueryType& Sort()
 		{
-			if constexpr (THasMemberFunction_DefaultSort<QueryType>::Value)
+			if constexpr (FImplFeatures::template THasMemberFunction_CustomSort<QueryType>::Value)
 			{
-				AsType().DefaultSort();
+				AsType().CustomSort();
 			}
 			else
 			{
@@ -296,7 +399,10 @@ namespace Heart::Query
 			return AsType();
 		}
 
-		template <typename Predicate>
+		template <
+			typename Predicate
+			UE_REQUIRES(TIsPredicate<Predicate, bool>::IsKeyKeyPredicate)
+		>
 		QueryType& Sort(Predicate Pred)
 		{
 			InitResults();
@@ -307,16 +413,44 @@ namespace Heart::Query
 		template <typename ProjectionType>
 		QueryType& SortBy(ProjectionType Proj)
 		{
-			InitResults();
-			Algo::SortBy(Results.GetValue(), Proj);
-			return AsType();
+			return SortBy(Proj, TLess<>());
 		}
 
-		template <typename ProjectionType, typename Predicate>
+		template <
+			typename ProjectionType,
+			typename Predicate
+			UE_REQUIRES(TIsPredicate<ProjectionType>::IsKeyPredicate)
+		>
 		QueryType& SortBy(ProjectionType Proj, Predicate Pred)
 		{
+			using RetType = std::invoke_result_t<ProjectionType, PassedKey>;
+
 			InitResults();
-            Algo::SortBy(Results.GetValue(), Proj, Pred);
+
+			if (EnumHasAnyFlags(Flags, ProjectionCache))
+			{
+				TMap<KeyType, RetType> Scores;
+
+				auto CachingProjection =
+					[&](const PassedKey Key)
+					{
+						if (const RetType* Score = Scores.Find(Key))
+						{
+							return *Score;
+						}
+
+						RetType RetVal = Proj(Key);
+						Scores.Add(Key, RetVal);
+						return RetVal;
+					};
+
+				Algo::SortBy(Results.GetValue(), CachingProjection, Pred);
+			}
+			else
+			{
+				Algo::SortBy(Results.GetValue(), Proj, Pred);
+			}
+
             return AsType();
 		}
 
@@ -338,12 +472,12 @@ namespace Heart::Query
 			// If Results is not initialized, or equal to the reference data, set to an empty array.
 			if (!Results.IsSet() || Results->Num() == RefNum())
 			{
-				Results = TArray<KeyType>();
+				Results = FStorage();
 				return AsType();
 			}
 
 			// Create array from source data
-			TArray<KeyType> NewResults;
+			FStorage NewResults;
 			NewResults.SetNum(RefNum());
 			for (auto&& Element : FQueryRange(this))
 			{
@@ -351,7 +485,7 @@ namespace Heart::Query
 			}
 
 			// Remove all elements currently in the result
-			ForEach([&NewResults](const KeyType Key)
+			ForEach([&NewResults](const PassedKey Key)
 				{
 					NewResults.Remove(Key);
 				});
@@ -364,7 +498,7 @@ namespace Heart::Query
 			return AsType();
 		}
 
-		const TArray<KeyType>& Get()
+		const FStorage& Get()
 		{
 			InitResults();
 			return Results.GetValue();
@@ -389,7 +523,7 @@ namespace Heart::Query
 		{
 			if (!Results.IsSet())
 			{
-				Results = TArray<KeyType>();
+				Results = FStorage();
 				Results->Reserve(RefNum());
 				for (auto&& Element : FQueryRange(this))
 				{
@@ -399,88 +533,7 @@ namespace Heart::Query
 			}
 		}
 
-		TOptional<TArray<KeyType>> Results;
-	};
-
-	class HEART_API FPinQueryResult : public TMapQueryBase<FPinQueryResult, FHeartPinGuid, FHeartGraphPinDesc>
-	{
-		friend TMapQueryBase;
-
-		using FMapType = TMap<FHeartPinGuid, FHeartGraphPinDesc>;
-
-	public:
-		FPinQueryResult(const FHeartNodePinData& Src);
-
-		// Sort the results by their Pin Order
-		FPinQueryResult& DefaultSort();
-
-		int32 Num() const {	return Reference.PinDescriptions.Num(); }
-
-		FORCEINLINE auto& operator[](const FHeartPinGuid PinGuid) const
-		{
-			return Reference.PinDescriptions[PinGuid];
-		}
-
-		FORCEINLINE auto begin() const { return Reference.PinDescriptions.begin(); }
-		FORCEINLINE auto end() const { return Reference.PinDescriptions.end(); }
-
-	private:
-		const FHeartNodePinData& Reference;
-	};
-
-	using FNodeMap = TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>;
-
-	template <typename Impl>
-	class TNodeQueryResultBase : public TMapQueryBase<TNodeQueryResultBase<Impl>, FHeartNodeGuid, UHeartGraphNode*>
-	{
-		friend TMapQueryBase;
-
-		FORCEINLINE const FNodeMap& Data() const { return (*static_cast<const Impl*>(this)).Internal_Data(); }
-
-	public:
-		int32 Num() const {	return Data().Num(); }
-
-		FORCEINLINE UHeartGraphNode* operator[](const FHeartNodeGuid NodeGuid) const
-		{
-			return Data()[NodeGuid];
-		}
-
-		FORCEINLINE auto begin() const { return Data().begin(); }
-		FORCEINLINE auto end  () const { return Data().end(); }
-	};
-
-	template <typename Source>
-	class TNodeQueryResult
-	{
-	};
-
-	template<>
-	class HEART_API TNodeQueryResult<FNodeMap> : public TNodeQueryResultBase<TNodeQueryResult<FNodeMap>>
-	{
-		friend TNodeQueryResultBase;
-
-	public:
-		// Initialize a query for an array of loose nodes
-		TNodeQueryResult(const TConstArrayView<TObjectPtr<UHeartGraphNode>>& Src);
-
-	private:
-		auto& Internal_Data() const { return Reference; }
-
-		const FNodeMap Reference;
-	};
-
-	template<>
-	class HEART_API TNodeQueryResult<UHeartGraph*> : public TNodeQueryResultBase<TNodeQueryResult<UHeartGraph*>>
-	{
-		friend TNodeQueryResultBase;
-
-	public:
-		// Initialize a query for all nodes in a graph
-		TNodeQueryResult(const UHeartGraph* Src);
-
-	private:
-		auto& Internal_Data() const { return Reference->GetNodes(); }
-
-		const UHeartGraph* Reference;
+		TOptional<FStorage> Results;
+		EFlags Flags;
 	};
 }

@@ -2,60 +2,12 @@
 
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
+#include "GraphRegistry/HeartRegistryQuery.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Model/HeartGraphNode.h"
 #include "View/HeartVisualizerInterfaces.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNodeRegistry)
-
-namespace Heart
-{
-	struct FFilterLambdas
-	{
-		using FGraphNodeTest = TFunction<bool(const TSubclassOf<UHeartGraphNode>)>;
-		using FNodeSourceTest = TFunction<bool(const FHeartNodeSource)>;
-
-		explicit FFilterLambdas(const FHeartRegistryQuery& Query)
-		{
-			FilterMaxResults = Query.MaxResults > 0 ? Query.MaxResults : TNumericLimits<int32>::Max();
-
-			GraphNodeClassTest = IsValid(Query.HeartGraphNodeBaseClass) ?
-				FGraphNodeTest([&Query](const TSubclassOf<UHeartGraphNode>& GraphNodeClass)
-				{
-					return GraphNodeClass->IsChildOf(Query.HeartGraphNodeBaseClass);
-				}) :
-				FGraphNodeTest([](const TSubclassOf<UHeartGraphNode>&)
-				{
-					return true;
-				});
-
-			NodeSourceClassTest = IsValid(Query.NodeObjectBaseClass) ?
-				FNodeSourceTest([&Query](const FHeartNodeSource& NodeSource)
-				{
-					return NodeSource.IsAOrClassOf(Query.NodeObjectBaseClass);
-				}) :
-				FNodeSourceTest([](const FHeartNodeSource&)
-				{
-					return true;
-				});
-
-			CustomFilterTest = Query.Filter.IsBound() ?
-				FNodeSourceTest([&Query](const FHeartNodeSource& NodeSource)
-				{
-					return Query.Filter.Execute(NodeSource);
-				}) :
-				FNodeSourceTest([](const FHeartNodeSource&)
-				{
-					return true;
-				});
-		}
-
-		int32 FilterMaxResults;
-		FGraphNodeTest GraphNodeClassTest;
-		FNodeSourceTest NodeSourceClassTest;
-		FNodeSourceTest CustomFilterTest;
-	};
-}
 
 bool UHeartGraphNodeRegistry::FilterObjectForRegistration(const UObject* Object) const
 {
@@ -307,37 +259,44 @@ void UHeartGraphNodeRegistry::BroadcastChange()
 	}
 }
 
+Heart::Query::FRegistryQueryResult UHeartGraphNodeRegistry::QueryRegistry() const
+{
+	return Heart::Query::FRegistryQueryResult(this);
+}
+
+void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const
+{
+	for (auto It : Heart::Query::FRegistryQueryResult::FRange(this))
+	{
+		checkSlow(It.Value.GraphNode.Get());
+		checkSlow(It.Value.Source.IsValid());
+		if (!Iter(It.Value.GraphNode.Get(), It.Value.Source))
+		{
+			return;
+		}
+	}
+}
+
 bool UHeartGraphNodeRegistry::IsRegistered(const UGraphNodeRegistrar* Registrar) const
 {
 	return ContainedRegistrars.Contains(Registrar);
 }
 
-void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(TSubclassOf<UHeartGraphNode>, FHeartNodeSource)>& Iter) const
+int32 UHeartGraphNodeRegistry::GetNumNodes(const bool IncludeRecursive) const
 {
-	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
+	if (IncludeRecursive)
 	{
-		for (auto&& GraphNode : Element.Value.GraphNodes)
+		int32 OutNum = 0;
+
+		for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 		{
-			TSubclassOf<UHeartGraphNode> GraphNodeClass = GraphNode.Obj.Get();
-			if (!ensure(IsValid(GraphNodeClass))) continue;
-
-			if (!Iter(GraphNodeClass, Element.Key))
-			{
-				return;
-			}
-
-			for (const UClass* Child : Element.Value.RecursiveChildren)
-			{
-				FHeartNodeSource NodeSource(Child);
-				if (!ensure(NodeSource.IsValid())) continue;
-
-				if (!Iter(GraphNodeClass, NodeSource))
-				{
-					return;
-				}
-			}
+			OutNum++;
+			OutNum += Element.Value.RecursiveChildren.Num();
 		}
+		return OutNum;
 	}
+
+	return NodeRootTable.Num();
 }
 
 TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
@@ -366,6 +325,7 @@ TArray<FString> UHeartGraphNodeRegistry::GetNodeCategories() const
 
 void UHeartGraphNodeRegistry::GetAllNodeSources(TArray<FHeartNodeSource>& OutNodeSources) const
 {
+	OutNodeSources.Empty(GetNumNodes(true));
 	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
 		OutNodeSources.Add(Element.Key);
@@ -376,6 +336,7 @@ void UHeartGraphNodeRegistry::GetAllNodeSources(TArray<FHeartNodeSource>& OutNod
 void UHeartGraphNodeRegistry::GetAllGraphNodeClassesAndNodeSources(
 	TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const
 {
+	OutClasses.Empty(GetNumNodes(true));
 	for (const TTuple<FHeartNodeSource, FNodeSourceEntry>& Element : NodeRootTable)
 	{
 		for (auto&& GraphNodePtr : Element.Value.GraphNodes)
@@ -392,93 +353,6 @@ void UHeartGraphNodeRegistry::GetAllGraphNodeClassesAndNodeSources(
 				OutClasses.Add(FHeartNodeSource(Child), GraphNode);
 			}
 		}
-	}
-}
-
-void UHeartGraphNodeRegistry::QueryNodeClasses(const FHeartRegistryQuery& Query, TArray<FHeartNodeSource>& OutNodeSources) const
-{
-	Heart::FFilterLambdas FilterLambdas(Query);
-
-	ForEachNodeObjectClass(
-		[&OutNodeSources, &FilterLambdas](const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const FHeartNodeSource& NodeSource)
-		{
-			if (FilterLambdas.GraphNodeClassTest(GraphNodeClass) &&
-				FilterLambdas.NodeSourceClassTest(NodeSource) &&
-				FilterLambdas.CustomFilterTest(NodeSource))
-			{
-				OutNodeSources.Add(NodeSource);
-				return OutNodeSources.Num() < FilterLambdas.FilterMaxResults;
-			}
-
-			return true;
-		});
-
-	if (Query.Sort.IsBound())
-	{
-		Algo::Sort(OutNodeSources,
-			[Callback = Query.Sort](const FHeartNodeSource& A, const FHeartNodeSource& B)
-			{
-				return Callback.Execute(A, B);
-			});
-	}
-	else if (Query.Score.IsBound())
-	{
-		TMap<FHeartNodeSource, double> Scores;
-		Scores.Reserve(OutNodeSources.Num());
-		for (FHeartNodeSource Class : OutNodeSources)
-		{
-			Scores.Add({Class, Query.Score.Execute(Class)});
-		}
-
-		Algo::Sort(OutNodeSources,
-			[&Scores](const FHeartNodeSource& A, const FHeartNodeSource& B)
-			{
-				return Scores[A] < Scores[B];
-			});
-	}
-}
-
-void UHeartGraphNodeRegistry::QueryGraphAndNodeClasses(const FHeartRegistryQuery& Query,
-	TMap<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& OutClasses) const
-{
-	Heart::FFilterLambdas FilterLambdas(Query);
-
-	ForEachNodeObjectClass(
-		[&OutClasses, &FilterLambdas](const TSubclassOf<UHeartGraphNode>& GraphNodeClass, const FHeartNodeSource& NodeSource)
-		{
-			if (FilterLambdas.GraphNodeClassTest(GraphNodeClass) &&
-				FilterLambdas.NodeSourceClassTest(NodeSource) &&
-				FilterLambdas.CustomFilterTest(NodeSource))
-			{
-				OutClasses.Add(NodeSource, GraphNodeClass);
-				return OutClasses.Num() < FilterLambdas.FilterMaxResults;
-			}
-
-			return true;
-		});
-
-	if (Query.Sort.IsBound())
-	{
-		OutClasses.KeySort(
-			[Callback = Query.Sort](const FHeartNodeSource& A, const FHeartNodeSource& B)
-			{
-				return Callback.Execute(A, B);
-			});
-	}
-	else if (Query.Score.IsBound())
-	{
-		TMap<FHeartNodeSource, double> Scores;
-		Scores.Reserve(OutClasses.Num());
-		for (const TTuple<FHeartNodeSource, TSubclassOf<UHeartGraphNode>>& ClassPair : OutClasses)
-		{
-			Scores.Add({ClassPair.Key, Query.Score.Execute(ClassPair.Key)});
-		}
-
-		OutClasses.KeySort(
-			[&Scores](const FHeartNodeSource& A, const FHeartNodeSource& B)
-			{
-				return Scores[A] < Scores[B];
-			});
 	}
 }
 

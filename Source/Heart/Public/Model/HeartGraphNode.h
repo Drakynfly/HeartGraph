@@ -10,7 +10,7 @@
 #include "HeartGraphPinReference.h"
 #include "HeartPinConnectionEdit.h"
 #include "HeartPinData.h"
-#include "HeartQueries.h"
+#include "HeartPinQuery.h"
 #include "GraphRegistry/HeartNodeSource.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartPinDirection.h"
