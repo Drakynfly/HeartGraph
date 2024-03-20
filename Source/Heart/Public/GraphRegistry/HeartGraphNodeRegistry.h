@@ -139,13 +139,16 @@ private:
 
 	TMap<FHeartNodeSource, FNodeSourceEntry> NodeRootTable;
 
-	// Maps Graph Node classes to the visualizer class that can represent them in an interactive graph.
+	// Maps Graph Node classes to the visualizer class that can represent them in a displayed graph.
 	TMap<TSubclassOf<UHeartGraphNode>, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> NodeVisualizerMap;
 
-	// Maps Graph Pin classes to the visualizer class that can represent them in an interactive graph.
+	// Maps GraphPinTags to the visualizer class that can represent them in a displayed graph.
 	TMap<FHeartGraphPinTag, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> PinVisualizerMap;
 
-	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TMaps
+	// Maps GraphPinTags to the visualizer class that can represent their connections in a displayed graph.
+	TMap<FHeartGraphPinTag, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> ConnectionVisualizerMap;
+
+	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TSets
 	UPROPERTY()
 	TArray<TObjectPtr<const UGraphNodeRegistrar>> ContainedRegistrars;
 };

@@ -32,6 +32,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
 	UHeartGraphNode* GetVisualizingNode() const;
 
+	UE_DEPRECATED(5.3, "This function is no longer in use")
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
 	TSubclassOf<UHeartGraphNode> GetSupportedGraphNodeClass();
 };
@@ -51,6 +52,7 @@ class HEART_API IGraphPinVisualizerInterface : public IHeartGraphPinInterface
 	GENERATED_BODY()
 
 public:
+	UE_DEPRECATED(5.3, "This function is no longer in use")
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
 	FHeartGraphPinTag GetSupportedGraphPinTag();
 
@@ -76,8 +78,4 @@ class HEART_API UGraphConnectionVisualizerInterface : public UInterface
 class HEART_API IGraphConnectionVisualizerInterface
 {
 	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
-	FHeartGraphPinTag GetSupportedGraphPinTag();
 };
