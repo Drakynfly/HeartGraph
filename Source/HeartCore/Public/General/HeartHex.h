@@ -236,9 +236,15 @@ namespace Heart::Hex
         return RoundHalfToEven(FHex(HexQ, HexR));
 	}
 
-	FORCEINLINE_DEBUGGABLE FVector2D SnapToNearestHex(const FVector2D& Location, const double Size)
+	FORCEINLINE_DEBUGGABLE FVector2D SnapToNearestHex_Flat(const FVector2D& Location, const double Size)
 	{
 		auto&& HexCoord = PixelToHex_Flat(Location, Size);
 		return HexToPixel_Flat(HexCoord, Size);
+	}
+
+	FORCEINLINE_DEBUGGABLE FVector2D SnapToNearestHex_Pointy(const FVector2D& Location, const double Size)
+	{
+		auto&& HexCoord = PixelToHex_Pointy(Location, Size);
+		return HexToPixel_Pointy(HexCoord, Size);
 	}
 }

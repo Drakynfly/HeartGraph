@@ -5,6 +5,13 @@
 #include "ModelView/HeartNodeLocationAccessor.h"
 #include "HeartNodeLocationModifier_SnapToHex.generated.h"
 
+UENUM()
+enum class EHeartHexOrientation : uint8
+{
+	FlatTop,
+	PointyTop
+};
+
 /**
  * Rounds locations to snap to a hex grid
  */
@@ -23,4 +30,7 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category = "SnapToHex", meta = (ClampMin = 1.0))
 	double GridSize = 50;
+
+	UPROPERTY(EditAnywhere, Category = "SnapToHex")
+	EHeartHexOrientation Orientation;
 };
