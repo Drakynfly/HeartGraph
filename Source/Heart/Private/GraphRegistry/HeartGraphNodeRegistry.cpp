@@ -39,8 +39,7 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistrationClasse
 {
 	for (auto&& GraphNodeList : Registration.GraphNodeLists)
 	{
-		if (GraphNodeList.Value.Classes.IsEmpty() ||
-			!FilterObjectForRegistration(GraphNodeList.Key))
+		if (!FilterObjectForRegistration(GraphNodeList.Key))
 		{
 			continue;
 		}
