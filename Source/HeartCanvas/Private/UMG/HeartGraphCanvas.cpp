@@ -563,7 +563,7 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForCon
 		return nullptr;
 	}
 
-	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(FromDesc, ToDesc, UHeartGraphCanvasConnection::StaticClass());
+	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection<UHeartGraphCanvasConnection>(FromDesc, ToDesc);
 }
 
 TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPreviewConnection_Implementation() const

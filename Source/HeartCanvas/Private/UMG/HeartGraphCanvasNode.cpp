@@ -170,7 +170,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid
 	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	UClass* CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
 	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
-	UClass* PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin(Desc, UHeartGraphCanvasPin::StaticClass());
+	const TSubclassOf<UHeartGraphCanvasPin> PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin<UHeartGraphCanvasPin>(Desc);
 
 	if (IsValid(PinVisualizer))
 	{
