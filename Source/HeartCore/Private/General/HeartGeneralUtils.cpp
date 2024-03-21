@@ -89,6 +89,11 @@ int32 UHeartGeneralUtils::LevenshteinDistance(const FString& A, const FString& B
 
 double UHeartGeneralUtils::LevenshteinScore(const FString& A, const FString& B)
 {
+	if (A.IsEmpty() || B.IsEmpty())
+	{
+		return 0.0;
+	}
+
 	const double WorstCase = A.Len() + B.Len();
 	return 1.0 - (Algo::LevenshteinDistance(A, B) / WorstCase);
 }
