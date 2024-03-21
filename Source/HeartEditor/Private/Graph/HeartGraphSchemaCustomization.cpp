@@ -47,6 +47,7 @@ void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 				[
 					SNew(STextBlock)
 						.Text(this, &FHeartGraphSchemaCustomization::GetSelectedStyle)
+						.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 				]
 			];
 	}
@@ -63,7 +64,8 @@ void FHeartGraphSchemaCustomization::OnStyleSelectionChanged(const FName Name, E
 TSharedRef<SWidget> FHeartGraphSchemaCustomization::OnGenerateStyleWidget(const FName Style)
 {
 	return SNew(STextBlock)
-		.Text(FText::FromString(FName::NameToDisplayString(Style.ToString(), false)));
+		.Text(FText::FromString(FName::NameToDisplayString(Style.ToString(), false)))
+		.Font(IPropertyTypeCustomizationUtils::GetRegularFont());
 }
 
 FText FHeartGraphSchemaCustomization::GetSelectedStyle() const

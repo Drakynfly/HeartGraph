@@ -37,9 +37,10 @@ void FHeartGraphNodeCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 
 	if (EditingAsset)
 	{
+		// @todo this is broken. GetProperty cannot find the sparse data property
 		StyleProp = DetailBuilder.GetProperty(GET_MEMBER_NAME_CHECKED(FHeartGraphNodeSparseClassData, EditorSlateStyle));
 
-		if (StyleProp.IsValid())
+		if (StyleProp->IsValidHandle())
 		{
 			DetailBuilder.HideProperty(StyleProp);
 
@@ -60,6 +61,7 @@ void FHeartGraphNodeCustomization::CustomizeDetails(IDetailLayoutBuilder& Detail
 					[
 						SNew(STextBlock)
 							.Text(this, &FHeartGraphNodeCustomization::GetSelectedStyle)
+							.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 					]
 				];
 		}
@@ -85,6 +87,7 @@ TSharedRef<SWidget> FHeartGraphNodeCustomization::OnGenerateStyleWidget(const FN
 
 	return SNew(STextBlock)
 		.Text(FText::FromString(FName::NameToDisplayString(Style.ToString(), false)))
+		.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 		.ToolTipText(Tooltip);
 }
 
