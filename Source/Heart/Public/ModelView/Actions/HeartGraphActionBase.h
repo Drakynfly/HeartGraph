@@ -11,18 +11,23 @@ struct FHeartManualEvent;
 
 namespace Heart::Action
 {
+	// System-level flags for optional behavior in actions
 	enum EExecutionFlags
 	{
 		NoFlags = 0,
+
+		// Enable undo/redo behavior
+		Undoable = 1 << 0
 	};
 
-	struct FArguments
+	struct FArguments : FNoncopyable
 	{
 		FHeartInputActivation Activation;
 		UObject* Payload = nullptr;
 		EExecutionFlags Flags;
 	};
 }
+ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
 
 
 /**
@@ -59,4 +64,5 @@ public:
 	virtual FText GetDescription(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText::GetEmpty(); )
 	virtual bool CanExecute(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
 	virtual bool Execute(UObject* Object, const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
+	virtual bool Undo(UObject* Object) { return false; }
 };
