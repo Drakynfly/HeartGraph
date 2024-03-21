@@ -366,10 +366,10 @@ void UHeartGraphNodeRegistry::GetAllGraphNodeArchetypes(TArray<FHeartNodeArchety
 				continue;
 			}
 
-			OutArchetypes.Emplace(GraphNode, Element.Key);
+			OutArchetypes.Add({ GraphNode, Element.Key });
 			for (TObjectPtr<UClass> Child : Element.Value.RecursiveChildren)
 			{
-				OutArchetypes.Emplace(GraphNode, FHeartNodeSource(Child));
+				OutArchetypes.Add({ GraphNode, FHeartNodeSource(Child) });
 			}
 		}
 	}

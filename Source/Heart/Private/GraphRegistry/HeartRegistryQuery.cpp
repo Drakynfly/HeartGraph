@@ -17,9 +17,9 @@ namespace Heart::Query
 	{
 		auto&& Entry = Registry->NodeRootTable.Get(FSetElementId::FromInteger(Key.RootIndex));
 
-		return FRegistryValue(
+		return FRegistryValue {
 			Key.RecursiveIndex != INDEX_NONE ? FHeartNodeSource(Entry.Value.RecursiveChildren[Key.RecursiveIndex]) : Entry.Key,
-			Entry.Value.GraphNodes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get());
+			Entry.Value.GraphNodes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get()};
 	}
 }
 
@@ -49,7 +49,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray
 			return Algo::AllOf(ScriptFilters,
 				[Value](const FScriptDelegate& Delegate)
 				{
-					FProcessEventMemory Memory(Value.Source);
+					FProcessEventMemory Memory{Value.Source};
 					Delegate.ProcessDelegate<UObject>(&Memory);
 					return Memory.RetVal;
 				});
@@ -103,7 +103,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray
 	Query.ForEach(
 		[&Results](const Heart::Query::FRegistryValue& Value)
 		{
-			Results.Emplace(Value.GraphNode.Get(), Value.Source);
+			Results.Add({Value.GraphNode.Get(), Value.Source});
 		});
 }
 
