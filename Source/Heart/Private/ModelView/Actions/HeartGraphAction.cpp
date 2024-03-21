@@ -7,23 +7,23 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphAction)
 
-bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
+bool UHeartGraphAction::Execute(UObject* Object, const Heart::Action::FArguments& Arguments)
 {
 	if (auto&& Graph = Cast<UHeartGraph>(Object))
 	{
-		ExecuteOnGraph(Graph, Activation, ContextObject);
+		ExecuteOnGraph(Graph, Arguments.Activation, Arguments.Payload);
 		return true;
 	}
 
 	if (auto&& Node = Cast<UHeartGraphNode>(Object))
 	{
-		ExecuteOnNode(Node, Activation, ContextObject);
+		ExecuteOnNode(Node, Arguments.Activation, Arguments.Payload);
 		return true;
 	}
 
 	if (Object->Implements<UHeartGraphPinInterface>())
 	{
-		ExecuteOnPin(Object, Activation, ContextObject);
+		ExecuteOnPin(Object, Arguments.Activation, Arguments.Payload);
 		return true;
 	}
 

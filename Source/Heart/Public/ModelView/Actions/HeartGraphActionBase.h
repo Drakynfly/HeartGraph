@@ -3,10 +3,27 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "UI/HeartInputActivation.h"
+
 #include "HeartGraphActionBase.generated.h"
 
 struct FHeartManualEvent;
-struct FHeartInputActivation;
+
+namespace Heart::Action
+{
+	enum EExecutionFlags
+	{
+		NoFlags = 0,
+	};
+
+	struct FArguments
+	{
+		FHeartInputActivation Activation;
+		UObject* Payload = nullptr;
+		EExecutionFlags Flags;
+	};
+}
+
 
 /**
  *
@@ -38,11 +55,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (DeterminesOutputType = Class))
 	static bool ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation);
 
-protected:
-	bool Execute(UObject* Object, const FHeartInputActivation& Activation);
-
 public:
 	virtual FText GetDescription(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText::GetEmpty(); )
 	virtual bool CanExecute(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
-	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
+	virtual bool Execute(UObject* Object, const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
 };

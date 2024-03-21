@@ -18,7 +18,7 @@ class HEART_API UHeartGraphAction : public UHeartGraphActionBase
 	GENERATED_BODY()
 
 public:
-	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
+	virtual bool Execute(UObject* Object, const Heart::Action::FArguments& Arguments) override final;
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")

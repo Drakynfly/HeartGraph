@@ -23,7 +23,7 @@ class HEARTCANVAS_API UHeartGraphCanvasAction : public UHeartGraphActionBase
 public:
 	virtual FText GetDescription(const UObject* Object) const override;
 	virtual bool CanExecute(const UObject* Object) const override final;
-	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
+	virtual bool Execute(UObject* Object, const Heart::Action::FArguments& Arguments) override;
 
 	virtual FReply ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject);
 

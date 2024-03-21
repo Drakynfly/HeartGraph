@@ -25,11 +25,11 @@ bool UHeartGraphCanvasAction::CanExecute(const UObject* Object) const
 	return false;
 }
 
-bool UHeartGraphCanvasAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
+bool UHeartGraphCanvasAction::Execute(UObject* Object, const Heart::Action::FArguments& Arguments)
 {
 	if (auto&& Widget = Cast<UHeartGraphWidgetBase>(Object))
 	{
-		return ExecuteOnWidget(Widget, Activation, ContextObject).IsEventHandled();
+		return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload).IsEventHandled();
 	}
 
 	return false;

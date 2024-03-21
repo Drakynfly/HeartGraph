@@ -20,7 +20,11 @@ bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGrap
 	}
 
 	auto&& Action = CreateGraphAction(Class);
-	return Action->Execute(Target, FHeartInputActivation(Activation));
+
+	Heart::Action::FArguments Args;
+	Args.Activation = Activation;
+
+	return Action->Execute(Target, Args);
 }
 
 bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartGraphActionBase> Class,
@@ -37,7 +41,12 @@ bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf
 	}
 
 	auto&& Action = CreateGraphAction(Class);
-	return Action->Execute(Target, FHeartInputActivation(Activation), Payload);
+
+	Heart::Action::FArguments Args;
+	Args.Activation = Activation;
+	Args.Payload = Payload;
+
+	return Action->Execute(Target, Args);
 }
 
 UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
@@ -59,13 +68,11 @@ bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UO
 			return false;
 		}
 
-		return Action->Execute(Target, FHeartInputActivation(Activation));
+		Heart::Action::FArguments Args;
+		Args.Activation = Activation;
+
+		return Action->Execute(Target, Args);
 	}
 
 	return false;
-}
-
-bool UHeartGraphActionBase::Execute(UObject* Object, const FHeartInputActivation& Activation)
-{
-	return Execute(Object, Activation, nullptr);
 }
