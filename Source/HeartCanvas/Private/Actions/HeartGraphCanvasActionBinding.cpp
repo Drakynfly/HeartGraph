@@ -31,7 +31,7 @@ bool UHeartGraphCanvasActionBinding::PassCondition(const UWidget* TestWidget) co
 	return !Failed;
 }
 
-FReply UHeartGraphCanvasActionBinding::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
+FReply UHeartGraphCanvasActionBinding::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Activation) const
 {
 	if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(Widget))
 	{
@@ -42,7 +42,7 @@ FReply UHeartGraphCanvasActionBinding::TriggerEvent(UWidget* Widget, const FHear
 			return FReply::Unhandled();
 		}
 
-		return Action->ExecuteOnWidget(HeartWidget, Trip, nullptr);
+		return Action->ExecuteOnWidget(HeartWidget, Activation, nullptr);
 	}
 
 	return FReply::Unhandled();

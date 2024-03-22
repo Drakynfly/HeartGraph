@@ -16,6 +16,7 @@ class IHeartGraphInterface;
 class IHeartGraphNodeInterface;
 class IHeartGraphPinInterface;
 class UHeartGraph;
+class UHeartGraphExtension;
 class UHeartGraphNode;
 
 namespace Heart::Utils
@@ -89,6 +90,10 @@ public:
 
 
 	/**			TYPED GETTERS			*/
+
+	// Find the first extension of the requested class.
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	static UHeartGraphExtension* FindExtension(const TScriptInterface<IHeartGraphInterface>& Graph, TSubclassOf<UHeartGraphExtension> Class);
 
 	// Gets the Heart Graph from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Graph", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))

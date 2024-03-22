@@ -16,15 +16,22 @@ namespace Heart::Action
 	{
 		NoFlags = 0,
 
-		// Enable undo/redo behavior
-		Undoable = 1 << 0
+		// This action is being ran as a Redo of an previously undone action
+		IsRedo = 1 << 0,
+
+		// Prevent this action from being recorded by action history
+		DisallowRecord = 1 << 1,
+
+		// Record this action, even if it doesn't have a reason to
+		ForceRecord = 1 << 2,
 	};
 
-	struct FArguments : FNoncopyable
+	struct FArguments
 	{
+		UObject* Target = nullptr;
 		FHeartInputActivation Activation;
 		UObject* Payload = nullptr;
-		EExecutionFlags Flags;
+		EExecutionFlags Flags = NoFlags;
 	};
 }
 ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
@@ -61,8 +68,9 @@ public:
 	static bool ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation);
 
 public:
-	virtual FText GetDescription(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText::GetEmpty(); )
-	virtual bool CanExecute(const UObject* Object) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
-	virtual bool Execute(UObject* Object, const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
-	virtual bool Undo(UObject* Object) { return false; }
+	virtual FText GetDescription(const UObject* Target) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText::GetEmpty(); )
+	virtual bool CanExecute(const UObject* Target) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
+	virtual bool Execute(const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
+	virtual bool CanUndo(UObject* Target) const { return false; }
+	virtual bool Undo(UObject* Target) { return false; }
 };

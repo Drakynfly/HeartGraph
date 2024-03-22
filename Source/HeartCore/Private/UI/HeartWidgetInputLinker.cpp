@@ -33,6 +33,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 
 	FInputTrip MouseWheelAxisTrip;
 	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis;
+	MouseWheelAxisTrip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
 	MouseWheelAxisTrip.Type = Press; // Mouse wheel events must always use the 'Press' type
 
 	FPointerEvent ActivationEvent(
@@ -80,6 +81,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 	FInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
+	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
 	Trip.Type = Press;
 
 	TArray<FConditionalInputCallback> Callbacks;
@@ -147,6 +149,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 
 	FInputTrip Trip;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
+	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
 	Trip.Type = Release;
 
 	TArray<FConditionalInputCallback> Callbacks;
@@ -184,6 +187,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 
 	FInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
+	Trip.ModifierMask = EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown());
 	Trip.Type = Press;
 
 	TArray<FConditionalInputCallback> Callbacks;
@@ -221,6 +225,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 
 	FInputTrip Trip;
 	Trip.Key = KeyEvent.GetKey();
+	Trip.ModifierMask = EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown());
 	Trip.Type = Release;
 
 	TArray<FConditionalInputCallback> Callbacks;
@@ -257,8 +262,9 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 	SCOPE_CYCLE_COUNTER(STAT_HandleOnDragDetected)
 
 	FInputTrip Trip;
-	Trip.Type = Press;
 	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
+	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
+	Trip.Type = Press;
 
 	TArray<FConditionalDragDropTrigger> DropDropTriggerArray;
 	DragDropTriggers.MultiFind(Trip, DropDropTriggerArray);
@@ -425,7 +431,6 @@ void UHeartWidgetInputLinker::BindInputCallback(const FInputTrip& Trip, const FC
 void UHeartWidgetInputLinker::UnbindInputCallback(const FInputTrip& Trip)
 {
 	InputCallbackMappings.Remove(Trip);
-
 }
 
 void UHeartWidgetInputLinker::BindToOnDragDetected(const FInputTrip& Trip, const FConditionalDragDropTrigger& DragDropTrigger)

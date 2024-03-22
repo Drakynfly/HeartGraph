@@ -10,6 +10,7 @@ EHeartInputActivationType UHeartInputActivationLibrary::GetActivationType(const 
 	if (Struct == FKeyEvent::StaticStruct()) return EHeartInputActivationType::KeyEvent;
 	if (Struct == FPointerEvent::StaticStruct()) return EHeartInputActivationType::PointerEvent;
 	if (Struct == FHeartManualEvent::StaticStruct()) return EHeartInputActivationType::Manual;
+	if (Struct == FHeartActionIsRedo::StaticStruct()) return EHeartInputActivationType::Redo;
 	return EHeartInputActivationType::Invalid;
 }
 
@@ -17,6 +18,11 @@ EHeartInputActivationType UHeartInputActivationLibrary::SwitchOnActivationType(
 	const FHeartInputActivation& Activation)
 {
 	return GetActivationType(Activation);
+}
+
+bool UHeartInputActivationLibrary::IsRedoAction(const FHeartInputActivation& Activation)
+{
+	return Activation.EventStruct.GetScriptStruct() == FHeartActionIsRedo::StaticStruct();
 }
 
 FHeartManualEvent UHeartInputActivationLibrary::ActivationToManualEvent(const FHeartInputActivation& Activation)

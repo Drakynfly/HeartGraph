@@ -398,10 +398,11 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
 	const int32 Removed = Nodes.Remove(NodeGuid);
 
-	if (IsValid(*NodeBeingRemoved))
+	if (const TObjectPtr<UHeartGraphNode> Node = NodeBeingRemoved ? *NodeBeingRemoved : nullptr;
+		IsValid(Node))
 	{
-		OnNodeRemoved.Broadcast(*NodeBeingRemoved);
-		NodeBeingRemoved->Get()->MarkAsGarbage();
+		OnNodeRemoved.Broadcast(Node);
+		Node->MarkAsGarbage();
 	}
 
 	return !!Removed;

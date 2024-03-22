@@ -235,6 +235,15 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 	return !FNodeVisitorCycleChecker().CheckForLoop(A, B);
 }
 
+UHeartGraphExtension* UHeartGraphUtils::FindExtension(const TScriptInterface<IHeartGraphInterface>& Graph, const TSubclassOf<UHeartGraphExtension> Class)
+{
+	if (Graph.GetInterface())
+	{
+		return Graph->GetHeartGraph()->GetExtension(Class);
+	}
+	return nullptr;
+}
+
 bool UHeartGraphUtils::GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph)
 {
 	if (Node.GetInterface())

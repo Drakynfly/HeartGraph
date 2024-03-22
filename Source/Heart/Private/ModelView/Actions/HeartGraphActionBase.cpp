@@ -22,9 +22,10 @@ bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGrap
 	auto&& Action = CreateGraphAction(Class);
 
 	Heart::Action::FArguments Args;
+	Args.Target = Target;
 	Args.Activation = Activation;
 
-	return Action->Execute(Target, Args);
+	return Action->Execute(Args);
 }
 
 bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartGraphActionBase> Class,
@@ -43,10 +44,11 @@ bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf
 	auto&& Action = CreateGraphAction(Class);
 
 	Heart::Action::FArguments Args;
+	Args.Target = Target;
 	Args.Activation = Activation;
 	Args.Payload = Payload;
 
-	return Action->Execute(Target, Args);
+	return Action->Execute(Args);
 }
 
 UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
@@ -69,9 +71,10 @@ bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UO
 		}
 
 		Heart::Action::FArguments Args;
+		Args.Target = Target;
 		Args.Activation = Activation;
 
-		return Action->Execute(Target, Args);
+		return Action->Execute(Args);
 	}
 
 	return false;

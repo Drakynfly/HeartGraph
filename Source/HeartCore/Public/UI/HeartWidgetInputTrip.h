@@ -18,6 +18,7 @@ namespace Heart::Input
 	{
 		ETripType Type = Unknown;
 		FKey Key = EKeys::Invalid;
+		uint8 ModifierMask = 0;
 		FName CustomKey = NAME_None;
 
 		bool IsValid() const
@@ -29,6 +30,7 @@ namespace Heart::Input
 		{
 			return Lhs.Type == Rhs.Type &&
 				   Lhs.Key == Rhs.Key &&
+				   Lhs.ModifierMask == Rhs.ModifierMask &&
 				   Lhs.CustomKey == Rhs.CustomKey;
 		}
 
@@ -43,6 +45,7 @@ namespace Heart::Input
 		uint32 KeyHash = 0;
 		KeyHash = HashCombine(KeyHash, ::GetTypeHash(Trip.Type));
 		KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.Key));
+		KeyHash = HashCombine(KeyHash, ::GetTypeHash(Trip.ModifierMask));
 		KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.CustomKey));
 		return KeyHash;
 	}

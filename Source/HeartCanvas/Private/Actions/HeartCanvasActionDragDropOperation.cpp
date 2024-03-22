@@ -24,10 +24,11 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 		if (Action->CanExecute(GetHoveredWidget()))
 		{
 			Heart::Action::FArguments Args;
+			Args.Target = GetHoveredWidget();
 			Args.Activation = PointerEvent;
 			Args.Payload = Payload;
 
-			Action->Execute(GetHoveredWidget(), Args);
+			Action->Execute(Args);
 		}
 	}
 }

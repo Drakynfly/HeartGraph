@@ -15,7 +15,7 @@ class HEARTCANVAS_API UHeartGraphCanvasActionBinding : public UHeartWidgetInputB
 public:
 	virtual FText GetDescription(const UWidget* TestWidget) const override;
 	virtual bool PassCondition(const UWidget* TestWidget) const override;
-	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const override;
+	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Activation) const override;
 
 protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))

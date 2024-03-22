@@ -6,7 +6,6 @@
 #include "InstancedStruct.h"
 #include "HeartInputActivation.generated.h"
 
-// @todo this is extremely limiting. maybe pass an InstancedStruct through? or a FInputActionValue if we will depend on EnhancedInput
 USTRUCT(BlueprintType)
 struct FHeartManualEvent
 {
@@ -18,6 +17,13 @@ struct FHeartManualEvent
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ManualEvent")
 	double EventValue = 0.0;
+};
+
+// Flag struct to mark an InputActivation as a redo
+USTRUCT()
+struct FHeartActionIsRedo
+{
+	GENERATED_BODY()
 };
 
 /**
@@ -44,6 +50,11 @@ struct HEARTCORE_API FHeartInputActivation
 	FHeartInputActivation(const FPointerEvent& PointerEvent)
 	{
 		EventStruct.InitializeAs<FPointerEvent>(PointerEvent);
+	}
+
+	FHeartInputActivation(const FHeartActionIsRedo&)
+	{
+		EventStruct.InitializeAs<FHeartActionIsRedo>();
 	}
 
 	FHeartManualEvent AsManualEvent() const
@@ -86,6 +97,9 @@ enum class EHeartInputActivationType : uint8
 	// This Activation was triggered manually by code and has no associated InputEvent
 	Manual,
 
+	// This Activation was triggered as a Redo of a previously undone action
+	Redo,
+
 	// This Activation was triggered by a KeyEvent
 	KeyEvent,
 
@@ -104,6 +118,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|InputActivation", meta = (ExpandEnumAsExecs = "ReturnValue"))
 	static EHeartInputActivationType SwitchOnActivationType(const FHeartInputActivation& Activation);
+
+	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
+	static bool IsRedoAction(const FHeartInputActivation& Activation);
 
 	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
 	static FHeartManualEvent ActivationToManualEvent(const FHeartInputActivation& Activation);
