@@ -10,34 +10,29 @@
 
 bool UHeartGraphAction::Execute(const Heart::Action::FArguments& Arguments)
 {
-	if (auto&& Graph = Cast<UHeartGraph>(Arguments.Target))
-	{
-		ExecuteOnGraph(Graph, Arguments.Activation, Arguments.Payload);
+	return Heart::Action::History::Log(this, Arguments,
+		[&]()
+		{
+			if (auto&& Graph = Cast<UHeartGraph>(Arguments.Target))
+			{
+				ExecuteOnGraph(Graph, Arguments.Activation, Arguments.Payload);
+				return true;
+			}
 
-		UHeartActionHistory::TryLogAction(this, Arguments);
+			if (auto&& Node = Cast<UHeartGraphNode>(Arguments.Target))
+			{
+				ExecuteOnNode(Node, Arguments.Activation, Arguments.Payload);
+				return true;
+			}
 
-		return true;
-	}
+			if (Arguments.Target->Implements<UHeartGraphPinInterface>())
+			{
+				ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload);
+				return true;
+			}
 
-	if (auto&& Node = Cast<UHeartGraphNode>(Arguments.Target))
-	{
-		ExecuteOnNode(Node, Arguments.Activation, Arguments.Payload);
-
-		UHeartActionHistory::TryLogAction(this, Arguments);
-
-		return true;
-	}
-
-	if (Arguments.Target->Implements<UHeartGraphPinInterface>())
-	{
-		ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload);
-
-		UHeartActionHistory::TryLogAction(this, Arguments);
-
-		return true;
-	}
-
-	return false;
+			return false;
+		});
 }
 
 FText UHeartGraphAction_BlueprintBase::GetDescription(const UObject* Target) const

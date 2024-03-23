@@ -31,10 +31,10 @@ struct TIsHeartInputActivationType
 {
 	static constexpr bool Value = false;
 };
-template <> struct TIsHeartInputActivationType<FHeartManualEvent> { static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FKeyEvent> { static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FPointerEvent> { static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FHeartActionIsRedo> { static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FHeartManualEvent>	{ static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FKeyEvent>			{ static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FPointerEvent>		{ static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FHeartActionIsRedo>	{ static constexpr bool Value = true; };
 
 /**
  *

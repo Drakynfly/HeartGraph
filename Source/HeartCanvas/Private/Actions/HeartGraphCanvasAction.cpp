@@ -30,14 +30,11 @@ bool UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Arguments
 {
 	if (auto&& Widget = Cast<UHeartGraphWidgetBase>(Arguments.Target))
 	{
-		const auto Handled = ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload).IsEventHandled();
-
-		if (Handled)
-		{
-			UHeartActionHistory::TryLogAction(this, Arguments);
-		}
-
-		return Handled;
+		return Heart::Action::History::Log(this, Arguments,
+			[&]()
+			{
+				return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload).IsEventHandled();
+			});
 	}
 
 	return false;

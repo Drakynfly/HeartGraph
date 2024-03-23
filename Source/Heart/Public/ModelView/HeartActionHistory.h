@@ -6,7 +6,31 @@
 #include "Model/HeartGraphExtension.h"
 #include "HeartActionHistory.generated.h"
 
-class UHeartGraphActionBase;
+namespace Heart::Action::History
+{
+	namespace Impl
+	{
+		HEART_API void BeginLog(UHeartGraphActionBase* Action, const FArguments& Arguments);
+		HEART_API void EndLog(bool Success);
+	}
+
+	// Is this action being executing in a state that we want to record.
+	HEART_API bool IsLoggable(const UHeartGraphActionBase* Action, const FArguments& Arguments);
+
+	// Are we currently running an undoable action.
+	HEART_API bool IsUndoable();
+
+	// A simple wrapper around a lamba that executes an action. If the action is loggable, and it succeeds, it will be
+	// recorded, provided that an Action History extension can be found.
+	template <typename T>
+	bool Log(UHeartGraphActionBase* Action, const FArguments& Arguments, T Lambda)
+	{
+		Impl::BeginLog(Action, Arguments);
+		const bool Success = Lambda();
+		Impl::EndLog(Success);
+		return Success;
+	}
+}
 
 USTRUCT()
 struct FHeartActionRecord
@@ -29,8 +53,6 @@ class HEART_API UHeartActionHistory : public UHeartGraphExtension
 	GENERATED_BODY()
 
 public:
-	static void TryLogAction(UHeartGraphActionBase* Action, const Heart::Action::FArguments& Arguments);
-
 	void AddRecord(const FHeartActionRecord& Record);
 
 	TOptional<FHeartActionRecord> RetrieveRecord();
@@ -43,6 +65,13 @@ public:
 	bool Redo();
 
 protected:
+	// Are we currently running an undoable action.
+	UFUNCTION(BlueprintPure, Category = "Heart|ActionHistory")
+	static bool IsUndoable();
+
+
+	/**		CONFIG		**/
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ActionHistory")
 	int32 MaxRecordedActions = 50;
 

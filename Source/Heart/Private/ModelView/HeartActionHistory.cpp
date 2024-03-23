@@ -7,39 +7,86 @@
 #include "Model/HeartGraphNodeInterface.h"
 #include "Model/HeartGraphPinInterface.h"
 
-void UHeartActionHistory::TryLogAction(UHeartGraphActionBase* Action, const Heart::Action::FArguments& Arguments)
+namespace Heart::Action::History
 {
-	check(Action);
-
-	const bool ShouldLog = Action->CanUndo(Arguments.Target) || EnumHasAnyFlags(Arguments.Flags, Heart::Action::ForceRecord);
-	const bool CannotLog = EnumHasAnyFlags(Arguments.Flags, Heart::Action::DisallowRecord | Heart::Action::IsRedo);
-
-	if (ShouldLog && !CannotLog)
+	namespace Impl
 	{
-		const UHeartGraph* HeartGraph = nullptr;
+		struct FExecutingAction
+		{
+			FExecutingAction(UHeartGraphActionBase* Action, UHeartActionHistory* History, const FArguments& Arguments)
+			  : Action(Action), History(History), Arguments(Arguments) {}
+			UHeartGraphActionBase* Action;
+			UHeartActionHistory* History;
+			const FArguments& Arguments;
+		};
 
-		if (Arguments.Target->Implements<UHeartGraphInterface>())
+		/**
+		 * While Actions execute within a single frame, it's possible for them to chain call other Actions, so a stack
+		 * is needed to keep track of them.
+		 * If an action is going to be logged, should it succeed, it will be stored here, otherwise a blank Option will
+		 * fill its slot in the stack.
+		 */
+		static TArray<TOptional<FExecutingAction>> ExecutingActionsLoggableStack;
+
+		void BeginLog(UHeartGraphActionBase* Action, const FArguments& Arguments)
 		{
-			HeartGraph = Cast<IHeartGraphInterface>(Arguments.Target)->GetHeartGraph();
-		}
-		else if (Arguments.Target->Implements<UHeartGraphNodeInterface>())
-		{
-			HeartGraph = Cast<IHeartGraphNodeInterface>(Arguments.Target)->GetHeartGraphNode()->GetGraph();
-		}
-		else if (Arguments.Target->Implements<UHeartGraphPinInterface>())
-		{
-			HeartGraph = Cast<IHeartGraphPinInterface>(Arguments.Target)->GetHeartGraphNode()->GetGraph();
+			if (IsLoggable(Action, Arguments))
+			{
+				// Track down the graph from the target
+				const UHeartGraph* HeartGraph = nullptr;
+
+				if (Arguments.Target->Implements<UHeartGraphInterface>())
+				{
+					HeartGraph = Cast<IHeartGraphInterface>(Arguments.Target)->GetHeartGraph();
+				}
+				else if (Arguments.Target->Implements<UHeartGraphNodeInterface>())
+				{
+					HeartGraph = Cast<IHeartGraphNodeInterface>(Arguments.Target)->GetHeartGraphNode()->GetGraph();
+				}
+				else if (Arguments.Target->Implements<UHeartGraphPinInterface>())
+				{
+					HeartGraph = Cast<IHeartGraphPinInterface>(Arguments.Target)->GetHeartGraphNode()->GetGraph();
+				}
+
+				if (IsValid(HeartGraph))
+				{
+					if (UHeartActionHistory* History = HeartGraph->GetExtension<UHeartActionHistory>();
+						IsValid(History))
+					{
+						// Store a log for the action
+						ExecutingActionsLoggableStack.Emplace(InPlace, Action, History, Arguments);
+						return;
+					}
+				}
+				// Unable to find HeartGraph for some reason, so bail from trying to log.
+			}
+
+			// Store current action as non-loggable.
+			ExecutingActionsLoggableStack.Emplace(FNullOpt(0));
 		}
 
-		if (!IsValid(HeartGraph))
+		void EndLog(const bool Success)
 		{
-			return;
+			if (const TOptional<FExecutingAction> LoggedAction = ExecutingActionsLoggableStack.Pop();
+				Success && LoggedAction.IsSet())
+			{
+				const FExecutingAction& Value = LoggedAction.GetValue();
+				Value.History->AddRecord({Value.Action, Value.Arguments});
+			}
 		}
+	}
 
-		if (const auto History = HeartGraph->GetExtension<ThisClass>())
-		{
-			History->AddRecord({Action, Arguments});
-		}
+	bool IsLoggable(const UHeartGraphActionBase* Action, const FArguments& Arguments)
+	{
+		const bool ShouldLog = Action->CanUndo(Arguments.Target) || EnumHasAnyFlags(Arguments.Flags, ForceRecord);
+		const bool CannotLog = EnumHasAnyFlags(Arguments.Flags, DisallowRecord | IsRedo);
+
+		return ShouldLog && !CannotLog;
+	}
+
+	bool IsUndoable()
+	{
+		return !Impl::ExecutingActionsLoggableStack.IsEmpty() && Impl::ExecutingActionsLoggableStack.Last().IsSet();
 	}
 }
 
@@ -103,4 +150,9 @@ bool UHeartActionHistory::Redo()
 	Record.Arguments.Activation = FHeartActionIsRedo();
 	EnumAddFlags(Record.Arguments.Flags, Heart::Action::IsRedo);
 	return Record.Action->Execute(Record.Arguments);
+}
+
+bool UHeartActionHistory::IsUndoable()
+{
+	return Heart::Action::History::IsUndoable();
 }

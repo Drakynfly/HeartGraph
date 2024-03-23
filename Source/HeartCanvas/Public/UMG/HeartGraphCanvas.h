@@ -284,6 +284,9 @@ public:
 	void ClearPopups();
 
 
+	/*---------------------------
+			CANVAS STATE
+	---------------------------*/
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnGraphViewChanged OnGraphViewChanged;
