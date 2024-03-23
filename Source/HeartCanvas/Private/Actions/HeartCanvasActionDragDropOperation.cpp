@@ -4,7 +4,6 @@
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
-#include "UI/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
@@ -39,10 +38,7 @@ bool UHeartWidgetInputBinding_DragDropOperation_Action::PassCondition(const UWid
 
 	if (IsValid(ActionClass))
 	{
-		if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(TestWidget))
-		{
-			Failed |= !ActionClass.GetDefaultObject()->CanExecuteOnWidget(HeartWidget);
-		}
+		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestWidget);
 	}
 
 	return !Failed;

@@ -22,10 +22,7 @@ bool UHeartGraphCanvasActionBinding::PassCondition(const UWidget* TestWidget) co
 
 	if (IsValid(ActionClass))
 	{
-		if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(TestWidget))
-		{
-			Failed |= !ActionClass.GetDefaultObject()->CanExecuteOnWidget(HeartWidget);
-		}
+		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestWidget);
 	}
 
 	return !Failed;

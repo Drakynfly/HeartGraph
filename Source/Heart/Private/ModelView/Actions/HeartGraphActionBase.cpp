@@ -2,8 +2,6 @@
 
 #include "ModelView/Actions/HeartGraphActionBase.h"
 
-#include "UI/HeartInputActivation.h"
-
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphActionBase)
 
 bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGraphActionBase> Class,

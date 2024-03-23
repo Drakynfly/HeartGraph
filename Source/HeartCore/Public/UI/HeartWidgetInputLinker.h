@@ -8,7 +8,7 @@
 #include "HeartDragDropOperation.h"
 #include "HeartInputTypes.h"
 #include "HeartWidgetInputLinkerRedirector.h"
-#include "HeartWidgetInputTrip.h"
+#include "Input/HeartInputTrip.h"
 #include "HeartWidgetInputLinker.generated.h"
 
 

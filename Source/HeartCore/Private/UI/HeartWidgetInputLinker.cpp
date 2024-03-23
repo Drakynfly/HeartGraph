@@ -5,7 +5,7 @@
 #include "Components/Widget.h"
 #include "HeartCorePrivate.h"
 
-#include "UI/HeartInputActivation.h"
+#include "Input/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
 #include "UI/HeartWidgetInputBindingAsset.h"
 #include "UI/HeartWidgetInputHandlerAsset.h"

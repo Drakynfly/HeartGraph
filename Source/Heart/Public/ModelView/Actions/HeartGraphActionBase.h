@@ -3,7 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
-#include "UI/HeartInputActivation.h"
+#include "Input/HeartInputActivation.h"
 
 #include "HeartGraphActionBase.generated.h"
 

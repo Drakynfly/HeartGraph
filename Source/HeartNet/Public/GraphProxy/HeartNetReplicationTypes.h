@@ -4,7 +4,7 @@
 
 #include "HeartReplicateNodeData.h"
 #include "Model/HeartGraphPinReference.h"
-#include "UI/HeartInputActivation.h"
+#include "Input/HeartInputActivation.h"
 #include "HeartNetReplicationTypes.generated.h"
 
 USTRUCT()

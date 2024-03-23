@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartWidgetInputTrip.h"
+#include "Input/HeartInputTrip.h"
 #include "HeartWidgetInputTrigger.generated.h"
 
 USTRUCT(BlueprintType)

@@ -2,7 +2,6 @@
 
 #include "Actions/HeartCanvasAction_Zoom.h"
 
-#include "UI/HeartInputActivation.h"
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
