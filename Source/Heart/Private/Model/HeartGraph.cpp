@@ -402,7 +402,6 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 		IsValid(Node))
 	{
 		OnNodeRemoved.Broadcast(Node);
-		Node->MarkAsGarbage();
 	}
 
 	return !!Removed;

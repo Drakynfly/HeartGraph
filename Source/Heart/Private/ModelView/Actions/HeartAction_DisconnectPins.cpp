@@ -13,7 +13,7 @@
 bool UHeartAction_DisconnectPins::CanExecute(const UObject* Object) const
 {
 	return Object->Implements<UHeartGraphPinInterface>() ||
-			Object->IsA<UHeartGraphNode>();
+			Object->Implements<UHeartGraphNodeInterface>();
 }
 
 void UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,

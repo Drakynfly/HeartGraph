@@ -13,15 +13,15 @@ bool UHeartGraphAction::Execute(const Heart::Action::FArguments& Arguments)
 	return Heart::Action::History::Log(this, Arguments,
 		[&]()
 		{
-			if (auto&& Graph = Cast<UHeartGraph>(Arguments.Target))
+			if (auto&& GraphInterface = Cast<IHeartGraphInterface>(Arguments.Target))
 			{
-				ExecuteOnGraph(Graph, Arguments.Activation, Arguments.Payload);
+				ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload);
 				return true;
 			}
 
-			if (auto&& Node = Cast<UHeartGraphNode>(Arguments.Target))
+			if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
 			{
-				ExecuteOnNode(Node, Arguments.Activation, Arguments.Payload);
+				ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload);
 				return true;
 			}
 
