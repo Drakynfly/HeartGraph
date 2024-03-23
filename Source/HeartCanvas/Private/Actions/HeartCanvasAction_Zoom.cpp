@@ -29,12 +29,14 @@ FEventReply UHeartCanvasAction_Zoom::ExecuteOnPin(UHeartGraphCanvasPin* CanvasPi
 
 void UHeartCanvasAction_Zoom::HandleAddZoom(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation)
 {
-	if (Activation.EventStruct.GetScriptStruct() == FPointerEvent::StaticStruct())
+	if (const TOptional<FPointerEvent> PointerEvent = Activation.As<FPointerEvent>();
+		PointerEvent.IsSet())
 	{
-		CanvasGraph->AddToZoom(Activation.AsPointerEvent().GetWheelDelta(), true);
+		CanvasGraph->AddToZoom(PointerEvent.GetValue().GetWheelDelta(), true);
 	}
-	else if (Activation.EventStruct.GetScriptStruct() == FHeartManualEvent::StaticStruct())
+	else if (const TOptional<FHeartManualEvent> ManualEvent = Activation.As<FHeartManualEvent>();
+			 ManualEvent.IsSet())
 	{
-		CanvasGraph->AddToZoom(Activation.AsManualEvent().EventValue, true);
+		CanvasGraph->AddToZoom(ManualEvent.GetValue().EventValue, true);
 	}
 }

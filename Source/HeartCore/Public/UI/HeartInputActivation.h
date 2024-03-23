@@ -26,6 +26,16 @@ struct FHeartActionIsRedo
 	GENERATED_BODY()
 };
 
+template <typename T>
+struct TIsHeartInputActivationType
+{
+	static constexpr bool Value = false;
+};
+template <> struct TIsHeartInputActivationType<FHeartManualEvent> { static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FKeyEvent> { static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FPointerEvent> { static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FHeartActionIsRedo> { static constexpr bool Value = true; };
+
 /**
  *
  */
@@ -37,53 +47,36 @@ struct HEARTCORE_API FHeartInputActivation
 	FHeartInputActivation()
 	  : EventStruct(nullptr) {}
 
-	FHeartInputActivation(const FHeartManualEvent& ManualEvent)
+	template <
+		typename T
+		UE_REQUIRES(TIsHeartInputActivationType<T>::Value)
+	>
+	FHeartInputActivation(const T& Type)
 	{
-		EventStruct.InitializeAs<FHeartManualEvent>(ManualEvent);
+		EventStruct.InitializeAs<T>(Type);
 	}
 
-	FHeartInputActivation(const FKeyEvent& KeyEvent)
+	template <
+		typename T
+		UE_REQUIRES(TIsHeartInputActivationType<T>::Value)
+	>
+	TOptional<T> As() const
 	{
-		EventStruct.InitializeAs<FKeyEvent>(KeyEvent);
-	}
-
-	FHeartInputActivation(const FPointerEvent& PointerEvent)
-	{
-		EventStruct.InitializeAs<FPointerEvent>(PointerEvent);
-	}
-
-	FHeartInputActivation(const FHeartActionIsRedo&)
-	{
-		EventStruct.InitializeAs<FHeartActionIsRedo>();
-	}
-
-	FHeartManualEvent AsManualEvent() const
-	{
-		if (EventStruct.GetScriptStruct() == FHeartManualEvent::StaticStruct())
+		if (EventStruct.GetScriptStruct() == TBaseStructure<T>::Get())
 		{
-			return EventStruct.Get<FHeartManualEvent>();
+			return EventStruct.Get<T>();
 		}
-		return FHeartManualEvent();
+		return {};
 	}
 
-	FKeyEvent AsKeyEvent() const
+	bool IsRedoAction() const
 	{
-		if (EventStruct.GetScriptStruct() == FKeyEvent::StaticStruct())
-		{
-			return EventStruct.Get<FKeyEvent>();
-		}
-		return FKeyEvent();
+		return EventStruct.GetScriptStruct() == FHeartActionIsRedo::StaticStruct();
 	}
 
-	FPointerEvent AsPointerEvent() const
-	{
-		if (EventStruct.GetScriptStruct() == FPointerEvent::StaticStruct())
-		{
-			return EventStruct.Get<FPointerEvent>();
-		}
-		return FPointerEvent();
-	}
+	const UScriptStruct* GetScriptStruct() const { return EventStruct.GetScriptStruct(); }
 
+private:
 	UPROPERTY()
 	FInstancedStruct EventStruct;
 };
