@@ -7,6 +7,8 @@
 #include "Model/HeartGraphNodeInterface.h"
 #include "Model/HeartGraphPinInterface.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartActionHistory)
+
 namespace Heart::Action::History
 {
 	namespace Impl

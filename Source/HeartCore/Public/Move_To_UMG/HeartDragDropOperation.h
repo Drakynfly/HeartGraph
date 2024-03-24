@@ -5,8 +5,6 @@
 #include "Blueprint/DragDropOperation.h"
 #include "HeartDragDropOperation.generated.h"
 
-class UHeartGraphCanvas;
-
 /**
  * A tickable drag drop operation
  */

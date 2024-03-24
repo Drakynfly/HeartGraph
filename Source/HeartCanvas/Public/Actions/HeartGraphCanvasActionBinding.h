@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "UI/HeartWidgetInputBinding_TriggerBase.h"
+#include "Move_To_UMG/HeartUMGInputBinding.h"
 #include "HeartGraphCanvasActionBinding.generated.h"
 
 class UHeartGraphCanvasAction;
 
 UCLASS(meta = (DisplayName = "Event - Canvas Action"))
-class HEARTCANVAS_API UHeartGraphCanvasActionBinding : public UHeartWidgetInputBinding_TriggerBase
+class HEARTCANVAS_API UHeartGraphCanvasActionBinding : public UHeartUMGInputBinding_Handler
 {
 	GENERATED_BODY()
 

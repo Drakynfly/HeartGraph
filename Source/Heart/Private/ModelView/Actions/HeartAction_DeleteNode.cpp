@@ -6,6 +6,8 @@
 #include "Model/HeartGraphNodeInterface.h"
 #include "ModelView/HeartActionHistory.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_DeleteNode)
+
 bool UHeartAction_DeleteNode::CanExecute(const UObject* Object) const
 {
 	if (Object->Implements<UHeartGraphNodeInterface>())

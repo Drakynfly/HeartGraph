@@ -3,6 +3,7 @@
 #include "UMG/HeartGraphWidgetBase.h"
 #include "HeartCanvasPaletteCategory.h"
 #include "Components/PanelWidget.h"
+#include "Move_To_UMG/HeartUMGInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphWidgetBase)
 
@@ -13,7 +14,7 @@ UHeartGraphWidgetBase::UHeartGraphWidgetBase(const FObjectInitializer& ObjectIni
 	SetIsFocusable(true);
 }
 
-HEART_WIDGET_INPUT_LINKER_BODY(UHeartGraphWidgetBase)
+HEART_UMG_INPUT_LINKER_BODY(UHeartGraphWidgetBase)
 
 #if WITH_EDITOR
 const FText UHeartGraphWidgetBase::GetPaletteCategory()
@@ -25,5 +26,5 @@ const FText UHeartGraphWidgetBase::GetPaletteCategory()
 UHeartWidgetInputLinker* UHeartGraphWidgetBase::ResolveLinker_Implementation() const
 {
 	// Assume that something up our parent chain will be able to handle this.
-	return Heart::Input::FindLinkerForWidget(GetTypedOuter<UWidget>());
+	return Heart::Input::TLinkerType<UWidget>::FindLinker(GetTypedOuter<UWidget>());
 }

@@ -32,7 +32,7 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 	}
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation_Action::PassCondition(const UWidget* TestWidget) const
+bool UHeartUMGInputBinding_DragDropOperation_Action::PassCondition(const UWidget* TestWidget) const
 {
 	bool Failed = !Super::PassCondition(TestWidget);
 
@@ -44,7 +44,7 @@ bool UHeartWidgetInputBinding_DragDropOperation_Action::PassCondition(const UWid
 	return !Failed;
 }
 
-UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const
+UHeartDragDropOperation* UHeartUMGInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const
 {
 	auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
 

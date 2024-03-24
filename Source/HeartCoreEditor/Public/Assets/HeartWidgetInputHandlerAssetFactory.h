@@ -21,5 +21,5 @@ public:
 
 	// The class of the created asset to create
 	UPROPERTY(EditAnywhere, Category = "HeartWidgetInputHandlerAssetFactory")
-	TSubclassOf<class UHeartWidgetInputHandlerAsset> AssetClass;
+	TSubclassOf<class UHeartInputHandlerAssetBase> AssetClass;
 };

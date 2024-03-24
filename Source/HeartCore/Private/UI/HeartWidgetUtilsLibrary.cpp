@@ -1,8 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "UI/HeartWidgetUtilsLibrary.h"
-#include "UI/HeartWidgetInputBindingAsset.h"
-#include "UI/HeartWidgetInputLinker.h"
+#include "Input/HeartInputBindingAsset.h"
+#include "Move_To_UMG/HeartUMGInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetUtilsLibrary)
 
@@ -156,7 +156,7 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidg
 {
 	TArray<FHeartManualInputQueryResult> ActionList;
 
-	auto&& Linker =  Heart::Input::FindLinkerForWidget(Widget);
+	auto&& Linker =  Heart::Input::TLinkerType<UWidget>::FindLinker(Widget);
 
 	if (IsValid(Linker))
 	{
@@ -168,10 +168,10 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidg
 
 UHeartWidgetInputLinker* UHeartWidgetUtilsLibrary::GetWidgetInputLinker(UWidget* Widget)
 {
-	return Heart::Input::FindLinkerForWidget(Widget);
+	return Heart::Input::TLinkerType<UWidget>::FindLinker(Widget);
 }
 
-bool UHeartWidgetUtilsLibrary::AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset)
+bool UHeartWidgetUtilsLibrary::AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset)
 {
 	if (!IsValid(Linker) || IsValid(BindingAsset))
 	{
@@ -182,7 +182,7 @@ bool UHeartWidgetUtilsLibrary::AddInputBindingAssetToLinker(UHeartWidgetInputLin
 	return true;
 }
 
-bool UHeartWidgetUtilsLibrary::RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset)
+bool UHeartWidgetUtilsLibrary::RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset)
 {
 	if (!IsValid(Linker) || IsValid(BindingAsset))
 	{

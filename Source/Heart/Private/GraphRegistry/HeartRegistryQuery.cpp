@@ -5,6 +5,8 @@
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Algo/AllOf.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartRegistryQuery)
+
 namespace Heart::Query
 {
 	FRegistryQueryResult::FRegistryQueryResult(const UHeartGraphNodeRegistry* Registry)

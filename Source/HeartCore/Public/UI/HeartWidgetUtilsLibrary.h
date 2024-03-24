@@ -8,7 +8,7 @@
 
 class UHeartWidgetInputLinker;
 struct FHeartInputActivation;
-class UHeartWidgetInputBindingAsset;
+class UHeartInputBindingAsset;
 
 namespace Heart::Input
 {
@@ -119,8 +119,8 @@ public:
 	//static FHeartWidgetInputBinding MakeWidgetInputBinding(UHeartWidgetInputHandlerAsset* InputHandler, UHeartWidgetInputTrigger* Trigger);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static bool AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset);
+	static bool AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static bool RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartWidgetInputBindingAsset* BindingAsset);
+	static bool RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset);
 };

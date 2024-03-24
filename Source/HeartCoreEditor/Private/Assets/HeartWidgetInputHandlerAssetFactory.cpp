@@ -3,12 +3,13 @@
 #include "Assets/HeartWidgetInputHandlerAssetFactory.h"
 #include "Assets/HeartDefaultClassFilter.h"
 
+#include "Input/HeartInputHandlerAssetBase.h"
+
 #include "ClassViewerModule.h"
 #include "Editor.h"
 #include "Misc/MessageDialog.h"
 #include "Modules/ModuleManager.h"
 #include "SlateOptMacros.h"
-#include "UI/HeartWidgetInputHandlerAsset.h"
 #include "Widgets/Input/SButton.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/Layout/SBox.h"
@@ -36,7 +37,7 @@ public:
 	void Construct(const FArguments& InArgs)
 	{
 		bOkClicked = false;
-		SelectedClass = UHeartWidgetInputHandlerAsset::StaticClass();
+		SelectedClass = UHeartInputHandlerAssetBase::StaticClass();
 
 		ChildSlot
 		[
@@ -128,7 +129,7 @@ private:
 
 		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShared<FHeartDefaultClassFilter>();
 
-		Filter->AllowedChildrenOfClasses.Add(UHeartWidgetInputHandlerAsset::StaticClass());
+		Filter->AllowedChildrenOfClasses.Add(UHeartInputHandlerAssetBase::StaticClass());
 		Options.ClassFilters = {Filter.ToSharedRef()};
 
 		ParentClassContainer->ClearChildren();
@@ -209,7 +210,7 @@ END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 UHeartWidgetInputHandlerAssetFactory::UHeartWidgetInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	SupportedClass = UHeartWidgetInputHandlerAsset::StaticClass();
+	SupportedClass = UHeartInputHandlerAssetBase::StaticClass();
 
 	bCreateNew = true;
 	bEditAfterNew = true;
@@ -223,9 +224,9 @@ bool UHeartWidgetInputHandlerAssetFactory::ConfigureProperties()
 
 UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	check(Class->IsChildOf(UHeartWidgetInputHandlerAsset::StaticClass()));
+	check(Class->IsChildOf(UHeartInputHandlerAssetBase::StaticClass()));
 
-	if (AssetClass == nullptr || !AssetClass->IsChildOf(UHeartWidgetInputHandlerAsset::StaticClass()))
+	if (AssetClass == nullptr || !AssetClass->IsChildOf(UHeartInputHandlerAssetBase::StaticClass()))
 	{
 		FFormatNamedArguments Args;
 		Args.Add(TEXT("ClassName"), AssetClass ? FText::FromString(AssetClass->GetName()) : LOCTEXT("Null", "(null)"));
@@ -233,7 +234,7 @@ UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, U
 		return nullptr;
 	}
 
-	UHeartWidgetInputHandlerAsset* NewAsset = NewObject<UHeartWidgetInputHandlerAsset>(InParent, AssetClass, Name, Flags);
+	UHeartInputHandlerAssetBase* NewAsset = NewObject<UHeartInputHandlerAssetBase>(InParent, AssetClass, Name, Flags);
 
 	return NewAsset;
 }

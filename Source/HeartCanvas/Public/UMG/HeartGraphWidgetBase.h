@@ -18,7 +18,7 @@ class HEARTCANVAS_API UHeartGraphWidgetBase : public UUserWidget, public IHeartW
 public:
 	UHeartGraphWidgetBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	HEART_WIDGET_INPUT_LINKER_HEADER()
+	HEART_UMG_INPUT_LINKER_HEADER()
 
 	/** UWidget */
 #if WITH_EDITOR

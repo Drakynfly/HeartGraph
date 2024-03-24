@@ -1,10 +1,10 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "UI/HeartWidgetInputTrigger.h"
+#include "Input/HeartInputTrigger.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputTrigger)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputTrigger)
 
-TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyDown::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDown::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;
 
@@ -18,7 +18,7 @@ TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyDown::CreateTrips()
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyDownMod::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDownMod::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;
 
@@ -33,7 +33,7 @@ TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyDownMod::CreateTrip
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyUp::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUp::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;
 
@@ -47,7 +47,7 @@ TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_KeyUp::CreateTrips() c
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartWidgetInputTrigger_Manual::CreateTrips() const
+TArray<Heart::Input::FInputTrip> FHeartInputTrigger_Manual::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;
 

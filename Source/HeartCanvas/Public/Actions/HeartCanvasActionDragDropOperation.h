@@ -3,7 +3,7 @@
 #pragma once
 
 #include "HeartCanvasDragDropOperation.h"
-#include "UI/HeartWidgetInputBinding_DragDropOperationBase.h"
+#include "Move_To_UMG/HeartUMGInputBinding.h"
 #include "HeartCanvasActionDragDropOperation.generated.h"
 
 class UHeartGraphCanvasAction;
@@ -28,7 +28,7 @@ public:
  *
  */
 UCLASS(meta = (DisplayName = "Drag Drop Action"))
-class HEARTCANVAS_API UHeartWidgetInputBinding_DragDropOperation_Action : public UHeartWidgetInputBinding_DragDropOperationBase
+class HEARTCANVAS_API UHeartUMGInputBinding_DragDropOperation_Action : public UHeartUMGInputBinding_DragDropOperationBase
 {
 	GENERATED_BODY()
 

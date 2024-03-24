@@ -2,7 +2,8 @@
 
 #include "Assets/AssetDefinition_HeartWidgetInputHandlerAsset.h"
 
-#include "UI/HeartWidgetInputHandlerAsset.h"
+#include "Input/HeartInputHandlerAssetBase.h"
+
 #include "HeartEditorShared.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(AssetDefinition_HeartWidgetInputHandlerAsset)
@@ -21,7 +22,7 @@ FLinearColor UAssetDefinition_HeartWidgetInputHandlerAsset::GetAssetColor() cons
 
 TSoftClassPtr<> UAssetDefinition_HeartWidgetInputHandlerAsset::GetAssetClass() const
 {
-	return UHeartWidgetInputHandlerAsset::StaticClass();
+	return UHeartInputHandlerAssetBase::StaticClass();
 }
 
 TConstArrayView<FAssetCategoryPath> UAssetDefinition_HeartWidgetInputHandlerAsset::GetAssetCategories() const

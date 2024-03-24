@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "HeartWidgetInputBinding_TriggerBase.h"
-#include "HeartWidgetInputHandlerScript.generated.h"
+#include "Move_To_UMG/HeartUMGInputBinding.h"
+#include "HeartCanvasInputHandler_Script.generated.h"
 
 struct FEventReply;
 
@@ -11,7 +11,7 @@ struct FEventReply;
  *
  */
 UCLASS(Blueprintable, Abstract)
-class HEARTCORE_API UHeartWidgetInputHandlerScript : public UHeartWidgetInputBinding_TriggerBase
+class HEARTCANVAS_API UHeartCanvasInputHandler_Script : public UHeartUMGInputBinding_Handler
 {
 	GENERATED_BODY()
 

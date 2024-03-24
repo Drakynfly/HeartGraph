@@ -2,21 +2,22 @@
 
 #pragma once
 
+#include "InputCoreTypes.h"
 #include "Input/HeartInputTrip.h"
-#include "HeartWidgetInputTrigger.generated.h"
+#include "HeartInputTrigger.generated.h"
 
 USTRUCT(BlueprintType)
-struct HEARTCORE_API FHeartWidgetInputTrigger
+struct HEARTCORE_API FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual ~FHeartWidgetInputTrigger() {}
+	virtual ~FHeartInputTrigger() {}
 
 	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const { return TArray<Heart::Input::FInputTrip>(); }
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Down"))
-struct FHeartWidgetInputTrigger_KeyDown : public FHeartWidgetInputTrigger
+struct FHeartInputTrigger_KeyDown : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
@@ -48,7 +49,7 @@ struct FHeartKeyAndModifiers
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Down (with modifiers)"))
-struct FHeartWidgetInputTrigger_KeyDownMod : public FHeartWidgetInputTrigger
+struct FHeartInputTrigger_KeyDownMod : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
@@ -59,7 +60,7 @@ struct FHeartWidgetInputTrigger_KeyDownMod : public FHeartWidgetInputTrigger
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Up"))
-struct FHeartWidgetInputTrigger_KeyUp : public FHeartWidgetInputTrigger
+struct FHeartInputTrigger_KeyUp : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
@@ -70,7 +71,7 @@ struct FHeartWidgetInputTrigger_KeyUp : public FHeartWidgetInputTrigger
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Manual"))
-struct FHeartWidgetInputTrigger_Manual : public FHeartWidgetInputTrigger
+struct FHeartInputTrigger_Manual : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
