@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "..\Input\HeartInputLinkerBase.h"
+#include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartInputTrip.h"
 #include "Input/HeartInputTypes.h"
 #include "Input/HeartInputActivation.h"

@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartInputTrip.h"
-#include "..\Input\HeartInputLinkerBase.h"
 #include "HeartSlateInputLinker.generated.h"
 
 struct FHeartBoundInput;
