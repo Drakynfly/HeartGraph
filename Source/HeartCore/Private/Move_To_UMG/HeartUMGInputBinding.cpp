@@ -20,21 +20,12 @@ bool UHeartUMGInputBinding_Handler::Bind(UHeartInputLinkerBase* Linker, const TA
 {
 	using namespace Heart::Input;
 
-	FConditionalCallback Callback;
-
-	auto&& DescDelegate = MakeShared<TLinkerType<UWidget>::FDescriptionDelegate>();
-	DescDelegate->Delegate.BindDelegate(this, &ThisClass::GetDescription);
-	Callback.Description = DescDelegate;
-
-	auto&& ConditionDelegate = MakeShared<TLinkerType<UWidget>::FConditionDelegate>();
-	ConditionDelegate->Delegate.BindDelegate(this, &ThisClass::PassCondition);
-	Callback.Condition = ConditionDelegate;
-
-	auto&& HandlerDeledage = MakeShared<TLinkerType<UWidget>::FHandlerDelegate>();
-	HandlerDeledage->Delegate.BindDelegate(this, &ThisClass::TriggerEvent);
-	Callback.Handler = HandlerDeledage;
-
-	Callback.Layer = HandleInput ? Event : Listener;
+	const FConditionalCallback Callback{
+		MakeShared<TLinkerType<UWidget>::FDescriptionDelegate>(this, &ThisClass::GetDescription),
+		MakeShared<TLinkerType<UWidget>::FConditionDelegate>(this, &ThisClass::PassCondition),
+		HandleInput ? Event : Listener,
+		MakeShared<TLinkerType<UWidget>::FHandlerDelegate>(this, &ThisClass::TriggerEvent)
+	};
 
 	for (auto&& Trigger : InTriggers)
 	{
@@ -86,17 +77,12 @@ bool UHeartUMGInputBinding_DragDropOperationBase::Bind(UHeartInputLinkerBase* Li
 		return false;
 	}
 
-	FConditionalCallback_DDO Callback;
-
-	auto&& ConditionDelegate = MakeShared<TLinkerType<UWidget>::FConditionDelegate>();
-	ConditionDelegate->Delegate.BindDelegate(this, &ThisClass::PassCondition);
-	Callback.Condition = ConditionDelegate;
-
-	auto&& DDOCreateDelegate = MakeShared<TLinkerType<UWidget>::FCreateDDODelegate>();
-	DDOCreateDelegate->Delegate.BindDelegate(this, &ThisClass::BeginDDO);
-	Callback.Handler = DDOCreateDelegate;
-
-	Callback.Layer = Event;
+	const FConditionalCallback_DDO Callback {
+		MakeShared<TLinkerType<UWidget>::FDescriptionDelegate>(this, &ThisClass::GetDescription),
+		MakeShared<TLinkerType<UWidget>::FConditionDelegate>(this, &ThisClass::PassCondition),
+		Event,
+		MakeShared<TLinkerType<UWidget>::FCreateDDODelegate>(this, &ThisClass::BeginDDO)
+	};
 
 	for (auto&& Trigger : InTriggers)
 	{

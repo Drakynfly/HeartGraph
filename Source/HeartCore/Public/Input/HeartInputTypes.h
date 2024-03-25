@@ -83,7 +83,16 @@ namespace Heart::Input
 	template <typename TSignature>
 	struct TSpecifiedDelegate : FDelegateBase
 	{
-		TUnifiedDelegate<TSignature> Delegate;
+		using FSignature = TSignature;
+
+		TSpecifiedDelegate() {}
+
+		template<typename... TArgs>
+		TSpecifiedDelegate(TArgs... Args)
+		{
+			Delegate.BindDelegate(Args...);
+		}
+
 
 		bool IsBound()
 		{
@@ -95,6 +104,9 @@ namespace Heart::Input
 		{
 			return Delegate.Execute(Args...);
 		}
+
+	private:
+		TUnifiedDelegate<FSignature> Delegate;
 	};
 
 	template <typename T>
@@ -112,16 +124,14 @@ namespace Heart::Input
 
 	struct FConditionalInputBase
 	{
-		// @todo make these TUniquePtrs
-
 		// Callback to retrieve a text description of the action
-		TSharedPtr<FDelegateBase> Description;
+		const TSharedPtr<FDelegateBase> Description;
 
 		// Callback to determine if the context of the trigger is valid for executing the action
-		TSharedPtr<FDelegateBase> Condition;
+		const TSharedPtr<FDelegateBase> Condition;
 
 		// Input layers determine the priority of callbacks, and whether they Handle the input callstack
-		EHeartInputLayer Layer = None;
+		const EHeartInputLayer Layer = None;
 
 		friend bool operator<(const FConditionalInputBase& A, const FConditionalInputBase& B)
 		{
@@ -133,12 +143,12 @@ namespace Heart::Input
 	struct FConditionalCallback : FConditionalInputBase
 	{
 		// Callback to execute the event
-		TSharedPtr<FDelegateBase> Handler;
+		const TSharedPtr<FDelegateBase> Handler;
 	};
 
 	struct FConditionalCallback_DDO : FConditionalInputBase
 	{
 		// Callback to begin a DDO
-		TSharedPtr<FDelegateBase> Handler;
+		const TSharedPtr<FDelegateBase> Handler;
 	};
 }
