@@ -8,7 +8,6 @@
 void FHeartWidgetInputBindingContainer::SetupLinker(UWidget* InOuter)
 {
 	check(InOuter);
-	Outer = InOuter;
 
 	// Unbind everything from the current linker
 	if (IsValid(Linker))

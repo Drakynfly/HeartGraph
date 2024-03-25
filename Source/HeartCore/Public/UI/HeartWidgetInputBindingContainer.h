@@ -31,7 +31,4 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (NoResetToDefault), Category = "InputBindingContainer")
 	TObjectPtr<UHeartWidgetInputLinker> Linker = nullptr;
-
-	UPROPERTY()
-	TWeakObjectPtr<UWidget> Outer;
 };
