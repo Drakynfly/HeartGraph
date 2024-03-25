@@ -1,12 +1,12 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Move_To_UMG/HeartUMGInputBinding_DragDropOperation.h"
+#include "Move_To_UMG/HeartCanvasInputHandler_HeartDDO.h"
 #include "Move_To_UMG/HeartDragDropOperation.h"
 #include "Blueprint/UserWidget.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartUMGInputBinding_DragDropOperation)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasInputHandler_HeartDDO)
 
-bool UHeartUMGInputBinding_DragDropOperation::PassCondition(const UWidget* TestWidget) const
+bool UHeartCanvasInputHandler_HeartDDO::PassCondition(const UWidget* TestWidget) const
 {
 	bool Failed = !Super::PassCondition(TestWidget);
 
@@ -15,7 +15,7 @@ bool UHeartUMGInputBinding_DragDropOperation::PassCondition(const UWidget* TestW
 	return !Failed;
 }
 
-UHeartDragDropOperation* UHeartUMGInputBinding_DragDropOperation::BeginDDO(UWidget* Widget) const
+UHeartDragDropOperation* UHeartCanvasInputHandler_HeartDDO::BeginDDO(UWidget* Widget) const
 {
 	auto&& NewDDO = NewObject<UHeartDragDropOperation>(GetTransientPackage(), OperationClass);
 

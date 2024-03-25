@@ -1,12 +1,14 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Move_To_UMG/HeartUMGInputLinker.h"
+#include "Components/Widget.h"
 #include "Move_To_UMG/HeartDragDropOperation.h"
 
 #include "Input/HeartInputActivation.h"
 #include "Input/HeartInputTypes.h"
 
 #include "UI/HeartUMGContextObject.h"
+#include "UI/HeartWidgetInputLinkerRedirector.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartUMGInputLinker)
 
@@ -59,13 +61,8 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseWheel)
 
-	FInputTrip MouseWheelAxisTrip;
-	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis;
-	MouseWheelAxisTrip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	MouseWheelAxisTrip.Type = Press; // Mouse wheel events must always use the 'Press' type
-
 	// @todo what the heck went on here? does PointerEvent have a different/null EffectingButton?
-	const FHeartInputActivation Activation = FPointerEvent(
+	const FPointerEvent HackedPointerEvent = FPointerEvent(
 		PointerEvent.GetUserIndex(),
 		PointerEvent.GetPointerIndex(),
 		PointerEvent.GetScreenSpacePosition(),
@@ -75,7 +72,8 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 		PointerEvent.GetWheelDelta(),
 		PointerEvent.GetModifierKeys());
 
-	if (auto Result = TryCallbacks(MouseWheelAxisTrip, Widget, Activation);
+	// Mouse wheel events must always use the 'Press' type
+	if (auto Result = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -88,10 +86,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonDown)
 
-	FInputTrip Trip;
-	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	Trip.Type = Press;
+	const FInputTrip Trip(PointerEvent, Press);
 
 	if (auto Result = TryCallbacks(Trip, Widget, PointerEvent);
 		Result.IsSet())
@@ -149,12 +144,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonUp)
 
-	FInputTrip Trip;
-	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	Trip.Type = Release;
-
-	if (auto Result = TryCallbacks(Trip, Widget, PointerEvent);
+	if (auto Result = TryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -167,12 +157,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyDown)
 
-	FInputTrip Trip;
-	Trip.Key = KeyEvent.GetKey();
-	Trip.ModifierMask = EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown());
-	Trip.Type = Press;
-
-	if (auto Result = TryCallbacks(Trip, Widget, KeyEvent);
+	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -185,12 +170,7 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyUp)
 
-	FInputTrip Trip;
-	Trip.Key = KeyEvent.GetKey();
-	Trip.ModifierMask = EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown());
-	Trip.Type = Release;
-
-	if (auto Result = TryCallbacks(Trip, Widget, KeyEvent);
+	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -203,13 +183,8 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnDragDetected)
 
-	FInputTrip Trip;
-	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	Trip.Type = Press;
-
 	TArray<const FConditionalCallback_DDO*> DropDropTriggerArray;
-	DragDropTriggers.MultiFindPointer(Trip, DropDropTriggerArray);
+	DragDropTriggers.MultiFindPointer(FInputTrip(PointerEvent, Press), DropDropTriggerArray);
 	DropDropTriggerArray.Sort();
 	for (const FConditionalCallback_DDO*& CallbackPtr : DropDropTriggerArray)
 	{
@@ -307,11 +282,7 @@ FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeom
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
 
-	FInputTrip Trip;
-	Trip.Type = Manual;
-	Trip.CustomKey = Key;
-
-	if (auto Result = TryCallbacks(Trip, Widget, Activation);
+	if (auto Result = TryCallbacks(FInputTrip(Key), Widget, Activation);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -376,4 +347,26 @@ bool UHeartWidgetInputLinker::TriggerManualInput(UWidget* Widget, const FName Ke
 	if (!IsValid(Widget) || Key.IsNone()) return false;
 
 	return HandleManualInput(Widget, Key, Activation).IsEventHandled();
+}
+
+namespace Heart::Input
+{
+	UHeartWidgetInputLinker* TLinkerType<UWidget>::FindLinker(const UWidget* Widget)
+	{
+		if (!ensure(IsValid(Widget))) return nullptr;
+
+		for (auto&& Test = Widget; IsValid(Test); Test = Test->GetTypedOuter<UWidget>())
+		{
+			if (Test->Implements<UHeartWidgetInputLinkerRedirector>())
+			{
+				// In some cases, a widget may implement the interface but have linking disabled, and return nullptr
+				if (UHeartWidgetInputLinker* Linker = IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test))
+				{
+					return Linker;
+				}
+			}
+		}
+
+		return nullptr;
+	}
 }

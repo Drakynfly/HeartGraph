@@ -36,16 +36,16 @@ struct FHeartKeyAndModifiers
 	FKey Key;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
-	uint8 WithShift : 1;
+	bool WithShift;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
-	uint8 WithControl : 1;
+	bool WithControl;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
-	uint8 WithAlt : 1;
+	bool WithAlt;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
-	uint8 WithCommand : 1;
+	bool WithCommand;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Down (with modifiers)"))

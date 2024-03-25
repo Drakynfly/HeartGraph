@@ -3,14 +3,12 @@
 #pragma once
 
 #include "Input/HeartInputLinkerBase.h"
-#include "Input/HeartInputTrip.h"
 #include "HeartSlateInputLinker.generated.h"
 
-struct FHeartBoundInput;
 struct FHeartManualEvent;
 
 UCLASS()
-class HEARTCORE_API UHeartSlateInputLinker : public UHeartInputLinkerBase
+class HEARTCANVAS_API UHeartSlateInputLinker : public UHeartInputLinkerBase
 {
 	GENERATED_BODY()
 
@@ -44,19 +42,10 @@ namespace Heart::Input
 
 		using FDescriptionDelegate = TSpecifiedDelegate<TDelegate<FText(const TSharedRef<SWidget>&)>>;
 		using FConditionDelegate = TSpecifiedDelegate<TDelegate<bool(const TSharedRef<SWidget>&)>>;
-		using FHandlerDelegate = TSpecifiedDelegate<TDelegate<FReply(const TSharedRef<SWidget>&, const FHeartInputActivation&)>>;
+		using FHandlerDelegate = TSpecifiedDelegate<TDelegate<FReply(TSharedRef<SWidget>&, const FHeartInputActivation&)>>;
 		// DDO handler
 
-		static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget)
-		{
-			for (TSharedPtr<SWidget> Test = Widget; Test.IsValid(); Test = Test->GetParentWidget())
-			{
-				// @todo
-				unimplemented();
-			}
-
-			return nullptr;
-		}
+		HEARTCANVAS_API static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget);
 	};
 }
 

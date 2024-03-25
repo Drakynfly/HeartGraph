@@ -10,7 +10,6 @@ void FHeartCoreModule::StartupModule()
 
 void FHeartCoreModule::ShutdownModule()
 {
-
 }
 
 #undef LOCTEXT_NAMESPACE

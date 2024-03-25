@@ -4,6 +4,7 @@
 #include "HeartCanvasPaletteCategory.h"
 #include "Components/PanelWidget.h"
 #include "Move_To_UMG/HeartUMGInputLinker.h"
+#include "Move_To_UMG/HeartDragDropOperation.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphWidgetBase)
 

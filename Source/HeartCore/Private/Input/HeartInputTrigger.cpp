@@ -10,9 +10,7 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDown::CreateTrips() const
 
 	for (const FKey& TripKey : Keys)
 	{
-		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
-		Trip.Key = TripKey;
-		Trip.Type = Heart::Input::Press;
+		Trips.Emplace(TripKey, false, false, false, false, Heart::Input::Press);
 	}
 
 	return Trips;
@@ -24,10 +22,7 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDownMod::CreateTrips() co
 
 	for (const auto& TripKey : Keys)
 	{
-		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
-		Trip.Key = TripKey.Key;
-		Trip.ModifierMask = EModifierKey::FromBools(TripKey.WithControl, TripKey.WithAlt, TripKey.WithShift, TripKey.WithCommand);
-		Trip.Type = Heart::Input::Press;
+		Trips.Emplace(TripKey.Key, TripKey.WithControl, TripKey.WithAlt, TripKey.WithShift, TripKey.WithCommand, Heart::Input::Press);
 	}
 
 	return Trips;
@@ -39,9 +34,7 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUp::CreateTrips() const
 
 	for (const FKey& TripKey : Keys)
 	{
-		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
-		Trip.Key = TripKey;
-		Trip.Type = Heart::Input::Release;
+		Trips.Emplace(TripKey, false, false, false, false, Heart::Input::Release);
 	}
 
 	return Trips;
@@ -51,11 +44,9 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_Manual::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;
 
-	for (const FName Key : Keys)
+	for (const FName TripKey : Keys)
 	{
-		Heart::Input::FInputTrip& Trip = Trips.AddDefaulted_GetRef();
-		Trip.Type = Heart::Input::Manual;
-		Trip.CustomKey = Key;
+		Trips.Emplace(TripKey);
 	}
 
 	return Trips;

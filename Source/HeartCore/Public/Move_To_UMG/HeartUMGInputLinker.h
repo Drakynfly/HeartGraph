@@ -3,17 +3,12 @@
 #pragma once
 
 #include "Input/HeartInputLinkerBase.h"
-#include "Input/HeartInputTrip.h"
-#include "Input/HeartInputTypes.h"
-#include "Input/HeartInputActivation.h"
-
-#include "UI/HeartWidgetInputLinkerRedirector.h"
-#include "Move_To_UMG/HeartDragDropOperation.h"
-
-#include "Components/Widget.h"
 
 #include "HeartUMGInputLinker.generated.h"
 
+class UWidget;
+class UDragDropOperation;
+class UHeartDragDropOperation;
 
 /**
  * Binds to UWidgets and externalizes input functions. This is used to set the DefaultLinkerClass in a
@@ -75,24 +70,7 @@ namespace Heart::Input
 		using FHandlerDelegate = TSpecifiedDelegate<TDelegate<FReply(UWidget*, const FHeartInputActivation&)>>;
 		using FCreateDDODelegate = TSpecifiedDelegate<TDelegate<UHeartDragDropOperation*(UWidget*)>>;
 
-		static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget)
-		{
-			if (!ensure(IsValid(Widget))) return nullptr;
-
-			for (auto&& Test = Widget; IsValid(Test); Test = Test->GetTypedOuter<UWidget>())
-			{
-				if (Test->Implements<UHeartWidgetInputLinkerRedirector>())
-				{
-					// In some cases, a widget may implement the interface but have linking disabled, and return nullptr
-					if (UHeartWidgetInputLinker* Linker = IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test))
-					{
-						return Linker;
-					}
-				}
-			}
-
-			return nullptr;
-		}
+		HEARTCORE_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
 	};
 }
 

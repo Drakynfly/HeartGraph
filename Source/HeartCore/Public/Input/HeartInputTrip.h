@@ -16,10 +16,33 @@ namespace Heart::Input
 
 	struct FInputTrip
 	{
-		ETripType Type = Unknown;
-		FKey Key = EKeys::Invalid;
-		uint8 ModifierMask = 0;
-		FName CustomKey = NAME_None;
+		FInputTrip(const FKey& Key, const bool IsControlDown, const bool IsAltDown, const bool IsShiftDown, const bool IsCommandDown, const ETripType Type)
+		  : Type(Type),
+			Key(Key),
+			ModifierMask(EModifierKey::FromBools(IsControlDown, IsAltDown, IsShiftDown, IsCommandDown))
+		{}
+
+		FInputTrip(const FKeyEvent& KeyEvent, const ETripType Type)
+		  : Type(Type),
+			Key(KeyEvent.GetKey()),
+			ModifierMask(EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown()))
+		{}
+
+		FInputTrip(const FPointerEvent& PointerEvent, const ETripType Type)
+		  :	Type(Type),
+			Key(PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator()),
+			ModifierMask(EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown()))
+		{}
+
+		FInputTrip(const FName& ManualEvent)
+		  : Type(Manual),
+			CustomKey(ManualEvent)
+		{}
+
+		const ETripType Type = Unknown;
+		const FKey Key = EKeys::Invalid;
+		const uint8 ModifierMask = 0;
+		const FName CustomKey = NAME_None;
 
 		bool IsValid() const
 		{

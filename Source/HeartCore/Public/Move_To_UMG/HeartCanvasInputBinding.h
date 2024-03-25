@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Input/HeartInputBindingBase.h"
-#include "HeartUMGInputBinding.generated.h"
+#include "HeartCanvasInputBinding.generated.h"
 
 struct FHeartInputActivation;
 class UWidget;
@@ -12,7 +12,7 @@ class UWidget;
  * Base class for any UMG input handler
  */
 UCLASS(Abstract)
-class UHeartUMGInputBindingBase : public UHeartInputBindingBase
+class UHeartCanvasInputBindingBase : public UHeartInputBindingBase
 {
 	GENERATED_BODY()
 
@@ -25,17 +25,17 @@ public:
  * Base class for simple UMG handlers
  */
 UCLASS(Abstract)
-class HEARTCORE_API UHeartUMGInputBinding_Handler : public UHeartUMGInputBindingBase
+class HEARTCORE_API UHeartCanvasInputHandlerBase : public UHeartCanvasInputBindingBase
 {
 	GENERATED_BODY()
 
 public:
-	// Bind triggers to TriggerEvent function. Children should override that, instead of these.
+	// Bind triggers to OnTriggered function. Children should override that, instead of these.
 	virtual bool Bind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const override final;
 	virtual bool Unbind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const override final;
 
 protected:
-	virtual FReply TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const;
+	virtual FReply OnTriggered(UWidget* Widget, const FHeartInputActivation& Trip) const;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Trigger")
@@ -48,7 +48,7 @@ class UHeartDragDropOperation;
  * Base class for UMG Drag Drop Operation handlers
  */
 UCLASS(Abstract)
-class HEARTCORE_API UHeartUMGInputBinding_DragDropOperationBase : public UHeartUMGInputBindingBase
+class HEARTCORE_API UHeartCanvasInputHandler_DragDropOperationBase : public UHeartCanvasInputBindingBase
 {
 	GENERATED_BODY()
 

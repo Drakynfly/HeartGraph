@@ -2,20 +2,56 @@
 
 #pragma once
 
-#include "Move_To_UMG/HeartSlateInputLinker.h"
+#include "Input/HeartSlateInputLinker.h"
 #include "Widgets/SCompoundWidget.h"
 
-/**
- *
- */
-class HEARTCANVAS_API SHeartGraphWidgetBase : public SCompoundWidget
+class UHeartGraphNode;
+
+namespace Heart::Canvas
 {
-public:
-	SLATE_BEGIN_ARGS(SHeartGraphWidgetBase) {}
-	SLATE_END_ARGS()
+	enum ESlateWidgetType
+	{
+		None,
+		Pin,
+		Node,
 
-	HEART_SLATE_INPUT_LINKER_HEADER(SCompoundWidget);
+		// note: doesnt do anything, but here for later
+		Connection
+	};
 
-	/** Constructs this widget with InArgs */
-	void Construct(const FArguments& InArgs);
-};
+	/**
+	 * RTTI for heart's input and visualization reflection
+	 */
+	class FNodeAndLinkerMetadata : public ISlateMetaData
+	{
+	public:
+		SLATE_METADATA_TYPE(FNodeAndLinkerMetadata, ISlateMetaData)
+
+		FNodeAndLinkerMetadata(UHeartGraphNode* Node, UHeartSlateInputLinker* Linker, ESlateWidgetType WidgetType);
+
+		TWeakObjectPtr<UHeartGraphNode> Node;
+
+		TWeakObjectPtr<UHeartSlateInputLinker> Linker;
+
+		ESlateWidgetType WidgetType;
+	};
+
+	/**
+	 *
+	 */
+	class HEARTCANVAS_API SGraphWidgetBase : public SCompoundWidget
+	{
+	public:
+		SLATE_BEGIN_ARGS(SGraphWidgetBase)
+		{}
+			SLATE_ARGUMENT( UHeartGraphNode*, GraphNode )
+			SLATE_ARGUMENT( UHeartSlateInputLinker*, Linker )
+			SLATE_ARGUMENT( ESlateWidgetType, Type )
+		SLATE_END_ARGS()
+
+		HEART_SLATE_INPUT_LINKER_HEADER(SCompoundWidget);
+
+		/** Constructs this widget with InArgs */
+		void Construct(const FArguments& InArgs);
+	};
+}

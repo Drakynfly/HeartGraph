@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Move_To_UMG/HeartUMGInputBinding.h"
-#include "HeartUMGInputBinding_DragDropOperation.generated.h"
+#include "HeartCanvasInputBinding.h"
+#include "HeartCanvasInputHandler_HeartDDO.generated.h"
 
 enum class EDragPivot : uint8;
 
@@ -11,7 +11,7 @@ enum class EDragPivot : uint8;
  * A heart widget input binding that can launch a Drag Drop Operation
  */
 UCLASS(meta = (DisplayName = "Drag Drop Operation"))
-class HEARTCORE_API UHeartUMGInputBinding_DragDropOperation : public UHeartUMGInputBinding_DragDropOperationBase
+class HEARTCORE_API UHeartCanvasInputHandler_HeartDDO : public UHeartCanvasInputHandler_DragDropOperationBase
 {
 	GENERATED_BODY()
 

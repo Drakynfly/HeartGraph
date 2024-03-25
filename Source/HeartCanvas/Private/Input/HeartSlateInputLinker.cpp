@@ -1,23 +1,10 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Move_To_UMG/HeartSlateInputLinker.h"
-
-#include "HeartCorePrivate.h"
-
+#include "Input/HeartSlateInputLinker.h"
 #include "Input/HeartInputActivation.h"
+#include "Slate/SHeartGraphWidgetBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSlateInputLinker)
-
-DECLARE_CYCLE_STAT(TEXT("HandleOnMouseWheel"),		STAT_HandleOnMouseWheel, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonDown"),	STAT_HandleOnMouseButtonDown, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonUp"),	STAT_HandleOnMouseButtonUp, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnKeyDown"),			STAT_HandleOnKeyDown, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnKeyUp"),			STAT_HandleOnKeyUp, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnDragDetected"),	STAT_HandleOnDragDetected, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleNativeOnDragOver"),	STAT_HandleNativeOnDragOver, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleNativeOnDrop"),		STAT_HandleNativeOnDrop, STATGROUP_HeartCore);
-
-DECLARE_CYCLE_STAT(TEXT("HandleManualInput"), STAT_HandleManualInput, STATGROUP_HeartCore);
 
 using namespace Heart::Input;
 
@@ -68,15 +55,8 @@ TOptional<FReply> UHeartSlateInputLinker::TryCallbacks(const FInputTrip& Trip, c
 FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FPointerEvent& PointerEvent)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseWheel)
-
-	FInputTrip MouseWheelAxisTrip;
-	MouseWheelAxisTrip.Key = EKeys::MouseWheelAxis;
-	MouseWheelAxisTrip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	MouseWheelAxisTrip.Type = Press; // Mouse wheel events must always use the 'Press' type
-
 	// @todo what the heck went on here? does PointerEvent have a different/null EffectingButton?
-	const FHeartInputActivation Activation = FPointerEvent(
+	const FPointerEvent HackedPointerEvent(
 		PointerEvent.GetUserIndex(),
 		PointerEvent.GetPointerIndex(),
 		PointerEvent.GetScreenSpacePosition(),
@@ -86,7 +66,8 @@ FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Wid
 		PointerEvent.GetWheelDelta(),
 		PointerEvent.GetModifierKeys());
 
-	if (auto Result = TryCallbacks(MouseWheelAxisTrip, Widget, Activation);
+	// Mouse wheel events must always use the 'Press' type
+	if (auto Result = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -98,14 +79,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Wid
 FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FPointerEvent& PointerEvent)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonDown)
-
-	FInputTrip Trip;
-	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	Trip.Type = Press;
-
-	if (auto Result = TryCallbacks(Trip, Widget, PointerEvent);
+	if (auto Result = TryCallbacks(FInputTrip(PointerEvent, Press), Widget, PointerEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -162,14 +136,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FPointerEvent& PointerEvent)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonUp)
-
-	FInputTrip Trip;
-	Trip.Key = PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator();
-	Trip.ModifierMask = EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown());
-	Trip.Type = Release;
-
-	if (auto Result = TryCallbacks(Trip, Widget, PointerEvent);
+	if (auto Result = TryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -181,14 +148,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& 
 FReply UHeartSlateInputLinker::HandleOnKeyDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FKeyEvent& KeyEvent)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyDown)
-
-	FInputTrip Trip;
-	Trip.Key = KeyEvent.GetKey();
-	Trip.ModifierMask = EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown());
-	Trip.Type = Press;
-
-	if (auto Result = TryCallbacks(Trip, Widget, KeyEvent);
+	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -200,14 +160,7 @@ FReply UHeartSlateInputLinker::HandleOnKeyDown(const TSharedRef<SWidget>& Widget
 FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FKeyEvent& KeyEvent)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyUp)
-
-	FInputTrip Trip;
-	Trip.Key = KeyEvent.GetKey();
-	Trip.ModifierMask = EModifierKey::FromBools(KeyEvent.IsControlDown(), KeyEvent.IsAltDown(), KeyEvent.IsShiftDown(), KeyEvent.IsCommandDown());
-	Trip.Type = Release;
-
-	if (auto Result = TryCallbacks(Trip, Widget, KeyEvent);
+	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -219,13 +172,7 @@ FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, 
 FReply UHeartSlateInputLinker::HandleManualInput(const TSharedRef<SWidget>& Widget, const FName Key,
 	const FHeartManualEvent& Activation)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
-
-	FInputTrip Trip;
-	Trip.Type = Manual;
-	Trip.CustomKey = Key;
-
-	if (auto Result = TryCallbacks(Trip, Widget, Activation);
+	if (auto Result = TryCallbacks(FInputTrip(Key), Widget, Activation);
 		Result.IsSet())
 	{
 		return Result.GetValue();
@@ -271,4 +218,21 @@ TArray<FHeartManualInputQueryResult> UHeartSlateInputLinker::QueryManualTriggers
 	}
 
 	return Results;
+}
+
+namespace Heart::Input
+{
+	UHeartSlateInputLinker* TLinkerType<SWidget>::FindLinker(const TSharedRef<SWidget>& Widget)
+	{
+		for (TSharedPtr<SWidget> Test = Widget; Test.IsValid(); Test = Test->GetParentWidget())
+		{
+			if (TSharedPtr<Canvas::FNodeAndLinkerMetadata> Metadata = Test->GetMetaData<Canvas::FNodeAndLinkerMetadata>();
+				Metadata.IsValid())
+			{
+				return Metadata->Linker.Get();
+			}
+		}
+
+		return nullptr;
+	}
 }

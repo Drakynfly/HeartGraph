@@ -93,7 +93,6 @@ namespace Heart::Input
 			Delegate.BindDelegate(Args...);
 		}
 
-
 		bool IsBound()
 		{
 			return Delegate.IsBound();

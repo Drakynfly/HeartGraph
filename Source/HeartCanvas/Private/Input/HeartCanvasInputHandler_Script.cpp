@@ -6,7 +6,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasInputHandler_Script)
 
-FReply UHeartCanvasInputHandler_Script::TriggerEvent(UWidget* Widget, const FHeartInputActivation& Trip) const
+FReply UHeartCanvasInputHandler_Script::OnTriggered(UWidget* Widget, const FHeartInputActivation& Trip) const
 {
 	return HandleEvent(Widget, Trip).NativeReply;
 }
