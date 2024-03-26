@@ -1,19 +1,57 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/HeartEdGraph.h"
+#include "HeartEditorShared.h"
 
 #include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Graph/HeartEdGraphUtils.h"
 #include "Graph/HeartGraphAssetEditor.h"
+#include "Input/HeartInputBindingAsset.h"
+#include "Input/HeartInputHandler_Action.h"
+#include "Input/HeartInputLinkerBase.h"
+#include "Input/HeartInputTrigger.h"
+#include "Input/HeartSlateInputLinker.h"
 
 #include "Model/HeartGraph.h"
 
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "Model/HeartGraphNode.h"
+#include "ModelView/HeartGraphSchema.h"
 #include "Nodes/HeartEdGraphNode.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraph)
+
+FText UHeartEditorDebugAction::GetDescription(const UObject* Target) const
+{
+	return FText::FromStringView(TEXTVIEW("Debug Action"));
+}
+
+bool UHeartEditorDebugAction::CanExecute(const UObject* Target) const
+{
+	return IsValid(Target);
+}
+
+void UHeartEditorDebugAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+											 UObject* ContextObject)
+{
+	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
+		FString::Printf(TEXT("Executing Debug Action on graph '%s'"), Graph ? *Graph->GetName() : TEXT("null")));
+}
+
+void UHeartEditorDebugAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+	UObject* ContextObject)
+{
+	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
+	FString::Printf(TEXT("Executing Debug Action on node '%s'"), Node ? *Node->GetName() : TEXT("null")));
+}
+
+void UHeartEditorDebugAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
+	const FHeartInputActivation& Activation, UObject* ContextObject)
+{
+	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
+	FString::Printf(TEXT("Executing Debug Action on pin '%s'"), Pin ? *Pin.GetObject()->GetName() : TEXT("null")));
+}
 
 UHeartEdGraph::UHeartEdGraph(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -38,7 +76,7 @@ void UHeartEdGraph::PostLoad()
 {
 	Super::PostLoad();
 
-	UHeartGraph* HeartGraph = GetHeartGraph();
+	const UHeartGraph* HeartGraph = GetHeartGraph();
 
 	for (auto&& Element : HeartGraph->Nodes)
 	{
@@ -53,6 +91,8 @@ void UHeartEdGraph::PostLoad()
 			}
 		}
 	}
+
+	//CreateSlateInputLinker();
 }
 
 UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
@@ -70,6 +110,8 @@ UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
 	}
 
 	NewGraph->GetSchema()->CreateDefaultNodesForGraph(*NewGraph);
+
+	NewGraph->CreateSlateInputLinker();
 
 	return NewGraph;
 }
@@ -101,6 +143,49 @@ UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNodeForNode(const UHeartGraphNode* 
 UHeartGraph* UHeartEdGraph::GetHeartGraph() const
 {
 	return CastChecked<UHeartGraph>(GetOuter());
+}
+
+UHeartSlateInputLinker* UHeartEdGraph::GetEditorLinker() const
+{
+	if (!IsValid(SlateInputLinker))
+	{
+		// @todo why
+		const_cast<ThisClass*>(this)->CreateSlateInputLinker();
+	}
+
+	return SlateInputLinker;
+}
+
+void UHeartEdGraph::CreateSlateInputLinker()
+{
+	if (!IsValid(GetHeartGraph()))
+	{
+		return;
+	}
+
+	auto&& RuntimeSchema = GetHeartGraph()->GetSchema();
+
+	auto InputLinkerClass = RuntimeSchema->GetEditorLinkerClass();
+	if (!IsValid(InputLinkerClass))
+	{
+		InputLinkerClass = UHeartSlateInputLinker::StaticClass();
+	}
+
+	SlateInputLinker = NewObject<UHeartSlateInputLinker>(this, InputLinkerClass);
+
+	FHeartBoundInput DebugInput;
+
+	// Create debug trigger
+	FHeartInputTrigger_Manual Trigger;
+	Trigger.Keys.Add(FName(TEXT("A")));
+	DebugInput.Triggers.Add(FInstancedStruct::Make(Trigger));
+
+	// Create debug action
+	UHeartInputHandler_Action* DebugAction = NewObject<UHeartInputHandler_Action>();
+	DebugAction->SetAction(UHeartEditorDebugAction::StaticClass());
+	DebugInput.InputHandler = DebugAction;
+
+	SlateInputLinker->AddBindings({DebugInput});
 }
 
 void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)

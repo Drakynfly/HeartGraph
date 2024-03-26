@@ -19,7 +19,8 @@ public class HeartEditor : ModuleRules
                 "GameplayTagsEditor",   // For FGameplayTagCustomizationPublic
                 "HeartCore",
                 "HeartCoreEditor",
-                "Heart"
+                "Heart",
+                "HeartCanvas" // @todo i exceedingly don't like this. Either we should move stuff out of HeartCanvas that we depend on, *or*, move our dependant logic to HeartCanvasEditor (but thats unlikely)
             }
         );
 
@@ -44,6 +45,7 @@ public class HeartEditor : ModuleRules
                 "Slate",
                 "SlateCore",
                 "SourceControl",    // For Diffing utils
+                "StructUtils",
                 "ToolMenus",
                 "UnrealEd"
             });

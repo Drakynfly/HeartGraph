@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Components/SlateWrapperTypes.h"
-#include "ModelView/Actions/HeartGraphActionBase.h"
+#include "Input/HeartActionBase.h"
 #include "HeartGraphCanvasAction.generated.h"
 
 class UWidget;
@@ -16,7 +16,7 @@ class UHeartGraphCanvasPin;
  *
  */
 UCLASS(Abstract, BlueprintType)
-class HEARTCANVAS_API UHeartGraphCanvasAction : public UHeartGraphActionBase
+class HEARTCANVAS_API UHeartGraphCanvasAction : public UHeartActionBase
 {
 	GENERATED_BODY()
 

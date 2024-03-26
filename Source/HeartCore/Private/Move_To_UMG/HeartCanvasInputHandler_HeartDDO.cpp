@@ -6,11 +6,18 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasInputHandler_HeartDDO)
 
-bool UHeartCanvasInputHandler_HeartDDO::PassCondition(const UWidget* TestWidget) const
+bool UHeartCanvasInputHandler_HeartDDO::PassCondition(const UObject* TestTarget) const
 {
-	bool Failed = !Super::PassCondition(TestWidget);
+	bool Failed = !Super::PassCondition(TestTarget);
 
-	Failed |= !GetDefault<UHeartDragDropOperation>(OperationClass)->CanRunOnWidget(TestWidget);
+	if (auto&& TestWidget = Cast<UWidget>(TestTarget))
+	{
+		Failed |= !GetDefault<UHeartDragDropOperation>(OperationClass)->CanRunOnWidget(TestWidget);
+	}
+	else
+	{
+		Failed = true;
+	}
 
 	return !Failed;
 }

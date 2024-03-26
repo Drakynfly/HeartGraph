@@ -25,6 +25,9 @@
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
 #include "HeartGraphStatics.h"
+#include "Input/EdGraphPointerWrappers.h"
+#include "Input/HeartInputLinkerBase.h"
+#include "Input/HeartSlateInputLinker.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)
@@ -45,11 +48,6 @@ UHeartEdGraphNode::~UHeartEdGraphNode()
 	UnsubscribeToExternalChanges();
 }
 
-void UHeartEdGraphNode::SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode)
-{
-	HeartGraphNode = InHeartGraphNode;
-}
-
 UHeartGraphNode* UHeartEdGraphNode::GetHeartGraphNode() const
 {
 	if (ensure(IsValid(HeartGraphNode)))
@@ -58,6 +56,11 @@ UHeartGraphNode* UHeartEdGraphNode::GetHeartGraphNode() const
 	}
 
 	return nullptr;
+}
+
+void UHeartEdGraphNode::SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode)
+{
+	HeartGraphNode = InHeartGraphNode;
 }
 
 void UHeartEdGraphNode::PostLoad()
@@ -623,6 +626,23 @@ void UHeartEdGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class U
 			Section.AddMenuEntry(HeartGraphCommands.DisablePinBreakpoint);
 			Section.AddMenuEntry(HeartGraphCommands.TogglePinBreakpoint);
 		}
+
+		{
+			/** Linker Actions **/
+			FToolMenuSection& Section = Menu->AddSection("HeartGraphPinLinkerActions", LOCTEXT("PinLinkerActions", "Linker Actions"));
+
+			auto&& HeartEdGraph = Cast<UHeartEdGraph>(GetGraph());
+			auto&& Linker = HeartEdGraph->GetEditorLinker();
+			if (IsValid(Linker))
+			{
+				TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(UHeartEdGraphPin::Wrap(Context->Pin));
+
+				for (auto&& QueryResult : QueryResults)
+				{
+					// @todo
+				}
+			}
+		}
 	}
 	else if (Context->Node)
 	{
@@ -660,6 +680,23 @@ void UHeartEdGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class U
 			{
 				Section.AddMenuEntry(HeartGraphCommands.JumpToGraphNodeDefinition);
 				Section.AddMenuEntry(HeartGraphCommands.JumpToNodeDefinition);
+			}
+		}
+
+		{
+			/** Linker Actions **/
+			FToolMenuSection& Section = Menu->AddSection("HeartGraphNodeLinkerActions", LOCTEXT("NodeLinkerActions", "Linker Actions"));
+
+			auto&& HeartEdGraph = Cast<UHeartEdGraph>(GetGraph());
+			auto&& Linker = HeartEdGraph->GetEditorLinker();
+			if (IsValid(Linker))
+			{
+				TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(Context->Node);
+
+				for (auto&& QueryResult : QueryResults)
+				{
+					// @todo
+				}
 			}
 		}
 	}

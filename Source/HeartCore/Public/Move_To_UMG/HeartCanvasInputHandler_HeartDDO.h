@@ -16,7 +16,7 @@ class HEARTCORE_API UHeartCanvasInputHandler_HeartDDO : public UHeartCanvasInput
 	GENERATED_BODY()
 
 protected:
-	virtual bool PassCondition(const UWidget* TestWidget) const override;
+	virtual bool PassCondition(const UObject* TestTarget) const override;
 	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
 
 protected:

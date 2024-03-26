@@ -27,32 +27,39 @@ class HEARTCORE_API UHeartInputLinkerBase : public UObject
 {
 	GENERATED_BODY()
 
+protected:
+	TOptional<FReply> TryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
+
 public:
-	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const Heart::Input::FConditionalCallback& InputCallback);
+	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback>& InputCallback);
 	void UnbindInputCallback(const Heart::Input::FInputTrip& Trip);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
+	// Custom input
+	virtual FReply HandleManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
+	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UObject* Target) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|InputLinker")
 	void AddBindings(const TArray<FHeartBoundInput>& Bindings);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
+	UFUNCTION(BlueprintCallable, Category = "Heart|InputLinker")
 	void RemoveBindings(const TArray<FHeartBoundInput>& Bindings);
 
 protected:
 	// Input trips that fire a delegate.
-	TMultiMap<Heart::Input::FInputTrip, Heart::Input::FConditionalCallback> InputCallbackMappings;
+	TMultiMap<Heart::Input::FInputTrip, TSharedPtr<const Heart::Input::FConditionalCallback>> InputCallbackMappings;
 };
 
 namespace Heart::Input
 {
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnMouseWheel(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static FReply LinkOnMouseWheel(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnMouseWheel(Widget, InGeometry, InMouseEvent);
+			FReply BindingReply = Linker->HandleOnMouseWheel(Target, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -64,14 +71,14 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnMouseButtonDown(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static FReply LinkOnMouseButtonDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnMouseButtonDown(Widget, InGeometry, InMouseEvent);
+			FReply BindingReply = Linker->HandleOnMouseButtonDown(Target, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -83,14 +90,14 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnMouseButtonUp(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static FReply LinkOnMouseButtonUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnMouseButtonUp(Widget, InGeometry, InMouseEvent);
+			FReply BindingReply = Linker->HandleOnMouseButtonUp(Target, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -102,14 +109,14 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnKeyDown(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+	static FReply LinkOnKeyDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnKeyDown(Widget, InGeometry, InKeyEvent);
+			FReply BindingReply = Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
 
 			if (BindingReply.IsEventHandled())
 	        {
@@ -121,14 +128,14 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnKeyUp(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+	static FReply LinkOnKeyUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnKeyUp(Widget, InGeometry, InKeyEvent);
+			FReply BindingReply = Linker->HandleOnKeyUp(Target, InGeometry, InKeyEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -140,14 +147,14 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static TOptional<typename TLinkerType<TWidget>::FDDOType> LinkOnDragDetected(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static TOptional<typename TLinkerType<TTarget>::FDDOType> LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Widget, InGeometry, InMouseEvent))
+			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Target, InGeometry, InMouseEvent))
 			{
 				return LinkerOperation;
 			}
@@ -157,15 +164,15 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static bool LinkOnDrop(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-						   typename TLinkerType<TWidget>::FDDOType InOperation)
+	static bool LinkOnDrop(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
+						   typename TLinkerType<TTarget>::FDDOType InOperation)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			if (Linker->HandleNativeOnDrop(Widget, InGeometry, InDragDropEvent, InOperation))
+			if (Linker->HandleNativeOnDrop(Target, InGeometry, InDragDropEvent, InOperation))
 			{
 				return true;
 			}
@@ -175,15 +182,15 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static bool LinkOnDragOver(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-							   typename TLinkerType<TWidget>::FDDOType InOperation)
+	static bool LinkOnDragOver(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
+							   typename TLinkerType<TTarget>::FDDOType InOperation)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			if (Linker->HandleNativeOnDragOver(Widget, InGeometry, InDragDropEvent, InOperation))
+			if (Linker->HandleNativeOnDragOver(Target, InGeometry, InDragDropEvent, InOperation))
 			{
 				return true;
 			}
@@ -193,41 +200,41 @@ namespace Heart::Input
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static void LinkOnDragEnter(typename TLinkerType<TWidget>::FValueType Widget, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-								typename TLinkerType<TWidget>::FDDOType InOperation)
+	static void LinkOnDragEnter(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
+								typename TLinkerType<TTarget>::FDDOType InOperation)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			Linker->HandleNativeOnDragEnter(Widget, InGeometry, InDragDropEvent, InOperation);
+			Linker->HandleNativeOnDragEnter(Target, InGeometry, InDragDropEvent, InOperation);
 		}
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static void LinkOnDragLeave(typename TLinkerType<TWidget>::FValueType Widget, const FDragDropEvent& InDragDropEvent,
-								typename TLinkerType<TWidget>::FDDOType InOperation)
+	static void LinkOnDragLeave(typename TLinkerType<TTarget>::FValueType Target, const FDragDropEvent& InDragDropEvent,
+								typename TLinkerType<TTarget>::FDDOType InOperation)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			Linker->HandleNativeOnDragLeave(Widget, InDragDropEvent, InOperation);
+			Linker->HandleNativeOnDragLeave(Target, InDragDropEvent, InOperation);
 		}
 	}
 
 	template <
-		typename TWidget
-		UE_REQUIRES(TLinkerType<TWidget>::Supported)
+		typename TTarget
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static void LinkOnDragCancelled(typename TLinkerType<TWidget>::FValueType Widget, const FDragDropEvent& InDragDropEvent,
-									typename TLinkerType<TWidget>::FDDOType InOperation)
+	static void LinkOnDragCancelled(typename TLinkerType<TTarget>::FValueType Target, const FDragDropEvent& InDragDropEvent,
+									typename TLinkerType<TTarget>::FDDOType InOperation)
 	{
-		if (auto&& Linker = TLinkerType<TWidget>::FindLinker(Widget))
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			Linker->HandleNativeOnDragCancelled(Widget, InDragDropEvent, InOperation);
+			Linker->HandleNativeOnDragCancelled(Target, InDragDropEvent, InOperation);
 		}
 	}
 }

@@ -6,6 +6,7 @@
 #include "EdGraph/EdGraphPin.h"
 #include "HeartBreakpoint.h"
 #include "Model/HeartGraphPinDesc.h"
+#include "View/HeartVisualizerInterfaces.h"
 
 #include "HeartEdGraphNode.generated.h"
 
@@ -16,7 +17,7 @@ class UHeartGraphNode;
  * Graph representation of a Heart Node in an EdGraph
  */
 UCLASS()
-class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode
+class HEARTEDITOR_API UHeartEdGraphNode : public UEdGraphNode, public IGraphNodeVisualizerInterface
 {
 	GENERATED_BODY()
 
@@ -24,11 +25,13 @@ public:
 	UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual ~UHeartEdGraphNode() override;
 
-
 // Heart Graph Node
 
+	// IGraphNodeVisualizerInterface
+	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	// IGraphNodeVisualizerInterface
+
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
-	UHeartGraphNode* GetHeartGraphNode() const;
 
 	// UObject
 	virtual void PostLoad() override;

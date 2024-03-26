@@ -1,10 +1,10 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "ModelView/Actions/HeartGraphActionBase.h"
+#include "Input/HeartActionBase.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphActionBase)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartActionBase)
 
-bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGraphActionBase> Class,
+bool UHeartActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartActionBase> Class,
 													UObject* Target, const FHeartManualEvent& Activation)
 {
 	if (!ensure(IsValid(Class)))
@@ -12,7 +12,7 @@ bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGrap
 		return false;
 	}
 
-	if (!Class->GetDefaultObject<UHeartGraphActionBase>()->CanExecute(Target))
+	if (!Class->GetDefaultObject<UHeartActionBase>()->CanExecute(Target))
 	{
 		return false;
 	}
@@ -26,7 +26,7 @@ bool UHeartGraphActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartGrap
 	return Action->Execute(Args);
 }
 
-bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartGraphActionBase> Class,
+bool UHeartActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartActionBase> Class,
                                                                UObject* Target, const FHeartManualEvent& Activation, UObject* Payload)
 {
 	if (!ensure(IsValid(Class)))
@@ -34,7 +34,7 @@ bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf
 		return false;
 	}
 
-	if (!Class->GetDefaultObject<UHeartGraphActionBase>()->CanExecute(Target))
+	if (!Class->GetDefaultObject<UHeartActionBase>()->CanExecute(Target))
 	{
 		return false;
 	}
@@ -49,17 +49,17 @@ bool UHeartGraphActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf
 	return Action->Execute(Args);
 }
 
-UHeartGraphActionBase* UHeartGraphActionBase::CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
+UHeartActionBase* UHeartActionBase::CreateGraphAction(const TSubclassOf<UHeartActionBase> Class)
 {
 	if (!ensure(IsValid(Class)))
 	{
 		return nullptr;
 	}
 
-	return NewObject<UHeartGraphActionBase>(GetTransientPackage(), Class);
+	return NewObject<UHeartActionBase>(GetTransientPackage(), Class);
 }
 
-bool UHeartGraphActionBase::ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation)
+bool UHeartActionBase::ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation)
 {
 	if (ensure(Action))
 	{

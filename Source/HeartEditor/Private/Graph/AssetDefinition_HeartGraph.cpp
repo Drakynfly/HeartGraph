@@ -19,7 +19,7 @@ FText UAssetDefinition_HeartGraph::GetAssetDisplayName() const
 
 FLinearColor UAssetDefinition_HeartGraph::GetAssetColor() const
 {
-	return FColor(255, 24, 44);
+	return Heart::EditorShared::HeartColor;
 }
 
 TConstArrayView<FAssetCategoryPath> UAssetDefinition_HeartGraph::GetAssetCategories() const

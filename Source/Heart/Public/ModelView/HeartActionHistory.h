@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Actions/HeartGraphActionBase.h"
+#include "Input/HeartActionBase.h"
 #include "Model/HeartGraphExtension.h"
 #include "HeartActionHistory.generated.h"
 
@@ -10,12 +10,12 @@ namespace Heart::Action::History
 {
 	namespace Impl
 	{
-		HEART_API void BeginLog(UHeartGraphActionBase* Action, const FArguments& Arguments);
+		HEART_API void BeginLog(UHeartActionBase* Action, const FArguments& Arguments);
 		HEART_API void EndLog(bool Success);
 	}
 
 	// Is this action being executing in a state that we want to record.
-	HEART_API bool IsLoggable(const UHeartGraphActionBase* Action, const FArguments& Arguments);
+	HEART_API bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments);
 
 	// Are we currently running an undoable action.
 	HEART_API bool IsUndoable();
@@ -23,7 +23,7 @@ namespace Heart::Action::History
 	// A simple wrapper around a lamba that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded, provided that an Action History extension can be found.
 	template <typename T>
-	bool Log(UHeartGraphActionBase* Action, const FArguments& Arguments, T Lambda)
+	bool Log(UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
 	{
 		Impl::BeginLog(Action, Arguments);
 		const bool Success = Lambda();
@@ -38,7 +38,7 @@ struct FHeartActionRecord
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TObjectPtr<UHeartGraphActionBase> Action;
+	TObjectPtr<UHeartActionBase> Action;
 
 	// Original arguments used to execute this action. Used to 'Redo' an un-done action.
 	Heart::Action::FArguments Arguments;

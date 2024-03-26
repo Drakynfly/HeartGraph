@@ -5,7 +5,7 @@
 #include "UObject/Object.h"
 #include "Input/HeartInputActivation.h"
 
-#include "HeartGraphActionBase.generated.h"
+#include "HeartActionBase.generated.h"
 
 struct FHeartManualEvent;
 
@@ -41,36 +41,36 @@ ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
  *
  */
 UCLASS(Abstract)
-class HEART_API UHeartGraphActionBase : public UObject
+class HEARTCORE_API UHeartActionBase : public UObject
 {
 	GENERATED_BODY()
 
 public:
 	/** Creates a immediately executes an action in a "fire and forget" manner */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
-	static bool QuickExecuteGraphAction(TSubclassOf<UHeartGraphActionBase> Class, UObject* Target, const FHeartManualEvent& Activation);
+	static bool QuickExecuteGraphAction(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation);
 
 	/** Creates a immediately executes an action in a "fire and forget" manner */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
-	static bool QuickExecuteGraphActionWithPayload(TSubclassOf<UHeartGraphActionBase> Class, UObject* Target, const FHeartManualEvent& Activation, UObject* Payload);
+	static bool QuickExecuteGraphActionWithPayload(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation, UObject* Payload);
 
 	template <typename THeartGraphAction>
-	static THeartGraphAction* CreateGraphAction(const TSubclassOf<UHeartGraphActionBase> Class)
+	static THeartGraphAction* CreateGraphAction(const TSubclassOf<UHeartActionBase> Class)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphAction, UHeartGraphActionBase>::Value, TEXT("THeartGraphAction must be a UHeartGraphActionBase"));
+		static_assert(TIsDerivedFrom<THeartGraphAction, UHeartActionBase>::Value, TEXT("THeartGraphAction must be a UHeartActionBase"));
 		return Cast<THeartGraphAction>(CreateGraphAction(Class));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (DeterminesOutputType = Class))
-	static UHeartGraphActionBase* CreateGraphAction(TSubclassOf<UHeartGraphActionBase> Class);
+	static UHeartActionBase* CreateGraphAction(TSubclassOf<UHeartActionBase> Class);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (DeterminesOutputType = Class))
-	static bool ExecuteGraphAction(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation);
+	static bool ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation);
 
 public:
-	virtual FText GetDescription(const UObject* Target) const PURE_VIRTUAL(UHeartGraphActionBase::GetDescription, return FText::GetEmpty(); )
-	virtual bool CanExecute(const UObject* Target) const PURE_VIRTUAL(UHeartGraphActionBase::CanExecute, return false; )
-	virtual bool Execute(const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartGraphActionBase::Execute, return false; )
+	virtual FText GetDescription(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::GetDescription, return FText::GetEmpty(); )
+	virtual bool CanExecute(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::CanExecute, return false; )
+	virtual bool Execute(const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartActionBase::Execute, return false; )
 	virtual bool CanUndo(UObject* Target) const { return false; }
 	virtual bool Undo(UObject* Target) { return false; }
 };

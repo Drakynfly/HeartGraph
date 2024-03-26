@@ -17,6 +17,8 @@
 #include "Graph/HeartEdGraph.h"
 
 #include "ScopedTransaction.h"
+#include "Input/HeartInputLinkerBase.h"
+#include "Input/HeartSlateInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema)
 
@@ -49,11 +51,45 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetClassDefaults(ContextMenuBuilder.CurrentGraph), {});
 	GetCommentAction(ContextMenuBuilder, ContextMenuBuilder.CurrentGraph);
 
-	if (!ContextMenuBuilder.FromPin && Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph)->CanPasteNodes())
+	auto GraphEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph);
+	if (!GraphEditor.IsValid())
+	{
+		return;
+	}
+
+	/** Paste Action **/
+
+	if (!ContextMenuBuilder.FromPin && GraphEditor->CanPasteNodes())
 	{
 		const TSharedPtr<FHeartGraphSchemaAction_Paste> NewAction =
 			MakeShared<FHeartGraphSchemaAction_Paste>(FText::GetEmpty(), LOCTEXT("PasteHereAction", "Paste here"), FText::GetEmpty(), 0);
 		ContextMenuBuilder.AddAction(NewAction);
+	}
+
+	/** Linker Actions **/
+
+	auto&& HeartEdGraph = CastChecked<UHeartEdGraph>(ContextMenuBuilder.CurrentGraph);
+	auto&& Linker = HeartEdGraph->GetEditorLinker();
+	if (IsValid(Linker))
+	{
+		TArray<TSharedPtr<FEdGraphSchemaAction>> LinkerActions;
+
+		TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(HeartEdGraph);
+
+		for (auto&& QueryResult : QueryResults)
+		{
+			LinkerActions.Add(MakeShared<FHeartGraphSchemaAction_LinkerBinding>(
+				FText::GetEmpty(),
+				QueryResult.Description,
+				FText::GetEmpty(),
+				11,
+				QueryResult.Key));
+		}
+
+		if (!LinkerActions.IsEmpty())
+		{
+			ContextMenuBuilder.AddActionList(LinkerActions, TEXT("Linker Actions"));
+		}
 	}
 }
 

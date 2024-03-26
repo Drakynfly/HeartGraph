@@ -12,9 +12,6 @@ class HEARTCANVAS_API UHeartSlateInputLinker : public UHeartInputLinkerBase
 {
 	GENERATED_BODY()
 
-protected:
-	TOptional<FReply> TryCallbacks(const Heart::Input::FInputTrip& Trip, const TSharedRef<SWidget>& Widget, const FHeartInputActivation& Activation);
-
 public:
 	// Regular mouse / keyboard / game-pad events
 	virtual FReply HandleOnMouseWheel(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
@@ -24,10 +21,6 @@ public:
 	virtual FReply HandleOnKeyUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
 
 	// @todo slate DDO support
-
-	// Custom input
-	virtual FReply HandleManualInput(const TSharedRef<SWidget>& Widget, /*const FGeometry& InGeometry,*/ FName Key, const FHeartManualEvent& Activation);
-	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const TSharedRef<SWidget>& Widget) const;
 };
 
 namespace Heart::Input
@@ -40,9 +33,6 @@ namespace Heart::Input
 		using FValueType = const TSharedRef<SWidget>&;
 		// DDO type // using FDDOType = const TSharedRef<SWidget>&;
 
-		using FDescriptionDelegate = TSpecifiedDelegate<TDelegate<FText(const TSharedRef<SWidget>&)>>;
-		using FConditionDelegate = TSpecifiedDelegate<TDelegate<bool(const TSharedRef<SWidget>&)>>;
-		using FHandlerDelegate = TSpecifiedDelegate<TDelegate<FReply(TSharedRef<SWidget>&, const FHeartInputActivation&)>>;
 		// DDO handler
 
 		HEARTCANVAS_API static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget);

@@ -14,49 +14,6 @@
 
 using namespace Heart::Input;
 
-TOptional<FReply> UHeartWidgetInputLinker::TryCallbacks(const FInputTrip& Trip, UWidget* Widget, const FHeartInputActivation& Activation)
-{
-	TArray<const FConditionalCallback*> Callbacks;
-	InputCallbackMappings.MultiFindPointer(Trip, Callbacks);
-	Callbacks.Sort();
-
-	for (const FConditionalCallback* CallbackPtr : Callbacks)
-	{
-		const FConditionalCallback& Ref = *CallbackPtr;
-
-		bool PassedCondition = true;
-
-		const auto ConditionCallback = static_cast<TLinkerType<UWidget>::FConditionDelegate*>(Ref.Condition.Get());
-
-		if (ConditionCallback->IsBound())
-		{
-			PassedCondition = ConditionCallback->Execute(Widget);
-		}
-
-		if (!PassedCondition)
-		{
-			continue;
-		}
-
-		const auto HandlerCallback = static_cast<TLinkerType<UWidget>::FHandlerDelegate*>(Ref.Handler.Get());
-
-		if (HandlerCallback->IsBound())
-		{
-			FReply Reply = HandlerCallback->Execute(Widget, Activation);
-
-			if (Ref.Layer == Event)
-			{
-				if (Reply.IsEventHandled())
-				{
-					return Reply;
-				}
-			}
-		}
-	}
-
-	return {};
-}
-
 FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseWheel)
@@ -96,19 +53,23 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 	// If no regular handles triggered, try DDO triggers.
 
-	TArray<const FConditionalCallback_DDO*> DropDropTriggerArray;
+	TArray<const TSharedPtr<const FConditionalCallback_DDO>*> DropDropTriggerArray;
 	DragDropTriggers.MultiFindPointer(Trip, DropDropTriggerArray);
-	DropDropTriggerArray.Sort();
-	for (const FConditionalCallback_DDO*& CallbackPtr : DropDropTriggerArray)
+	Algo::Sort(DropDropTriggerArray,
+		[](const TSharedPtr<const FConditionalCallback_DDO>* A, const TSharedPtr<const FConditionalCallback_DDO>* B)
+		{
+			return *A->Get() < *B->Get();
+		});
+
+	for (auto&& CallbackPtr : DropDropTriggerArray)
 	{
-		const FConditionalCallback_DDO& Ref = *CallbackPtr;
+		const FConditionalCallback_DDO& Ref = *CallbackPtr->Get();
 
 		bool PassedCondition = true;
 
-		if (const auto ConditionCallback = static_cast<TLinkerType<UWidget>::FConditionDelegate*>(Ref.Condition.Get());
-			ConditionCallback->IsBound())
+		if (Ref.Condition.IsBound())
 		{
-			PassedCondition = ConditionCallback->Execute(Widget);
+			PassedCondition = Ref.Condition.Execute(Widget);
 		}
 
 		if (!PassedCondition)
@@ -183,20 +144,23 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnDragDetected)
 
-	TArray<const FConditionalCallback_DDO*> DropDropTriggerArray;
+	TArray<const TSharedPtr<const FConditionalCallback_DDO>*> DropDropTriggerArray;
 	DragDropTriggers.MultiFindPointer(FInputTrip(PointerEvent, Press), DropDropTriggerArray);
-	DropDropTriggerArray.Sort();
-	for (const FConditionalCallback_DDO*& CallbackPtr : DropDropTriggerArray)
+	Algo::Sort(DropDropTriggerArray,
+		[](const TSharedPtr<const FConditionalCallback_DDO>* A, const TSharedPtr<const FConditionalCallback_DDO>* B)
+		{
+			return *A->Get() < *B->Get();
+		});
+
+	for (auto&& CallbackPtr : DropDropTriggerArray)
 	{
-		const FConditionalCallback_DDO& Ref = *CallbackPtr;
+		const FConditionalCallback_DDO& Ref = *CallbackPtr->Get();
 
 		bool PassedCondition = true;
 
-		const auto ConditionCallback = static_cast<TLinkerType<UWidget>::FConditionDelegate*>(Ref.Condition.Get());
-
-		if (ConditionCallback->IsBound())
+		if (Ref.Condition.IsBound())
 		{
-			PassedCondition = ConditionCallback->Execute(Widget);
+			PassedCondition = Ref.Condition.Execute(Widget);
 		}
 
 		if (!PassedCondition)
@@ -277,59 +241,7 @@ void UHeartWidgetInputLinker::HandleNativeOnDragCancelled(UWidget* Widget, const
 	// Nothing here yet
 }
 
-FReply UHeartWidgetInputLinker::HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/
-												  const FName Key, const FHeartManualEvent& Activation)
-{
-	//SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
-
-	if (auto Result = TryCallbacks(FInputTrip(Key), Widget, Activation);
-		Result.IsSet())
-	{
-		return Result.GetValue();
-	}
-
-	return FReply::Unhandled();
-}
-
-TArray<FHeartManualInputQueryResult> UHeartWidgetInputLinker::QueryManualTriggers(const UWidget* Widget) const
-{
-	TArray<FHeartManualInputQueryResult> Results;
-
-	for (auto&& ConditionalInputCallback : InputCallbackMappings)
-	{
-		if (ConditionalInputCallback.Key.Type != Manual)
-		{
-			continue;
-		}
-
-		bool PassedCondition = true;
-
-		if (const auto ConditionCallback = static_cast<TLinkerType<UWidget>::FConditionDelegate*>(ConditionalInputCallback.Value.Condition.Get());
-			ConditionCallback->IsBound())
-		{
-			PassedCondition = ConditionCallback->Execute(Widget);
-		}
-
-		if (!PassedCondition)
-		{
-			continue;
-		}
-
-		if (const auto DescriptionCallback = static_cast<TLinkerType<UWidget>::FDescriptionDelegate*>(ConditionalInputCallback.Value.Description.Get());
-			DescriptionCallback->IsBound())
-		{
-			Results.Add({ConditionalInputCallback.Key.CustomKey, DescriptionCallback->Execute(Widget)});
-		}
-		else
-		{
-			Results.Add({ConditionalInputCallback.Key.CustomKey});
-		}
-	}
-
-	return Results;
-}
-
-void UHeartWidgetInputLinker::BindToOnDragDetected(const FInputTrip& Trip, const FConditionalCallback_DDO& DragDropTrigger)
+void UHeartWidgetInputLinker::BindToOnDragDetected(const FInputTrip& Trip, const TSharedPtr<const FConditionalCallback_DDO>& DragDropTrigger)
 {
 	if (ensure(Trip.IsValid()))
 	{

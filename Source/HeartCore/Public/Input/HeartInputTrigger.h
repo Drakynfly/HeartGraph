@@ -17,7 +17,7 @@ struct HEARTCORE_API FHeartInputTrigger
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Down"))
-struct FHeartInputTrigger_KeyDown : public FHeartInputTrigger
+struct HEARTCORE_API FHeartInputTrigger_KeyDown : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
@@ -28,7 +28,7 @@ struct FHeartInputTrigger_KeyDown : public FHeartInputTrigger
 };
 
 USTRUCT(BlueprintType)
-struct FHeartKeyAndModifiers
+struct HEARTCORE_API FHeartKeyAndModifiers
 {
 	GENERATED_BODY()
 
@@ -49,7 +49,7 @@ struct FHeartKeyAndModifiers
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Down (with modifiers)"))
-struct FHeartInputTrigger_KeyDownMod : public FHeartInputTrigger
+struct HEARTCORE_API FHeartInputTrigger_KeyDownMod : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
@@ -60,7 +60,7 @@ struct FHeartInputTrigger_KeyDownMod : public FHeartInputTrigger
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Up"))
-struct FHeartInputTrigger_KeyUp : public FHeartInputTrigger
+struct HEARTCORE_API FHeartInputTrigger_KeyUp : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
@@ -71,7 +71,7 @@ struct FHeartInputTrigger_KeyUp : public FHeartInputTrigger
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Manual"))
-struct FHeartInputTrigger_Manual : public FHeartInputTrigger
+struct HEARTCORE_API FHeartInputTrigger_Manual : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 

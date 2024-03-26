@@ -14,6 +14,8 @@
 #include "Editor.h"
 #include "HeartRegistryEditorSubsystem.h"
 #include "ScopedTransaction.h"
+#include "Input/EdGraphPointerWrappers.h"
+#include "Input/HeartSlateInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema_Actions)
 
@@ -155,6 +157,37 @@ UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* 
 	}
 
 	return FEdGraphSchemaAction_NewNode::SpawnNodeFromTemplate<UEdGraphNode_Comment>(ParentGraph, CommentTemplate, SpawnLocation);
+}
+
+UEdGraphNode* FHeartGraphSchemaAction_LinkerBinding::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FVector2D Location, const bool bSelectNewNode)
+{
+	UHeartEdGraph* EdGraph = CastChecked<UHeartEdGraph>(ParentGraph);
+
+	if (UHeartSlateInputLinker* Linker = EdGraph->GetEditorLinker())
+	{
+		UObject* Target;
+
+		if (IsValid(ContextNode))
+		{
+			Target = ContextNode;
+		}
+		else if (FromPin)
+		{
+			Target = UHeartEdGraphPin::Wrap(FromPin);
+		}
+		else
+		{
+			Target = EdGraph;
+		}
+
+		FHeartManualEvent Event;
+		Event.EventValue = 1.0;
+
+		Linker->HandleManualInput(Target, Key, Event);
+	}
+
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

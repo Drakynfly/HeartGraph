@@ -20,9 +20,6 @@ class HEARTCORE_API UHeartWidgetInputLinker : public UHeartInputLinkerBase
 {
 	GENERATED_BODY()
 
-protected:
-	TOptional<FReply> TryCallbacks(const Heart::Input::FInputTrip& Trip, UWidget* Widget, const FHeartInputActivation& Activation);
-
 public:
 	// Regular mouse / keyboard / game-pad events
 	virtual FReply HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
@@ -39,12 +36,8 @@ public:
 	virtual void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	virtual void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 
-	// Custom input
-	virtual FReply HandleManualInput(UWidget* Widget, /*const FGeometry& InGeometry,*/ FName Key, const FHeartManualEvent& Activation);
-	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UWidget* Widget) const;
-
 public:
-	void BindToOnDragDetected(const Heart::Input::FInputTrip& Trip, const Heart::Input::FConditionalCallback_DDO& DragDropTrigger);
+	void BindToOnDragDetected(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback_DDO>& DragDropTrigger);
 	void UnbindToOnDragDetected(const Heart::Input::FInputTrip& Trip);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
@@ -52,7 +45,7 @@ public:
 
 private:
 	// Input trips that begin a drag drop operation
-	TMultiMap<Heart::Input::FInputTrip, Heart::Input::FConditionalCallback_DDO> DragDropTriggers;
+	TMultiMap<Heart::Input::FInputTrip, TSharedPtr<const Heart::Input::FConditionalCallback_DDO>> DragDropTriggers;
 };
 
 namespace Heart::Input
@@ -65,9 +58,6 @@ namespace Heart::Input
 		using FValueType = UWidget*;
 		using FDDOType = UDragDropOperation*;
 
-		using FDescriptionDelegate = TSpecifiedDelegate<TDelegate<FText(const UWidget*)>>;
-		using FConditionDelegate = TSpecifiedDelegate<TDelegate<bool(const UWidget*)>>;
-		using FHandlerDelegate = TSpecifiedDelegate<TDelegate<FReply(UWidget*, const FHeartInputActivation&)>>;
 		using FCreateDDODelegate = TSpecifiedDelegate<TDelegate<UHeartDragDropOperation*(UWidget*)>>;
 
 		HEARTCORE_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);

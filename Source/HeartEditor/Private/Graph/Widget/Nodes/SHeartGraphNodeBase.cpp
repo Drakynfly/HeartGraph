@@ -17,6 +17,8 @@
 #include "SCommentBubble.h"
 #include "SGraphNode.h"
 #include "SNodePanel.h"
+#include "Graph/HeartEdGraph.h"
+#include "Slate/SHeartGraphWidgetBase.h"
 #include "Styling/SlateColor.h"
 #include "Widgets/Images/SImage.h"
 #include "Widgets/Input/SButton.h"
@@ -32,6 +34,12 @@ void SHeartGraphNodeBase::Construct(const FArguments& InArgs, UHeartEdGraphNode*
 {
 	GraphNode = InNode;
 	HeartEdGraphNode = InNode;
+
+	auto EditorLinker = CastChecked<UHeartEdGraph>(InNode->GetGraph())->GetEditorLinker();
+	check(EditorLinker);
+
+	AddMetadata(MakeShared<Heart::Canvas::FNodeAndLinkerMetadata>(
+		HeartEdGraphNode->GetHeartGraphNode(), EditorLinker, Heart::Canvas::Node));
 
 	SetCursor(EMouseCursor::CardinalCross);
 	UpdateGraphNode();
@@ -164,7 +172,8 @@ const FSlateBrush* SHeartGraphNodeBase::GetNodeBodyBrush() const
 
 void SHeartGraphNodeBase::CreateStandardPinWidget(UEdGraphPin* Pin)
 {
-	const TSharedPtr<SGraphPin> NewPin = SNew(SHeartGraphPin, Pin);
+	const TSharedPtr<SGraphPin> NewPin = SNew(SHeartGraphPin, Pin)
+		.Linker(GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>()->Linker.Get());
 
 	const UHeartGraphNode* HeartGraphNode = HeartEdGraphNode->GetHeartGraphNode();
 

@@ -114,6 +114,12 @@ namespace Heart::Input
 		static constexpr bool Supported = false;
 	};
 
+	using FDescriptionDelegate = TDelegate<FText(const UObject*)>;
+	using FConditionDelegate = TDelegate<bool(const UObject*)>;
+
+	// @todo are we going to wrap FReply with an abstraction for Scene support??
+	using FHandlerDelegate = TDelegate<FReply(UObject*, const FHeartInputActivation&)>;
+
 	enum EHeartInputLayer
 	{
 		None, // Blank layer. Do not use.
@@ -124,10 +130,10 @@ namespace Heart::Input
 	struct FConditionalInputBase
 	{
 		// Callback to retrieve a text description of the action
-		const TSharedPtr<FDelegateBase> Description;
+		const FDescriptionDelegate Description;
 
 		// Callback to determine if the context of the trigger is valid for executing the action
-		const TSharedPtr<FDelegateBase> Condition;
+		const FConditionDelegate Condition;
 
 		// Input layers determine the priority of callbacks, and whether they Handle the input callstack
 		const EHeartInputLayer Layer = None;
@@ -141,12 +147,26 @@ namespace Heart::Input
 
 	struct FConditionalCallback : FConditionalInputBase
 	{
+		FConditionalCallback(
+			const FHandlerDelegate& Handler,
+			const FDescriptionDelegate& Description,
+			const FConditionDelegate& Condition,
+			const EHeartInputLayer Layer)
+		  : FConditionalInputBase(Description, Condition, Layer), Handler(Handler) {}
+
 		// Callback to execute the event
-		const TSharedPtr<FDelegateBase> Handler;
+		const FHandlerDelegate Handler;
 	};
 
 	struct FConditionalCallback_DDO : FConditionalInputBase
 	{
+		FConditionalCallback_DDO(
+			const TSharedPtr<FDelegateBase>& Handler,
+			const FDescriptionDelegate& Description,
+			const FConditionDelegate& Condition,
+			const EHeartInputLayer Layer)
+		  : FConditionalInputBase(Description, Condition, Layer), Handler(Handler) {}
+
 		// Callback to begin a DDO
 		const TSharedPtr<FDelegateBase> Handler;
 	};

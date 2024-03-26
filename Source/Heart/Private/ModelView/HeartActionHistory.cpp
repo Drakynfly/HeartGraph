@@ -15,9 +15,9 @@ namespace Heart::Action::History
 	{
 		struct FExecutingAction
 		{
-			FExecutingAction(UHeartGraphActionBase* Action, UHeartActionHistory* History, const FArguments& Arguments)
+			FExecutingAction(UHeartActionBase* Action, UHeartActionHistory* History, const FArguments& Arguments)
 			  : Action(Action), History(History), Arguments(Arguments) {}
-			UHeartGraphActionBase* Action;
+			UHeartActionBase* Action;
 			UHeartActionHistory* History;
 			const FArguments& Arguments;
 		};
@@ -30,7 +30,7 @@ namespace Heart::Action::History
 		 */
 		static TArray<TOptional<FExecutingAction>> ExecutingActionsLoggableStack;
 
-		void BeginLog(UHeartGraphActionBase* Action, const FArguments& Arguments)
+		void BeginLog(UHeartActionBase* Action, const FArguments& Arguments)
 		{
 			if (IsLoggable(Action, Arguments))
 			{
@@ -78,7 +78,7 @@ namespace Heart::Action::History
 		}
 	}
 
-	bool IsLoggable(const UHeartGraphActionBase* Action, const FArguments& Arguments)
+	bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments)
 	{
 		const bool ShouldLog = Action->CanUndo(Arguments.Target) || EnumHasAnyFlags(Arguments.Flags, ForceRecord);
 		const bool CannotLog = EnumHasAnyFlags(Arguments.Flags, DisallowRecord | IsRedo);

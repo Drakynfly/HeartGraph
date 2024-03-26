@@ -22,7 +22,7 @@ namespace Heart::Canvas
 	/**
 	 * RTTI for heart's input and visualization reflection
 	 */
-	class FNodeAndLinkerMetadata : public ISlateMetaData
+	class HEARTCANVAS_API FNodeAndLinkerMetadata : public ISlateMetaData
 	{
 	public:
 		SLATE_METADATA_TYPE(FNodeAndLinkerMetadata, ISlateMetaData)

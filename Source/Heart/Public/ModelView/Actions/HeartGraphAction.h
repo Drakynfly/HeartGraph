@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartGraphActionBase.h"
+#include "Input/HeartActionBase.h"
 #include "HeartGraphAction.generated.h"
 
 class UHeartGraph;
@@ -13,7 +13,7 @@ class IHeartGraphPinInterface;
  *
  */
 UCLASS(Abstract, BlueprintType)
-class HEART_API UHeartGraphAction : public UHeartGraphActionBase
+class HEART_API UHeartGraphAction : public UHeartActionBase
 {
 	GENERATED_BODY()
 

@@ -32,13 +32,13 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 	}
 }
 
-bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UWidget* TestWidget) const
+bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UObject* TestTarget) const
 {
-	bool Failed = !Super::PassCondition(TestWidget);
+	bool Failed = !Super::PassCondition(TestTarget);
 
 	if (IsValid(ActionClass))
 	{
-		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestWidget);
+		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestTarget);
 	}
 
 	return !Failed;

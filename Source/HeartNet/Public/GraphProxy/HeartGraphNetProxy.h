@@ -14,7 +14,7 @@ struct FHeartNodeMoveEvent;
 struct FHeartNodeMoveEvent_Net;
 struct FHeartRemoteGraphActionArguments;
 class UHeartGraph;
-class UHeartGraphActionBase;
+class UHeartActionBase;
 class UHeartGraphNode;
 class UHeartNetClient;
 
@@ -136,7 +136,7 @@ public:
 
 	// Use this to remote execute graph actions on the server, to make changes to the source graph.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
-	void ExecuteGraphActionOnServer(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
+	void ExecuteGraphActionOnServer(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
 
 protected:
 	UFUNCTION()
