@@ -258,7 +258,7 @@ bool UHeartWidgetInputLinker::TriggerManualInput(UWidget* Widget, const FName Ke
 {
 	if (!IsValid(Widget) || Key.IsNone()) return false;
 
-	return HandleManualInput(Widget, Key, Activation).IsEventHandled();
+	return HandleManualInput(Widget, Key, Activation);
 }
 
 namespace Heart::Input

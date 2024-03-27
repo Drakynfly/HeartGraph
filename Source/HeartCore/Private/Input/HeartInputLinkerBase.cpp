@@ -80,17 +80,17 @@ void UHeartInputLinkerBase::UnbindInputCallback(const FInputTrip& Trip)
 	InputCallbackMappings.Remove(Trip);
 }
 
-FReply UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
+bool UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
 
 	if (auto Result = TryCallbacks(FInputTrip(Key), Target, Activation);
 		Result.IsSet())
 	{
-		return Result.GetValue();
+		return Result.GetValue().IsEventHandled();
 	}
 
-	return FReply::Unhandled();
+	return false;
 }
 
 TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(const UObject* Target) const

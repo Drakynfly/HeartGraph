@@ -35,7 +35,7 @@ public:
 	void UnbindInputCallback(const Heart::Input::FInputTrip& Trip);
 
 	// Custom input
-	virtual FReply HandleManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
+	virtual bool HandleManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
 	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UObject* Target) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|InputLinker")
