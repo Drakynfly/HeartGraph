@@ -293,7 +293,7 @@ private:
 	UPROPERTY()
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
 
 	FHeartGraphNodeEvent OnNodeAdded;
