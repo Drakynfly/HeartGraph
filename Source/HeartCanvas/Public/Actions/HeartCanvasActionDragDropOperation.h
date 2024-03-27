@@ -6,7 +6,7 @@
 #include "Move_To_UMG/HeartCanvasInputBinding.h"
 #include "HeartCanvasActionDragDropOperation.generated.h"
 
-class UHeartGraphCanvasAction;
+class UHeartActionBase;
 
 /**
  * A drag drop operation that carries a UHeartGraphCanvasAction, which will attempt to run on the widget dropped on.
@@ -21,7 +21,7 @@ public:
 	virtual void Drop_Implementation(const FPointerEvent& PointerEvent) override;
 
 	UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn))
-	TObjectPtr<UHeartGraphCanvasAction> Action;
+	TObjectPtr<UHeartActionBase> Action;
 };
 
 /**
@@ -37,7 +37,7 @@ protected:
 	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
-	TSubclassOf<UHeartGraphCanvasAction> ActionClass;
+	TSubclassOf<UHeartActionBase> ActionClass;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
 	TSubclassOf<UUserWidget> VisualClass;
