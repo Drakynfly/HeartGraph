@@ -40,8 +40,8 @@
 #include "Model/HeartGraph.h"
 
 
-static const FName PropertyEditorModuleName("PropertyEditor");
-static const FName AssetSearchModuleName("AssetSearch");
+static const FLazyName PropertyEditorModuleName("PropertyEditor");
+static const FLazyName AssetSearchModuleName("AssetSearch");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
 

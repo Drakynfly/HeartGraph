@@ -17,7 +17,7 @@ namespace Heart::AssetEditor
 
 	struct FPreviewSceneSummoner : public FWorkflowTabFactory
 	{
-		static const FName TabId;
+		static const FLazyName TabId;
 
 		FPreviewSceneSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPreviewSceneCreated& OnPreviewSceneCreated);
 
@@ -32,7 +32,7 @@ namespace Heart::AssetEditor
 
 	struct FPreviewSceneDetailsPanelSummoner : public FWorkflowTabFactory
 	{
-		static const FName TabId;
+		static const FLazyName TabId;
 
 		FPreviewSceneDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& OnDetailsCreated);
 

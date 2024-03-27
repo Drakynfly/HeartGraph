@@ -9,7 +9,7 @@ class UHeartSceneGenerator;
 
 namespace Heart
 {
-	static const FName SceneGeneratorClass("SceneGenerator");
+	static const FLazyName SceneGeneratorClass("SceneGenerator");
 }
 
 UCLASS(Abstract)

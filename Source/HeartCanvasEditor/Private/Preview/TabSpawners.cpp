@@ -13,7 +13,7 @@ namespace Heart::AssetEditor
 		PREVIEW SCENE
 	 -------------------*/
 
-	const FName FPreviewCanvasSummoner::TabId("Heart_AssetEditor_PreviewCanvas");
+	const FLazyName FPreviewCanvasSummoner::TabId("Heart_AssetEditor_PreviewCanvas");
 
 	FPreviewCanvasSummoner::FPreviewCanvasSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor)
 	  : FWorkflowTabFactory(TabId, AssetEditor)
@@ -41,7 +41,7 @@ namespace Heart::AssetEditor
 	PREVIEW SCENE DETAILS
 	 -------------------*/
 
-	const FName FPreviewCanvasDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewCanvasDetails");
+	const FLazyName FPreviewCanvasDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewCanvasDetails");
 
 	FPreviewCanvasDetailsPanelSummoner::FPreviewCanvasDetailsPanelSummoner(
 		TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& OnDetailsCreated)

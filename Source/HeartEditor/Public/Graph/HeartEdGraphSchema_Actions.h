@@ -27,7 +27,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
-		static FName Type("FHeartGraphSchemaAction_NewNode");
+		static const FLazyName Type("FHeartGraphSchemaAction_NewNode");
 		return Type;
 	}
 
@@ -58,7 +58,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_Paste : public FEdGraphSchemaActi
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
     {
-    	static FName Type("FHeartGraphSchemaAction_Paste");
+    	static const FLazyName Type("FHeartGraphSchemaAction_Paste");
     	return Type;
     }
 
@@ -81,7 +81,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewComment : public FEdGraphSchem
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
-		static FName Type("FHeartGraphSchemaAction_NewComment");
+		static const FLazyName Type("FHeartGraphSchemaAction_NewComment");
 		return Type;
 	}
 
@@ -104,7 +104,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_LinkerBinding : public FEdGraphSc
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
-		static FName Type("FHeartGraphSchemaAction_LinkerBinding");
+		static const FLazyName Type("FHeartGraphSchemaAction_LinkerBinding");
 		return Type;
 	}
 

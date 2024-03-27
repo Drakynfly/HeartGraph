@@ -11,7 +11,7 @@
 
 namespace Heart::AssetEditor
 {
-	const FName FApplicationMode_PreviewCanvas::ModeID("Heart_AssetEditorMode_PreviewCanvas");
+	const FLazyName FApplicationMode_PreviewCanvas::ModeID("Heart_AssetEditorMode_PreviewCanvas");
 
 	FApplicationMode_PreviewCanvas::FApplicationMode_PreviewCanvas(TSharedRef<FHeartGraphEditor> AssetEditor)
 	  : FApplicationMode(ModeID)

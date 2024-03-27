@@ -13,7 +13,7 @@ namespace Heart::AssetEditor
 	class FApplicationMode_PreviewScene : public FApplicationMode
 	{
 	public:
-		static const FName ModeID;
+		static const FLazyName ModeID;
 
 		FApplicationMode_PreviewScene(TSharedRef<FHeartGraphEditor> AssetEditor);
 
