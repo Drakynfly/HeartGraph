@@ -5,8 +5,6 @@
 
 #include "HeartRegistryEditorSubsystem.h"
 #include "Graph/HeartEdGraphSchema.h"
-#include "Graph/HeartEdGraphUtils.h"
-#include "Graph/HeartGraphAssetEditor.h"
 #include "Input/HeartInputBindingAsset.h"
 #include "Input/HeartInputHandler_Action.h"
 #include "Input/HeartInputLinkerBase.h"
@@ -87,7 +85,7 @@ void UHeartEdGraph::PostLoad()
 			if (!IsValid(FindEdGraphNodeForNode(Element.Value)))
 			{
 				// Broadcasting this delegate is our hook to request the EdGraph to generate an EdGraphNode for us.
-				OnNodeCreatedInEditorExternally(Element.Value);
+				CreateEdGraphNode(Element.Value);
 			}
 		}
 	}
@@ -97,23 +95,23 @@ void UHeartEdGraph::PostLoad()
 
 UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
 {
-	UHeartEdGraph* NewGraph = CastChecked<UHeartEdGraph>(FBlueprintEditorUtils::CreateNewGraph(InHeartGraph, NAME_None, StaticClass(), UHeartEdGraphSchema::StaticClass()));
-	NewGraph->bAllowDeletion = false;
+	UHeartEdGraph* NewEdGraph = CastChecked<UHeartEdGraph>(FBlueprintEditorUtils::CreateNewGraph(InHeartGraph, NAME_None, StaticClass(), UHeartEdGraphSchema::StaticClass()));
+	NewEdGraph->bAllowDeletion = false;
 
-	InHeartGraph->HeartEdGraph = NewGraph;
+	InHeartGraph->HeartEdGraph = NewEdGraph;
 	for (auto&& Element : InHeartGraph->Nodes)
 	{
 		if (IsValid(Element.Value))
 		{
-			NewGraph->OnNodeCreatedInEditorExternally(Element.Value);
+			NewEdGraph->CreateEdGraphNode(Element.Value);
 		}
 	}
 
-	NewGraph->GetSchema()->CreateDefaultNodesForGraph(*NewGraph);
+	NewEdGraph->GetSchema()->CreateDefaultNodesForGraph(*NewEdGraph);
 
-	NewGraph->CreateSlateInputLinker();
+	NewEdGraph->CreateSlateInputLinker();
 
-	return NewGraph;
+	return NewEdGraph;
 }
 
 UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNode(const TFunction<bool(const UHeartEdGraphNode*)>& Iter)
@@ -188,7 +186,7 @@ void UHeartEdGraph::CreateSlateInputLinker()
 	SlateInputLinker->AddBindings({DebugInput});
 }
 
-void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
+void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
 {
 	Modify();
 
@@ -197,33 +195,21 @@ void UHeartEdGraph::OnNodeCreatedInEditorExternally(UHeartGraphNode* Node)
 
 	if (!ensure(GEditor)) return;
 
-	const UClass* EdGraphNodeClass = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>()->GetAssignedEdGraphNodeClass(Node->GetClass());
-	auto&& NewEdGraphNode = NewObject<UHeartEdGraphNode>(this, EdGraphNodeClass, NAME_None, RF_NoFlags);
-	NewEdGraphNode->CreateNewGuid();
+	const TSubclassOf<UHeartEdGraphNode> EdGraphNodeClass = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>()->GetAssignedEdGraphNodeClass(Node->GetClass());
+
+	FGraphNodeCreator<UHeartEdGraphNode> HeartNodeCreator(*this);
+
+	auto&& NewEdGraphNode = HeartNodeCreator.CreateNode(false, EdGraphNodeClass);
 
 	NewEdGraphNode->NodePosX = Node->GetLocation().X;
 	NewEdGraphNode->NodePosY = Node->GetLocation().Y;
 
-	// @todo the bUserAction thing might be true. what does that do if its true anyway?
-	AddNode(NewEdGraphNode, false, false);
-
-	// Assign nodes to each other
-	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime
+	// Assign runtime node pointer
 	NewEdGraphNode->SetHeartGraphNode(Node);
 
-	//HeartGraph->AddNode(Node);
+	HeartNodeCreator.Finalize();
 
-	NewEdGraphNode->PostPlacedNewNode();
-	NewEdGraphNode->AllocateDefaultPins();
-
-	NotifyGraphChanged();
-
-	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(this);
-	if (HeartGraphAssetEditor.IsValid())
-	{
-		HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);
-	}
-
+	// Since we live in the HeartGraph, mark it as having changed.
 	HeartGraph->PostEditChange();
 	HeartGraph->MarkPackageDirty();
 }
@@ -238,7 +224,7 @@ void UHeartEdGraph::OnNodeAdded(UHeartGraphNode* HeartGraphNode)
 		}
 		else
 		{
-			OnNodeCreatedInEditorExternally(HeartGraphNode);
+			CreateEdGraphNode(HeartGraphNode);
 		}
 	}
 }

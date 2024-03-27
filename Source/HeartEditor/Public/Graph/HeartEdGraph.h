@@ -58,7 +58,9 @@ protected:
 	void CreateSlateInputLinker();
 
 private:
-	void OnNodeCreatedInEditorExternally(UHeartGraphNode* Node);
+	// Create the EdGraph node equivilent to a HeartNode
+	void CreateEdGraphNode(UHeartGraphNode* Node);
+
 	void OnNodeAdded(UHeartGraphNode* HeartGraphNode);
 	void OnNodeRemoved(UHeartGraphNode* HeartGraphNode);
 	void OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& HeartGraphConnectionEvent);
