@@ -140,7 +140,11 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, const 
 }
 FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
+#if !UE_BUILD_SHIPPING
+	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow, FText::FromString("Allowed by base implementation")};
+#else
 	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow};
+#endif
 }
 
 void UHeartGraphSchema::CreateDefaultNodesForGraph_Implementation(UHeartGraph* Graph) const
