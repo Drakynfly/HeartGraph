@@ -11,7 +11,7 @@ struct BLOOD_API FBloodValue
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta = (BaseStruct = "/Script/Blood.BloodDataBase", ExcludeBaseStruct))
+	UPROPERTY(EditAnywhere)
 	FInstancedStruct Data;
 
 	template <typename TBloodDataType>
@@ -42,6 +42,18 @@ struct BLOOD_API FBloodValue
 		// @todo
 		unimplemented();
 		return {};
+	}
+
+	const UScriptStruct* GetUnderlyingType() const { return Data.GetScriptStruct(); }
+
+	friend bool operator==(const FBloodValue& Lhs, const FBloodValue& Rhs)
+	{
+		return Lhs.Data == Rhs.Data;
+	}
+
+	friend bool operator!=(const FBloodValue& Lhs, const FBloodValue& Rhs)
+	{
+		return Lhs.Data != Rhs.Data;
 	}
 };
 
