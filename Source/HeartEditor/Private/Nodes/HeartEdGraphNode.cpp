@@ -377,39 +377,32 @@ bool UHeartEdGraphNode::CanCreateUnderSpecifiedSchema(const UEdGraphSchema* Sche
 
 void UHeartEdGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
 {
-	if (FromPin != nullptr)
+	if (FromPin == nullptr)
 	{
-		const UHeartEdGraphSchema* Schema = CastChecked<UHeartEdGraphSchema>(GetSchema());
+		return;
+	}
 
-		TSet<UEdGraphNode*> NodeList;
+	const UHeartEdGraphSchema* Schema = CastChecked<UHeartEdGraphSchema>(GetSchema());
 
-		// auto-connect from dragged pin to first compatible pin on the new node
-		for (UEdGraphPin* Pin : Pins)
+	TSet<UEdGraphNode*> NodeList;
+
+	// auto-connect from dragged pin to first compatible pin on the new node
+	for (UEdGraphPin* Pin : Pins)
+	{
+		check(Pin);
+
+		if (Schema->TryCreateConnection(FromPin, Pin))
 		{
-			check(Pin);
-			FPinConnectionResponse Response = Schema->CanCreateConnection(FromPin, Pin);
-			if (CONNECT_RESPONSE_MAKE == Response.Response)
-			{
-				if (Schema->TryCreateConnection(FromPin, Pin))
-				{
-					NodeList.Add(FromPin->GetOwningNode());
-					NodeList.Add(this);
-				}
-				break;
-			}
-			else if (CONNECT_RESPONSE_BREAK_OTHERS_A == Response.Response)
-			{
-				InsertNewNode(FromPin, Pin, NodeList);
-				break;
-			}
+			NodeList.Add(FromPin->GetOwningNode());
+			NodeList.Add(this);
+			break;
 		}
+	}
 
-		// Send all nodes that received a new pin connection a notification
-		for (auto It = NodeList.CreateConstIterator(); It; ++It)
-		{
-			UEdGraphNode* Node = (*It);
-			Node->NodeConnectionListChanged();
-		}
+	// Send all nodes that received a new pin connection a notification
+	for (auto&& Node : NodeList)
+	{
+		Node->NodeConnectionListChanged();
 	}
 }
 
