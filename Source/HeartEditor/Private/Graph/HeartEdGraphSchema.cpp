@@ -118,9 +118,8 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Cannot make new connections to orphaned pin"));
 	}
 
-	auto&& RuntimeSchema = OwningNodeA->GetHeartGraphNode()->GetGraph()->GetSchema();
-
-	if (ensure(IsValid(RuntimeSchema)))
+	if (const UHeartGraphSchema* RuntimeSchema = OwningNodeA->GetHeartGraphNode()->GetGraph()->GetSchema();
+		ensure(IsValid(RuntimeSchema)))
 	{
 		if (RuntimeSchema->GetRunCanPinsConnectInEdGraph())
 		{
@@ -170,7 +169,7 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 
 bool UHeartEdGraphSchema::TryCreateConnection(UEdGraphPin* PinA, UEdGraphPin* PinB) const
 {
-	const bool bModified = UEdGraphSchema::TryCreateConnection(PinA, PinB);
+	const bool bModified = Super::TryCreateConnection(PinA, PinB);
 
 	if (bModified)
 	{
@@ -240,12 +239,9 @@ void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	Super::CreateDefaultNodesForGraph(Graph);
 
-	const UHeartEdGraph* HeartEdGraph = Cast<UHeartEdGraph>(&Graph);
-	check(HeartEdGraph);
-UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
+	const UHeartEdGraph* HeartEdGraph = CastChecked<UHeartEdGraph>(&Graph);
+	UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
 	check(HeartGraph);
-
-
 	const UHeartGraphSchema* HeartSchema = HeartGraph->GetSchema();
 	check(HeartSchema);
 
