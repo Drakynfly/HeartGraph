@@ -302,8 +302,8 @@ void UHeartEdGraphNode::SubscribeToExternalChanges()
 		// blueprint nodes
 		if (HeartGraphNode->GetClass()->ClassGeneratedBy && GEditor)
 		{
-			GEditor->OnBlueprintPreCompile().AddUObject(this, &UHeartEdGraphNode::OnBlueprintPreCompile);
-			GEditor->OnBlueprintCompiled().AddUObject(this, &UHeartEdGraphNode::OnBlueprintCompiled);
+			GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
+			GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
 		}
 	}
 }
