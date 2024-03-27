@@ -11,7 +11,11 @@ UHeartGraphNode::UHeartGraphNode()
 {
 #if WITH_EDITOR
 	// Unless specified otherwise, use the graph's Schema default style.
-	GetHeartGraphNodeSparseClassData()->EditorSlateStyle = "GraphDefault";
+	if (auto SparseNodeData = GetHeartGraphNodeSparseClassData();
+		SparseNodeData->EditorSlateStyle.IsNone())
+	{
+		SparseNodeData->EditorSlateStyle = "GraphDefault";
+	}
 #endif
 }
 
@@ -424,8 +428,8 @@ void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
 
 void UHeartGraphNode::OnCreate()
 {
-	InstancedInputs = GetHeartGraphNodeSparseClassData()->DefaultInstancedInputs;
-	InstancedOutputs = GetHeartGraphNodeSparseClassData()->DefaultInstancedOutputs;
+	InstancedInputs = GetDefaultInstancedInputs();
+	InstancedOutputs = GetDefaultInstancedOutputs();
 
 	ReconstructPins();
 

@@ -77,7 +77,7 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	}
 
 	// If we are not running on a CDO or trying to cook, execute the EditorPreSaveAction
-	if (!IsTemplate() && !SaveContext.IsCooking())
+	if (!SaveContext.IsCooking())
 	{
 		if (IsValid(EditorPreSaveAction))
 		{

@@ -17,7 +17,11 @@ DEFINE_LOG_CATEGORY(LogHeartGraph)
 UHeartGraph::UHeartGraph()
 {
 #if WITH_EDITORONLY_DATA
-	GetHeartGraphSparseClassData()->GraphTypeName = LOCTEXT("DefaultGraphTypeName", "Heart");
+	if (auto SparseGraphData = GetHeartGraphSparseClassData();
+		SparseGraphData->GraphTypeName.IsEmpty())
+	{
+		SparseGraphData->GraphTypeName = LOCTEXT("DefaultGraphTypeName", "Heart");
+	}
 #endif
 }
 
@@ -49,6 +53,13 @@ UWorld* UHeartGraph::GetWorld() const
 void UHeartGraph::PreSave(FObjectPreSaveContext SaveContext)
 {
 	Super::PreSave(SaveContext);
+
+#if WITH_EDITOR
+	if (IsTemplate())
+	{
+		return;
+	}
+#endif
 
 	GetSchema()->OnPreSaveGraph(this, SaveContext);
 
