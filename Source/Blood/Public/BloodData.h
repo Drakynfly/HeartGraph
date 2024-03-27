@@ -149,14 +149,15 @@ struct BLOOD_API FBloodClass : public FBloodDataBase
 	GENERATED_BODY()
 
 	FBloodClass() {}
+	FBloodClass(const UClass* Value) : Value(Value) {}
 	FBloodClass(const TSubclassOf<UObject> Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	TSubclassOf<UObject> Value = nullptr;
+	TObjectPtr<const UClass> Value = nullptr;
 
 	template <typename T> TSubclassOf<T> Get() const
 	{
-		return Value.Get();
+		return Value;
 	}
 };
 
@@ -220,15 +221,16 @@ namespace Blood
 	#define BIND_BLOOD_TYPE(type, StructType)\
 		template<> struct TDataConverter<type>\
 		{\
-			static UScriptStruct* Type() { return StructType::StaticStruct(); }\
+			using BloodType = StructType;\
+			static UScriptStruct* Type() { return BloodType::StaticStruct(); }\
 			\
 			static type Value(const FInstancedStruct& Value)\
 			{\
 				if (ensure(Value.GetScriptStruct() == Type()))\
 				{\
-					return Value.Get<StructType>().Value;\
+					return Value.Get<BloodType>().Value;\
 				}\
-				return StructType().Value;\
+				return BloodType().Value;\
 			}\
 		};
 
@@ -236,15 +238,16 @@ namespace Blood
 	#define BIND_BLOOD_TYPE_TEMPLATED(Wrapper, StructType)\
 		template <typename T> struct TDataConverter<Wrapper<T>>\
 		{\
-			static UScriptStruct* Type() { return StructType::StaticStruct(); }\
+			using BloodType = StructType;\
+			static UScriptStruct* Type() { return BloodType::StaticStruct(); }\
 			\
 			static Wrapper<T> Value(const FInstancedStruct& Value)\
 			{\
 				if (ensure(Value.GetScriptStruct() == Type()))\
 				{\
-					return Value.Get<StructType>().Get<T>();\
+					return Value.Get<BloodType>().Get<T>();\
 				}\
-				return StructType().Get<T>();\
+				return BloodType().Get<T>();\
 			}\
 		};
 

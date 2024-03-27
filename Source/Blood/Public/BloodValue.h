@@ -44,6 +44,16 @@ struct BLOOD_API FBloodValue
 		return {};
 	}
 
+	template <typename TBloodDataType>
+	bool Is() const
+	{
+		if constexpr (TIsDerivedFrom<TBloodDataType, FBloodDataBase>::Value)
+		{
+			return GetUnderlyingType() == TBloodDataType::StaticStruct();
+		}
+		return GetUnderlyingType() == Blood::TDataConverter<TBloodDataType>::Type();
+	}
+
 	const UScriptStruct* GetUnderlyingType() const { return Data.GetScriptStruct(); }
 
 	friend bool operator==(const FBloodValue& Lhs, const FBloodValue& Rhs)
@@ -121,13 +131,12 @@ namespace Blood
 	template <typename T>
 	static T ReadUProperty(UObject* Container, const FName& PropName)
 	{
-		T Value;
 		if (const FProperty* Property = Container->GetClass()->FindPropertyByName(PropName))
 		{
 			const FBloodValue BloodValue = ReadFromFProperty(Container, Property);
-			Value = BloodValue.GetValue<T>();
+			return BloodValue.GetValue<T>();
 		}
 
-		return Value;
+		return T();
 	}
 }
