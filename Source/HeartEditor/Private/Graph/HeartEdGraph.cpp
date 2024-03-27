@@ -84,7 +84,6 @@ void UHeartEdGraph::PostLoad()
 			// or these nodes will be invisible in the EdGraph
 			if (!IsValid(FindEdGraphNodeForNode(Element.Value)))
 			{
-				// Broadcasting this delegate is our hook to request the EdGraph to generate an EdGraphNode for us.
 				CreateEdGraphNode(Element.Value);
 			}
 		}
