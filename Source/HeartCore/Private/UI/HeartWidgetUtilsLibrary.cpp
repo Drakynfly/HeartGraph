@@ -2,6 +2,7 @@
 
 #include "UI/HeartWidgetUtilsLibrary.h"
 #include "Input/HeartInputBindingAsset.h"
+#include "Input/HeartInputLinkerInterface.h"
 #include "Move_To_UMG/HeartUMGInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetUtilsLibrary)
@@ -156,7 +157,7 @@ TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidg
 {
 	TArray<FHeartManualInputQueryResult> ActionList;
 
-	auto&& Linker =  Heart::Input::TLinkerType<UWidget>::FindLinker(Widget);
+	auto&& Linker = Heart::Input::TryFindLinker<UHeartInputLinkerBase>(Widget);
 
 	if (IsValid(Linker))
 	{

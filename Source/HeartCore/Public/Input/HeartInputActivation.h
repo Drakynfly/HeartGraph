@@ -4,6 +4,8 @@
 
 #include "InputCoreTypes.h"
 #include "InstancedStruct.h"
+#include "Concepts/BaseStructureProvider.h"
+#include "GameFramework/PlayerInput.h"
 #include "HeartInputActivation.generated.h"
 
 USTRUCT(BlueprintType)
@@ -17,6 +19,19 @@ struct FHeartManualEvent
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ManualEvent")
 	double EventValue = 0.0;
+};
+
+// Wrapper around FInputKeyParams
+USTRUCT(BlueprintType)
+struct FHeartInputKeyParams
+{
+	GENERATED_BODY()
+
+	FHeartInputKeyParams() {}
+	FHeartInputKeyParams(const FInputKeyParams& Params)
+	  : Params(Params) {}
+
+	FInputKeyParams Params;
 };
 
 // Flag struct to mark an InputActivation as a redo
@@ -34,6 +49,7 @@ struct TIsHeartInputActivationType
 template <> struct TIsHeartInputActivationType<FHeartManualEvent>	{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FKeyEvent>			{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FPointerEvent>		{ static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FInputKeyParams>		{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FHeartActionIsRedo>	{ static constexpr bool Value = true; };
 
 /**
@@ -53,7 +69,14 @@ struct HEARTCORE_API FHeartInputActivation
 	>
 	FHeartInputActivation(const T& Type)
 	{
-		EventStruct.InitializeAs<T>(Type);
+		if constexpr (std::is_same_v<T, FInputKeyParams>)
+		{
+			EventStruct.InitializeAs<FHeartInputKeyParams>(Type);
+		}
+		else
+		{
+			EventStruct.InitializeAs<T>(Type);
+		}
 	}
 
 	template <
@@ -62,9 +85,17 @@ struct HEARTCORE_API FHeartInputActivation
 	>
 	TOptional<T> As() const
 	{
-		if (EventStruct.GetScriptStruct() == TBaseStructure<T>::Get())
+		if constexpr (std::is_same_v<T, FInputKeyParams>)
 		{
-			return EventStruct.Get<T>();
+			return EventStruct.Get<FHeartInputKeyParams>().Params;
+		}
+
+		if constexpr (TModels_V<CBaseStructureProvider, T>)
+		{
+			if (EventStruct.GetScriptStruct() == TBaseStructure<T>::Get())
+			{
+				return EventStruct.Get<T>();
+			}
 		}
 		return {};
 	}
@@ -96,6 +127,9 @@ enum class EHeartInputActivationType : uint8
 	// This Activation was triggered by a KeyEvent
 	KeyEvent,
 
+	// This Activation was triggered by InputKeyParams
+	InputKeyParams,
+
 	// This Activation was triggered by a PointerEvent
 	PointerEvent,
 };
@@ -123,4 +157,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
 	static FPointerEvent ActivationToPointerEvent(const FHeartInputActivation& Activation);
+
+	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
+	static FHeartInputKeyParams ActivationToInputKeyParams(const FHeartInputActivation& Activation);
 };

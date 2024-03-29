@@ -3,15 +3,15 @@
 #pragma once
 
 #include "Blueprint/UserWidget.h"
+#include "Input/HeartInputLinkerInterface.h"
 #include "UI/HeartWidgetInputBindingContainer.h"
-#include "UI/HeartWidgetInputLinkerRedirector.h"
 #include "HeartGraphWidgetBase.generated.h"
 
 /**
  *
  */
 UCLASS(Abstract)
-class HEARTCANVAS_API UHeartGraphWidgetBase : public UUserWidget, public IHeartWidgetInputLinkerRedirector
+class HEARTCANVAS_API UHeartGraphWidgetBase : public UUserWidget, public IHeartInputLinkerInterface
 {
 	GENERATED_BODY()
 
@@ -27,5 +27,5 @@ public:
 	/** UWidget */
 
 	// Unless overriden with custom behavior, this will walk up the widget tree looking for something that implements this
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
+	virtual UHeartInputLinkerBase* ResolveLinker_Implementation() const override;
 };

@@ -106,9 +106,9 @@ protected:
 	/** UUserWidget */
 
 public:
-	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
-	/** IHeartWidgetInputLinkerRedirector */
+	/** IHeartInputLinkerInterface */
+	virtual UHeartInputLinkerBase* ResolveLinker_Implementation() const override;
+	/** IHeartInputLinkerInterface */
 
 	/** IHeartGraphInterface */
 	virtual UHeartGraph* GetHeartGraph() const override;

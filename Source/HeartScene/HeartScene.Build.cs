@@ -14,7 +14,9 @@ public class HeartScene : ModuleRules
             new []
             {
                 "Core",
-                "Heart"
+                "Heart",
+                "HeartCore",
+                "EnhancedInput"
             }
         );
 
@@ -25,7 +27,8 @@ public class HeartScene : ModuleRules
                 "Engine",
                 "GameplayTags",
                 "Slate",
-                "SlateCore"
+                "SlateCore",
+                "StructUtils"
             }
         );
     }

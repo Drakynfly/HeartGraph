@@ -24,7 +24,7 @@ const FText UHeartGraphWidgetBase::GetPaletteCategory()
 }
 #endif
 
-UHeartWidgetInputLinker* UHeartGraphWidgetBase::ResolveLinker_Implementation() const
+UHeartInputLinkerBase* UHeartGraphWidgetBase::ResolveLinker_Implementation() const
 {
 	// Assume that something up our parent chain will be able to handle this.
 	return Heart::Input::TLinkerType<UWidget>::FindLinker(GetTypedOuter<UWidget>());

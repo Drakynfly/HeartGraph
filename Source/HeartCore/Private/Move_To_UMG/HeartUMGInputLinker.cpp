@@ -5,10 +5,10 @@
 #include "Move_To_UMG/HeartDragDropOperation.h"
 
 #include "Input/HeartInputActivation.h"
+#include "Input/HeartInputLinkerInterface.h"
 #include "Input/HeartInputTypes.h"
 
 #include "UI/HeartUMGContextObject.h"
-#include "UI/HeartWidgetInputLinkerRedirector.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartUMGInputLinker)
 
@@ -265,20 +265,6 @@ namespace Heart::Input
 {
 	UHeartWidgetInputLinker* TLinkerType<UWidget>::FindLinker(const UWidget* Widget)
 	{
-		if (!ensure(IsValid(Widget))) return nullptr;
-
-		for (auto&& Test = Widget; IsValid(Test); Test = Test->GetTypedOuter<UWidget>())
-		{
-			if (Test->Implements<UHeartWidgetInputLinkerRedirector>())
-			{
-				// In some cases, a widget may implement the interface but have linking disabled, and return nullptr
-				if (UHeartWidgetInputLinker* Linker = IHeartWidgetInputLinkerRedirector::Execute_ResolveLinker(Test))
-				{
-					return Linker;
-				}
-			}
-		}
-
-		return nullptr;
+		return TryFindLinker<UHeartWidgetInputLinker>(Widget);
 	}
 }

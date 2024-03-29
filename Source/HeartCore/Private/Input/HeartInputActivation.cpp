@@ -9,6 +9,7 @@ EHeartInputActivationType UHeartInputActivationLibrary::GetActivationType(const 
 	auto&& Struct = Activation.GetScriptStruct();
 	if (Struct == FKeyEvent::StaticStruct()) return EHeartInputActivationType::KeyEvent;
 	if (Struct == FPointerEvent::StaticStruct()) return EHeartInputActivationType::PointerEvent;
+	if (Struct == FHeartInputKeyParams::StaticStruct()) return EHeartInputActivationType::InputKeyParams;
 	if (Struct == FHeartManualEvent::StaticStruct()) return EHeartInputActivationType::Manual;
 	if (Struct == FHeartActionIsRedo::StaticStruct()) return EHeartInputActivationType::Redo;
 	return EHeartInputActivationType::Invalid;
@@ -30,7 +31,7 @@ FHeartManualEvent UHeartInputActivationLibrary::ActivationToManualEvent(const FH
 	if (TOptional<FHeartManualEvent> ManualEvent = Activation.As<FHeartManualEvent>();
 		ManualEvent.IsSet())
 	{
-		ManualEvent.GetValue();
+		return ManualEvent.GetValue();
 	}
 	return FHeartManualEvent();
 }
@@ -38,9 +39,9 @@ FHeartManualEvent UHeartInputActivationLibrary::ActivationToManualEvent(const FH
 FKeyEvent UHeartInputActivationLibrary::ActivationToKeyEvent(const FHeartInputActivation& Activation)
 {
 	if (TOptional<FKeyEvent> KeyEvent = Activation.As<FKeyEvent>();
-	KeyEvent.IsSet())
+		KeyEvent.IsSet())
 	{
-		KeyEvent.GetValue();
+		return KeyEvent.GetValue();
 	}
 	return FKeyEvent();
 }
@@ -50,7 +51,17 @@ FPointerEvent UHeartInputActivationLibrary::ActivationToPointerEvent(const FHear
 	if (TOptional<FPointerEvent> PointerEvent = Activation.As<FPointerEvent>();
 		PointerEvent.IsSet())
 	{
-		PointerEvent.GetValue();
+		return PointerEvent.GetValue();
 	}
 	return FPointerEvent();
+}
+
+FHeartInputKeyParams UHeartInputActivationLibrary::ActivationToInputKeyParams(const FHeartInputActivation& Activation)
+{
+	if (TOptional<FInputKeyParams> InputKeyParams = Activation.As<FInputKeyParams>();
+		InputKeyParams.IsSet())
+	{
+		return InputKeyParams.GetValue();
+	}
+	return FHeartInputKeyParams();
 }

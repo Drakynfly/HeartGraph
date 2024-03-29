@@ -1,6 +1,6 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Assets/HeartWidgetInputHandlerAssetFactory.h"
+#include "Assets/HeartInputHandlerAssetFactory.h"
 #include "Assets/HeartDefaultClassFilter.h"
 
 #include "Input/HeartInputHandlerAssetBase.h"
@@ -18,19 +18,19 @@
 #include "Widgets/SCompoundWidget.h"
 #include "Widgets/SWindow.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputHandlerAssetFactory)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputHandlerAssetFactory)
 
-#define LOCTEXT_NAMESPACE "HeartWidgetInputHandlerAssetFactory"
+#define LOCTEXT_NAMESPACE "HeartInputHandlerAssetFactory"
 
 // ------------------------------------------------------------------------------
 // Dialog to configure creation properties
 // ------------------------------------------------------------------------------
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
-class SHeartWidgetInputHandlerAssetCreateDialog final : public SCompoundWidget
+class SHeartInputHandlerAssetCreateDialog final : public SCompoundWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SHeartWidgetInputHandlerAssetCreateDialog) {}
+	SLATE_BEGIN_ARGS(SHeartInputHandlerAssetCreateDialog) {}
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
@@ -75,7 +75,7 @@ public:
 										SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-													.OnClicked(this, &SHeartWidgetInputHandlerAssetCreateDialog::OkClicked)
+													.OnClicked(this, &SHeartInputHandlerAssetCreateDialog::OkClicked)
 													.Text(LOCTEXT("CreateHeartAssetOk", "OK"))
 									]
 									+ SUniformGridPanel::Slot(1, 0)
@@ -83,7 +83,7 @@ public:
 										SNew(SButton)
 													.HAlign(HAlign_Center)
 													.ContentPadding(FAppStyle::GetMargin("StandardDialog.ContentPadding"))
-													.OnClicked(this, &SHeartWidgetInputHandlerAssetCreateDialog::CancelClicked)
+													.OnClicked(this, &SHeartInputHandlerAssetCreateDialog::CancelClicked)
 													.Text(LOCTEXT("CreateHeartAssetCancel", "Cancel"))
 									]
 								]
@@ -94,13 +94,13 @@ public:
 		MakeParentClassPicker();
 	}
 
-	/** Sets properties for the supplied UHeartWidgetInputHandlerAssetFactory */
-	bool ConfigureProperties(const TWeakObjectPtr<UHeartWidgetInputHandlerAssetFactory> InHeartWidgetInputHandlerAssetFactory)
+	/** Sets properties for the supplied UHeartInputHandlerAssetFactory */
+	bool ConfigureProperties(const TWeakObjectPtr<UHeartInputHandlerAssetFactory> InHeartInputHandlerAssetFactory)
 	{
-		HeartWidgetInputHandlerAssetFactory = InHeartWidgetInputHandlerAssetFactory;
+		HeartInputHandlerAssetFactory = InHeartInputHandlerAssetFactory;
 
 		const TSharedRef<SWindow> Window = SNew(SWindow)
-			.Title(LOCTEXT("HeartWidgetInputHandlerAssetCreateDialogTitle", "Pick Asset Class"))
+			.Title(LOCTEXT("HeartInputHandlerAssetCreateDialogTitle", "Pick Asset Class"))
 			.ClientSize(FVector2D(400, 700))
 			.SupportsMinimize(false).SupportsMaximize(false)
 			[
@@ -110,7 +110,7 @@ public:
 		PickerWindow = Window;
 		GEditor->EditorAddModalWindow(Window);
 
-		HeartWidgetInputHandlerAssetFactory.Reset();
+		HeartInputHandlerAssetFactory.Reset();
 		return bOkClicked;
 	}
 
@@ -135,7 +135,7 @@ private:
 		ParentClassContainer->ClearChildren();
 		ParentClassContainer->AddSlot()
 			[
-				ClassViewerModule.CreateClassViewer(Options, FOnClassPicked::CreateSP(this, &SHeartWidgetInputHandlerAssetCreateDialog::OnClassPicked))
+				ClassViewerModule.CreateClassViewer(Options, FOnClassPicked::CreateSP(this, &SHeartInputHandlerAssetCreateDialog::OnClassPicked))
 			];
 	}
 
@@ -148,9 +148,9 @@ private:
 	/** Handler for when ok is clicked */
 	FReply OkClicked()
 	{
-		if (HeartWidgetInputHandlerAssetFactory.IsValid())
+		if (HeartInputHandlerAssetFactory.IsValid())
 		{
-			HeartWidgetInputHandlerAssetFactory->AssetClass = SelectedClass.Get();
+			HeartInputHandlerAssetFactory->AssetClass = SelectedClass.Get();
 		}
 
 		CloseDialog(true);
@@ -186,7 +186,7 @@ private:
 
 private:
 	/** The factory for which we are setting up properties */
-	TWeakObjectPtr<UHeartWidgetInputHandlerAssetFactory> HeartWidgetInputHandlerAssetFactory;
+	TWeakObjectPtr<UHeartInputHandlerAssetFactory> HeartInputHandlerAssetFactory;
 
 	/** A pointer to the window that is asking the user to select a parent class */
 	TWeakPtr<SWindow> PickerWindow;
@@ -204,10 +204,10 @@ private:
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 
 /*------------------------------------------------------------------------------
-	UHeartWidgetInputHandlerAssetFactory implementation
+	UHeartInputHandlerAssetFactory implementation
 ------------------------------------------------------------------------------*/
 
-UHeartWidgetInputHandlerAssetFactory::UHeartWidgetInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer)
+UHeartInputHandlerAssetFactory::UHeartInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	SupportedClass = UHeartInputHandlerAssetBase::StaticClass();
@@ -216,13 +216,13 @@ UHeartWidgetInputHandlerAssetFactory::UHeartWidgetInputHandlerAssetFactory(const
 	bEditAfterNew = true;
 }
 
-bool UHeartWidgetInputHandlerAssetFactory::ConfigureProperties()
+bool UHeartInputHandlerAssetFactory::ConfigureProperties()
 {
-	const TSharedRef<SHeartWidgetInputHandlerAssetCreateDialog> Dialog = SNew(SHeartWidgetInputHandlerAssetCreateDialog);
+	const TSharedRef<SHeartInputHandlerAssetCreateDialog> Dialog = SNew(SHeartInputHandlerAssetCreateDialog);
 	return Dialog->ConfigureProperties(this);
 }
 
-UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+UObject* UHeartInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
 	check(Class->IsChildOf(UHeartInputHandlerAssetBase::StaticClass()));
 
@@ -230,7 +230,7 @@ UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, U
 	{
 		FFormatNamedArguments Args;
 		Args.Add(TEXT("ClassName"), AssetClass ? FText::FromString(AssetClass->GetName()) : LOCTEXT("Null", "(null)"));
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(LOCTEXT("CannotCreateHeartWidgetInputHandlerAsset", "Cannot create a Heart Widget Input Handler Asset based on the class '{ClassName}'."), Args));
+		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(LOCTEXT("CannotCreateHeartInputHandlerAsset", "Cannot create a Heart Widget Input Handler Asset based on the class '{ClassName}'."), Args));
 		return nullptr;
 	}
 
@@ -239,7 +239,7 @@ UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, U
 	return NewAsset;
 }
 
-UObject* UHeartWidgetInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
+UObject* UHeartInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
 	return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
 }

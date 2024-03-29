@@ -106,7 +106,7 @@ public:
 
 	/**
 	 * Get all manually-keyed actions for a widget. This only works if either the widget, or one of its parents,
-	 * implements IHeartWidgetInputLinkerRedirector.
+	 * implements IHeartInputLinkerInterface.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static TArray<struct FHeartManualInputQueryResult> GetActionsForWidget(const UWidget* Widget);
@@ -116,7 +116,7 @@ public:
 	static UHeartWidgetInputLinker* GetWidgetInputLinker(UWidget* Widget);
 
 	//UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	//static FHeartWidgetInputBinding MakeWidgetInputBinding(UHeartWidgetInputHandlerAsset* InputHandler, UHeartWidgetInputTrigger* Trigger);
+	//static FHeartWidgetInputBinding MakeWidgetInputBinding(UHeartInputHandlerAsset* InputHandler, UHeartWidgetInputTrigger* Trigger);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static bool AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset);

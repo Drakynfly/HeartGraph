@@ -3,15 +3,15 @@
 #pragma once
 
 #include "Factories/Factory.h"
-#include "HeartWidgetInputHandlerAssetFactory.generated.h"
+#include "HeartInputHandlerAssetFactory.generated.h"
 
 UCLASS(hidecategories = Object, MinimalAPI)
-class UHeartWidgetInputHandlerAssetFactory : public UFactory
+class UHeartInputHandlerAssetFactory : public UFactory
 {
 	GENERATED_BODY()
 
 public:
-	UHeartWidgetInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer);
+	UHeartInputHandlerAssetFactory(const FObjectInitializer& ObjectInitializer);
 
 	// UFactory
 	virtual bool ConfigureProperties() override;
@@ -20,6 +20,6 @@ public:
 	// --
 
 	// The class of the created asset to create
-	UPROPERTY(EditAnywhere, Category = "HeartWidgetInputHandlerAssetFactory")
+	UPROPERTY(EditAnywhere, Category = "HeartInputHandlerAssetFactory")
 	TSubclassOf<class UHeartInputHandlerAssetBase> AssetClass;
 };

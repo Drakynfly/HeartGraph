@@ -25,9 +25,9 @@ class HEARTCANVAS_API UHeartGraphCanvasNode : public UHeartGraphWidgetBase, publ
 public:
 	virtual void NativeDestruct() override;
 
-	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
-	/** IHeartWidgetInputLinkerRedirector */
+	/** IHeartInputLinkerInterface */
+	virtual UHeartInputLinkerBase* ResolveLinker_Implementation() const override;
+	/** IHeartInputLinkerInterface */
 
 	/** IHeartGraphNodeInterface */
 	virtual UHeartGraphNode* GetHeartGraphNode() const override;

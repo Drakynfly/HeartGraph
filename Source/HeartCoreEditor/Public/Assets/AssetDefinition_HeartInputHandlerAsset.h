@@ -4,10 +4,10 @@
 
 #include "AssetDefinitionDefault.h"
 
-#include "AssetDefinition_HeartWidgetInputHandlerAsset.generated.h"
+#include "AssetDefinition_HeartInputHandlerAsset.generated.h"
 
 UCLASS()
-class UAssetDefinition_HeartWidgetInputHandlerAsset : public UAssetDefinitionDefault
+class UAssetDefinition_HeartInputHandlerAsset : public UAssetDefinitionDefault
 {
 	GENERATED_BODY()
 

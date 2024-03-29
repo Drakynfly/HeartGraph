@@ -30,7 +30,7 @@ void UHeartGraphCanvasNode::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-UHeartWidgetInputLinker* UHeartGraphCanvasNode::ResolveLinker_Implementation() const
+UHeartInputLinkerBase* UHeartGraphCanvasNode::ResolveLinker_Implementation() const
 {
 	return GraphCanvas.IsValid() ? Execute_ResolveLinker(GraphCanvas.Get()) : nullptr;
 }

@@ -52,8 +52,8 @@ public:
 protected:
 	virtual bool Initialize() override;
 
-	//~ IHeartWidgetInputLinkerRedirector
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override;
+	//~ IHeartInputLinkerInterface
+	virtual UHeartInputLinkerBase* ResolveLinker_Implementation() const override;
 	//~
 
 	virtual void Reset();

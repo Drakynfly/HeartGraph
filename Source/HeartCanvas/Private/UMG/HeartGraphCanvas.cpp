@@ -213,7 +213,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	return SuperLayerID;
 }
 
-UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
+UHeartInputLinkerBase* UHeartGraphCanvas::ResolveLinker_Implementation() const
 {
 	return BindingContainer.GetLinker();
 }

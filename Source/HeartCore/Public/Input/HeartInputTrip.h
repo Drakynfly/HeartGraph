@@ -3,6 +3,7 @@
 #pragma once
 
 #include "InputCoreTypes.h"
+#include "GameFramework/PlayerInput.h"
 
 namespace Heart::Input
 {
@@ -13,6 +14,40 @@ namespace Heart::Input
 		Release,
 		Manual
 	};
+
+	// Convert Input Event to less granular TripType
+	FORCEINLINE ETripType InputEventToTripType(const EInputEvent Event)
+	{
+		switch (Event)
+		{
+			// All these are compressed to Press
+		case IE_Pressed:
+		case IE_Repeat:
+		case IE_DoubleClick:
+			return ETripType::Press;
+
+			// Direct mapping
+		case IE_Released:
+			return ETripType::Release;
+
+			// Unhandled cases
+		case IE_Axis:
+		case IE_MAX:
+		default:
+			return ETripType::Unknown;
+		}
+	}
+
+	FORCEINLINE EModifierKey::Type ModifierKeysFromState(const FModifierKeysState& State)
+	{
+		EModifierKey::Type ModifierMask = EModifierKey::None;
+		if (State.IsControlDown())	ModifierMask |= EModifierKey::Control;
+		if (State.IsAltDown())		ModifierMask |= EModifierKey::Alt;
+		if (State.IsShiftDown())	ModifierMask |= EModifierKey::Shift;
+		if (State.IsCommandDown())	ModifierMask |= EModifierKey::Command;
+
+		return ModifierMask;
+	}
 
 	struct FInputTrip
 	{
@@ -32,6 +67,12 @@ namespace Heart::Input
 		  :	Type(Type),
 			Key(PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator()),
 			ModifierMask(EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown()))
+		{}
+
+		FInputTrip(const FInputKeyParams& Params)
+		  : Type(InputEventToTripType(Params.Event)),
+		    Key(Params.Key),
+		    ModifierMask(ModifierKeysFromState(FSlateApplication::Get().GetModifierKeys()))
 		{}
 
 		FInputTrip(const FName& ManualEvent)
