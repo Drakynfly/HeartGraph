@@ -45,6 +45,22 @@ namespace Blood
 	};
 
 	template<>
+	struct TReaderLambdaGen<FEnumProperty>
+	{
+		static FFPropertyReadFunc Make()
+		{
+			return [](const FProperty* ValueProp, const uint8* ValuePtr)
+				{
+					if (const FEnumProperty* StructProp = CastField<FEnumProperty>(ValueProp))
+					{
+						return FBloodValue(StructProp->GetEnum(), ValuePtr);
+					}
+					return FBloodValue();
+				};
+		}
+	};
+
+	template<>
 	struct TReaderLambdaGen<FStructProperty>
 	{
 		static FFPropertyReadFunc Make()
@@ -76,6 +92,7 @@ namespace Blood
 			{ FSoftClassProperty::StaticClass(), TReaderLambdaGen<FSoftClassProperty>::Make() },
 			{ FObjectProperty::StaticClass(), TReaderLambdaGen<FObjectProperty>::Make() },
 			{ FSoftObjectProperty::StaticClass(), TReaderLambdaGen<FSoftObjectProperty>::Make() },
+			{ FEnumProperty::StaticClass(), TReaderLambdaGen<FEnumProperty>::Make() },
 			{ FStructProperty::StaticClass(), TReaderLambdaGen<FStructProperty>::Make() },
 		};
 	}
