@@ -290,10 +290,10 @@ private:
 	UPROPERTY()
 	FHeartGraphGuid Guid;
 
-	UPROPERTY()
+	UPROPERTY(Instanced)
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
-	UPROPERTY()
+	UPROPERTY(Instanced)
 	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
 
 	FHeartGraphNodeEvent OnNodeAdded;
