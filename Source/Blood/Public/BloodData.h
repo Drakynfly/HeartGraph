@@ -3,6 +3,8 @@
 #pragma once
 
 #include "InstancedStruct.h"
+#include "Concepts/BaseStructureProvider.h"
+#include "Concepts/VariantStructureProvider.h"
 
 #include "BloodData.generated.h"
 
@@ -198,15 +200,24 @@ namespace Blood
 {
 	template <typename T> struct TDataConverter
 	{
-		static UScriptStruct* Type() { return TBaseStructure<T>::Get(); }
+		static UScriptStruct* Type()
+		{
+			if constexpr (TModels_V<CBaseStructureProvider, T>)
+			{
+				return TBaseStructure<T>::Get();
+			}
+
+			if constexpr (TModels_V<CVariantStructureProvider, T>)
+			{
+				return TVariantStructure<T>::Get();
+			}
+
+			return FBloodWildcard::StaticStruct();
+		}
 
 		static T Value(const FInstancedStruct& Value)
 		{
-			if (ensure(Value.GetScriptStruct() == Type()))
-			{
-				return Value.Get<T>();
-			}
-			return {};
+			return Value.Get<T>();
 		}
 	};
 
