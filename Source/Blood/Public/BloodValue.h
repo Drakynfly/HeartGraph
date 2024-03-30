@@ -85,7 +85,16 @@ namespace Blood
 	static FBloodValue ToBloodValue(const TBloodData& Value)
 	{
 		FBloodValue OutValue;
-		OutValue.Data.InitializeAs(TDataConverter<TBloodData>::Type(), reinterpret_cast<const uint8*>(&Value));
+
+		if constexpr (TIsPoDWrapperStruct<TBloodData>::Value)
+		{
+			OutValue.Data.InitializeAs(TBloodData::StaticStruct(), reinterpret_cast<const uint8*>(&Value));
+		}
+		else
+		{
+			OutValue.Data.InitializeAs(TDataConverter<TBloodData>::Type(), reinterpret_cast<const uint8*>(&Value));
+		}
+
 		return OutValue;
 	}
 

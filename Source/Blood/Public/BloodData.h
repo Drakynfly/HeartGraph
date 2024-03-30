@@ -232,7 +232,11 @@ namespace Blood
 
 		static T Value(const FInstancedStruct& Value)
 		{
-			return Value.Get<T>();
+			// Cannot use Value.Get as it fails to deal with TVariantStructures
+			//return Value.Get<T>();
+
+			// So we just do the cast ourselves
+			return *static_cast<T*>(Value.GetMemory());
 		}
 	};
 
