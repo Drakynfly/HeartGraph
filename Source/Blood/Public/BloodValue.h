@@ -148,4 +148,36 @@ namespace Blood
 
 		return T();
 	}
+
+#if ALLOCATE_BLOOD_STATICS
+	// Commonly needed values, stored here to avoid repeated conversion
+	namespace Statics
+	{
+		// A null, typeless BloodValue, containing no data at all, but earmarked with FBloodWildcard so-as to not
+		// confuse it with a malformed BloodValue
+		static const FBloodValue Wildcard = ToBloodValue(FBloodWildcard());
+
+		static const FBloodValue Boolean_False = ToBloodValue(false);
+		static const FBloodValue Boolean_True = ToBloodValue(true);
+
+		static const FBloodValue Float_Zero = ToBloodValue(0.f);
+		static const FBloodValue Float_One = ToBloodValue(1.f);
+		static const FBloodValue Double_Zero = ToBloodValue(0.0);
+		static const FBloodValue Double_One = ToBloodValue(1.0);
+
+		static const FBloodValue Name_None = ToBloodValue(Name_None);
+		static const FBloodValue String_Empty = ToBloodValue(FString());
+		static const FBloodValue Text_Empty = ToBloodValue(FText::GetEmpty());
+
+		static const FBloodValue Vector3f_Zero = ToBloodValue(FVector3f::ZeroVector);
+		static const FBloodValue Vector3f_One = ToBloodValue(FVector3f::OneVector);
+		static const FBloodValue Vector3d_Zero = ToBloodValue(FVector::ZeroVector);
+		static const FBloodValue Vector3d_One = ToBloodValue(FVector::OneVector);
+
+		static const FBloodValue Object_Nullptr = ToBloodValue<TObjectPtr<UObject>>(nullptr);
+		static const FBloodValue Class_Nullptr = ToBloodValue<TSubclassOf<UObject>>(nullptr);
+		static const FBloodValue SoftObject_Nullptr = ToBloodValue<TSoftObjectPtr<UObject>>(nullptr);
+		static const FBloodValue SoftClass_Nullptr = ToBloodValue<TSoftClassPtr<UObject>>(nullptr);
+	}
+#endif
 }
