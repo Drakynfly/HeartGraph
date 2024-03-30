@@ -5,7 +5,7 @@
 #pragma once
 
 #include "BloodData.h"
-#include "BloodValue.h"
+#include "BloodFProperty.h"
 
 #include "BloodProperty.generated.h"
 

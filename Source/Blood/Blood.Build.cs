@@ -29,7 +29,7 @@ public class Blood : ModuleRules
             }
         );
 
-        PublicDefinitions.Add("ALLOCATE_BLOOD_STATICS=1");
+        PublicDefinitions.Add("ALLOCATE_BLOOD_STATICS=0");
     }
 
     public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)

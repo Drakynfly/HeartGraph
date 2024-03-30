@@ -13,14 +13,12 @@ namespace Blood
 		{
 			return [](const FProperty* ValueProp, const uint8* ValuePtr)
 				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs<typename TDataConverter<typename T::TCppType>::BloodType>(
-						CastField<T>(ValueProp)->GetPropertyValue(ValuePtr));
-					return OutValue;
+					return ToBloodValue(*reinterpret_cast<const typename T::TCppType*>(ValuePtr));
 				};
 		}
 	};
 
+	// We have to specialize this because FSoftClassProperty's TCppType is FSoftObjectPtr, which Blood doesn't recognize
 	template<>
 	struct TReaderLambdaGen<FSoftClassProperty>
 	{
@@ -28,13 +26,12 @@ namespace Blood
 		{
 			return [](const FProperty* ValueProp, const uint8* ValuePtr)
 				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(FBloodSoftClass::StaticStruct(), ValuePtr);
-					return OutValue;
+					return ToBloodValue(*reinterpret_cast<const TSoftObjectPtr<>*>(ValuePtr));
 				};
 		}
 	};
 
+	// We have to specialize this because FSoftObjectProperty's TCppType is FSoftObjectPtr, which Blood doesn't recognize
 	template<>
 	struct TReaderLambdaGen<FSoftObjectProperty>
 	{
@@ -42,9 +39,7 @@ namespace Blood
 		{
 			return [](const FProperty* ValueProp, const uint8* ValuePtr)
 				{
-					FBloodValue OutValue;
-					OutValue.Data.InitializeAs(FBloodSoftObject::StaticStruct(), ValuePtr);
-					return OutValue;
+					return ToBloodValue(*reinterpret_cast<const TSoftObjectPtr<>*>(ValuePtr));
 				};
 		}
 	};
@@ -56,12 +51,11 @@ namespace Blood
 		{
 			return [](const FProperty* ValueProp, const uint8* ValuePtr)
 				{
-					FBloodValue OutValue;
 					if (const FStructProperty* StructProp = CastField<FStructProperty>(ValueProp))
 					{
-						OutValue.Data.InitializeAs(StructProp->Struct, ValuePtr);
+						return FBloodValue(StructProp->Struct, ValuePtr);
 					}
-					return OutValue;
+					return FBloodValue();
 				};
 		}
 	};
