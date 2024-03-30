@@ -8,20 +8,14 @@
 
 #include "BloodData.generated.h"
 
-USTRUCT()
-struct FBloodDataBase
-{
-	GENERATED_BODY()
-};
-
 USTRUCT(BlueprintType, meta = (DisplayName = "Wildcard"))
-struct BLOOD_API FBloodWildcard : public FBloodDataBase
+struct BLOOD_API FBloodWildcard
 {
 	GENERATED_BODY()
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Bool"))
-struct BLOOD_API FBloodBool : public FBloodDataBase
+struct BLOOD_API FBloodBool
 {
 	GENERATED_BODY()
 
@@ -33,7 +27,7 @@ struct BLOOD_API FBloodBool : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Byte"))
-struct BLOOD_API FBloodUI8 : public FBloodDataBase
+struct BLOOD_API FBloodUI8
 {
 	GENERATED_BODY()
 
@@ -45,7 +39,7 @@ struct BLOOD_API FBloodUI8 : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer"))
-struct BLOOD_API FBloodI32 : public FBloodDataBase
+struct BLOOD_API FBloodI32
 {
 	GENERATED_BODY()
 
@@ -57,7 +51,7 @@ struct BLOOD_API FBloodI32 : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer (64)"))
-struct BLOOD_API FBloodI64 : public FBloodDataBase
+struct BLOOD_API FBloodI64
 {
 	GENERATED_BODY()
 
@@ -69,7 +63,7 @@ struct BLOOD_API FBloodI64 : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Float"))
-struct BLOOD_API FBloodFloat : public FBloodDataBase
+struct BLOOD_API FBloodFloat
 {
 	GENERATED_BODY()
 
@@ -81,7 +75,7 @@ struct BLOOD_API FBloodFloat : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Double"))
-struct BLOOD_API FBloodDouble : public FBloodDataBase
+struct BLOOD_API FBloodDouble
 {
 	GENERATED_BODY()
 
@@ -93,7 +87,7 @@ struct BLOOD_API FBloodDouble : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Name"))
-struct BLOOD_API FBloodName : public FBloodDataBase
+struct BLOOD_API FBloodName
 {
 	GENERATED_BODY()
 
@@ -105,7 +99,7 @@ struct BLOOD_API FBloodName : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "String"))
-struct BLOOD_API FBloodString : public FBloodDataBase
+struct BLOOD_API FBloodString
 {
 	GENERATED_BODY()
 
@@ -117,7 +111,7 @@ struct BLOOD_API FBloodString : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Text"))
-struct BLOOD_API FBloodText : public FBloodDataBase
+struct BLOOD_API FBloodText
 {
 	GENERATED_BODY()
 
@@ -129,7 +123,7 @@ struct BLOOD_API FBloodText : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Object"))
-struct BLOOD_API FBloodObject : public FBloodDataBase
+struct BLOOD_API FBloodObject
 {
 	GENERATED_BODY()
 
@@ -146,7 +140,7 @@ struct BLOOD_API FBloodObject : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Class"))
-struct BLOOD_API FBloodClass : public FBloodDataBase
+struct BLOOD_API FBloodClass
 {
 	GENERATED_BODY()
 
@@ -164,7 +158,7 @@ struct BLOOD_API FBloodClass : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Object (Soft)"))
-struct BLOOD_API FBloodSoftObject : public FBloodDataBase
+struct BLOOD_API FBloodSoftObject
 {
 	GENERATED_BODY()
 
@@ -181,7 +175,7 @@ struct BLOOD_API FBloodSoftObject : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Class (Soft)"))
-struct BLOOD_API FBloodSoftClass : public FBloodDataBase
+struct BLOOD_API FBloodSoftClass
 {
 	GENERATED_BODY()
 
@@ -199,6 +193,26 @@ struct BLOOD_API FBloodSoftClass : public FBloodDataBase
 
 namespace Blood
 {
+	template <typename T> struct TIsPoDWrapperStruct
+	{
+		static constexpr bool Value = false;
+	};
+
+	template <> struct TIsPoDWrapperStruct<FBloodWildcard>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodBool>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodUI8>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodI32>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodI64>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodFloat>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodDouble>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodName>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodString>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodText>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodObject>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodClass>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodSoftObject>{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodSoftClass>	{ static constexpr bool Value = true; };
+
 	template <typename T> struct TDataConverter
 	{
 		static UScriptStruct* Type()

@@ -47,7 +47,7 @@ struct BLOOD_API FBloodValue
 	template <typename TBloodDataType>
 	bool Is() const
 	{
-		if constexpr (TIsDerivedFrom<TBloodDataType, FBloodDataBase>::Value)
+		if constexpr (Blood::TIsPoDWrapperStruct<TBloodDataType>::Value)
 		{
 			return GetUnderlyingType() == TBloodDataType::StaticStruct();
 		}
