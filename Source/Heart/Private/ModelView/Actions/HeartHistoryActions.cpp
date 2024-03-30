@@ -4,6 +4,8 @@
 #include "Model/HeartGraph.h"
 #include "ModelView/HeartActionHistory.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartHistoryActions)
+
 void UHeartUndoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
 									  UObject* ContextObject)
 {
