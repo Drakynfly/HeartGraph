@@ -245,8 +245,10 @@ namespace Blood
 			{
 				return EPropertyBagPropertyType::Enum;
 			}
-
-			return EPropertyBagPropertyType::Struct;
+			else
+			{
+				return EPropertyBagPropertyType::Struct;
+			}
 		}
 
 		FORCEINLINE static UObject* PropertyBagTypeObject()
