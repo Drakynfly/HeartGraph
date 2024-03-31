@@ -745,8 +745,8 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 
 	if (DisplayedGraph.IsValid())
 	{
-		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &UHeartGraphCanvas::OnNodeAddedToGraph);
-		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &UHeartGraphCanvas::OnNodeRemovedFromGraph);
+		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAddedToGraph);
+		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemovedFromGraph);
 		Refresh();
 	}
 }

@@ -2,132 +2,59 @@
 
 #include "BloodValue.h"
 
-#include "BloodPrecomputedMaps.h"
-
-namespace Blood::Impl
+FBloodValue::FBloodValue(const UScriptStruct* Type, const uint8* Memory)
 {
-	TObjectPtr<UField> FPropertyHelpers::GetFPropertyFieldTypeImpl(const FProperty* Prop)
-	{
-		#define TRY_BIND_VALUE(type, actual)\
-		if (auto&& type##Prop = CastField<F##type##Property>(Prop))\
-		{\
-			return TDataConverter<actual>::Type();\
-		}
+	// Init property
+	PropertyBag.AddProperty(
+		Blood::Private::V0,
+		EPropertyBagPropertyType::Struct,
+		const_cast<UScriptStruct*>(Type));
 
-		#define TRY_BIND_VALUE_CLASS(type, InnerProp)\
-		if (auto&& type##Prop = CastField<F##type##Property>(Prop))\
-		{\
-			return type##Prop->InnerProp;\
-		}
+	const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
 
-		TRY_BIND_VALUE(Bool, bool)
-		TRY_BIND_VALUE(Byte, uint8)
-		TRY_BIND_VALUE(Int, int32)
-		TRY_BIND_VALUE(Int64, int64)
-		TRY_BIND_VALUE(Float, float)
-		TRY_BIND_VALUE(Double, double)
-		TRY_BIND_VALUE(Name, FName)
-		TRY_BIND_VALUE(Str, FString)
-		TRY_BIND_VALUE(Text, FText)
-		TRY_BIND_VALUE_CLASS(Class, MetaClass)
-		TRY_BIND_VALUE_CLASS(SoftClass, MetaClass)
-		TRY_BIND_VALUE_CLASS(Object, PropertyClass)
-		TRY_BIND_VALUE_CLASS(SoftObject, PropertyClass)
-		TRY_BIND_VALUE_CLASS(Struct, Struct)
-
-	#undef TRY_BIND_VALUE
-	#undef TRY_BIND_VALUE_CLASS
-		return FBloodWildcard::StaticStruct();
-	}
-
-	bool FPropertyHelpers::WriteToFPropertyValuePtr(const FProperty* ValueProp, uint8* ValuePtr, const FBloodValue& Value)
-	{
-		check(ValueProp);
-		check(ValuePtr);
-
-		if (auto&& ArrayProp = CastField<FArrayProperty>(ValueProp))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Array types are not supported yet."))
-			return false;
-		}
-		if (auto&& SetProp = CastField<FSetProperty>(ValueProp))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Set types are not supported yet."))
-			return false;
-		}
-		if (auto&& MapProp = CastField<FMapProperty>(ValueProp))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Map types are not supported yet."))
-			return false;
-		}
-
-		// Macro for binding to most FProperty types
-	#define TRY_BIND_TYPE(TypeName)\
-		if (auto&& TypeName##Prop = CastField<F##TypeName##Property>(ValueProp))\
-		{\
-			if (Value.Data.GetScriptStruct() == TDataConverter<F##TypeName##Property::TCppType>::Type())\
-			{\
-				TypeName##Prop->SetPropertyValue(ValuePtr, Value.GetValue<F##TypeName##Property::TCppType>());\
-				return true;\
-			}\
-			return false;\
-		}
-
-		// Macro for binding to Class FProperty types
-	#define TRY_BIND_TYPE_CLASS(TypeName, Transformation)\
-		if (auto&& TypeName##Prop = CastField<F##TypeName##Property>(ValueProp))\
-		{\
-			if (Value.Data.GetScriptStruct() == FBlood##TypeName::StaticStruct())\
-			{\
-				TypeName##Prop->SetPropertyValue(ValuePtr, Transformation);\
-				return true;\
-			}\
-			return false;\
-		}
-
-		TRY_BIND_TYPE(Bool)
-		TRY_BIND_TYPE(Byte)
-		TRY_BIND_TYPE(Float)
-		TRY_BIND_TYPE(Double)
-		TRY_BIND_TYPE(Int)
-		TRY_BIND_TYPE(Int64)
-		TRY_BIND_TYPE(Name)
-		TRY_BIND_TYPE(Str)
-		TRY_BIND_TYPE(Text)
-
-		TRY_BIND_TYPE_CLASS(SoftClass, FSoftObjectPtr(Value.GetValue<TSoftClassPtr<>>().ToSoftObjectPath()));
-		TRY_BIND_TYPE_CLASS(Class, Value.GetValue<FClassProperty::TCppType>());
-		TRY_BIND_TYPE_CLASS(SoftObject, FSoftObjectPtr(Value.GetValue<TSoftObjectPtr<>>().ToSoftObjectPath()));
-		TRY_BIND_TYPE_CLASS(Object, Value.GetValue<TObjectPtr<UObject>>());
-
-		// Special handling for the unique way structs are initialized
-		if (auto&& StructProp = CastField<FStructProperty>(ValueProp))
-		{
-			if (Value.Data.GetScriptStruct() == StructProp->Struct)
-			{
-				StructProp->CopyValuesInternal(ValuePtr, Value.Data.GetMemory(), 1);
-				return true;
-			}
-			return false;
-		}
-
-	#undef TRY_BIND_TYPE
-	#undef TRY_BIND_TYPE_CLASS
-
-		return false;
-	}
-
-	FBloodValue FPropertyHelpers::ReadFromFPropertyValuePtr(const FProperty* ValueProp, const uint8* ValuePtr)
-	{
-		check(ValueProp);
-		check(ValuePtr);
-
-		const FFieldClass* FieldClass = ValueProp->GetClass();
-		if (const FFPropertyReadFunc* StaticLambda = FPrecomputedMaps::Get().ReaderMap.Find(FieldClass))
-		{
-			return (*StaticLambda)(ValueProp, ValuePtr);
-		}
-
-		return FBloodValue();
-	}
+	Desc->CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
 }
+
+FBloodValue::FBloodValue(const UEnum* Type, const uint8* Memory)
+{
+	// Init property
+	PropertyBag.AddProperty(
+		Blood::Private::V0,
+		EPropertyBagPropertyType::Enum,
+		const_cast<UEnum*>(Type));
+
+	const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
+
+	Desc->CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+}
+
+#if ALLOCATE_BLOOD_STATICS
+namespace Blood
+{
+	// A null, typeless BloodValue, containing no data at all, but earmarked with FBloodWildcard so-as to not
+	// confuse it with a malformed BloodValue
+	const FBloodValue FStatics::Wildcard = ToBloodValue(FBloodWildcard());
+
+	const FBloodValue FStatics::Boolean_False = ToBloodValue(false);
+	const FBloodValue FStatics::Boolean_True = ToBloodValue(true);
+
+	const FBloodValue FStatics::Float_Zero = ToBloodValue(0.f);
+	const FBloodValue FStatics::Float_One = ToBloodValue(1.f);
+	const FBloodValue FStatics::Double_Zero = ToBloodValue(0.0);
+	const FBloodValue FStatics::Double_One = ToBloodValue(1.0);
+
+	const FBloodValue FStatics::Name_None = ToBloodValue(Name_None);
+	const FBloodValue FStatics::String_Empty = ToBloodValue(FString());
+	const FBloodValue FStatics::Text_Empty = ToBloodValue(FText::GetEmpty());
+
+	const FBloodValue FStatics::Vector3f_Zero = ToBloodValue(FVector3f::ZeroVector);
+	const FBloodValue FStatics::Vector3f_One = ToBloodValue(FVector3f::OneVector);
+	const FBloodValue FStatics::Vector3d_Zero = ToBloodValue(FVector::ZeroVector);
+	const FBloodValue FStatics::Vector3d_One = ToBloodValue(FVector::OneVector);
+
+	const FBloodValue FStatics::Object_Nullptr = ToBloodValue<TObjectPtr<UObject>>(nullptr);
+	const FBloodValue FStatics::Class_Nullptr = ToBloodValue<TSubclassOf<UObject>>(nullptr);
+	const FBloodValue FStatics::SoftObject_Nullptr = ToBloodValue<TSoftObjectPtr<UObject>>(nullptr);
+	const FBloodValue FStatics::SoftClass_Nullptr = ToBloodValue<TSoftClassPtr<UObject>>(nullptr);
+}
+#endif

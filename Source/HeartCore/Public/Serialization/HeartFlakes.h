@@ -7,66 +7,70 @@
 
 #include "HeartFlakes.generated.h"
 
-class HEARTCORE_API FHeartMemoryWriter : public FMemoryWriter
+namespace Heart::Flakes
 {
-public:
-	FHeartMemoryWriter(TArray<uint8>& OutBytes, UObject* Outer)
-	  : FMemoryWriter(OutBytes),
-		OuterStack({Outer}) {}
-
-	using FMemoryWriter::operator<<; // For visibility of the overloads we don't override
-
-	//~ Begin FArchive Interface
-	virtual FArchive& operator<<(UObject*& Obj) override;
-	virtual FArchive& operator<<(FObjectPtr& Obj) override;
-	virtual FArchive& operator<<(FSoftObjectPtr& AssetPtr) override;
-	virtual FArchive& operator<<(FSoftObjectPath& Value) override;
-	virtual FArchive& operator<<(FWeakObjectPtr& Value) override;
-	virtual FString GetArchiveName() const override;
-	//~ End FArchive Interface
-
-private:
-	// Tracks what objects are currently being serialized. This allows us to only serialize UObjects that are directly
-	// owned *and* stored in the first outer.
-	TArray<UObject*> OuterStack;
-};
-
-class HEARTCORE_API FHeartMemoryReader : public FMemoryReader
-{
-public:
-	enum EOptions
+	class HEARTCORE_API FRecursiveMemoryWriter : public FMemoryWriter
 	{
-		None = 0,
-		ExecPostLoad = 1 << 0
+	public:
+		FRecursiveMemoryWriter(TArray<uint8>& OutBytes, UObject* Outer)
+		  : FMemoryWriter(OutBytes),
+			OuterStack({Outer}) {}
+
+		using FMemoryWriter::operator<<; // For visibility of the overloads we don't override
+
+		//~ Begin FArchive Interface
+		virtual FArchive& operator<<(UObject*& Obj) override;
+		virtual FArchive& operator<<(FObjectPtr& Obj) override;
+		virtual FArchive& operator<<(FSoftObjectPtr& AssetPtr) override;
+		virtual FArchive& operator<<(FSoftObjectPath& Value) override;
+		virtual FArchive& operator<<(FWeakObjectPtr& Value) override;
+		virtual FString GetArchiveName() const override;
+		//~ End FArchive Interface
+
+	private:
+		// Tracks what objects are currently being serialized. This allows us to only serialize UObjects that are directly
+		// owned *and* stored in the first outer.
+		TArray<UObject*> OuterStack;
 	};
 
-	FHeartMemoryReader(const TArray<uint8>& InBytes, bool bIsPersistent, UObject* Outer, EOptions Options)
-	  : FMemoryReader(InBytes, bIsPersistent),
-		OuterStack({Outer}),
-		Options(Options) {}
+	class HEARTCORE_API FRecursiveMemoryReader : public FMemoryReader
+	{
+	public:
+		enum EOptions
+		{
+			None = 0,
+			ExecPostLoad = 1 << 0
+		};
 
-	using FMemoryReader::operator<<; // For visibility of the overloads we don't override
+		FRecursiveMemoryReader(const TArray<uint8>& InBytes, bool bIsPersistent, UObject* Outer, EOptions Options)
+		  : FMemoryReader(InBytes, bIsPersistent),
+			OuterStack({Outer}),
+			Options(Options) {}
 
-	//~ Begin FArchive Interface
-	virtual FArchive& operator<<(UObject*& Obj) override;
-	virtual FArchive& operator<<(FObjectPtr& Obj) override;
-	virtual FArchive& operator<<(FSoftObjectPtr& AssetPtr) override;
-	virtual FArchive& operator<<(FSoftObjectPath& Value) override;
-	virtual FArchive& operator<<(FWeakObjectPtr& Value) override;
-	virtual FString GetArchiveName() const override;
-	//~ End FArchive Interface
+		using FMemoryReader::operator<<; // For visibility of the overloads we don't override
 
-private:
-	// Tracks what objects are currently being deserialized. This allows us to reconstruct objects with their original
-	// outer.
-	TArray<UObject*> OuterStack;
+		//~ Begin FArchive Interface
+		virtual FArchive& operator<<(UObject*& Obj) override;
+		virtual FArchive& operator<<(FObjectPtr& Obj) override;
+		virtual FArchive& operator<<(FSoftObjectPtr& AssetPtr) override;
+		virtual FArchive& operator<<(FSoftObjectPath& Value) override;
+		virtual FArchive& operator<<(FWeakObjectPtr& Value) override;
+		virtual FString GetArchiveName() const override;
+		//~ End FArchive Interface
 
-	TArray<UObject*> ObjectsCreated;
+	private:
+		// Tracks what objects are currently being deserialized. This allows us to reconstruct objects with their original
+		// outer.
+		TArray<UObject*> OuterStack;
 
-	EOptions Options = EOptions::None;
-};
+		TArray<UObject*> ObjectsCreated;
 
-ENUM_CLASS_FLAGS(FHeartMemoryReader::EOptions)
+		EOptions Options = EOptions::None;
+	};
+}
+
+ENUM_CLASS_FLAGS(Heart::Flakes::FRecursiveMemoryReader::EOptions)
+
 
 USTRUCT(BlueprintType)
 struct HEARTCORE_API FHeartFlake

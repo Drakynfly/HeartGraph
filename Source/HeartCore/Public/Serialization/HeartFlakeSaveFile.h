@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GameFramework/SaveGame.h"
-#include "General/HeartFlakes.h"
+#include "HeartFlakes.h"
 
 #include "HeartFlakeSaveFile.generated.h"
 

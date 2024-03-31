@@ -1,6 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "General/HeartFlakes.h"
+#include "Serialization/HeartFlakes.h"
 
 #include "Compression/OodleDataCompressionUtil.h"
 
@@ -14,173 +14,173 @@ TAutoConsoleVariable<bool> CVarLogCompressionStatistics{
 };
 #endif
 
-enum class EHeartMemoryObj : uint8
+namespace Heart::Flakes
 {
-	None,
-
-	// Direct sub-objects are serialized with us
-	Internal,
-
-	// Any other object reference is treated as a SoftObjectRef
-	External,
-};
-
-FArchive& FHeartMemoryWriter::operator<<(UObject*& Obj)
-{
-	// Don't serialize nulls, or things we are already writing
-	if (!IsValid(Obj) ||
-		OuterStack.Contains(Obj))
+	enum class ERecursiveMemoryObj : uint8
 	{
+		None,
+
+		// Direct sub-objects are serialized with us
+		Internal,
+
+		// Any other object reference is treated as a SoftObjectRef
+		External,
+	};
+
+	FArchive& FRecursiveMemoryWriter::operator<<(UObject*& Obj)
+	{
+		// Don't serialize nulls, or things we are already writing
+		if (!IsValid(Obj) ||
+			OuterStack.Contains(Obj))
+		{
+			return *this;
+		}
+
+		ERecursiveMemoryObj Op = ERecursiveMemoryObj::None;
+
+		if (Obj->GetOuter() == OuterStack.Last())
+		{
+			Op = ERecursiveMemoryObj::Internal;
+		}
+		else
+		{
+			Op = ERecursiveMemoryObj::External;
+		}
+
+		*this << Op;
+
+		switch (Op)
+		{
+		case ERecursiveMemoryObj::None:
+			break;
+		case ERecursiveMemoryObj::Internal:
+			{
+				FSoftClassPath Class(Obj->GetClass());
+				*this << Class;
+
+				OuterStack.Push(Obj); // Track that we are serializing this object
+				Obj->Serialize(*this);
+				OuterStack.Pop(); // Untrack the object
+			}
+			break;
+		case ERecursiveMemoryObj::External:
+			{
+				FSoftObjectPath ExternalRef = Obj;
+				*this << ExternalRef;
+			}
+			break;
+		default: ;
+		}
+
 		return *this;
 	}
 
-	EHeartMemoryObj Op = EHeartMemoryObj::None;
-
-	if (Obj->GetOuter() == OuterStack.Last())
+	FArchive& FRecursiveMemoryWriter::operator<<(FObjectPtr& Obj)
 	{
-		Op = EHeartMemoryObj::Internal;
-	}
-	else
-	{
-		Op = EHeartMemoryObj::External;
-	}
-
-	*this << Op;
-
-	switch (Op)
-	{
-	case EHeartMemoryObj::None:
-		break;
-	case EHeartMemoryObj::Internal:
+		if (UObject* ObjPtr = Obj.Get())
 		{
-			FSoftClassPath Class(Obj->GetClass());
-			*this << Class;
-
-			OuterStack.Push(Obj); // Track that we are serializing this object
-			Obj->Serialize(*this);
-			OuterStack.Pop(); // Untrack the object
+			*this << ObjPtr;
 		}
-		break;
-	case EHeartMemoryObj::External:
-		{
-			FSoftObjectPath ExternalRef = Obj;
-			*this << ExternalRef;
-		}
-		break;
-	default: ;
+		return *this;
 	}
 
-	return *this;
-}
-
-FArchive& FHeartMemoryWriter::operator<<(FObjectPtr& Obj)
-{
-	if (UObject* ObjPtr = Obj.Get())
+	FArchive& FRecursiveMemoryWriter::operator<<(FSoftObjectPtr& AssetPtr)
 	{
-		*this << ObjPtr;
+		return FArchiveUObject::SerializeSoftObjectPtr(*this, AssetPtr);
 	}
-	return *this;
-}
 
-FArchive& FHeartMemoryWriter::operator<<(FSoftObjectPtr& AssetPtr)
-{
-	return FArchiveUObject::SerializeSoftObjectPtr(*this, AssetPtr);
-}
-
-FArchive& FHeartMemoryWriter::operator<<(FSoftObjectPath& Value)
-{
-	return FArchiveUObject::SerializeSoftObjectPath(*this, Value);
-}
-
-FArchive& FHeartMemoryWriter::operator<<(FWeakObjectPtr& Value)
-{
-	return FArchiveUObject::SerializeWeakObjectPtr(*this, Value);
-}
-
-FString FHeartMemoryWriter::GetArchiveName() const
-{
-	return TEXT("FHeartMemoryWriter");
-}
-
-FArchive& FHeartMemoryReader::operator<<(UObject*& Obj)
-{
-	EHeartMemoryObj Op;
-	*this << Op;
-
-	switch (Op)
+	FArchive& FRecursiveMemoryWriter::operator<<(FSoftObjectPath& Value)
 	{
-	case EHeartMemoryObj::Internal:
-		{
-			FSoftClassPath Class;
-			*this << Class;
+		return FArchiveUObject::SerializeSoftObjectPath(*this, Value);
+	}
 
-			if (const UClass* ObjClass = Class.TryLoadClass<UObject>())
+	FArchive& FRecursiveMemoryWriter::operator<<(FWeakObjectPtr& Value)
+	{
+		return FArchiveUObject::SerializeWeakObjectPtr(*this, Value);
+	}
+
+	FString FRecursiveMemoryWriter::GetArchiveName() const
+	{
+		return TEXT("FRecursiveMemoryWriter");
+	}
+
+	FArchive& FRecursiveMemoryReader::operator<<(UObject*& Obj)
+	{
+		ERecursiveMemoryObj Op;
+		*this << Op;
+
+		switch (Op)
+		{
+		case ERecursiveMemoryObj::Internal:
 			{
-				Obj = ObjectsCreated.Add_GetRef(NewObject<UObject>(OuterStack.Last(), ObjClass));
-				OuterStack.Push(Obj);
-				Obj->Serialize(*this);
-				OuterStack.Pop();
+				FSoftClassPath Class;
+				*this << Class;
+
+				if (const UClass* ObjClass = Class.TryLoadClass<UObject>())
+				{
+					Obj = ObjectsCreated.Add_GetRef(NewObject<UObject>(OuterStack.Last(), ObjClass));
+					OuterStack.Push(Obj);
+					Obj->Serialize(*this);
+					OuterStack.Pop();
+				}
+			}
+			break;
+		case ERecursiveMemoryObj::External:
+			{
+				FSoftObjectPath ExternalRef;
+				*this << ExternalRef;
+				Obj = ExternalRef.TryLoad();
+			}
+			break;
+		case ERecursiveMemoryObj::None:
+		default: return *this;
+		}
+
+		// If the outer stack is 1 here, then we are exiting the serialize loop, and can perform final options.
+		if (OuterStack.Num() == 1)
+		{
+			if (EnumHasAnyFlags(Options, ExecPostLoad))
+			{
+				OuterStack[0]->PostLoad();
+
+				for (auto&& Object : ObjectsCreated)
+				{
+					Object->PostLoad();
+				}
 			}
 		}
-		break;
-	case EHeartMemoryObj::External:
-		{
-			FSoftObjectPath ExternalRef;
-			*this << ExternalRef;
-			Obj = ExternalRef.TryLoad();
-		}
-		break;
-	case EHeartMemoryObj::None:
-	default: return *this;
+
+		return *this;
 	}
 
-	// If the outer stack is 1 here, then we are exiting the serialize loop, and can perform final options.
-	if (OuterStack.Num() == 1)
+	FArchive& FRecursiveMemoryReader::operator<<(FObjectPtr& Obj)
 	{
-		if (EnumHasAnyFlags(Options, ExecPostLoad))
-		{
-			OuterStack[0]->PostLoad();
-
-			for (auto&& Object : ObjectsCreated)
-			{
-				Object->PostLoad();
-			}
-		}
+		UObject* RawObj = nullptr;
+		*this << RawObj;
+		Obj = RawObj;
+		return *this;
 	}
 
-	return *this;
-}
+	FArchive& FRecursiveMemoryReader::operator<<(FSoftObjectPtr& AssetPtr)
+	{
+		return FArchiveUObject::SerializeSoftObjectPtr(*this, AssetPtr);
+	}
 
-FArchive& FHeartMemoryReader::operator<<(FObjectPtr& Obj)
-{
-	UObject* RawObj = nullptr;
-	*this << RawObj;
-	Obj = RawObj;
-	return *this;
-}
+	FArchive& FRecursiveMemoryReader::operator<<(FSoftObjectPath& Value)
+	{
+		return FArchiveUObject::SerializeSoftObjectPath(*this, Value);
+	}
 
-FArchive& FHeartMemoryReader::operator<<(FSoftObjectPtr& AssetPtr)
-{
-	return FArchiveUObject::SerializeSoftObjectPtr(*this, AssetPtr);
-}
+	FArchive& FRecursiveMemoryReader::operator<<(FWeakObjectPtr& Value)
+	{
+		return FArchiveUObject::SerializeWeakObjectPtr(*this, Value);
+	}
 
-FArchive& FHeartMemoryReader::operator<<(FSoftObjectPath& Value)
-{
-	return FArchiveUObject::SerializeSoftObjectPath(*this, Value);
-}
+	FString FRecursiveMemoryReader::GetArchiveName() const
+	{
+		return TEXT("FRecursiveMemoryReader");
+	}
 
-FArchive& FHeartMemoryReader::operator<<(FWeakObjectPtr& Value)
-{
-	return FArchiveUObject::SerializeWeakObjectPtr(*this, Value);
-}
-
-FString FHeartMemoryReader::GetArchiveName() const
-{
-	return TEXT("FHeartMemoryReader");
-}
-
-namespace Heart::Flakes
-{
 	FORCEINLINE_DEBUGGABLE void CompressFlake(FHeartFlake& Flake, const TArray<uint8>& Raw,
 		const FOodleDataCompression::ECompressor Compressor,
 		const FOodleDataCompression::ECompressionLevel CompressionLevel)
@@ -206,7 +206,7 @@ namespace Heart::Flakes
 		Flake.Struct = Struct.GetScriptStruct()->GetPathName();
 
 		TArray<uint8> Raw;
-		FHeartMemoryWriter MemoryWriter(Raw, nullptr);
+		FRecursiveMemoryWriter MemoryWriter(Raw, nullptr);
 		const_cast<FInstancedStruct&>(Struct).Serialize(MemoryWriter);
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
@@ -222,7 +222,7 @@ namespace Heart::Flakes
 		Flake.Struct = Object->GetClass()->GetPathName();
 
 		TArray<uint8> Raw;
-		FHeartMemoryWriter MemoryWriter(Raw, Object);
+		FRecursiveMemoryWriter MemoryWriter(Raw, Object);
 		Object->Serialize(MemoryWriter);
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
@@ -237,7 +237,7 @@ namespace Heart::Flakes
 		TArray<uint8> Raw;
 		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
 
-		FHeartMemoryReader MemoryReader(Raw, true, nullptr, FHeartMemoryReader::None);
+		FRecursiveMemoryReader MemoryReader(Raw, true, nullptr, FRecursiveMemoryReader::None);
 		Struct.Serialize(MemoryReader);
 		MemoryReader.FlushCache();
 		MemoryReader.Close();
@@ -260,13 +260,13 @@ namespace Heart::Flakes
 
 		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
 
-		FHeartMemoryReader::EOptions ReaderOptions = FHeartMemoryReader::EOptions::None;
+		FRecursiveMemoryReader::EOptions ReaderOptions = FRecursiveMemoryReader::EOptions::None;
 		if (Options.ExecPostLoadOrPostScriptConstruct)
 		{
-			ReaderOptions |= FHeartMemoryReader::EOptions::ExecPostLoad;
+			ReaderOptions |= FRecursiveMemoryReader::EOptions::ExecPostLoad;
 		}
 
-		FHeartMemoryReader MemoryReader(Raw, true, Object, ReaderOptions);
+		FRecursiveMemoryReader MemoryReader(Raw, true, Object, ReaderOptions);
 		Object->Serialize(MemoryReader);
 		MemoryReader.FlushCache();
 		MemoryReader.Close();

@@ -42,6 +42,17 @@ struct FHeartActionRecord
 
 	// Original arguments used to execute this action. Used to 'Redo' an un-done action.
 	Heart::Action::FArguments Arguments;
+
+	bool Serialize(FArchive& Ar);
+};
+
+template<>
+struct TStructOpsTypeTraits<FHeartActionRecord> : public TStructOpsTypeTraitsBase2<FHeartActionRecord>
+{
+	enum
+	{
+		WithSerializer = true,
+	};
 };
 
 /**
