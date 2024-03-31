@@ -39,7 +39,7 @@
 
 namespace Heart::AssetEditor
 {
-	static const FName AppIdentifier(TEXTVIEW("HeartEditorApp"));
+	static const FLazyName AppIdentifier(TEXT("HeartEditorApp"));
 
 	FHeartGraphEditor::FHeartGraphEditor()
 		: HeartGraph(nullptr)

@@ -25,6 +25,9 @@
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
 #include "HeartGraphStatics.h"
+#include "Input/EdGraphPointerWrappers.h"
+#include "Input/HeartInputLinkerBase.h"
+#include "Input/HeartSlateInputLinker.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)
@@ -45,11 +48,6 @@ UHeartEdGraphNode::~UHeartEdGraphNode()
 	UnsubscribeToExternalChanges();
 }
 
-void UHeartEdGraphNode::SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode)
-{
-	HeartGraphNode = InHeartGraphNode;
-}
-
 UHeartGraphNode* UHeartEdGraphNode::GetHeartGraphNode() const
 {
 	if (ensure(IsValid(HeartGraphNode)))
@@ -58,6 +56,11 @@ UHeartGraphNode* UHeartEdGraphNode::GetHeartGraphNode() const
 	}
 
 	return nullptr;
+}
+
+void UHeartEdGraphNode::SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode)
+{
+	HeartGraphNode = InHeartGraphNode;
 }
 
 void UHeartEdGraphNode::PostLoad()
@@ -302,8 +305,8 @@ void UHeartEdGraphNode::SubscribeToExternalChanges()
 		// blueprint nodes
 		if (HeartGraphNode->GetClass()->ClassGeneratedBy && GEditor)
 		{
-			GEditor->OnBlueprintPreCompile().AddUObject(this, &UHeartEdGraphNode::OnBlueprintPreCompile);
-			GEditor->OnBlueprintCompiled().AddUObject(this, &UHeartEdGraphNode::OnBlueprintCompiled);
+			GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
+			GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
 		}
 	}
 }
@@ -374,39 +377,32 @@ bool UHeartEdGraphNode::CanCreateUnderSpecifiedSchema(const UEdGraphSchema* Sche
 
 void UHeartEdGraphNode::AutowireNewNode(UEdGraphPin* FromPin)
 {
-	if (FromPin != nullptr)
+	if (FromPin == nullptr)
 	{
-		const UHeartEdGraphSchema* Schema = CastChecked<UHeartEdGraphSchema>(GetSchema());
+		return;
+	}
 
-		TSet<UEdGraphNode*> NodeList;
+	const UHeartEdGraphSchema* Schema = CastChecked<UHeartEdGraphSchema>(GetSchema());
 
-		// auto-connect from dragged pin to first compatible pin on the new node
-		for (UEdGraphPin* Pin : Pins)
+	TSet<UEdGraphNode*> NodeList;
+
+	// auto-connect from dragged pin to first compatible pin on the new node
+	for (UEdGraphPin* Pin : Pins)
+	{
+		check(Pin);
+
+		if (Schema->TryCreateConnection(FromPin, Pin))
 		{
-			check(Pin);
-			FPinConnectionResponse Response = Schema->CanCreateConnection(FromPin, Pin);
-			if (CONNECT_RESPONSE_MAKE == Response.Response)
-			{
-				if (Schema->TryCreateConnection(FromPin, Pin))
-				{
-					NodeList.Add(FromPin->GetOwningNode());
-					NodeList.Add(this);
-				}
-				break;
-			}
-			else if (CONNECT_RESPONSE_BREAK_OTHERS_A == Response.Response)
-			{
-				InsertNewNode(FromPin, Pin, NodeList);
-				break;
-			}
+			NodeList.Add(FromPin->GetOwningNode());
+			NodeList.Add(this);
+			break;
 		}
+	}
 
-		// Send all nodes that received a new pin connection a notification
-		for (auto It = NodeList.CreateConstIterator(); It; ++It)
-		{
-			UEdGraphNode* Node = (*It);
-			Node->NodeConnectionListChanged();
-		}
+	// Send all nodes that received a new pin connection a notification
+	for (auto&& Node : NodeList)
+	{
+		Node->NodeConnectionListChanged();
 	}
 }
 
@@ -623,6 +619,23 @@ void UHeartEdGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class U
 			Section.AddMenuEntry(HeartGraphCommands.DisablePinBreakpoint);
 			Section.AddMenuEntry(HeartGraphCommands.TogglePinBreakpoint);
 		}
+
+		{
+			/** Linker Actions **/
+			FToolMenuSection& Section = Menu->AddSection("HeartGraphPinLinkerActions", LOCTEXT("PinLinkerActions", "Linker Actions"));
+
+			auto&& HeartEdGraph = Cast<UHeartEdGraph>(GetGraph());
+			auto&& Linker = HeartEdGraph->GetEditorLinker();
+			if (IsValid(Linker))
+			{
+				TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(UHeartEdGraphPin::Wrap(Context->Pin));
+
+				for (auto&& QueryResult : QueryResults)
+				{
+					// @todo
+				}
+			}
+		}
 	}
 	else if (Context->Node)
 	{
@@ -660,6 +673,23 @@ void UHeartEdGraphNode::GetNodeContextMenuActions(class UToolMenu* Menu, class U
 			{
 				Section.AddMenuEntry(HeartGraphCommands.JumpToGraphNodeDefinition);
 				Section.AddMenuEntry(HeartGraphCommands.JumpToNodeDefinition);
+			}
+		}
+
+		{
+			/** Linker Actions **/
+			FToolMenuSection& Section = Menu->AddSection("HeartGraphNodeLinkerActions", LOCTEXT("NodeLinkerActions", "Linker Actions"));
+
+			auto&& HeartEdGraph = Cast<UHeartEdGraph>(GetGraph());
+			auto&& Linker = HeartEdGraph->GetEditorLinker();
+			if (IsValid(Linker))
+			{
+				TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(Context->Node);
+
+				for (auto&& QueryResult : QueryResults)
+				{
+					// @todo
+				}
 			}
 		}
 	}

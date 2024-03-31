@@ -3,10 +3,10 @@
 #pragma once
 
 #include "HeartCanvasDragDropOperation.h"
-#include "UI/HeartWidgetInputBinding_DragDropOperationBase.h"
+#include "Move_To_UMG/HeartCanvasInputBinding.h"
 #include "HeartCanvasActionDragDropOperation.generated.h"
 
-class UHeartGraphCanvasAction;
+class UHeartActionBase;
 
 /**
  * A drag drop operation that carries a UHeartGraphCanvasAction, which will attempt to run on the widget dropped on.
@@ -21,23 +21,23 @@ public:
 	virtual void Drop_Implementation(const FPointerEvent& PointerEvent) override;
 
 	UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn))
-	TObjectPtr<UHeartGraphCanvasAction> Action;
+	TObjectPtr<UHeartActionBase> Action;
 };
 
 /**
  *
  */
 UCLASS(meta = (DisplayName = "Drag Drop Action"))
-class HEARTCANVAS_API UHeartWidgetInputBinding_DragDropOperation_Action : public UHeartWidgetInputBinding_DragDropOperationBase
+class HEARTCANVAS_API UHeartCanvasInputHandler_DDO_Action : public UHeartCanvasInputHandler_DragDropOperationBase
 {
 	GENERATED_BODY()
 
 protected:
-	virtual bool PassCondition(const UWidget* TestWidget) const override;
+	virtual bool PassCondition(const UObject* TestTarget) const override;
 	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
-	TSubclassOf<UHeartGraphCanvasAction> ActionClass;
+	TSubclassOf<UHeartActionBase> ActionClass;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (AllowAbstract = "false"))
 	TSubclassOf<UUserWidget> VisualClass;

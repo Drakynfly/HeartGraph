@@ -21,9 +21,9 @@ class HEARTCANVAS_API UHeartGraphCanvasConnection : public UHeartGraphWidgetBase
 	friend class UHeartGraphCanvasNode;
 
 public:
-	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
-	/** IHeartWidgetInputLinkerRedirector */
+	/** IHeartInputLinkerInterface */
+	virtual UHeartInputLinkerBase* ResolveLinker_Implementation() const override final;
+	/** IHeartInputLinkerInterface */
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")

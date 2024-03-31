@@ -9,13 +9,13 @@ FVector2D UHeartNodeLocationModifier_CartesianToPolar::LocationToProxy(const FVe
 	double Radius;
 	double Angle;
 	FMath::CartesianToPolar(Location.X, Location.Y, Radius, Angle);
-	return FVector2D(1.0, 0.0).GetRotated(Angle) * Radius;
+	return FVector2D::UnitX().GetRotated(Angle) * Radius;
 }
 
 FVector2D UHeartNodeLocationModifier_CartesianToPolar::ProxyToLocation(const FVector2D& Proxy) const
 {
 	const double Radius = Proxy.Length();
-	const double Angle = FMath::RadiansToDegrees(FMath::Atan2(Proxy.X, Proxy.Y));
+	const double Angle = FMath::RadiansToDegrees(FMath::Atan2(Proxy.Y, Proxy.X));
 	FVector2D OutCartesian;
 	FMath::PolarToCartesian(Radius, Angle, OutCartesian.X, OutCartesian.Y);
 	return OutCartesian;
@@ -32,7 +32,7 @@ FVector UHeartNodeLocationModifier_CartesianToPolar::LocationToProxy3D(const FVe
 FVector UHeartNodeLocationModifier_CartesianToPolar::ProxyToLocation3D(const FVector& Proxy) const
 {
 	const double Radius = Proxy.Length();
-	const double Angle = FMath::RadiansToDegrees(FMath::Atan2(Proxy.X, Proxy.Y));
+	const double Angle = FMath::RadiansToDegrees(FMath::Atan2(Proxy.Y, Proxy.X));
 	FVector OutCartesian;
 	FMath::PolarToCartesian(Radius, Angle, OutCartesian.X, OutCartesian.Y);
 	OutCartesian.Z = Proxy.Z;

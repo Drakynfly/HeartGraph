@@ -5,6 +5,8 @@
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "Algo/AllOf.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartRegistryQuery)
+
 namespace Heart::Query
 {
 	FRegistryQueryResult::FRegistryQueryResult(const UHeartGraphNodeRegistry* Registry)
@@ -17,9 +19,9 @@ namespace Heart::Query
 	{
 		auto&& Entry = Registry->NodeRootTable.Get(FSetElementId::FromInteger(Key.RootIndex));
 
-		return FRegistryValue(
+		return FRegistryValue{
 			Key.RecursiveIndex != INDEX_NONE ? FHeartNodeSource(Entry.Value.RecursiveChildren[Key.RecursiveIndex]) : Entry.Key,
-			Entry.Value.GraphNodes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get());
+			Entry.Value.GraphNodes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get()};
 	}
 }
 
@@ -49,7 +51,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray
 			return Algo::AllOf(ScriptFilters,
 				[Value](const FScriptDelegate& Delegate)
 				{
-					FProcessEventMemory Memory(Value.Source);
+					FProcessEventMemory Memory{Value.Source};
 					Delegate.ProcessDelegate<UObject>(&Memory);
 					return Memory.RetVal;
 				});

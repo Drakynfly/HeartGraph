@@ -14,7 +14,7 @@ namespace Heart::AssetEditor
 	class FApplicationMode_PreviewCanvas : public FApplicationMode
 	{
 	public:
-		static const FName ModeID;
+		static const FLazyName ModeID;
 
 		FApplicationMode_PreviewCanvas(TSharedRef<FHeartGraphEditor> AssetEditor);
 

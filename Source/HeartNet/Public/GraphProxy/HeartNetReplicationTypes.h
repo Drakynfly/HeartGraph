@@ -4,7 +4,7 @@
 
 #include "HeartReplicateNodeData.h"
 #include "Model/HeartGraphPinReference.h"
-#include "UI/HeartInputActivation.h"
+#include "Input/HeartInputActivation.h"
 #include "HeartNetReplicationTypes.generated.h"
 
 USTRUCT()
@@ -84,9 +84,7 @@ struct FHeartRemoteGraphActionArguments
 		}
 
 		Ar << PinTarget;
-
-		FHeartManualEvent::StaticStruct()->GetCppStructOps()->NetSerialize(Ar, Map, bOutSuccess, &Activation);
-
+		Ar << Activation.EventValue;
 		Ar << ContextObject;
 
 		bOutSuccess &= !Ar.IsError();

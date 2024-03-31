@@ -15,7 +15,7 @@ namespace Heart::AssetEditor
 		PREVIEW SCENE
 	 -------------------*/
 
-	const FName FPreviewSceneSummoner::TabId("Heart_AssetEditor_PreviewScene");
+	const FLazyName FPreviewSceneSummoner::TabId("Heart_AssetEditor_PreviewScene");
 
 	FPreviewSceneSummoner::FPreviewSceneSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor,
 		const FOnPreviewSceneCreated& OnPreviewSceneCreated)
@@ -55,7 +55,7 @@ namespace Heart::AssetEditor
 	PREVIEW SCENE DETAILS
 	 -------------------*/
 
-	const FName FPreviewSceneDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewSceneDetails");
+	const FLazyName FPreviewSceneDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewSceneDetails");
 
 	FPreviewSceneDetailsPanelSummoner::FPreviewSceneDetailsPanelSummoner(
 		TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& OnDetailsCreated)

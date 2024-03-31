@@ -27,12 +27,12 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
-		static FName Type("FHeartGraphSchemaAction_NewNode");
+		static const FLazyName Type("FHeartGraphSchemaAction_NewNode");
 		return Type;
 	}
 
 	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
-	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+	virtual UEdGraphNode* PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode) override;
 	// FEdGraphSchemaAction
 
 	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeArchetype Archetype, const FVector2D Location, const bool bSelectNewNode = true);
@@ -58,12 +58,12 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_Paste : public FEdGraphSchemaActi
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
     {
-    	static FName Type("FHeartGraphSchemaAction_Paste");
+    	static const FLazyName Type("FHeartGraphSchemaAction_Paste");
     	return Type;
     }
 
     virtual FName GetTypeId() const override { return StaticGetTypeId(); }
-	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode) override;
 	// FEdGraphSchemaAction
 };
 
@@ -81,11 +81,41 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewComment : public FEdGraphSchem
 	// FEdGraphSchemaAction
 	static FName StaticGetTypeId()
 	{
-		static FName Type("FHeartGraphSchemaAction_NewComment");
+		static const FLazyName Type("FHeartGraphSchemaAction_NewComment");
 		return Type;
 	}
 
 	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
 	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 	// FEdGraphSchemaAction
+};
+
+/** Action to trigger a runtime linker binding */
+USTRUCT()
+struct HEARTEDITOR_API FHeartGraphSchemaAction_LinkerBinding : public FEdGraphSchemaAction
+{
+	GENERATED_BODY()
+
+	FHeartGraphSchemaAction_LinkerBinding() {}
+
+	FHeartGraphSchemaAction_LinkerBinding(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, const FName Key)
+	  : FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping), Key(Key) {}
+
+	// FEdGraphSchemaAction
+	static FName StaticGetTypeId()
+	{
+		static const FLazyName Type("FHeartGraphSchemaAction_LinkerBinding");
+		return Type;
+	}
+
+	virtual FName GetTypeId() const override { return StaticGetTypeId(); }
+	virtual UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode) override;
+	// FEdGraphSchemaAction
+
+	// If this action was summoned by a node, here it be
+	UPROPERTY()
+	TObjectPtr<UEdGraphNode> ContextNode;
+
+	UPROPERTY()
+	FName Key;
 };

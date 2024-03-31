@@ -76,7 +76,7 @@ TSharedPtr<SGraphNode> UHeartRegistryEditorSubsystem::MakeSlateWidget(const FNam
 	return HeartEditorModule.MakeSlateWidget(Style, Node);
 }
 
-UClass* UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(
+TSubclassOf<UHeartEdGraphNode> UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(
 	const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const
 {
 	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");

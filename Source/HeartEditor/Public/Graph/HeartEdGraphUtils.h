@@ -13,7 +13,7 @@ namespace Heart
 
 	namespace GraphUtils
 	{
-		static FName DefaultStyle("GraphDefault");
+		static const FLazyName DefaultStyle("GraphDefault");
 
 		bool JumpToClassDefinition(const UClass* Class);
 

@@ -4,7 +4,6 @@
 
 #include "Model/HeartGraphNodeInterface.h"
 #include "Model/HeartGraphPinInterface.h"
-#include "Model/HeartGraphPinTag.h"
 #include "HeartVisualizerInterfaces.generated.h"
 
 UINTERFACE(Blueprintable)
@@ -31,10 +30,6 @@ public:
 	// Get the Heart Graph Node that this object visualizes
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
 	UHeartGraphNode* GetVisualizingNode() const;
-
-	UE_DEPRECATED(5.3, "This function is no longer in use")
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
-	TSubclassOf<UHeartGraphNode> GetSupportedGraphNodeClass();
 };
 
 // This class does not need to be modified.
@@ -52,10 +47,6 @@ class HEART_API IGraphPinVisualizerInterface : public IHeartGraphPinInterface
 	GENERATED_BODY()
 
 public:
-	UE_DEPRECATED(5.3, "This function is no longer in use")
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|VisualizerInterfaces")
-	FHeartGraphPinTag GetSupportedGraphPinTag();
-
 	// Get a custom attachment position for the connection. By default it will be wherever the owning node/graph decides:
 	// The default behavior for widgets is to use the center of the widget geometry.
 	// The default behavior for actors is to use sockets matching the pin name. // @todo implement this

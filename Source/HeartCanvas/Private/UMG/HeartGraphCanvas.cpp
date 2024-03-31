@@ -213,7 +213,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	return SuperLayerID;
 }
 
-UHeartWidgetInputLinker* UHeartGraphCanvas::ResolveLinker_Implementation() const
+UHeartInputLinkerBase* UHeartGraphCanvas::ResolveLinker_Implementation() const
 {
 	return BindingContainer.GetLinker();
 }
@@ -563,7 +563,7 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForCon
 		return nullptr;
 	}
 
-	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection(FromDesc, ToDesc, UHeartGraphCanvasConnection::StaticClass());
+	return CanvasGraphRegistry->GetVisualizerClassForGraphConnection<UHeartGraphCanvasConnection>(FromDesc, ToDesc);
 }
 
 TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPreviewConnection_Implementation() const
@@ -745,8 +745,8 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 
 	if (DisplayedGraph.IsValid())
 	{
-		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &UHeartGraphCanvas::OnNodeAddedToGraph);
-		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &UHeartGraphCanvas::OnNodeRemovedFromGraph);
+		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAddedToGraph);
+		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemovedFromGraph);
 		Refresh();
 	}
 }

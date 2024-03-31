@@ -18,7 +18,6 @@
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
 
-#include "GraphRegistry/HeartRegistrationClasses.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 
 #include "Graph/Widgets/Nodes/SHeartGraphNodeBase.h"
@@ -31,19 +30,18 @@
 #include "Nodes/HeartGraphNodeCustomization.h"
 #include "Graph/HeartGraphSchemaCustomization.h"
 
-#include "UI/HeartWidgetInputBindingAsset.h"
-
 #include "Customizations/HeartGuidCustomization.h"
 
 // @todo temp includes
 #include "AssetToolsModule.h"
 #include "AssetEditor/ApplicationMode_Editor.h"
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
+#include "Input/HeartInputBindingAsset.h"
 #include "Model/HeartGraph.h"
 
 
-static const FName PropertyEditorModuleName("PropertyEditor");
-static const FName AssetSearchModuleName("AssetSearch");
+static const FLazyName PropertyEditorModuleName("PropertyEditor");
+static const FLazyName AssetSearchModuleName("AssetSearch");
 
 DEFINE_LOG_CATEGORY(LogHeartEditor);
 
@@ -253,10 +251,10 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 	//Customizations.Add(FClassList::StaticStruct()->GetFName(),
 	//	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&Heart::FItemsArrayCustomization::MakeInstance));
 
-	Customizations.Add(FHeartWidgetInputBinding::StaticStruct()->GetFName(),
+	Customizations.Add(FHeartBoundInput::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&Heart::FItemsArrayCustomization::MakeInstance,
-			Heart::FItemsArrayCustomization::FArgs{GET_MEMBER_NAME_CHECKED(FHeartWidgetInputBinding, InputHandler),
-												   GET_MEMBER_NAME_CHECKED(FHeartWidgetInputBinding, Triggers)}));
+			Heart::FItemsArrayCustomization::FArgs{GET_MEMBER_NAME_CHECKED(FHeartBoundInput, InputHandler),
+												   GET_MEMBER_NAME_CHECKED(FHeartBoundInput, Triggers)}));
 
 	Customizations.Add(FHeartGraphPinTag::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FGameplayTagCustomizationPublic::MakeInstance));

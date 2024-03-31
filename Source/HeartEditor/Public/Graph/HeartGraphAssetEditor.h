@@ -77,6 +77,8 @@ namespace Heart::AssetEditor
 
 		TSharedPtr<FHeartGraphAssetToolbar> GetToolbar() const { return AssetToolbar; }
 
+		auto GetGraphEditor() { return GraphEditor; }
+
 		bool CanActivateMode(FName NewMode) const;
 
 	protected:

@@ -4,47 +4,52 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinInterface.h"
+#include "ModelView/HeartActionHistory.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphAction)
 
-bool UHeartGraphAction::Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject)
+bool UHeartGraphAction::Execute(const Heart::Action::FArguments& Arguments)
 {
-	if (auto&& Graph = Cast<UHeartGraph>(Object))
-	{
-		ExecuteOnGraph(Graph, Activation, ContextObject);
-		return true;
-	}
+	return Heart::Action::History::Log(this, Arguments,
+		[&]()
+		{
+			if (auto&& GraphInterface = Cast<IHeartGraphInterface>(Arguments.Target))
+			{
+				ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload);
+				return true;
+			}
 
-	if (auto&& Node = Cast<UHeartGraphNode>(Object))
-	{
-		ExecuteOnNode(Node, Activation, ContextObject);
-		return true;
-	}
+			if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
+			{
+				ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload);
+				return true;
+			}
 
-	if (Object->Implements<UHeartGraphPinInterface>())
-	{
-		ExecuteOnPin(Object, Activation, ContextObject);
-		return true;
-	}
+			if (Arguments.Target->Implements<UHeartGraphPinInterface>())
+			{
+				ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload);
+				return true;
+			}
 
-	return false;
+			return false;
+		});
 }
 
-FText UHeartGraphActionBlueprintBase::GetDescription(const UObject* Object) const
+FText UHeartGraphAction_BlueprintBase::GetDescription(const UObject* Target) const
 {
-	return BP_GetDescription(Object);
+	return BP_GetDescription(Target);
 }
 
-bool UHeartGraphActionBlueprintBase::CanExecute(const UObject* Object) const
+bool UHeartGraphAction_BlueprintBase::CanExecute(const UObject* Target) const
 {
 	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_CanExecuteOnObject)))
 	{
-		return BP_CanExecuteOnObject(Object);
+		return BP_CanExecuteOnObject(Target);
 	}
 	return true;
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
+void UHeartGraphAction_BlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Graph)))
 	{
@@ -52,7 +57,7 @@ void UHeartGraphActionBlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FH
 	}
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject)
+void UHeartGraphAction_BlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Node)))
 	{
@@ -60,10 +65,22 @@ void UHeartGraphActionBlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const 
 	}
 }
 
-void UHeartGraphActionBlueprintBase::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
+void UHeartGraphAction_BlueprintBase::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
 {
 	if (ensure(IsValid(Pin.GetObject())))
 	{
 		BP_ExecuteOnPin(Pin, Activation, ContextObject);
 	}
+}
+
+bool UHeartGraphAction_BlueprintBase::CanUndo(UObject* Target) const
+{
+	// A Blueprint action can undo if it has an implementation of BP_Undo
+	return GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_Undo));
+}
+
+bool UHeartGraphAction_BlueprintBase::Undo(UObject* Target)
+{
+	BP_Undo(Target);
+	return true;
 }

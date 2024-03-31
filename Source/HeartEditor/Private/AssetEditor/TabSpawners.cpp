@@ -13,7 +13,7 @@ namespace Heart::AssetEditor
 		DETAILS PANEL
 	 -------------------*/
 
-	const FName FDetailsPanelSummoner::TabId("Heart_AssetEditor_Details");
+	const FLazyName FDetailsPanelSummoner::TabId("Heart_AssetEditor_Details");
 
 	FDetailsPanelSummoner::FDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor,
 												 const FOnDetailsCreated& InOnDetailsCreated)
@@ -45,7 +45,7 @@ namespace Heart::AssetEditor
 		 GRAPH EDITOR
 	 -------------------*/
 
-	const FName FGraphEditorSummoner::TabId("Heart_AssetEditor_GraphEditor");
+	const FLazyName FGraphEditorSummoner::TabId("Heart_AssetEditor_GraphEditor");
 
 	FGraphEditorSummoner::FGraphEditorSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor)
 	  : FWorkflowTabFactory(TabId, AssetEditor),
@@ -74,7 +74,7 @@ namespace Heart::AssetEditor
 		 NODE PALETTE
 	 -------------------*/
 
-	const FName FNodePaletteSummoner::TabId("Heart_AssetEditor_NodePalette");
+	const FLazyName FNodePaletteSummoner::TabId("Heart_AssetEditor_NodePalette");
 
 	FNodePaletteSummoner::FNodePaletteSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated)
 	  : FWorkflowTabFactory(TabId, AssetEditor)

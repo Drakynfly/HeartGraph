@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "BloodBlueprintLibrary.h"
+#include "BloodFProperty.h"
 #include "Blueprint/BlueprintExceptionInfo.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BloodBlueprintLibrary)
@@ -79,7 +80,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 	if (const FProperty* Property = Object->GetClass()->FindPropertyByName(PropertyName))
 	{
 		const FBloodValue BloodValue = Blood::ReadFromFProperty(Object, Property);
-		ValueProp->CopyCompleteValueToScriptVM(Object, BloodValue.Data.GetMemory());
+		ValueProp->CopyCompleteValueToScriptVM(Object, BloodValue.GetMemory());
 	}
 	P_NATIVE_END;
 }
@@ -105,7 +106,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execPropertyToBlood)
 		FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
 
 		P_NATIVE_BEGIN;
-		(*(FBloodValue*)RESULT_PARAM).Data.Reset();
+		(*(FBloodValue*)RESULT_PARAM).Reset();
 		P_NATIVE_END;
 	}
 	else
@@ -169,7 +170,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 		FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
 
 		P_NATIVE_BEGIN;
-		Value.Data.Reset();
+		Value.Reset();
 		*(bool*)RESULT_PARAM = false;
 		P_NATIVE_END;
 	}
@@ -177,7 +178,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 	{
 		P_NATIVE_BEGIN;
 		Value = Blood::ReadFromFProperty(ValueProp, ValuePtr);
-		*(bool*)RESULT_PARAM = Value.Data.IsValid();
+		*(bool*)RESULT_PARAM = Value.IsValid();
 		P_NATIVE_END;
 	}
 }

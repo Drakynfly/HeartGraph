@@ -12,8 +12,9 @@
 #include "EdGraph/EdGraph.h"
 #include "EdGraphNode_Comment.h"
 #include "Editor.h"
-#include "HeartRegistryEditorSubsystem.h"
 #include "ScopedTransaction.h"
+#include "Input/EdGraphPointerWrappers.h"
+#include "Input/HeartSlateInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema_Actions)
 
@@ -41,31 +42,13 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
 	const FHeartNodeArchetype Archetype, const FVector2D Location, const bool bSelectNewNode /*= true*/)
 {
-	if (!ensure(GEditor)) return nullptr;
-
-	auto&& EditorSubsystem = GEditor->GetEditorSubsystem<UHeartRegistryEditorSubsystem>();
-	check(EditorSubsystem);
-
-
-	/**-----------------------------*/
-	/*		Prepare Heart Graph		*/
-	/**-----------------------------*/
-
 	const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
 
 	ParentGraph->Modify();
-	if (FromPin)
-	{
-		FromPin->Modify();
-	}
 
-	auto&& HeartGraph = CastChecked<UHeartEdGraph>(ParentGraph)->GetHeartGraph();
+	auto&& HeartEdGraph = CastChecked<UHeartEdGraph>(ParentGraph);
+	auto&& HeartGraph = HeartEdGraph->GetHeartGraph();
 	HeartGraph->Modify();
-
-
-	/**-----------------------------*/
-	/*		Create Runtime Node		*/
-	/**-----------------------------*/
 
 	UHeartGraphNode* NewGraphNode;
 
@@ -80,44 +63,32 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	}
 	check(NewGraphNode)
 
-
-	/**-----------------------------*/
-	/*		Create EdGraphNode		*/
-	/**-----------------------------*/
-
-	const UClass* EdGraphNodeClass = EditorSubsystem->GetAssignedEdGraphNodeClass(NewGraphNode->GetClass());
-	UHeartEdGraphNode* NewEdGraphNode = NewObject<UHeartEdGraphNode>(ParentGraph, EdGraphNodeClass, NAME_None,
-																	   RF_Transactional);
-	NewEdGraphNode->CreateNewGuid();
-
-	NewEdGraphNode->NodePosX = Location.X;
-	NewEdGraphNode->NodePosY = Location.Y;
-	//ParentGraph->AddNode(NewEdGraphNode, false, bSelectNewNode);
-
-	// Assign nodes to each other
-	// @todo can we avoid the first one. does the ed graph have to keep a reference to the runtime
-	NewEdGraphNode->SetHeartGraphNode(NewGraphNode);
-
+	// Add runtime node to graph, this will trigger the EdGraphNode to be created by in UHeartEdGraph::CreateEdGraphNode
 	HeartGraph->AddNode(NewGraphNode);
 
-	NewEdGraphNode->PostPlacedNewNode();
-	NewEdGraphNode->AllocateDefaultPins();
-
-	NewEdGraphNode->AutowireNewNode(FromPin);
-
-	if (bSelectNewNode)
+	auto&& HeartEdGraphNode = HeartEdGraph->FindEdGraphNodeForNode(NewGraphNode);
+	if (!IsValid(HeartEdGraphNode))
 	{
-		auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
-		if (HeartGraphAssetEditor.IsValid())
-		{
-			HeartGraphAssetEditor->SelectSingleNode(NewEdGraphNode);
-		}
+		// Failed to create EdGraphNode, bail
+		return nullptr;
+	}
+
+	// Connect up to editor pin. @todo will this be handled automatically by runtime eventually?
+	if (FromPin)
+	{
+		FromPin->Modify();
+		HeartEdGraphNode->AutowireNewNode(FromPin);
+	}
+
+	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
+	if (HeartGraphAssetEditor.IsValid())
+	{
+		HeartGraphAssetEditor->SelectSingleNode(HeartEdGraphNode);
 	}
 
 	HeartGraph->PostEditChange();
-	HeartGraph->MarkPackageDirty();
 
-	return NewEdGraphNode;
+	return HeartEdGraphNode;
 }
 
 // Paste Node
@@ -155,6 +126,37 @@ UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* 
 	}
 
 	return FEdGraphSchemaAction_NewNode::SpawnNodeFromTemplate<UEdGraphNode_Comment>(ParentGraph, CommentTemplate, SpawnLocation);
+}
+
+UEdGraphNode* FHeartGraphSchemaAction_LinkerBinding::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
+	const FVector2D Location, const bool bSelectNewNode)
+{
+	UHeartEdGraph* EdGraph = CastChecked<UHeartEdGraph>(ParentGraph);
+
+	if (UHeartSlateInputLinker* Linker = EdGraph->GetEditorLinker())
+	{
+		UObject* Target;
+
+		if (IsValid(ContextNode))
+		{
+			Target = ContextNode;
+		}
+		else if (FromPin)
+		{
+			Target = UHeartEdGraphPin::Wrap(FromPin);
+		}
+		else
+		{
+			Target = EdGraph;
+		}
+
+		FHeartManualEvent Event;
+		Event.EventValue = 1.0;
+
+		Linker->HandleManualInput(Target, Key, Event);
+	}
+
+	return nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

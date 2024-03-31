@@ -123,6 +123,7 @@ protected:
 public:
 #if WITH_EDITOR
 	bool GetRunCanPinsConnectInEdGraph() const { return RunCanPinsConnectInEdGraph; }
+	auto GetEditorLinkerClass() const { return EditorLinkerClass; }
 
 	static FName DefaultEditorStylePropertyName() { return GET_MEMBER_NAME_CHECKED(UHeartGraphSchema, DefaultEditorStyle); }
 	FName GetDefaultEditorStyle() const { return DefaultEditorStyle; }
@@ -177,5 +178,8 @@ protected:
 	// Action to run on the graph during PreSave.
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	TSubclassOf<UHeartGraphAction> EditorPreSaveAction;
+
+	UPROPERTY(EditAnywhere, Category = "Editor", meta = (AllowedClasses = "/Script/HeartCanvas.HeartSlateInputLinker"))
+	TSubclassOf<class UHeartInputLinkerBase> EditorLinkerClass;
 #endif
 };

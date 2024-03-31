@@ -20,7 +20,7 @@ namespace Heart::AssetEditor
 
 	struct FDetailsPanelSummoner : public FWorkflowTabFactory
 	{
-		static const FName TabId;
+		static const FLazyName TabId;
 
 		FDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& InOnDetailsCreated);
 
@@ -36,7 +36,7 @@ namespace Heart::AssetEditor
 
 	struct FGraphEditorSummoner : public FWorkflowTabFactory
 	{
-		static const FName TabId;
+		static const FLazyName TabId;
 
 		FGraphEditorSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor);
 
@@ -53,7 +53,7 @@ namespace Heart::AssetEditor
 
 	struct FNodePaletteSummoner : public FWorkflowTabFactory
 	{
-		static const FName TabId;
+		static const FLazyName TabId;
 
 		FNodePaletteSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated);
 

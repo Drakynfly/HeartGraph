@@ -3,7 +3,6 @@
 #include "Model/HeartPinConnectionEdit.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphPinReference.h"
 
 namespace Heart::Connections
 {
@@ -59,7 +58,6 @@ namespace Heart::Connections
 	FEdit& FEdit::DisconnectAll(const FHeartGraphPinReference& Pin)
 	{
 		UHeartGraphNode* Node = Graph->GetNode(Pin.NodeGuid);
-
 		if (!ensure(IsValid(Node)))
 		{
 			return *this;
@@ -78,7 +76,6 @@ namespace Heart::Connections
 	FEdit& FEdit::DisconnectAll(const FHeartNodeGuid& NodeGuid)
 	{
 		UHeartGraphNode* Node = Graph->GetNode(NodeGuid);
-
 		if (!ensure(IsValid(Node)))
 		{
 			return *this;
@@ -100,7 +97,6 @@ namespace Heart::Connections
 	FEdit& FEdit::Override(const FHeartGraphPinReference& Pin, const FHeartGraphPinConnections& Connections)
 	{
 		UHeartGraphNode* ANode = Graph->GetNode(Pin.NodeGuid);
-
 		if (!ensure(IsValid(ANode)))
 		{
 			return *this;
@@ -110,6 +106,75 @@ namespace Heart::Connections
 
 		ChangedPins.Add(ANode, Pin.PinGuid);
 
+		return *this;
+	}
+
+	FEdit& FEdit::CreateMementos(const FHeartGraphPinReference& Pin, TMap<FHeartNodeGuid, FMemento>& OutMementos)
+	{
+		const UHeartGraphNode* Node = Graph->GetNode(Pin.NodeGuid);
+		if (!ensure(IsValid(Node)))
+		{
+			return *this;
+		}
+
+		// Memento for self
+		OutMementos.Add(Pin.NodeGuid).PinConnections = Node->PinData.PinConnections;
+
+		// Mementos for all connected pins
+		if (TOptional<FHeartGraphPinConnections> Connections = Node->PinData.GetConnections(Pin.PinGuid);
+			Connections.IsSet())
+		{
+			for (const FHeartGraphPinReference& Link : Connections.GetValue().Links)
+			{
+				OutMementos.Add(Link.NodeGuid).PinConnections = Graph->GetNode(Link.NodeGuid)->PinData.PinConnections;
+			}
+		}
+
+		return *this;
+	}
+
+	FEdit& FEdit::CreateAllMementos(const FHeartNodeGuid& NodeGuid, TMap<FHeartNodeGuid, FMemento>& OutMementos)
+	{
+		const UHeartGraphNode* Node = Graph->GetNode(NodeGuid);
+		if (!ensure(IsValid(Node)))
+		{
+			return *this;
+		}
+
+		for (auto&& Connections = Node->PinData.PinConnections;
+			 auto&& Element : Connections)
+		{
+			// Memento for this pin
+			OutMementos.Add(NodeGuid).PinConnections = Node->PinData.PinConnections;
+
+			// Mementos for all connected pins
+			for (const FHeartGraphPinReference& Link : Element.Value.Links)
+			{
+				OutMementos.Add(Link.NodeGuid).PinConnections = Graph->GetNode(Link.NodeGuid)->PinData.PinConnections;
+			}
+		}
+
+		return *this;
+	}
+
+	FEdit& FEdit::RestoreMementos(const TMap<FHeartNodeGuid, FMemento>& Mementos)
+	{
+		for (auto&& PinAndMemento : Mementos)
+		{
+			UHeartGraphNode* ANode = Graph->GetNode(PinAndMemento.Key);
+			if (!ensure(IsValid(ANode)))
+			{
+				return *this;
+			}
+
+			ANode->PinData.PinConnections = PinAndMemento.Value.PinConnections;
+
+			// Mark all pins as changed, we have no idea what the memento has restored.
+			for (auto&& Element : ANode->PinData.PinConnections)
+			{
+				ChangedPins.Add(ANode, Element.Key);
+			}
+		}
 		return *this;
 	}
 

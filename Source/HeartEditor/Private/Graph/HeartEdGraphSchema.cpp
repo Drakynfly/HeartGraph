@@ -17,6 +17,8 @@
 #include "Graph/HeartEdGraph.h"
 
 #include "ScopedTransaction.h"
+#include "Input/HeartInputLinkerBase.h"
+#include "Input/HeartSlateInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema)
 
@@ -49,11 +51,45 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetClassDefaults(ContextMenuBuilder.CurrentGraph), {});
 	GetCommentAction(ContextMenuBuilder, ContextMenuBuilder.CurrentGraph);
 
-	if (!ContextMenuBuilder.FromPin && Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph)->CanPasteNodes())
+	auto GraphEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph);
+	if (!GraphEditor.IsValid())
+	{
+		return;
+	}
+
+	/** Paste Action **/
+
+	if (!ContextMenuBuilder.FromPin && GraphEditor->CanPasteNodes())
 	{
 		const TSharedPtr<FHeartGraphSchemaAction_Paste> NewAction =
 			MakeShared<FHeartGraphSchemaAction_Paste>(FText::GetEmpty(), LOCTEXT("PasteHereAction", "Paste here"), FText::GetEmpty(), 0);
 		ContextMenuBuilder.AddAction(NewAction);
+	}
+
+	/** Linker Actions **/
+
+	auto&& HeartEdGraph = CastChecked<UHeartEdGraph>(ContextMenuBuilder.CurrentGraph);
+	auto&& Linker = HeartEdGraph->GetEditorLinker();
+	if (IsValid(Linker))
+	{
+		TArray<TSharedPtr<FEdGraphSchemaAction>> LinkerActions;
+
+		TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(HeartEdGraph);
+
+		for (auto&& QueryResult : QueryResults)
+		{
+			LinkerActions.Add(MakeShared<FHeartGraphSchemaAction_LinkerBinding>(
+				FText::GetEmpty(),
+				QueryResult.Description,
+				FText::GetEmpty(),
+				11,
+				QueryResult.Key));
+		}
+
+		if (!LinkerActions.IsEmpty())
+		{
+			ContextMenuBuilder.AddActionList(LinkerActions, TEXT("Linker Actions"));
+		}
 	}
 }
 
@@ -82,9 +118,8 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Cannot make new connections to orphaned pin"));
 	}
 
-	auto&& RuntimeSchema = OwningNodeA->GetHeartGraphNode()->GetGraph()->GetSchema();
-
-	if (ensure(IsValid(RuntimeSchema)))
+	if (const UHeartGraphSchema* RuntimeSchema = OwningNodeA->GetHeartGraphNode()->GetGraph()->GetSchema();
+		ensure(IsValid(RuntimeSchema)))
 	{
 		if (RuntimeSchema->GetRunCanPinsConnectInEdGraph())
 		{
@@ -134,7 +169,7 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 
 bool UHeartEdGraphSchema::TryCreateConnection(UEdGraphPin* PinA, UEdGraphPin* PinB) const
 {
-	const bool bModified = UEdGraphSchema::TryCreateConnection(PinA, PinB);
+	const bool bModified = Super::TryCreateConnection(PinA, PinB);
 
 	if (bModified)
 	{
@@ -204,12 +239,9 @@ void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
 	Super::CreateDefaultNodesForGraph(Graph);
 
-	const UHeartEdGraph* HeartEdGraph = Cast<UHeartEdGraph>(&Graph);
-	check(HeartEdGraph);
-UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
+	const UHeartEdGraph* HeartEdGraph = CastChecked<UHeartEdGraph>(&Graph);
+	UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
 	check(HeartGraph);
-
-
 	const UHeartGraphSchema* HeartSchema = HeartGraph->GetSchema();
 	check(HeartSchema);
 

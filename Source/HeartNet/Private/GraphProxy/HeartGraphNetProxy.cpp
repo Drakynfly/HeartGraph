@@ -8,7 +8,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 #include "Model/HeartNodeQuery.h"
-#include "ModelView/Actions/HeartGraphActionBase.h"
+#include "Input/HeartActionBase.h"
 
 #include "Net/UnrealNetwork.h"
 #include "View/HeartVisualizerInterfaces.h"
@@ -358,7 +358,7 @@ void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid NodeGu
 	LocalClient->Server_UpdateGraphNode(this, NodeFlake, Type);
 }
 
-void UHeartGraphNetProxy::ExecuteGraphActionOnServer(UHeartGraphActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject)
+void UHeartGraphNetProxy::ExecuteGraphActionOnServer(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject)
 {
 	if (!ensure(IsValid(Action)))
 	{
@@ -567,7 +567,7 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const FHeartFlake& ActionDat
 		return;
 	}
 
-	UHeartGraphActionBase* Action = Heart::Flakes::CreateObject<UHeartGraphActionBase>(ActionData);
+	UHeartActionBase* Action = Heart::Flakes::CreateObject<UHeartActionBase>(ActionData);
 	if (!IsValid(Action))
 	{
 		UE_LOG(LogHeartNet, Warning, TEXT("Graph Action data sent from client failed deserialization from flake!"))
@@ -591,7 +591,7 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const FHeartFlake& ActionDat
 		Target = Args.PinTarget;
 	}
 
-	if (!UHeartGraphActionBase::ExecuteGraphAction(Action, Target, Args.Activation))
+	if (!UHeartActionBase::ExecuteGraphAction(Action, Target, Args.Activation))
 	{
 		UE_LOG(LogHeartNet, Log, TEXT("Graph Action data received from client, but Execute failed."))
 		return;

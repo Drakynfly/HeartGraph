@@ -98,6 +98,10 @@ struct FHeartNodeArchetype
 {
 	GENERATED_BODY()
 
+	FHeartNodeArchetype() {}
+	FHeartNodeArchetype(const TSubclassOf<UHeartGraphNode> GraphNode, const FHeartNodeSource Source)
+	  : GraphNode(GraphNode), Source(Source) {}
+
 	// The class to instance a GraphNode with
 	UPROPERTY()
 	TSubclassOf<UHeartGraphNode> GraphNode;

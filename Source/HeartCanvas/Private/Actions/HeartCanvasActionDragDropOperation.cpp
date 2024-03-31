@@ -4,7 +4,6 @@
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
-#include "UI/HeartInputActivation.h"
 #include "UI/HeartUMGContextObject.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
@@ -23,27 +22,29 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 	{
 		if (Action->CanExecute(GetHoveredWidget()))
 		{
-			Action->Execute(GetHoveredWidget(), FHeartInputActivation(PointerEvent), Payload);
+			Heart::Action::FArguments Args;
+			Args.Target = GetHoveredWidget();
+			Args.Activation = PointerEvent;
+			Args.Payload = Payload;
+
+			Action->Execute(Args);
 		}
 	}
 }
 
-bool UHeartWidgetInputBinding_DragDropOperation_Action::PassCondition(const UWidget* TestWidget) const
+bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UObject* TestTarget) const
 {
-	bool Failed = !Super::PassCondition(TestWidget);
+	bool Failed = !Super::PassCondition(TestTarget);
 
 	if (IsValid(ActionClass))
 	{
-		if (auto&& HeartWidget = Cast<UHeartGraphWidgetBase>(TestWidget))
-		{
-			Failed |= !ActionClass.GetDefaultObject()->CanExecuteOnWidget(HeartWidget);
-		}
+		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestTarget);
 	}
 
 	return !Failed;
 }
 
-UHeartDragDropOperation* UHeartWidgetInputBinding_DragDropOperation_Action::BeginDDO(UWidget* Widget) const
+UHeartDragDropOperation* UHeartCanvasInputHandler_DDO_Action::BeginDDO(UWidget* Widget) const
 {
 	auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
 

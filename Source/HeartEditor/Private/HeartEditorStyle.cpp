@@ -14,7 +14,7 @@ TSharedPtr<FSlateStyleSet> FHeartEditorStyle::StyleSet = nullptr;
 
 FName FHeartEditorStyle::GetStyleSetName()
 {
-	static FName HeartEditorStyleName(TEXT("HeartEditorStyle"));
+	static const FLazyName HeartEditorStyleName(TEXT("HeartEditorStyle"));
 	return HeartEditorStyleName;
 }
 

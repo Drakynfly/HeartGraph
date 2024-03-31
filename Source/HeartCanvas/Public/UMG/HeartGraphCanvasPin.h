@@ -22,9 +22,9 @@ class HEARTCANVAS_API UHeartGraphCanvasPin : public UHeartGraphWidgetBase, publi
 	friend UHeartGraphCanvasNode;
 
 public:
-	/** IHeartWidgetInputLinkerRedirector */
-	virtual UHeartWidgetInputLinker* ResolveLinker_Implementation() const override final;
-	/** IHeartWidgetInputLinkerRedirector */
+	/** IHeartInputLinkerInterface */
+	virtual UHeartInputLinkerBase* ResolveLinker_Implementation() const override final;
+	/** IHeartInputLinkerInterface */
 
 	/** IHeartGraphPinInterface */
 	virtual UHeartGraphNode* GetHeartGraphNode() const override;

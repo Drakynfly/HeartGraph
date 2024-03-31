@@ -36,7 +36,7 @@ bool UHeartNodePalette::Initialize()
 	return Super;
 }
 
-UHeartWidgetInputLinker* UHeartNodePalette::ResolveLinker_Implementation() const
+UHeartInputLinkerBase* UHeartNodePalette::ResolveLinker_Implementation() const
 {
 	return BindingContainer.GetLinker();
 }

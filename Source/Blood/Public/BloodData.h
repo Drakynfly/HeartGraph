@@ -2,24 +2,20 @@
 
 #pragma once
 
-#include "InstancedStruct.h"
+#include "PropertyBag.h"
+#include "Concepts/BaseStructureProvider.h"
+#include "Concepts/VariantStructureProvider.h"
 
 #include "BloodData.generated.h"
 
-USTRUCT()
-struct FBloodDataBase
-{
-	GENERATED_BODY()
-};
-
 USTRUCT(BlueprintType, meta = (DisplayName = "Wildcard"))
-struct BLOOD_API FBloodWildcard : public FBloodDataBase
+struct BLOOD_API FBloodWildcard
 {
 	GENERATED_BODY()
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Bool"))
-struct BLOOD_API FBloodBool : public FBloodDataBase
+struct BLOOD_API FBloodBool
 {
 	GENERATED_BODY()
 
@@ -31,7 +27,7 @@ struct BLOOD_API FBloodBool : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Byte"))
-struct BLOOD_API FBloodUI8 : public FBloodDataBase
+struct BLOOD_API FBloodUI8
 {
 	GENERATED_BODY()
 
@@ -43,7 +39,7 @@ struct BLOOD_API FBloodUI8 : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer"))
-struct BLOOD_API FBloodI32 : public FBloodDataBase
+struct BLOOD_API FBloodI32
 {
 	GENERATED_BODY()
 
@@ -55,7 +51,7 @@ struct BLOOD_API FBloodI32 : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer (64)"))
-struct BLOOD_API FBloodI64 : public FBloodDataBase
+struct BLOOD_API FBloodI64
 {
 	GENERATED_BODY()
 
@@ -67,7 +63,7 @@ struct BLOOD_API FBloodI64 : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Float"))
-struct BLOOD_API FBloodFloat : public FBloodDataBase
+struct BLOOD_API FBloodFloat
 {
 	GENERATED_BODY()
 
@@ -79,7 +75,7 @@ struct BLOOD_API FBloodFloat : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Double"))
-struct BLOOD_API FBloodDouble : public FBloodDataBase
+struct BLOOD_API FBloodDouble
 {
 	GENERATED_BODY()
 
@@ -91,7 +87,7 @@ struct BLOOD_API FBloodDouble : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Name"))
-struct BLOOD_API FBloodName : public FBloodDataBase
+struct BLOOD_API FBloodName
 {
 	GENERATED_BODY()
 
@@ -103,7 +99,7 @@ struct BLOOD_API FBloodName : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "String"))
-struct BLOOD_API FBloodString : public FBloodDataBase
+struct BLOOD_API FBloodString
 {
 	GENERATED_BODY()
 
@@ -115,7 +111,7 @@ struct BLOOD_API FBloodString : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Text"))
-struct BLOOD_API FBloodText : public FBloodDataBase
+struct BLOOD_API FBloodText
 {
 	GENERATED_BODY()
 
@@ -127,7 +123,7 @@ struct BLOOD_API FBloodText : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Object"))
-struct BLOOD_API FBloodObject : public FBloodDataBase
+struct BLOOD_API FBloodObject
 {
 	GENERATED_BODY()
 
@@ -144,24 +140,25 @@ struct BLOOD_API FBloodObject : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Class"))
-struct BLOOD_API FBloodClass : public FBloodDataBase
+struct BLOOD_API FBloodClass
 {
 	GENERATED_BODY()
 
 	FBloodClass() {}
+	FBloodClass(const UClass* Value) : Value(Value) {}
 	FBloodClass(const TSubclassOf<UObject> Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	TSubclassOf<UObject> Value = nullptr;
+	TObjectPtr<const UClass> Value = nullptr;
 
 	template <typename T> TSubclassOf<T> Get() const
 	{
-		return Value.Get();
+		return Value;
 	}
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Object (Soft)"))
-struct BLOOD_API FBloodSoftObject : public FBloodDataBase
+struct BLOOD_API FBloodSoftObject
 {
 	GENERATED_BODY()
 
@@ -178,7 +175,7 @@ struct BLOOD_API FBloodSoftObject : public FBloodDataBase
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Class (Soft)"))
-struct BLOOD_API FBloodSoftClass : public FBloodDataBase
+struct BLOOD_API FBloodSoftClass
 {
 	GENERATED_BODY()
 
@@ -196,17 +193,113 @@ struct BLOOD_API FBloodSoftClass : public FBloodDataBase
 
 namespace Blood
 {
-	template <typename T> struct TDataConverter
+	namespace Private
 	{
-		static UScriptStruct* Type() { return TBaseStructure<T>::Get(); }
+		static const FLazyName V0("v_0"); // Value index 0
+		static const FLazyName V1("v_1"); // Value index 1
+	}
 
-		static T Value(const FInstancedStruct& Value)
+	template <typename T> struct TIsPoDWrapperStruct
+	{
+		static constexpr bool Value = false;
+	};
+
+	template <> struct TIsPoDWrapperStruct<FBloodWildcard>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodBool>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodUI8>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodI32>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodI64>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodFloat>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodDouble>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodName>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodString>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodText>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodObject>	{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodClass>		{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodSoftObject>{ static constexpr bool Value = true; };
+	template <> struct TIsPoDWrapperStruct<FBloodSoftClass>	{ static constexpr bool Value = true; };
+
+	template <typename T>
+	struct TDataConverter
+	{
+		FORCEINLINE static auto Type()
 		{
-			if (ensure(Value.GetScriptStruct() == Type()))
+			if constexpr (TIsUEnumClass<T>::Value)
 			{
-				return Value.Get<T>();
+				return StaticEnum<T>();
 			}
-			return {};
+			else if constexpr (TModels_V<CBaseStructureProvider, T>)
+			{
+				return TBaseStructure<T>::Get();
+			}
+			else if constexpr (TModels_V<CVariantStructureProvider, T>)
+			{
+				return TVariantStructure<T>::Get();
+			}
+			else return FBloodWildcard::StaticStruct();
+		}
+
+		FORCEINLINE static EPropertyBagPropertyType PropertyBagType()
+		{
+			if constexpr (TIsUEnumClass<T>::Value)
+			{
+				return EPropertyBagPropertyType::Enum;
+			}
+
+			return EPropertyBagPropertyType::Struct;
+		}
+
+		FORCEINLINE static UObject* PropertyBagTypeObject()
+		{
+			return Type();
+		}
+
+		static T Read(const FInstancedPropertyBag& PropertyBag)
+		{
+			if constexpr (TIsUEnumClass<T>::Value)
+			{
+				return PropertyBag.GetValueEnum<T>(Private::V0).GetValue();
+			}
+			else
+			{
+				return *static_cast<T*>(PropertyBag.GetValueStruct(Private::V0).GetValue().GetMemory());
+			}
+		}
+
+		static T ReadIndex(const FPropertyBagArrayRef& Array, const int32 Index)
+		{
+			if constexpr (TIsUEnumClass<T>::Value)
+			{
+				return Array.GetValueEnum<T>(Index).GetValue();
+			}
+			else
+			{
+				return *reinterpret_cast<const T*>(Array.GetValueStruct(Index).GetValue().GetMemory());
+			}
+		}
+
+		static void Write(FInstancedPropertyBag& PropertyBag, const T& Value)
+		{
+			if constexpr (TIsUEnumClass<T>::Value)
+			{
+				PropertyBag.SetValueEnum<T>(Private::V0, Value);
+			}
+			else
+			{
+				PropertyBag.SetValueStruct(Private::V0, FConstStructView(Type(), reinterpret_cast<const uint8*>(&Value)));
+			}
+		}
+
+		static void WriteIndex(FPropertyBagArrayRef& Array, const int32 Index, const T& Value)
+		{
+			if constexpr (TIsUEnumClass<T>::Value)
+			{
+				Array.SetValueEnum<T>(Index, Value);
+			}
+			else
+			{
+				Array.SetValueStruct(Index, FConstStructView(Type(), reinterpret_cast<const uint8*>(&Value)));
+			}
 		}
 	};
 
@@ -217,51 +310,221 @@ namespace Blood
 	};
 
 	// Macro for binding a plain data type to its Blood wrapper struct
-	#define BIND_BLOOD_TYPE(type, StructType)\
+	#define BIND_BLOOD_TYPE(type, StructType, TypeInBag, Getter)\
 		template<> struct TDataConverter<type>\
 		{\
-			static UScriptStruct* Type() { return StructType::StaticStruct(); }\
-			\
-			static type Value(const FInstancedStruct& Value)\
+			using BloodType = StructType;\
+			using ActualType = type;\
+			FORCEINLINE static UScriptStruct* Type() { return BloodType::StaticStruct(); }\
+			FORCEINLINE static EPropertyBagPropertyType PropertyBagType()\
 			{\
-				if (ensure(Value.GetScriptStruct() == Type()))\
-				{\
-					return Value.Get<StructType>().Value;\
-				}\
-				return StructType().Value;\
+				return EPropertyBagPropertyType::TypeInBag;\
+			}\
+			\
+			FORCEINLINE static UObject* PropertyBagTypeObject()\
+			{\
+				return nullptr;\
+			}\
+			\
+			static ActualType Read(const FInstancedPropertyBag& PropertyBag)\
+			{\
+				return ActualType(PropertyBag.GetValue##TypeInBag(Private::V0).GetValue());\
+			}\
+			\
+			static void Write(FInstancedPropertyBag& PropertyBag, const ActualType Value)\
+			{\
+				PropertyBag.SetValue##TypeInBag(Private::V0, Getter);\
+			}\
+			\
+			static ActualType ReadIndex(const FPropertyBagArrayRef& Array, const int32 Index)\
+			{\
+				return ActualType(Array.GetValue##TypeInBag(Index).GetValue());\
+			}\
+			\
+			static void WriteIndex(FPropertyBagArrayRef& Array, const int32 Index, const ActualType Value)\
+			{\
+				Array.SetValue##TypeInBag(Index, Getter);\
 			}\
 		};
 
 	// Macro for binding a templated data type to its Blood wrapper struct
-	#define BIND_BLOOD_TYPE_TEMPLATED(Wrapper, StructType)\
+	#define BIND_BLOOD_TYPE_TEMPLATED(Wrapper, StructType, TypeInBag)\
 		template <typename T> struct TDataConverter<Wrapper<T>>\
 		{\
-			static UScriptStruct* Type() { return StructType::StaticStruct(); }\
-			\
-			static Wrapper<T> Value(const FInstancedStruct& Value)\
+			using BloodType = StructType;\
+			using ActualType = Wrapper<T>;\
+			FORCEINLINE static UScriptStruct* Type() { return BloodType::StaticStruct(); }\
+			FORCEINLINE static EPropertyBagPropertyType PropertyBagType()\
 			{\
-				if (ensure(Value.GetScriptStruct() == Type()))\
-				{\
-					return Value.Get<StructType>().Get<T>();\
-				}\
-				return StructType().Get<T>();\
+				return EPropertyBagPropertyType::TypeInBag;\
+			}\
+			\
+			FORCEINLINE static UObject* PropertyBagTypeObject()\
+			{\
+				return T::StaticClass();\
+			}\
+			\
+			static ActualType Read(const FInstancedPropertyBag& PropertyBag)\
+			{\
+				return ActualType(PropertyBag.GetValue##TypeInBag(Private::V0).GetValue());\
+			}\
+			\
+			static void Write(FInstancedPropertyBag& PropertyBag, const ActualType& Value)\
+			{\
+				PropertyBag.SetValue##TypeInBag(Private::V0, Value.Get());\
+			}\
+			\
+			static ActualType ReadIndex(const FPropertyBagArrayRef& Array, const int32 Index)\
+			{\
+				return ActualType(Array.GetValue##TypeInBag(Index).GetValue());\
+			}\
+			\
+			static void WriteIndex(FPropertyBagArrayRef& Array, const int32 Index, const ActualType& Value)\
+			{\
+				Array.SetValue##TypeInBag(Index, Value.Get());\
 			}\
 		};
 
-	BIND_BLOOD_TYPE(bool, FBloodBool)
-	BIND_BLOOD_TYPE(uint8, FBloodUI8)
-	BIND_BLOOD_TYPE(int32, FBloodI32)
-	BIND_BLOOD_TYPE(int64, FBloodI64)
-	BIND_BLOOD_TYPE(float, FBloodFloat)
-	BIND_BLOOD_TYPE(double, FBloodDouble)
-	BIND_BLOOD_TYPE(FName, FBloodName)
-	BIND_BLOOD_TYPE(FString, FBloodString)
-	BIND_BLOOD_TYPE(FText, FBloodText)
-	BIND_BLOOD_TYPE_TEMPLATED(TObjectPtr, FBloodObject)
-	BIND_BLOOD_TYPE_TEMPLATED(TSubclassOf, FBloodClass)
-	BIND_BLOOD_TYPE_TEMPLATED(TSoftObjectPtr, FBloodSoftObject)
-	BIND_BLOOD_TYPE_TEMPLATED(TSoftClassPtr, FBloodSoftClass)
+
+	BIND_BLOOD_TYPE(bool, FBloodBool, Bool, Value)
+	BIND_BLOOD_TYPE(uint8, FBloodUI8, Byte, Value)
+	BIND_BLOOD_TYPE(int32, FBloodI32, Int32, Value)
+	BIND_BLOOD_TYPE(int64, FBloodI64, Int64, Value)
+	BIND_BLOOD_TYPE(float, FBloodFloat, Float, Value)
+	BIND_BLOOD_TYPE(double, FBloodDouble, Double, Value)
+	BIND_BLOOD_TYPE(FName, FBloodName, Name, Value)
+	BIND_BLOOD_TYPE(FString, FBloodString, String, Value)
+	BIND_BLOOD_TYPE(FText, FBloodText, Text, Value)
+	BIND_BLOOD_TYPE(FSoftObjectPtr, FBloodSoftObject, Object, Value.Get())
+	BIND_BLOOD_TYPE_TEMPLATED(TObjectPtr, FBloodObject, Object)
+	BIND_BLOOD_TYPE_TEMPLATED(TSubclassOf, FBloodClass, Class)
+	BIND_BLOOD_TYPE_TEMPLATED(TSoftObjectPtr, FBloodSoftObject, Object)
+	BIND_BLOOD_TYPE_TEMPLATED(TSoftClassPtr, FBloodSoftClass, Class)
 
 #undef BIND_BLOOD_TYPE
 #undef BIND_BLOOD_TYPE_TEMPLATED
+
+	namespace Read
+	{
+		template <typename TType>
+		static auto Value(const FInstancedPropertyBag& Value)
+		{
+			if constexpr (TIsPoDWrapperStruct<TType>::Value)
+			{
+				return TDataConverter<decltype(TType::Value)>::Read(Value);
+			}
+			else
+			{
+				return TDataConverter<TType>::Read(Value);
+			}
+		}
+
+		template <template <typename> class TContainer, typename TType>
+		static void Container1(const FInstancedPropertyBag& Value, TContainer<TType>& Out)
+		{
+			auto MaybeArrayRef = Value.GetArrayRef(Private::V0);
+			check(MaybeArrayRef.HasValue());
+
+			const FPropertyBagArrayRef& ArrayRef = MaybeArrayRef.GetValue();
+
+			for (int32 i = 0; i < ArrayRef.Num(); ++i)
+			{
+				Out.Add(TDataConverter<TType>::ReadIndex(ArrayRef, i));
+			}
+		}
+
+		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
+		static void Container2(const FInstancedPropertyBag& Value, TContainer<TType0, TType1>& Out)
+		{
+			auto MaybeArrayRef0 = Value.GetArrayRef(Private::V0);
+			auto MaybeArrayRef1 = Value.GetArrayRef(Private::V1);
+			check(MaybeArrayRef0.HasValue());
+			check(MaybeArrayRef1.HasValue());
+
+			const FPropertyBagArrayRef& ArrayRef0 = MaybeArrayRef0.GetValue();
+			const FPropertyBagArrayRef& ArrayRef1 = MaybeArrayRef1.GetValue();
+
+			for (int32 i = 0; i < ArrayRef0.Num(); ++i)
+			{
+				Out.Add(TDataConverter<TType0>::ReadIndex(ArrayRef0, i),
+						TDataConverter<TType1>::ReadIndex(ArrayRef1, i));
+			}
+		}
+	}
+
+	namespace Write
+	{
+		template <typename TType>
+		static void Value(FInstancedPropertyBag& Bag, const TType& Value)
+		{
+			// Init property
+			Bag.AddProperty(
+				Private::V0,
+				TDataConverter<TType>::PropertyBagType(),
+				TDataConverter<TType>::PropertyBagTypeObject());
+
+			if constexpr (TIsPoDWrapperStruct<TType>::Value)
+			{
+				TDataConverter<TType>::Write(Bag, Value.Value);
+			}
+			else
+			{
+				TDataConverter<TType>::Write(Bag, Value);
+			}
+		}
+
+		template <template <typename> class TContainer, typename TType>
+		static void Container1(FInstancedPropertyBag& Bag, const TContainer<TType>& Value)
+		{
+			// Init property
+			Bag.AddContainerProperty(
+				Private::V0,
+				EPropertyBagContainerType::Array,
+				TDataConverter<TType>::PropertyBagType(),
+				TDataConverter<TType>::PropertyBagTypeObject());
+
+			auto&& BetterBeArray = Bag.GetMutableArrayRef(Private::V0);
+			check(BetterBeArray.HasValue());
+
+			FPropertyBagArrayRef& ArrayRef = BetterBeArray.GetValue();
+
+			ArrayRef.AddValues(Value.Num());
+			int32 Index = 0;
+			for (auto&& Element : Value)
+			{
+				TDataConverter<TType>::WriteIndex(ArrayRef, Index, Element);
+				Index++;
+			}
+		}
+
+		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
+		static void Container2(FInstancedPropertyBag& Bag, const TContainer<TType0, TType1>& Value)
+		{
+			// Init properties
+			const TArray<FPropertyBagPropertyDesc> PropertyDescs{
+				FPropertyBagPropertyDesc(Private::V0, EPropertyBagContainerType::Array, TDataConverter<TType0>::PropertyBagType(), TDataConverter<TType0>::PropertyBagTypeObject()),
+				FPropertyBagPropertyDesc(Private::V1, EPropertyBagContainerType::Array, TDataConverter<TType1>::PropertyBagType(), TDataConverter<TType1>::PropertyBagTypeObject())
+			};
+
+			Bag.AddProperties(PropertyDescs);
+
+			auto&& BetterBeArray0 = Bag.GetMutableArrayRef(Private::V0);
+			auto&& BetterBeArray1 = Bag.GetMutableArrayRef(Private::V1);
+			check(BetterBeArray0.HasValue());
+			check(BetterBeArray1.HasValue());
+
+			FPropertyBagArrayRef& ArrayRef0 = BetterBeArray0.GetValue();
+			FPropertyBagArrayRef& ArrayRef1 = BetterBeArray1.GetValue();
+
+			ArrayRef0.AddValues(Value.Num());
+			ArrayRef1.AddValues(Value.Num());
+			int32 Index = 0;
+			for (auto&& Element : Value)
+			{
+				TDataConverter<TType0>::WriteIndex(ArrayRef0, Index, Element.Key);
+				TDataConverter<TType1>::WriteIndex(ArrayRef1, Index, Element.Value);
+				Index++;
+			}
+		}
+	}
 }

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Components/SlateWrapperTypes.h"
-#include "ModelView/Actions/HeartGraphActionBase.h"
+#include "Input/HeartActionBase.h"
 #include "HeartGraphCanvasAction.generated.h"
 
 class UWidget;
@@ -16,14 +16,14 @@ class UHeartGraphCanvasPin;
  *
  */
 UCLASS(Abstract, BlueprintType)
-class HEARTCANVAS_API UHeartGraphCanvasAction : public UHeartGraphActionBase
+class HEARTCANVAS_API UHeartGraphCanvasAction : public UHeartActionBase
 {
 	GENERATED_BODY()
 
 public:
-	virtual FText GetDescription(const UObject* Object) const override;
-	virtual bool CanExecute(const UObject* Object) const override final;
-	virtual bool Execute(UObject* Object, const FHeartInputActivation& Activation, UObject* ContextObject) override final;
+	virtual FText GetDescription(const UObject* Target) const override;
+	virtual bool CanExecute(const UObject* Target) const override final;
+	virtual bool Execute(const Heart::Action::FArguments& Arguments) override final;
 
 	virtual FReply ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject);
 
@@ -43,9 +43,9 @@ public:
 	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject) { return false; }
 };
 
-// @todo blueprintbase should be hyphenated
+
 UCLASS(Abstract, Blueprintable)
-class HEARTCANVAS_API UHeartGraphCanvasActionBlueprintBase final : public UHeartGraphCanvasAction
+class HEARTCANVAS_API UHeartGraphCanvasAction_BlueprintBase final : public UHeartGraphCanvasAction
 {
 	GENERATED_BODY()
 
@@ -55,6 +55,8 @@ public:
 	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual bool CanUndo(UObject* Target) const override;
+	virtual bool Undo(UObject* Target) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Get Description"))
@@ -71,4 +73,7 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Pin"))
 	FEventReply BP_ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject);
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Undo"))
+	bool BP_Undo(UHeartGraphWidgetBase* Target);
 };

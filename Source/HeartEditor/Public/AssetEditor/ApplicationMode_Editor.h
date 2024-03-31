@@ -12,7 +12,7 @@ namespace Heart::AssetEditor
 	class FApplicationMode_Editor : public FApplicationMode
     {
 	public:
-		static const FName ModeID;
+		static const FLazyName ModeID;
 
     	FApplicationMode_Editor(TSharedRef<FHeartGraphEditor> AssetEditor);
 

@@ -3,16 +3,36 @@
 #pragma once
 
 #include "EdGraph/EdGraph.h"
+#include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphTypes.h"
+#include "ModelView/Actions/HeartGraphAction.h"
 
 #include "HeartEdGraph.generated.h"
 
+class UHeartSlateInputLinker;
 class UHeartEdGraphNode;
 class UHeartGraph;
 class UHeartGraphNode;
 
+/**
+ * A test action to debug running graph actions via the editor.
+ */
 UCLASS()
-class HEARTEDITOR_API UHeartEdGraph : public UEdGraph
+class UHeartEditorDebugAction : public UHeartGraphAction
+{
+	GENERATED_BODY()
+
+public:
+	virtual FText GetDescription(const UObject* Target) const override;
+	virtual bool CanExecute(const UObject* Target) const override;
+	virtual void ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual void ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+};
+
+
+UCLASS()
+class HEARTEDITOR_API UHeartEdGraph : public UEdGraph, public IHeartGraphInterface
 {
 	GENERATED_BODY()
 
@@ -27,12 +47,25 @@ public:
 	UHeartEdGraphNode* FindEdGraphNode(const TFunction<bool(const UHeartEdGraphNode*)>& Iter);
 	UHeartEdGraphNode* FindEdGraphNodeForNode(const UHeartGraphNode* HeartGraphNode);
 
-	/** Returns the HeartGraph that contains this UEdGraph */
-	UHeartGraph* GetHeartGraph() const;
+	// IHeartGraphInterface
+	virtual UHeartGraph* GetHeartGraph() const override;
+	// IHeartGraphInterface
+
+
+	UHeartSlateInputLinker* GetEditorLinker() const;
+
+protected:
+	void CreateSlateInputLinker();
 
 private:
-	void OnNodeCreatedInEditorExternally(UHeartGraphNode* Node);
+	// Create the EdGraph node equivilent to a HeartNode
+	void CreateEdGraphNode(UHeartGraphNode* Node);
+
 	void OnNodeAdded(UHeartGraphNode* HeartGraphNode);
 	void OnNodeRemoved(UHeartGraphNode* HeartGraphNode);
 	void OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& HeartGraphConnectionEvent);
+
+	// Transient, so it can be remade on PostLoad/CreateGraph since the class used, change be changed by the schema.
+	UPROPERTY(Transient)
+	TObjectPtr<UHeartSlateInputLinker> SlateInputLinker;
 };

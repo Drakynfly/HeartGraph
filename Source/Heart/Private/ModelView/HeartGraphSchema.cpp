@@ -5,7 +5,6 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "Model/HeartGraph.h"
 #include "ModelView/Actions/HeartGraphAction.h"
-#include "UI/HeartInputActivation.h"
 #include "UObject/ObjectSaveContext.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphSchema)
@@ -78,11 +77,11 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	}
 
 	// If we are not running on a CDO or trying to cook, execute the EditorPreSaveAction
-	if (!IsTemplate() && !SaveContext.IsCooking())
+	if (!SaveContext.IsCooking())
 	{
 		if (IsValid(EditorPreSaveAction))
 		{
-			UHeartGraphActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
+			UHeartActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
 		}
 	}
 #endif
@@ -141,7 +140,11 @@ bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, const 
 }
 FHeartConnectPinsResponse UHeartGraphSchema::CanPinsConnect_Implementation(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const
 {
+#if !UE_BUILD_SHIPPING
+	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow, FText::FromString("Allowed by base implementation")};
+#else
 	return FHeartConnectPinsResponse{EHeartCanConnectPinsResponse::Allow};
+#endif
 }
 
 void UHeartGraphSchema::CreateDefaultNodesForGraph_Implementation(UHeartGraph* Graph) const

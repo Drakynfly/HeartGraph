@@ -9,7 +9,7 @@
 
 namespace Heart::AssetEditor
 {
-	const FName FApplicationMode_Editor::ModeID("Heart_AssetEditorMode_Editor");
+	const FLazyName FApplicationMode_Editor::ModeID("Heart_AssetEditorMode_Editor");
 
 	FApplicationMode_Editor::FApplicationMode_Editor(TSharedRef<FHeartGraphEditor> AssetEditor)
 		: FApplicationMode(ModeID)

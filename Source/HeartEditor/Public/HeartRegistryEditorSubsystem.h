@@ -34,7 +34,7 @@ public:
 	/**
 	 * Get the class of UEdGraphNode to represent a given class of UHeartGraphNode
 	 */
-	UClass* GetAssignedEdGraphNodeClass(const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const;
+	TSubclassOf<UHeartEdGraphNode> GetAssignedEdGraphNodeClass(const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const;
 
 protected:
 	void FetchAssetRegistryAssets();
