@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Serialization/HeartFlakes.h"
+#include "HeartCoreModule.h"
 
 #include "Compression/OodleDataCompressionUtil.h"
 
@@ -118,7 +119,7 @@ namespace Heart::Flakes
 
 				if (const UClass* ObjClass = Class.TryLoadClass<UObject>())
 				{
-					Obj = ObjectsCreated.Add_GetRef(NewObject<UObject>(OuterStack.Last(), ObjClass));
+					Obj = NewObject<UObject>(OuterStack.Last(), ObjClass);
 					OuterStack.Push(Obj);
 					Obj->Serialize(*this);
 					OuterStack.Pop();
@@ -134,20 +135,6 @@ namespace Heart::Flakes
 			break;
 		case ERecursiveMemoryObj::None:
 		default: return *this;
-		}
-
-		// If the outer stack is 1 here, then we are exiting the serialize loop, and can perform final options.
-		if (OuterStack.Num() == 1)
-		{
-			if (EnumHasAnyFlags(Options, ExecPostLoad))
-			{
-				OuterStack[0]->PostLoad();
-
-				for (auto&& Object : ObjectsCreated)
-				{
-					Object->PostLoad();
-				}
-			}
 		}
 
 		return *this;
@@ -200,79 +187,224 @@ namespace Heart::Flakes
 #endif
 	}
 
-	FHeartFlake CreateFlake(const FInstancedStruct& Struct, FReadOptions Options)
+	void DecompressFlake(const FHeartFlake& Flake, TArray<uint8>& Raw)
 	{
-		FHeartFlake Flake;
-		Flake.Struct = Struct.GetScriptStruct()->GetPathName();
+		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+	}
 
-		TArray<uint8> Raw;
-		FRecursiveMemoryWriter MemoryWriter(Raw, nullptr);
+	FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options)
+	{
+		return CreateFlake<FSerializationProvider_Binary>(Struct, Options);
+	}
+
+	FHeartFlake CreateFlake(const UObject* Object, const FReadOptions Options)
+	{
+		return CreateFlake<FSerializationProvider_Binary>(Object, Options);
+	}
+
+	void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake)
+	{
+		WriteStruct<FSerializationProvider_Binary>(Struct, Flake);
+	}
+
+	void WriteObject(UObject* Object, const FHeartFlake& Flake)
+	{
+		WriteObject<FSerializationProvider_Binary>(Object, Flake);
+	}
+
+	FInstancedStruct CreateStruct(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct)
+	{
+		return CreateStruct<FSerializationProvider_Binary>(Flake, ExpectedStruct);
+	}
+
+	UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
+	{
+		return CreateObject<FSerializationProvider_Binary>(Flake, Outer, ExpectedClass);
+	}
+
+	void FSerializationProvider_Binary::Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	{
+		FRecursiveMemoryWriter MemoryWriter(OutData, nullptr);
 		const_cast<FInstancedStruct&>(Struct).Serialize(MemoryWriter);
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
-
-		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
-
-		return Flake;
 	}
 
-	FHeartFlake CreateFlake(UObject* Object, FReadOptions Options)
+	void FSerializationProvider_Binary::Static_ReadData(const UObject* Object, TArray<uint8>& OutData)
 	{
-		FHeartFlake Flake;
-		Flake.Struct = Object->GetClass()->GetPathName();
-
-		TArray<uint8> Raw;
-		FRecursiveMemoryWriter MemoryWriter(Raw, Object);
-		Object->Serialize(MemoryWriter);
+		FRecursiveMemoryWriter MemoryWriter(OutData, Object);
+		const_cast<UObject*>(Object)->Serialize(MemoryWriter);
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
-
-		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
-
-		return Flake;
 	}
 
-	void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
+	void FSerializationProvider_Binary::Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
 	{
-		TArray<uint8> Raw;
-		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
-
-		FRecursiveMemoryReader MemoryReader(Raw, true, nullptr, FRecursiveMemoryReader::None);
+		FRecursiveMemoryReader MemoryReader(Data, true, nullptr);
 		Struct.Serialize(MemoryReader);
 		MemoryReader.FlushCache();
 		MemoryReader.Close();
-
-		if (Options.ExecPostLoadOrPostScriptConstruct)
-		{
-			check(Struct.GetScriptStruct())
-			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMutableMemory());
-		}
 	}
 
-	void WriteObject(UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
+	void FSerializationProvider_Binary::Static_WriteData(UObject* Object, const TArray<uint8>& Data)
 	{
-		if (!ensure(Object->IsA(Cast<UClass>(Flake.Struct.TryLoad()))))
-		{
-			return;
-		}
-
-		TArray<uint8> Raw;
-
-		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
-
-		FRecursiveMemoryReader::EOptions ReaderOptions = FRecursiveMemoryReader::EOptions::None;
-		if (Options.ExecPostLoadOrPostScriptConstruct)
-		{
-			ReaderOptions |= FRecursiveMemoryReader::EOptions::ExecPostLoad;
-		}
-
-		FRecursiveMemoryReader MemoryReader(Raw, true, Object, ReaderOptions);
+		FRecursiveMemoryReader MemoryReader(Data, true, Object);
 		Object->Serialize(MemoryReader);
 		MemoryReader.FlushCache();
 		MemoryReader.Close();
 	}
 
-	UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
+	FName FSerializationProvider_Binary::GetProviderName()
+	{
+		static const FLazyName BinarySerializationProvider("Binary");
+		return BinarySerializationProvider;
+	}
+
+	void FSerializationProvider_Binary::ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	{
+		Static_ReadData(Struct, OutData);
+	}
+
+	void FSerializationProvider_Binary::ReadData(const UObject* Object, TArray<uint8>& OutData)
+	{
+		Static_ReadData(Object, OutData);
+	}
+
+	void FSerializationProvider_Binary::WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
+	{
+		Static_WriteData(Struct, Data);
+	}
+
+	void FSerializationProvider_Binary::WriteData(UObject* Object, const TArray<uint8>& Data)
+	{
+		Static_WriteData(Object, Data);
+	}
+
+	namespace Private
+	{
+		void PostLoadStruct(FInstancedStruct& Struct)
+		{
+			check(Struct.GetScriptStruct())
+			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMutableMemory());
+		}
+
+		void PostLoadUObject(UObject* Object)
+		{
+			Object->PostLoad();
+			ForEachObjectWithOuter(Object,
+				[](UObject* Subobject)
+				{
+					Subobject->PostLoad();
+				});
+		}
+	}
+
+	FHeartFlake CreateFlake(const FName Serializer, const FInstancedStruct& Struct, const FReadOptions Options)
+	{
+		TArray<uint8> Raw;
+
+		if (Struct.IsValid())
+		{
+			FHeartCoreModule::Get().UseSerializationProvider(Serializer,
+				[&](ISerializationProvider* Provider)
+				{
+					Provider->ReadData(Struct, Raw);
+				});
+		}
+
+		FHeartFlake Flake;
+		Flake.Struct = Struct.GetScriptStruct();
+
+		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
+
+		return Flake;
+	}
+
+	FHeartFlake CreateFlake(const FName Serializer, const UObject* Object, const FReadOptions Options)
+	{
+		check(Object && !Object->IsA<AActor>());
+
+		FHeartFlake Flake;
+		Flake.Struct = Object->GetClass();
+
+		TArray<uint8> Raw;
+
+		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
+			[&](ISerializationProvider* Provider)
+			{
+				Provider->ReadData(Object, Raw);
+			});
+
+		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
+
+		return Flake;
+	}
+
+	void WriteStruct(const FName Serializer, FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
+	{
+		TArray<uint8> Raw;
+		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+
+		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
+			[&](ISerializationProvider* Provider)
+			{
+				Provider->WriteData(Struct, Raw);
+			});
+
+		if (Options.ExecPostLoadOrPostScriptConstruct)
+		{
+			Private::PostLoadStruct(Struct);
+		}
+	}
+
+	void WriteObject(const FName Serializer, UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
+	{
+		TArray<uint8> Raw;
+		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+
+		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
+			[&](ISerializationProvider* Provider)
+			{
+				Provider->WriteData(Object, Raw);
+			});
+
+		if (Options.ExecPostLoadOrPostScriptConstruct)
+		{
+			Private::PostLoadUObject(Object);
+		}
+	}
+
+	FInstancedStruct CreateStruct(const FName Serializer, const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct)
+	{
+		if (!IsValid(ExpectedStruct))
+		{
+			return {};
+		}
+
+		const UScriptStruct* StructType = Cast<UScriptStruct>(Flake.Struct.TryLoad());
+
+		if (!IsValid(StructType))
+		{
+			return {};
+		}
+
+		if (!StructType->IsChildOf(ExpectedStruct))
+		{
+			return {};
+		}
+
+		FInstancedStruct CreatedStruct;
+		CreatedStruct.InitializeAs(StructType);
+
+		FWriteOptions Options;
+		Options.ExecPostLoadOrPostScriptConstruct = true;
+
+		WriteStruct(Serializer, CreatedStruct, Flake, Options);
+
+		return CreatedStruct;
+	}
+
+	UObject* CreateObject(const FName Serializer, const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
 	{
 		if (!IsValid(ExpectedClass) || ExpectedClass->IsChildOf<AActor>())
 		{
@@ -293,47 +425,57 @@ namespace Heart::Flakes
 
 		auto&& LoadedObject = NewObject<UObject>(Outer, ObjClass);
 
-		WriteObject(LoadedObject, Flake);
+		FWriteOptions Options;
+		Options.ExecPostLoadOrPostScriptConstruct = true;
+
+		WriteObject(Serializer, LoadedObject, Flake, Options);
 
 		return LoadedObject;
 	}
 }
 
-FHeartFlake UHeartFlakeLibrary::CreateFlake_Struct(const FInstancedStruct& Struct)
+TArray<FString> UHeartFlakeLibrary::GetAllProviders()
 {
-	if (Struct.IsValid())
-	{
-		return Heart::Flakes::CreateFlake(Struct);
-	}
-
-	return FHeartFlake();
+	TArray<FString> Out;
+	Algo::Transform(FHeartCoreModule::Get().GetAllProviderNames(), Out,
+		[](const FName Name){ return Name.ToString(); });
+	return Out;
 }
 
-FHeartFlake UHeartFlakeLibrary::CreateFlake(UObject* Object)
+FHeartFlake UHeartFlakeLibrary::CreateFlake_Struct(const FInstancedStruct& Struct, const FName Serializer)
 {
-	check(Object && !Object->IsA<AActor>());
-
-	return Heart::Flakes::CreateFlake(Object);
+	return Heart::Flakes::CreateFlake(Serializer, Struct);
 }
 
-FHeartFlake_Actor UHeartFlakeLibrary::CreateFlake_Actor(AActor* Actor)
+FHeartFlake UHeartFlakeLibrary::CreateFlake(const UObject* Object, const FName Serializer)
+{
+	return Heart::Flakes::CreateFlake(Serializer, Object);
+}
+
+FHeartFlake_Actor UHeartFlakeLibrary::CreateFlake_Actor(const AActor* Actor, const FName Serializer)
 {
 	check(Actor);
 
-	FHeartFlake_Actor Flake = Heart::Flakes::CreateFlake(Actor);
+	FHeartFlake_Actor Flake = Heart::Flakes::CreateFlake(Serializer, Actor);
 	Flake.Transform = Actor->GetTransform();
 
 	return Flake;
 }
 
-UObject* UHeartFlakeLibrary::ConstructObjectFromFlake(const FHeartFlake& Flake, UObject* Outer,
-                                                      const UClass* ExpectedClass)
+FInstancedStruct UHeartFlakeLibrary::ConstructStructFromFlake(const FHeartFlake& Flake,
+	const UScriptStruct* ExpectedStruct, const FName Serializer)
 {
-	return Heart::Flakes::CreateObject(Flake, Outer, ExpectedClass);
+	return Heart::Flakes::CreateStruct(Serializer, Flake, ExpectedStruct);
+}
+
+UObject* UHeartFlakeLibrary::ConstructObjectFromFlake(const FHeartFlake& Flake, UObject* Outer,
+													  const UClass* ExpectedClass, const FName Serializer)
+{
+	return Heart::Flakes::CreateObject(Serializer, Flake, Outer, ExpectedClass);
 }
 
 AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Flake, UObject* WorldContextObj,
-	const TSubclassOf<AActor> ExpectedClass)
+													const TSubclassOf<AActor> ExpectedClass, const FName Serializer)
 {
 	if (!IsValid(WorldContextObj))
 	{
@@ -345,8 +487,6 @@ AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Fla
 		return nullptr;
 	}
 
-	LoadClass<AActor>(nullptr, *Flake.Struct.ToString(), nullptr, LOAD_None, nullptr);
-
 	const TSubclassOf<AActor> ActorClass = LoadClass<AActor>(nullptr, *Flake.Struct.ToString(), nullptr, LOAD_None, nullptr);
 
 	if (!ActorClass->IsChildOf(ExpectedClass))
@@ -356,7 +496,7 @@ AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Fla
 
 	if (auto&& LoadedActor = WorldContextObj->GetWorld()->SpawnActorDeferred<AActor>(ActorClass, Flake.Transform))
 	{
-		Heart::Flakes::WriteObject(LoadedActor, Flake);
+		Heart::Flakes::WriteObject(Serializer, LoadedActor, Flake);
 
 		LoadedActor->FinishSpawning(Flake.Transform);
 
