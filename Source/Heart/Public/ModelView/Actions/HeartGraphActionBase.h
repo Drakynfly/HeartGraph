@@ -32,6 +32,15 @@ namespace Heart::Action
 		FHeartInputActivation Activation;
 		UObject* Payload = nullptr;
 		EExecutionFlags Flags = NoFlags;
+
+		friend FArchive& operator<<(FArchive& Ar, FArguments& Arguments)
+		{
+			return Ar
+				<< Arguments.Target
+				<< Arguments.Activation
+				<< Arguments.Payload
+				<< *reinterpret_cast<uint8*>(&Arguments.Flags);
+		}
 	};
 }
 ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
