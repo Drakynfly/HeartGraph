@@ -332,35 +332,41 @@ class HEARTCORE_API UHeartFlakeLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	UFUNCTION()
-	TArray<FString> GetAllProviders();
+	static TArray<FString> GetAllProviders();
 
 public:
 	/** Serialize an struct (and all its subobjects) into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Struct)"))
-	static FHeartFlake CreateFlake_Struct(const FInstancedStruct& Struct, FName Serializer = FName("Binary"));
+	static FHeartFlake CreateFlake_Struct(const FInstancedStruct& Struct,
+		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
 
 	/** Serialize an object (and all its subobjects) into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Object)"))
-	static FHeartFlake CreateFlake(const UObject* Object, FName Serializer = FName("Binary"));
+	static FHeartFlake CreateFlake(const UObject* Object,
+		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
 
 	/** Serialize an actor (and all its subobjects) into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Actor)"))
-	static FHeartFlake_Actor CreateFlake_Actor(const AActor* Actor, FName Serializer = FName("Binary"));
+	static FHeartFlake_Actor CreateFlake_Actor(const AActor* Actor,
+		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
 
 	/**
 	 * Attempt to read a flake back into a struct.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|FlakeLibrary")
-	static FInstancedStruct ConstructStructFromFlake(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct, FName Serializer = FName("Binary"));
+	static FInstancedStruct ConstructStructFromFlake(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct,
+		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
 
 	/**
 	 * Attempt to read a flake back into an object.
 	 * Does not support actors! Use ConstructActorFromFlake for that instead.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|FlakeLibrary", meta = (DeterminesOutputType = "ExpectedClass"))
-	static UObject* ConstructObjectFromFlake(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass, FName Serializer = FName("Binary"));
+	static UObject* ConstructObjectFromFlake(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass,
+		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
 
 	/** Attempt to read a flake back into an actor. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|FlakeLibrary", meta = (WorldContext = "WorldContextObj", DeterminesOutputType = "ExpectedClass"))
-	static AActor* ConstructActorFromFlake(const FHeartFlake_Actor& Flake, UObject* WorldContextObj, const TSubclassOf<AActor> ExpectedClass, FName Serializer = FName("Binary"));
+	static AActor* ConstructActorFromFlake(const FHeartFlake_Actor& Flake, UObject* WorldContextObj, const TSubclassOf<AActor> ExpectedClass,
+		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
 };
