@@ -84,9 +84,7 @@ struct FHeartRemoteGraphActionArguments
 		}
 
 		Ar << PinTarget;
-
-		FHeartManualEvent::StaticStruct()->GetCppStructOps()->NetSerialize(Ar, Map, bOutSuccess, &Activation);
-
+		Ar << Activation.EventValue;
 		Ar << ContextObject;
 
 		bOutSuccess &= !Ar.IsError();

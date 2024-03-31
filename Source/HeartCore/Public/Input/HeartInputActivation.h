@@ -107,6 +107,12 @@ struct HEARTCORE_API FHeartInputActivation
 
 	const UScriptStruct* GetScriptStruct() const { return EventStruct.GetScriptStruct(); }
 
+	friend FArchive& operator<<(FArchive& Ar, FHeartInputActivation& Activation)
+	{
+		Activation.EventStruct.Serialize(Ar);
+		return Ar;
+	}
+
 private:
 	UPROPERTY()
 	FInstancedStruct EventStruct;
