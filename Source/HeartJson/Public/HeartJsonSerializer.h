@@ -4,14 +4,15 @@
 
 #include "InstancedStruct.h"
 #include "JsonObjectWrapper.h"
-#include "UObject/Object.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+#include "Serialization/HeartFlakes.h"
 #include "HeartJsonSerializer.generated.h"
 
-USTRUCT()
-struct FHeartSerializerIdentity_Json
+namespace Heart::Flakes
 {
-	GENERATED_BODY()
-};
+	SERIALIZATION_PROVIDER_HEADER(Json)
+}
+
 
 UCLASS()
 class HEARTJSON_API UHeartJsonLibrary : public UBlueprintFunctionLibrary

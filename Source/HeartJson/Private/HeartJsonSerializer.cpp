@@ -44,6 +44,121 @@ static const FJsonObjectConverter::CustomExportCallback HeartJsonCustomExporter 
 			return {};
 		});
 
+namespace Heart::Flakes
+{
+	void FSerializationProvider_Json::Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	{
+		FString StringData;
+		FJsonObjectConverter::UStructToJsonObjectString(Struct.GetScriptStruct(), Struct.GetMemory(),
+			StringData,
+			0,
+			0,
+			0,
+			&HeartJsonCustomExporter,
+			false);
+
+		OutData.AddUninitialized(StringData.Len());
+		StringToBytes(StringData, OutData.GetData(), StringData.Len());
+	}
+
+	void FSerializationProvider_Json::Static_ReadData(const UObject* Object, TArray<uint8>& OutData)
+	{
+		FString StringData;
+		FJsonObjectConverter::UStructToJsonObjectString(Object->GetClass(), Object,
+			StringData,
+			0,
+			0,
+			0,
+			&HeartJsonCustomExporter,
+			false);
+
+		OutData.AddUninitialized(StringData.Len());
+		StringToBytes(StringData, OutData.GetData(), StringData.Len());
+	}
+
+	void FSerializationProvider_Json::Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
+	{
+		if (!ensure(Struct.IsValid()))
+		{
+			return;
+		}
+
+		TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(BytesToString(Data.GetData(), Data.Num()));
+
+		TSharedPtr<FJsonObject> JsonObject;
+		if (!FJsonSerializer::Deserialize(JsonReader, JsonObject) || !JsonObject.IsValid())
+		{
+			return;
+		}
+
+		constexpr int64 CheckFlags = 0;
+		constexpr int64 SkipFlags = 0;
+		constexpr bool bStrictMode = false;
+
+		FJsonObjectConverter::JsonObjectToUStruct(
+			JsonObject.ToSharedRef(),
+			Struct.GetScriptStruct(),
+			Struct.GetMutableMemory(),
+			CheckFlags,
+			SkipFlags,
+			bStrictMode);
+	}
+
+	void FSerializationProvider_Json::Static_WriteData(UObject* Object, const TArray<uint8>& Data)
+	{
+		if (!ensure(IsValid(Object)))
+		{
+			return;
+		}
+
+		TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(BytesToString(Data.GetData(), Data.Num()));
+
+		TSharedPtr<FJsonObject> JsonObject;
+		if (!FJsonSerializer::Deserialize(JsonReader, JsonObject) || !JsonObject.IsValid())
+		{
+			return;
+		}
+
+		constexpr int64 CheckFlags = 0;
+		constexpr int64 SkipFlags = 0;
+		constexpr bool bStrictMode = false;
+
+		FJsonObjectConverter::JsonObjectToUStruct(
+			JsonObject.ToSharedRef(),
+			Object->GetClass(),
+			Object,
+			CheckFlags,
+			SkipFlags,
+			bStrictMode);
+	}
+
+	FName FSerializationProvider_Json::GetProviderName()
+	{
+		static const FLazyName JsonSerializationProvider("JSON");
+		return JsonSerializationProvider;
+	}
+
+	void FSerializationProvider_Json::ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	{
+		Static_ReadData(Struct, OutData);
+	}
+
+	void FSerializationProvider_Json::ReadData(const UObject* Object, TArray<uint8>& OutData)
+	{
+		Static_ReadData(Object, OutData);
+	}
+
+	void FSerializationProvider_Json::WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
+	{
+		Static_WriteData(Struct, Data);
+	}
+
+	void FSerializationProvider_Json::WriteData(UObject* Object, const TArray<uint8>& Data)
+	{
+		Static_WriteData(Object, Data);
+	}
+}
+
 FJsonObjectWrapper UHeartJsonLibrary::CreateFlake_Struct_Json(const FInstancedStruct& Struct)
 {
 	FJsonObjectWrapper Wrapper;
