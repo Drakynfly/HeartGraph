@@ -92,6 +92,21 @@ namespace Heart::Action::History
 	}
 }
 
+bool FHeartActionRecord::Serialize(FArchive& Ar)
+{
+	// @todo test this works
+
+	Ar << Action;
+	Ar << Arguments.Target;
+
+	FHeartInputActivation::StaticStruct()->GetCppStructOps()->Serialize(Ar, &Arguments.Activation);
+
+	Ar << Arguments.Payload;
+	Ar << *reinterpret_cast<uint8*>(&Arguments.Flags);
+
+	return true;
+}
+
 void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
 {
 	// Clear history above Pointer
