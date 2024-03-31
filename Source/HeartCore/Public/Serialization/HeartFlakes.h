@@ -335,7 +335,7 @@ class HEARTCORE_API UHeartFlakeLibrary : public UBlueprintFunctionLibrary
 	static TArray<FString> GetAllProviders();
 
 public:
-	/** Serialize an struct (and all its subobjects) into a flake. */
+	/** Serialize a struct into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake (Struct)"))
 	static FHeartFlake CreateFlake_Struct(const FInstancedStruct& Struct,
 		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));

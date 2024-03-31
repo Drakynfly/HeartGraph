@@ -1,7 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "UI/HeartWidgetInputBindingContainer.h"
+#include "Input/HeartWidgetInputBindingContainer.h"
 #include "Input/HeartInputBindingAsset.h"
+#include "Input/HeartWidgetInputLinker.h"
+#include "Components/Widget.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputBindingContainer)
 

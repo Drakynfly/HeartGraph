@@ -4,7 +4,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Input/HeartInputLinkerInterface.h"
-#include "UI/HeartWidgetInputBindingContainer.h"
+#include "Input/HeartWidgetInputLinker.h"
 #include "HeartGraphWidgetBase.generated.h"
 
 /**

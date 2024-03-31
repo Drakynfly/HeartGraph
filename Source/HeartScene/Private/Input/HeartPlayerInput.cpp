@@ -5,6 +5,8 @@
 #include "Input/HeartInputLinkerInterface.h"
 #include "Input/HeartSceneInputLinker.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPlayerInput)
+
 bool UHeartPlayerInput::InputKey(const FInputKeyParams& Params)
 {
 	class AStupidHackPlayerController : APlayerController

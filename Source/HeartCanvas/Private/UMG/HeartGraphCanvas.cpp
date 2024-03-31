@@ -9,12 +9,12 @@
 #include "HeartCanvasPrivate.h"
 
 #include "HeartCanvasConnectionVisualizer.h"
+#include "HeartWidgetUtilsLibrary.h"
 #include "Model/HeartGraph.h"
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "General/HeartMath.h"
-#include "UI/HeartWidgetUtilsLibrary.h"
 
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"

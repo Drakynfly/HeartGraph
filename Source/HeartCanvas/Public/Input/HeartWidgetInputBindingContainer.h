@@ -1,18 +1,19 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #pragma once
+#include "HeartWidgetInputLinker.h"
 
-#include "Components/Widget.h"
-#include "Move_To_UMG/HeartUMGInputLinker.h"
 #include "HeartWidgetInputBindingContainer.generated.h"
 
+class UWidget;
 class UHeartInputBindingAsset;
+class UHeartWidgetInputLinker;
 
 /**
  *
  */
 USTRUCT(BlueprintType)
-struct HEARTCORE_API FHeartWidgetInputBindingContainer
+struct HEARTCANVAS_API FHeartWidgetInputBindingContainer
 {
 	GENERATED_BODY()
 

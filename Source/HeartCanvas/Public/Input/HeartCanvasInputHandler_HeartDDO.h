@@ -11,7 +11,7 @@ enum class EDragPivot : uint8;
  * A heart widget input binding that can launch a Drag Drop Operation
  */
 UCLASS(meta = (DisplayName = "Drag Drop Operation"))
-class HEARTCORE_API UHeartCanvasInputHandler_HeartDDO : public UHeartCanvasInputHandler_DragDropOperationBase
+class HEARTCANVAS_API UHeartCanvasInputHandler_HeartDDO : public UHeartCanvasInputHandler_DragDropOperationBase
 {
 	GENERATED_BODY()
 

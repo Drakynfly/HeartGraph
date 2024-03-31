@@ -4,7 +4,7 @@
 
 #include "Input/HeartInputLinkerBase.h"
 
-#include "HeartUMGInputLinker.generated.h"
+#include "HeartWidgetInputLinker.generated.h"
 
 class UWidget;
 class UDragDropOperation;
@@ -16,7 +16,7 @@ class UHeartDragDropOperation;
  * that is not usually needed.
  */
 UCLASS(BlueprintType)
-class HEARTCORE_API UHeartWidgetInputLinker : public UHeartInputLinkerBase
+class HEARTCANVAS_API UHeartWidgetInputLinker : public UHeartInputLinkerBase
 {
 	GENERATED_BODY()
 
@@ -40,9 +40,6 @@ public:
 	void BindToOnDragDetected(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback_DDO>& DragDropTrigger);
 	void UnbindToOnDragDetected(const Heart::Input::FInputTrip& Trip);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
-	bool TriggerManualInput(UWidget* Widget, FName Key, const FHeartManualEvent& Activation);
-
 private:
 	// Input trips that begin a drag drop operation
 	TMultiMap<Heart::Input::FInputTrip, TSharedPtr<const Heart::Input::FConditionalCallback_DDO>> DragDropTriggers;
@@ -60,7 +57,7 @@ namespace Heart::Input
 
 		using FCreateDDODelegate = TSpecifiedDelegate<TDelegate<UHeartDragDropOperation*(UWidget*)>>;
 
-		HEARTCORE_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
+		HEARTCANVAS_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
 	};
 }
 

@@ -17,8 +17,7 @@ public class HeartCore : ModuleRules
                 "Core",
                 "GameplayTags",
                 "InputCore",
-                "StructUtils",
-                "UMG"
+                "StructUtils"
             });
 
         PrivateDependencyModuleNames.AddRange(

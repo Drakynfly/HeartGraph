@@ -1,9 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartCanvasConnectionVisualizer.h"
+#include "HeartWidgetUtilsLibrary.h"
 
 #include "Model/HeartGraphNode.h"
-#include "UI/HeartWidgetUtilsLibrary.h"
 #include "UMG/HeartGraphCanvasNode.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasConnectionVisualizer)

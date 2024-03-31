@@ -1,16 +1,15 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Move_To_UMG/HeartUMGInputLinker.h"
+#include "Input/HeartWidgetInputLinker.h"
 #include "Components/Widget.h"
-#include "Move_To_UMG/HeartDragDropOperation.h"
+#include "Input/HeartDragDropOperation.h"
 
 #include "Input/HeartInputActivation.h"
 #include "Input/HeartInputLinkerInterface.h"
 #include "Input/HeartInputTypes.h"
+#include "General/HeartContextObject.h"
 
-#include "UI/HeartUMGContextObject.h"
-
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartUMGInputLinker)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputLinker)
 
 using namespace Heart::Input;
 
@@ -180,9 +179,9 @@ UHeartDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* 
 
 		DragDropOperation->SummonedBy = Widget;
 
-		if (Widget->Implements<UHeartUMGContextObject>())
+		if (Widget->Implements<UHeartContextObject>())
 		{
-			DragDropOperation->Payload = IHeartUMGContextObject::Execute_GetContextObject(Widget);
+			DragDropOperation->Payload = IHeartContextObject::Execute_GetContextObject(Widget);
 		}
 
 		if (DragDropOperation->SetupDragDropOperation())
@@ -252,13 +251,6 @@ void UHeartWidgetInputLinker::BindToOnDragDetected(const FInputTrip& Trip, const
 void UHeartWidgetInputLinker::UnbindToOnDragDetected(const FInputTrip& Trip)
 {
 	DragDropTriggers.Remove(Trip);
-}
-
-bool UHeartWidgetInputLinker::TriggerManualInput(UWidget* Widget, const FName Key, const FHeartManualEvent& Activation)
-{
-	if (!IsValid(Widget) || Key.IsNone()) return false;
-
-	return HandleManualInput(Widget, Key, Activation);
 }
 
 namespace Heart::Input

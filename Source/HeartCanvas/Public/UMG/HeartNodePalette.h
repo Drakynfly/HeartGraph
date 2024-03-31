@@ -3,8 +3,9 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
+#include "HeartWidgetFactory.h"
 #include "GraphRegistry/HeartNodeSource.h"
-#include "UI/HeartWidgetFactory.h"
+#include "Input/HeartWidgetInputBindingContainer.h"
 #include "HeartNodePalette.generated.h"
 
 

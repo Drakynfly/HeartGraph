@@ -1,9 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "UI/HeartWidgetUtilsLibrary.h"
-#include "Input/HeartInputBindingAsset.h"
-#include "Input/HeartInputLinkerInterface.h"
-#include "Move_To_UMG/HeartUMGInputLinker.h"
+#include "HeartWidgetUtilsLibrary.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/Widget.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetUtilsLibrary)
 
@@ -33,34 +32,6 @@ FVector2D UHeartWidgetUtilsLibrary::UINavigationToVector(const EUINavigation Nav
 	case EUINavigation::Invalid:
 	default: return FVector2D::ZeroVector;
 	}
-}
-
-int32 UHeartWidgetUtilsLibrary::FindClosestToDirection(const TArray<FVector2D>& Locations, const FVector2D From,
-													   const FVector2D Direction, const float DotRange)
-{
-	int32 Closest = INDEX_NONE;
-	double BestScore = 0;
-
-	for (int32 i = 0; i < Locations.Num(); ++i)
-	{
-		FVector2D Offset = From - Locations[i];
-
-		// Angle between direction and target
-		const float Dot = Offset.GetSafeNormal() | Direction;
-
-		if (Dot > DotRange)
-		{
-			const double Distance = FVector2D::Distance(From, Locations[i]);
-
-			if (Distance > BestScore)
-			{
-				BestScore = Distance;
-				Closest = i;
-			}
-		}
-	}
-
-	return Closest;
 }
 
 FVector2D UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
@@ -151,45 +122,4 @@ UUserWidget* UHeartWidgetUtilsLibrary::CreateWidgetWithGameInstanceOuter(UGameIn
 	}
 
 	return CreateWidget(Outer, Class);
-}
-
-TArray<FHeartManualInputQueryResult> UHeartWidgetUtilsLibrary::GetActionsForWidget(const UWidget* Widget)
-{
-	TArray<FHeartManualInputQueryResult> ActionList;
-
-	auto&& Linker = Heart::Input::TryFindLinker<UHeartInputLinkerBase>(Widget);
-
-	if (IsValid(Linker))
-	{
-		ActionList = Linker->QueryManualTriggers(Widget);
-	}
-
-	return ActionList;
-}
-
-UHeartWidgetInputLinker* UHeartWidgetUtilsLibrary::GetWidgetInputLinker(UWidget* Widget)
-{
-	return Heart::Input::TLinkerType<UWidget>::FindLinker(Widget);
-}
-
-bool UHeartWidgetUtilsLibrary::AddInputBindingAssetToLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset)
-{
-	if (!IsValid(Linker) || IsValid(BindingAsset))
-	{
-		return false;
-	}
-
-	Linker->AddBindings(BindingAsset->BindingData);
-	return true;
-}
-
-bool UHeartWidgetUtilsLibrary::RemoveInputBindingAssetFromLinker(UHeartWidgetInputLinker* Linker, UHeartInputBindingAsset* BindingAsset)
-{
-	if (!IsValid(Linker) || IsValid(BindingAsset))
-	{
-		return false;
-	}
-
-	Linker->RemoveBindings(BindingAsset->BindingData);
-	return true;
 }

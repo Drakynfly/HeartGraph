@@ -3,6 +3,8 @@
 #include "Input/HeartSceneInputBindingContainer.h"
 #include "Input/HeartInputBindingAsset.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneInputBindingContainer)
+
 void FHeartSceneInputBindingContainer::SetupLinker(UObject* InOuter)
 {
 	check(InOuter);

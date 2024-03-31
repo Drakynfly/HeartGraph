@@ -1,10 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Move_To_UMG/HeartCanvasInputBinding.h"
-#include "Input/HeartInputLinkerBase.h"
+#include "Input/HeartCanvasInputBinding.h"
 #include "Input/HeartInputTrigger.h"
 #include "Input/HeartInputTypes.h"
-#include "Move_To_UMG/HeartUMGInputLinker.h"
+#include "Input/HeartWidgetInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasInputBinding)
 

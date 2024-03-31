@@ -6,7 +6,7 @@
 #include "Components/PanelWidget.h"
 #include "GraphRegistry/HeartRegistryQuery.h"
 #include "Model/HeartGraphNode.h"
-#include "UI/HeartUMGContextObject.h"
+#include "General/HeartContextObject.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodePalette)
 
@@ -139,9 +139,9 @@ UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSour
 
 		// Try to give the node widget the node class as a Context object. This is optional, technically, but
 		// highly suggested.
-		if (NewNodeWidget->Implements<UHeartUMGContextObject>())
+		if (NewNodeWidget->Implements<UHeartContextObject>())
 		{
-			IHeartUMGContextObject::Execute_SetContextObject(NewNodeWidget, Obj);
+			IHeartContextObject::Execute_SetContextObject(NewNodeWidget, Obj);
 		}
 
 		return NewNodeWidget;

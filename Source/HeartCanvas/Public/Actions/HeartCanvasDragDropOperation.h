@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "Move_To_UMG/HeartDragDropOperation.h"
-#include "Components/Widget.h"
+#include "Input/HeartDragDropOperation.h"
 #include "HeartCanvasDragDropOperation.generated.h"
 
 class UHeartGraphCanvas;

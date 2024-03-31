@@ -11,7 +11,7 @@
 
 
 UCLASS(Abstract, Blueprintable, BlueprintType, EditInlineNew, CollapseCategories)
-class HEARTCORE_API UHeartWidgetFactory : public UObject
+class HEARTCANVAS_API UHeartWidgetFactory : public UObject
 {
 	GENERATED_BODY()
 
@@ -21,7 +21,7 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct HEARTCORE_API FHeartWidgetFactoryRules
+struct HEARTCANVAS_API FHeartWidgetFactoryRules
 {
 	GENERATED_BODY()
 
@@ -33,7 +33,7 @@ protected:
 };
 
 UCLASS()
-class UHeartWidgetFactoryLibrary : public UBlueprintFunctionLibrary
+class HEARTCANVAS_API UHeartWidgetFactoryLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

@@ -9,7 +9,7 @@
  *
  */
 UCLASS()
-class HEARTCORE_API UHeartWidgetFactory_Class : public UHeartWidgetFactory
+class HEARTCANVAS_API UHeartWidgetFactory_Class : public UHeartWidgetFactory
 {
 	GENERATED_BODY()
 

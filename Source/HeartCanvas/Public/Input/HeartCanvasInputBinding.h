@@ -12,7 +12,7 @@ class UWidget;
  * Base class for UMG Drag Drop Operation handlers
  */
 UCLASS(Abstract)
-class HEARTCORE_API UHeartCanvasInputHandler_DragDropOperationBase : public UHeartInputBindingBase
+class HEARTCANVAS_API UHeartCanvasInputHandler_DragDropOperationBase : public UHeartInputBindingBase
 {
 	GENERATED_BODY()
 

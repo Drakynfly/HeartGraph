@@ -1,6 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "UI/HeartWidgetFactory_Class.h"
+#include "UMG/HeartWidgetFactory_Class.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetFactory_Class)
 

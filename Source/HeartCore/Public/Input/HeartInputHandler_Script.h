@@ -5,8 +5,6 @@
 #include "HeartInputHandlerBase.h"
 #include "HeartInputHandler_Script.generated.h"
 
-struct FEventReply;
-
 /**
  *
  */
@@ -20,5 +18,5 @@ public:
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|InputHandlerScript")
-	FEventReply HandleEvent(UObject* Widget, const FHeartInputActivation& Trip) const;
+	bool HandleEvent(UObject* Widget, const FHeartInputActivation& Trip) const;
 };

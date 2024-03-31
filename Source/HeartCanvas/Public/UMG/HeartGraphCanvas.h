@@ -3,11 +3,14 @@
 #pragma once
 
 #include "HeartGraphWidgetBase.h"
+
+#include "Input/HeartWidgetInputBindingContainer.h"
+#include "Model/HeartGraphPinReference.h"
+#include "Model/HeartGraphNode.h"
 #include "ModelView/HeartNodeLocationAccessor.h"
 
 #include "General/VectorBounds.h"
-#include "Model/HeartGraphPinReference.h"
-#include "Model/HeartGraphNode.h"
+
 #include "HeartGraphCanvas.generated.h"
 
 class UCanvasPanelSlot;

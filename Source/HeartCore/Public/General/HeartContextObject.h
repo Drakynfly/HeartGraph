@@ -3,19 +3,19 @@
 #pragma once
 
 #include "UObject/Interface.h"
-#include "HeartUMGContextObject.generated.h"
+#include "HeartContextObject.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE()
-class HEARTCORE_API UHeartUMGContextObject : public UInterface
+class HEARTCORE_API UHeartContextObject : public UInterface
 {
 	GENERATED_BODY()
 };
 
 /**
- * A simple interface to communicate with widgets that use a context object.
+ * A simple interface to communicate with any class that uses a context object.
  */
-class HEARTCORE_API IHeartUMGContextObject
+class HEARTCORE_API IHeartContextObject
 {
 	GENERATED_BODY()
 

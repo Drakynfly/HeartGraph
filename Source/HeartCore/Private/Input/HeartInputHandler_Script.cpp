@@ -8,5 +8,5 @@
 
 FReply UHeartInputHandler_Script::OnTriggered(UObject* Target, const FHeartInputActivation& Trip) const
 {
-	return HandleEvent(Target, Trip).NativeReply;
+	return HandleEvent(Target, Trip) ? FReply::Handled() : FReply::Unhandled();
 }

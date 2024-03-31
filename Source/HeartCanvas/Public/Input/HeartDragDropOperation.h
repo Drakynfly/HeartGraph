@@ -9,7 +9,7 @@
  * A tickable drag drop operation
  */
 UCLASS(Abstract)
-class HEARTCORE_API UHeartDragDropOperation : public UDragDropOperation
+class HEARTCANVAS_API UHeartDragDropOperation : public UDragDropOperation
 {
 	GENERATED_BODY()
 

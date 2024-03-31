@@ -4,7 +4,7 @@
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
-#include "UI/HeartUMGContextObject.h"
+#include "General/HeartContextObject.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasActionDragDropOperation)
@@ -53,11 +53,11 @@ UHeartDragDropOperation* UHeartCanvasInputHandler_DDO_Action::BeginDDO(UWidget* 
 		auto&& NewVisual = CreateWidget(Widget, VisualClass);
 
 		// If both the widget and the visual want a context object pass it between them
-		if (Widget->Implements<UHeartUMGContextObject>() &&
-			NewVisual->Implements<UHeartUMGContextObject>())
+		if (Widget->Implements<UHeartContextObject>() &&
+			NewVisual->Implements<UHeartContextObject>())
 		{
-			auto&& Context = IHeartUMGContextObject::Execute_GetContextObject(Widget);
-			IHeartUMGContextObject::Execute_SetContextObject(NewVisual, Context);
+			auto&& Context = IHeartContextObject::Execute_GetContextObject(Widget);
+			IHeartContextObject::Execute_SetContextObject(NewVisual, Context);
 		}
 
 		NewDDO->DefaultDragVisual = NewVisual;
