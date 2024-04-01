@@ -12,7 +12,7 @@
 
 FText UAssetDefinition_HeartInputHandlerAsset::GetAssetDisplayName() const
 {
-	return LOCTEXT("AssetDisplayName", "Heart Widget Input Handler Asset");
+	return LOCTEXT("AssetDisplayName", "Heart Input Handler Asset");
 }
 
 FLinearColor UAssetDefinition_HeartInputHandlerAsset::GetAssetColor() const

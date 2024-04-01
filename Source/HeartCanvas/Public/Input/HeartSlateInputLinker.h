@@ -30,10 +30,13 @@ namespace Heart::Input
 	{
 		static constexpr bool Supported = true;
 
+		using FReplyType = FReply;
 		using FValueType = const TSharedRef<SWidget>&;
 		// DDO type // using FDDOType = const TSharedRef<SWidget>&;
 
 		// DDO handler
+
+		static FReplyType NoReply() { return FReply::Unhandled(); }
 
 		HEARTCANVAS_API static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget);
 	};

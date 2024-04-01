@@ -1,33 +1,56 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/Actions/HeartHistoryActions.h"
-#include "Model/HeartGraph.h"
+#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphPinInterface.h"
 #include "ModelView/HeartActionHistory.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartHistoryActions)
 
-void UHeartUndoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
-									  UObject* ContextObject)
+FHeartEvent UHeartUndoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+												  UObject* ContextObject)
 {
-	UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
-	if (!IsValid(History))
+	if (Heart::Action::History::TryUndo(Graph))
 	{
-		UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
-		return;
+		return FHeartEvent::Handled;
 	}
-
-	History->Undo();
+	return FHeartEvent::Failed;
 }
 
-void UHeartRedoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartUndoAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+												 UObject* ContextObject)
+{
+	if (Heart::Action::History::TryUndo(Node->GetGraph()))
+	{
+		return FHeartEvent::Handled;
+	}
+	return FHeartEvent::Failed;
+}
+
+FHeartEvent UHeartUndoAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
+												const FHeartInputActivation& Activation, UObject* ContextObject)
+{
+	if (Heart::Action::History::TryUndo(Pin->GetHeartGraphNode()->GetGraph()))
+	{
+		return FHeartEvent::Handled;
+	}
+	return FHeartEvent::Failed;
+}
+
+FHeartEvent UHeartRedoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+												  UObject* ContextObject)
+{
+	return Heart::Action::History::TryRedo(Graph);
+}
+
+FHeartEvent UHeartRedoAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
 	UObject* ContextObject)
 {
-	UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
-	if (!IsValid(History))
-	{
-		UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph->GetName())
-		return;
-	}
+	return Heart::Action::History::TryRedo(Node->GetGraph());
+}
 
-	History->Redo();
+FHeartEvent UHeartRedoAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
+	const FHeartInputActivation& Activation, UObject* ContextObject)
+{
+	return Heart::Action::History::TryRedo(Pin->GetHeartGraphNode()->GetGraph());
 }

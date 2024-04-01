@@ -16,7 +16,7 @@ class HEART_API UHeartAction_DeleteNode : public UHeartGraphAction
 
 protected:
 	virtual bool CanExecute(const UObject* Object) const override;
-	virtual void ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual FHeartEvent ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
 	virtual bool CanUndo(UObject* Target) const override { return true; }
 	virtual bool Undo(UObject* Target) override;
 

@@ -28,14 +28,14 @@ class HEARTCORE_API UHeartInputLinkerBase : public UObject
 	GENERATED_BODY()
 
 protected:
-	TOptional<FReply> TryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
+	FHeartEvent TryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
 
 public:
 	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback>& InputCallback);
 	void UnbindInputCallback(const Heart::Input::FInputTrip& Trip);
 
 	// Custom input
-	virtual bool HandleManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
+	virtual FHeartEvent HandleManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
 	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UObject* Target) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|InputLinker")
@@ -55,11 +55,11 @@ namespace Heart::Input
 		typename TTarget
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnMouseWheel(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseWheel(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnMouseWheel(Target, InGeometry, InMouseEvent);
+			auto BindingReply = Linker->HandleOnMouseWheel(Target, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -67,18 +67,18 @@ namespace Heart::Input
 			}
 		}
 
-		return FReply::Unhandled();
+		return TLinkerType<TTarget>::NoReply();
 	}
 
 	template <
 		typename TTarget
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnMouseButtonDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseButtonDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnMouseButtonDown(Target, InGeometry, InMouseEvent);
+			auto BindingReply = Linker->HandleOnMouseButtonDown(Target, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -86,18 +86,18 @@ namespace Heart::Input
 			}
 		}
 
-		return FReply::Unhandled();
+		return TLinkerType<TTarget>::NoReply();
 	}
 
 	template <
 		typename TTarget
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnMouseButtonUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseButtonUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnMouseButtonUp(Target, InGeometry, InMouseEvent);
+			auto BindingReply = Linker->HandleOnMouseButtonUp(Target, InGeometry, InMouseEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -105,18 +105,18 @@ namespace Heart::Input
 			}
 		}
 
-		return FReply::Unhandled();
+		return TLinkerType<TTarget>::NoReply();
 	}
 
 	template <
 		typename TTarget
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnKeyDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+	static typename TLinkerType<TTarget>::FReplyType LinkOnKeyDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
+			auto BindingReply = Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
 
 			if (BindingReply.IsEventHandled())
 	        {
@@ -124,18 +124,18 @@ namespace Heart::Input
 	        }
 		}
 
-		return FReply::Unhandled();
+		return TLinkerType<TTarget>::NoReply();
 	}
 
 	template <
 		typename TTarget
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static FReply LinkOnKeyUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+	static typename TLinkerType<TTarget>::FReplyType LinkOnKeyUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			FReply BindingReply = Linker->HandleOnKeyUp(Target, InGeometry, InKeyEvent);
+			auto BindingReply = Linker->HandleOnKeyUp(Target, InGeometry, InKeyEvent);
 
 			if (BindingReply.IsEventHandled())
 			{
@@ -143,7 +143,7 @@ namespace Heart::Input
 			}
 		}
 
-		return FReply::Unhandled();
+		return TLinkerType<TTarget>::NoReply();
 	}
 
 	template <

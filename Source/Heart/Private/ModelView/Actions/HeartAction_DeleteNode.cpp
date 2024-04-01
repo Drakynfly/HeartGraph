@@ -17,7 +17,7 @@ bool UHeartAction_DeleteNode::CanExecute(const UObject* Object) const
 	return false;
 }
 
-void UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
 	UObject* ContextObject)
 {
 	if (Heart::Action::History::IsUndoable())
@@ -28,6 +28,8 @@ void UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const FHeartI
 	}
 
 	Node->GetGraph()->RemoveNode(Node->GetGuid());
+
+	return FHeartEvent::Handled;
 }
 
 bool UHeartAction_DeleteNode::Undo(UObject* Target)

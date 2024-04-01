@@ -7,6 +7,7 @@
 
 #include "HeartCorePrivate.h"
 #include "Input/HeartInputActivation.h"
+#include "Input/HeartEvent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputLinkerBase)
 
@@ -24,7 +25,7 @@ DECLARE_CYCLE_STAT(TEXT("HandleManualInput"), STAT_HandleManualInput, STATGROUP_
 
 using namespace Heart::Input;
 
-TOptional<FReply> UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
+FHeartEvent UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
 {
 	TArray<const TSharedPtr<const FConditionalCallback>*> Callbacks;
 	InputCallbackMappings.MultiFindPointer(Trip, Callbacks);
@@ -52,11 +53,12 @@ TOptional<FReply> UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UO
 
 		if (Ref.Handler.IsBound())
 		{
-			FReply Reply = Ref.Handler.Execute(Target, Activation);
+			FHeartEvent Reply = Ref.Handler.Execute(Target, Activation);
 
-			if (Ref.Layer == Event)
+			// If Priority is eEvent, this event Reply is allowed to stop capture input, and break out of the input handling loop
+			if (Ref.Priority == Event)
 			{
-				if (Reply.IsEventHandled())
+				if (Reply.WasEventCaptured())
 				{
 					return Reply;
 				}
@@ -64,7 +66,8 @@ TOptional<FReply> UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UO
 		}
 	}
 
-	return {};
+	// Nothing handled input.
+	return FHeartEvent::Ignored;
 }
 
 void UHeartInputLinkerBase::BindInputCallback(const FInputTrip& Trip, const TSharedPtr<const FConditionalCallback>& InputCallback)
@@ -80,17 +83,16 @@ void UHeartInputLinkerBase::UnbindInputCallback(const FInputTrip& Trip)
 	InputCallbackMappings.Remove(Trip);
 }
 
-bool UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
+FHeartEvent UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
 {
 	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
 
-	if (auto Result = TryCallbacks(FInputTrip(Key), Target, Activation);
-		Result.IsSet())
+	if (!IsValid(Target) || Key.IsNone())
 	{
-		return Result.GetValue().IsEventHandled();
+		return FHeartEvent::Invalid;
 	}
 
-	return false;
+	return TryCallbacks(FInputTrip(Key), Target, Activation);
 }
 
 TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(const UObject* Target) const

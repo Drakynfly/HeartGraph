@@ -4,17 +4,17 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartActionBase)
 
-bool UHeartActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartActionBase> Class,
+FHeartEvent UHeartActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartActionBase> Class,
 													UObject* Target, const FHeartManualEvent& Activation)
 {
 	if (!ensure(IsValid(Class)))
 	{
-		return false;
+		return FHeartEvent::Invalid;
 	}
 
 	if (!Class->GetDefaultObject<UHeartActionBase>()->CanExecute(Target))
 	{
-		return false;
+		return FHeartEvent::Invalid;
 	}
 
 	auto&& Action = CreateGraphAction(Class);
@@ -26,17 +26,17 @@ bool UHeartActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartActionBas
 	return Action->Execute(Args);
 }
 
-bool UHeartActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartActionBase> Class,
+FHeartEvent UHeartActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartActionBase> Class,
                                                                UObject* Target, const FHeartManualEvent& Activation, UObject* Payload)
 {
 	if (!ensure(IsValid(Class)))
 	{
-		return false;
+		return FHeartEvent::Invalid;
 	}
 
 	if (!Class->GetDefaultObject<UHeartActionBase>()->CanExecute(Target))
 	{
-		return false;
+		return FHeartEvent::Invalid;
 	}
 
 	auto&& Action = CreateGraphAction(Class);
@@ -59,21 +59,21 @@ UHeartActionBase* UHeartActionBase::CreateGraphAction(const TSubclassOf<UHeartAc
 	return NewObject<UHeartActionBase>(GetTransientPackage(), Class);
 }
 
-bool UHeartActionBase::ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation)
+FHeartEvent UHeartActionBase::ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation)
 {
-	if (ensure(Action))
+	if (!ensure(IsValid(Action)))
 	{
-		if (!Action->CanExecute(Target))
-		{
-			return false;
-		}
-
-		Heart::Action::FArguments Args;
-		Args.Target = Target;
-		Args.Activation = Activation;
-
-		return Action->Execute(Args);
+		return FHeartEvent::Invalid;
 	}
 
-	return false;
+	if (!Action->CanExecute(Target))
+	{
+		return FHeartEvent::Invalid;
+	}
+
+	Heart::Action::FArguments Args;
+	Args.Target = Target;
+	Args.Activation = Activation;
+
+	return Action->Execute(Args);
 }

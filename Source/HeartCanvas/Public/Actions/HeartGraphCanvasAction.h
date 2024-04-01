@@ -23,9 +23,9 @@ class HEARTCANVAS_API UHeartGraphCanvasAction : public UHeartActionBase
 public:
 	virtual FText GetDescription(const UObject* Target) const override;
 	virtual bool CanExecute(const UObject* Target) const override final;
-	virtual bool Execute(const Heart::Action::FArguments& Arguments) override final;
+	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) override final;
 
-	virtual FReply ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject);
+	virtual FHeartEvent ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual FText GetDescription(const UHeartGraphWidgetBase* Widget) const;

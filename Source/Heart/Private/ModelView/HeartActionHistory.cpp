@@ -90,6 +90,40 @@ namespace Heart::Action::History
 	{
 		return !Impl::ExecutingActionsLoggableStack.IsEmpty() && Impl::ExecutingActionsLoggableStack.Last().IsSet();
 	}
+
+	bool TryUndo(const UHeartGraph* Graph)
+	{
+		if (!IsValid(Graph))
+		{
+			return false;
+		}
+
+		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
+		if (!IsValid(History))
+		{
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
+			return false;
+		}
+
+		return History->Undo();
+	}
+
+	FHeartEvent TryRedo(const UHeartGraph* Graph)
+	{
+		if (!IsValid(Graph))
+		{
+			return FHeartEvent::Failed;
+		}
+
+		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
+		if (!IsValid(History))
+		{
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
+			return FHeartEvent::Failed;
+		}
+
+		return History->Redo();
+	}
 }
 
 bool FHeartActionRecord::Serialize(FArchive& Ar)
@@ -146,12 +180,12 @@ bool UHeartActionHistory::Undo()
 	return Record->Action->Undo(Record->Arguments.Target);
 }
 
-bool UHeartActionHistory::Redo()
+FHeartEvent UHeartActionHistory::Redo()
 {
 	if (ActionPointer == Actions.Num()-1)
 	{
 		// Cannot Redo most recent action
-		return false;
+		return FHeartEvent::Invalid;
 	}
 
 	auto Record = Actions[++ActionPointer];

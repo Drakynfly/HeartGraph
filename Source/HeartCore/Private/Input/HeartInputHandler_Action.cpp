@@ -27,21 +27,19 @@ bool UHeartInputHandler_Action::PassCondition(const UObject* TestTarget) const
 	return !Failed;
 }
 
-FReply UHeartInputHandler_Action::OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const
+FHeartEvent UHeartInputHandler_Action::OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const
 {
-	if (IsValid(Target))
+	if (!ensure(IsValid(Target)))
 	{
-		auto&& Action = UHeartActionBase::CreateGraphAction(ActionClass);
-
-		Heart::Action::FArguments Args;
-		Args.Target = Target;
-		Args.Activation = Activation;
-
-		if (Action->Execute(Args))
-		{
-			return FReply::Handled();
-		}
+		// Target is null, how did we get here?
+		return FHeartEvent::Invalid;
 	}
 
-	return FReply::Unhandled();
+	auto&& Action = UHeartActionBase::CreateGraphAction(ActionClass);
+
+	Heart::Action::FArguments Args;
+	Args.Target = Target;
+	Args.Activation = Activation;
+
+	return Action->Execute(Args);
 }

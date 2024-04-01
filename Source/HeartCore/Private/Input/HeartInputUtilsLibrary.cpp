@@ -75,7 +75,7 @@ bool UHeartInputUtilsLibrary::RemoveInputBindingAssetFromLinker(UHeartInputLinke
 	return true;
 }
 
-bool UHeartInputUtilsLibrary::TriggerManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
+FHeartEvent UHeartInputUtilsLibrary::TriggerManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
 {
 	if (auto&& Linker = Heart::Input::TryFindLinker<UHeartInputLinkerBase>(Target);
 		IsValid(Linker))
@@ -83,5 +83,5 @@ bool UHeartInputUtilsLibrary::TriggerManualInput(UObject* Target, const FName Ke
 		return Linker->HandleManualInput(Target, Key, Activation);
 	}
 
-	return false;
+	return FHeartEvent::Invalid;
 }

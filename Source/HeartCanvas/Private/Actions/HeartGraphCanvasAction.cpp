@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Actions/HeartGraphCanvasAction.h"
+#include "Input/HeartSlateReplyWrapper.h"
 #include "ModelView/HeartActionHistory.h"
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasNode.h"
@@ -26,39 +27,49 @@ bool UHeartGraphCanvasAction::CanExecute(const UObject* Target) const
 	return false;
 }
 
-bool UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Arguments)
+FHeartEvent UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Arguments)
 {
-	if (auto&& Widget = Cast<UHeartGraphWidgetBase>(Arguments.Target))
+	auto&& Widget = Cast<UHeartGraphWidgetBase>(Arguments.Target);
+
+	if (!IsValid(Widget))
 	{
-		return Heart::Action::History::Log(this, Arguments,
-			[&]()
-			{
-				return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload).IsEventHandled();
-			});
+		return FHeartEvent::Invalid;
 	}
 
-	return false;
+	return Heart::Action::History::Log(this, Arguments,
+		[&]()
+		{
+			return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload);
+		});
 }
 
-FReply UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation,
+FHeartEvent UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation,
 	UObject* ContextObject)
 {
+	if (!IsValid(Widget))
+	{
+		return FHeartEvent::Invalid;
+	}
+
 	if (auto&& Graph = Cast<UHeartGraphCanvas>(Widget))
     {
-    	return ExecuteOnGraph(Graph, Activation, ContextObject).NativeReply;
+    	return UHeartSlateReplyWrapper::ReplyEventToHeartEvent(FHeartEvent::Handled,
+    		ExecuteOnGraph(Graph, Activation, ContextObject));
     }
 
     if (auto&& Node = Cast<UHeartGraphCanvasNode>(Widget))
     {
-    	return ExecuteOnNode(Node, Activation, ContextObject).NativeReply;
+    	return UHeartSlateReplyWrapper::ReplyEventToHeartEvent(FHeartEvent::Handled,
+    		ExecuteOnNode(Node, Activation, ContextObject));
     }
 
     if (auto&& Pin = Cast<UHeartGraphCanvasPin>(Widget))
     {
-    	return ExecuteOnPin(Pin, Activation, ContextObject).NativeReply;
+    	return UHeartSlateReplyWrapper::ReplyEventToHeartEvent(FHeartEvent::Handled,
+    		ExecuteOnPin(Pin, Activation, ContextObject));
     }
 
-	return FReply::Unhandled();
+	return FHeartEvent::Ignored;
 }
 
 FText UHeartGraphCanvasAction::GetDescription(const UHeartGraphWidgetBase* Widget) const

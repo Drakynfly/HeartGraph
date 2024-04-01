@@ -52,10 +52,13 @@ namespace Heart::Input
 	{
 		static constexpr bool Supported = true;
 
+		using FReplyType = FReply;
 		using FValueType = UWidget*;
 		using FDDOType = UDragDropOperation*;
 
 		using FCreateDDODelegate = TSpecifiedDelegate<TDelegate<UHeartDragDropOperation*(UWidget*)>>;
+
+		static FReplyType NoReply() { return FReply::Unhandled(); }
 
 		HEARTCANVAS_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
 	};

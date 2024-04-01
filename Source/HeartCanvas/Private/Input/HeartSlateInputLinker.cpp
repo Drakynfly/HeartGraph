@@ -2,6 +2,7 @@
 
 #include "Input/HeartSlateInputLinker.h"
 #include "Input/HeartInputActivation.h"
+#include "Input/HeartSlateReplyWrapper.h"
 #include "Input/SlatePointerWrappers.h"
 #include "Slate/SHeartGraphWidgetBase.h"
 
@@ -26,10 +27,11 @@ FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Wid
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
 	// Mouse wheel events must always use the 'Press' type
-	if (auto Result = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();
@@ -40,10 +42,11 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	if (auto Result = TryCallbacks(FInputTrip(PointerEvent, Press), Wrapper, PointerEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(PointerEvent, Press), Wrapper, PointerEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	// If no regular handles triggered, try DDO triggers.
@@ -99,10 +102,11 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& 
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	if (auto Result = TryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();
@@ -113,10 +117,11 @@ FReply UHeartSlateInputLinker::HandleOnKeyDown(const TSharedRef<SWidget>& Widget
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();
@@ -127,10 +132,11 @@ FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, 
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();

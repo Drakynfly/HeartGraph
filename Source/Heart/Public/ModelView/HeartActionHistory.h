@@ -23,13 +23,16 @@ namespace Heart::Action::History
 	// A simple wrapper around a lamba that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded, provided that an Action History extension can be found.
 	template <typename T>
-	bool Log(UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
+	FHeartEvent Log(UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
 	{
 		Impl::BeginLog(Action, Arguments);
-		const bool Success = Lambda();
-		Impl::EndLog(Success);
-		return Success;
+		FHeartEvent Reply = Lambda();
+		Impl::EndLog(Reply.WasEventSuccessful());
+		return Reply;
 	}
+
+	bool TryUndo(const UHeartGraph* Graph);
+	FHeartEvent TryRedo(const UHeartGraph* Graph);
 }
 
 USTRUCT()
@@ -73,7 +76,7 @@ public:
 	bool Undo();
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
-	bool Redo();
+	FHeartEvent Redo();
 
 protected:
 	// Are we currently running an undoable action.

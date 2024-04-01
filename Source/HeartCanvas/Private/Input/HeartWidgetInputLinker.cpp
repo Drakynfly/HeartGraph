@@ -8,6 +8,8 @@
 #include "Input/HeartInputLinkerInterface.h"
 #include "Input/HeartInputTypes.h"
 #include "General/HeartContextObject.h"
+#include "Input/HeartEvent.h"
+#include "Input/HeartSlateReplyWrapper.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputLinker)
 
@@ -29,10 +31,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 		PointerEvent.GetModifierKeys());
 
 	// Mouse wheel events must always use the 'Press' type
-	if (auto Result = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent);
+
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();
@@ -44,10 +48,11 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 	const FInputTrip Trip(PointerEvent, Press);
 
-	if (auto Result = TryCallbacks(Trip, Widget, PointerEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(Trip, Widget, PointerEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	// If no regular handles triggered, try DDO triggers.
@@ -82,18 +87,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 			continue;
 		}
 
-		const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget->GetCachedWidget();
-		if (SlateWidgetDetectingDrag.IsValid())
+		if (const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget->GetCachedWidget();
+			SlateWidgetDetectingDrag.IsValid())
 		{
-			FReply Reply = FReply::Handled().DetectDrag(SlateWidgetDetectingDrag.ToSharedRef(), PointerEvent.GetEffectingButton());
+			FReply DDO_Reply = Ref.Priority == Event ? FReply::Handled() : FReply::Unhandled();
 
-			if (Ref.Layer == Event)
-			{
-				if (Reply.IsEventHandled())
-				{
-					return Reply;
-				}
-			}
+			return DDO_Reply.DetectDrag(SlateWidgetDetectingDrag.ToSharedRef(), PointerEvent.GetEffectingButton());
 		}
 	}
 
@@ -104,10 +103,11 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGe
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonUp)
 
-	if (auto Result = TryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();
@@ -117,10 +117,11 @@ FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyDown)
 
-	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();
@@ -130,10 +131,11 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyUp)
 
-	if (auto Result = TryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent);
-		Result.IsSet())
+	const FHeartEvent Reply = TryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent);
+	if (auto EventReply = Reply.As<FEventReply>();
+		EventReply.IsSet())
 	{
-		return Result.GetValue();
+		return EventReply.GetValue().NativeReply;
 	}
 
 	return FReply::Unhandled();

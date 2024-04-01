@@ -14,9 +14,9 @@ class HEARTCORE_API UHeartInputHandler_Script : public UHeartInputHandlerBase
 	GENERATED_BODY()
 
 public:
-	virtual FReply OnTriggered(UObject* Target, const FHeartInputActivation& Trip) const override;
+	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Trip) const override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|InputHandlerScript")
-	bool HandleEvent(UObject* Widget, const FHeartInputActivation& Trip) const;
+	FHeartEvent HandleEvent(UObject* Widget, const FHeartInputActivation& Trip) const;
 };

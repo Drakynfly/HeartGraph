@@ -6,7 +6,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputHandler_Script)
 
-FReply UHeartInputHandler_Script::OnTriggered(UObject* Target, const FHeartInputActivation& Trip) const
+FHeartEvent UHeartInputHandler_Script::OnTriggered(UObject* Target, const FHeartInputActivation& Trip) const
 {
-	return HandleEvent(Target, Trip) ? FReply::Handled() : FReply::Unhandled();
+	return HandleEvent(Target, Trip);
 }

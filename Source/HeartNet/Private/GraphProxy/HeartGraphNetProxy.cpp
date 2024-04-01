@@ -591,7 +591,7 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const FHeartFlake& ActionDat
 		Target = Args.PinTarget;
 	}
 
-	if (!UHeartActionBase::ExecuteGraphAction(Action, Target, Args.Activation))
+	if (!UHeartActionBase::ExecuteGraphAction(Action, Target, Args.Activation).WasEventSuccessful())
 	{
 		UE_LOG(LogHeartNet, Log, TEXT("Graph Action data received from client, but Execute failed."))
 		return;

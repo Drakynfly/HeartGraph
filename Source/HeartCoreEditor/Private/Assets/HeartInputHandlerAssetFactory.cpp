@@ -230,7 +230,7 @@ UObject* UHeartInputHandlerAssetFactory::FactoryCreateNew(UClass* Class, UObject
 	{
 		FFormatNamedArguments Args;
 		Args.Add(TEXT("ClassName"), AssetClass ? FText::FromString(AssetClass->GetName()) : LOCTEXT("Null", "(null)"));
-		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(LOCTEXT("CannotCreateHeartInputHandlerAsset", "Cannot create a Heart Widget Input Handler Asset based on the class '{ClassName}'."), Args));
+		FMessageDialog::Open(EAppMsgType::Ok, FText::Format(LOCTEXT("CannotCreateHeartInputHandlerAsset", "Cannot create a Heart Input Handler Asset based on the class '{ClassName}'."), Args));
 		return nullptr;
 	}
 

@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "HeartEvent.h"
 #include "HeartInputActivation.h"
-#include "Blueprint/UserWidget.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartInputUtilsLibrary.generated.h"
 
@@ -93,5 +93,5 @@ public:
 
 	// Trigger a manual keyed input binding on a linker, if one can be found for the target.
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
-	static bool TriggerManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
+	static FHeartEvent TriggerManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
 };

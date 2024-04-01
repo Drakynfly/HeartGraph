@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "HeartEvent.h"
 #include "UObject/Object.h"
 #include "Input/HeartInputActivation.h"
 
@@ -57,11 +58,11 @@ class HEARTCORE_API UHeartActionBase : public UObject
 public:
 	/** Creates a immediately executes an action in a "fire and forget" manner */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
-	static bool QuickExecuteGraphAction(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation);
+	static FHeartEvent QuickExecuteGraphAction(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation);
 
 	/** Creates a immediately executes an action in a "fire and forget" manner */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
-	static bool QuickExecuteGraphActionWithPayload(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation, UObject* Payload);
+	static FHeartEvent QuickExecuteGraphActionWithPayload(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation, UObject* Payload);
 
 	template <typename THeartGraphAction>
 	static THeartGraphAction* CreateGraphAction(const TSubclassOf<UHeartActionBase> Class)
@@ -74,12 +75,12 @@ public:
 	static UHeartActionBase* CreateGraphAction(TSubclassOf<UHeartActionBase> Class);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (DeterminesOutputType = Class))
-	static bool ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation);
+	static FHeartEvent ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation);
 
 public:
 	virtual FText GetDescription(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::GetDescription, return FText::GetEmpty(); )
 	virtual bool CanExecute(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::CanExecute, return false; )
-	virtual bool Execute(const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartActionBase::Execute, return false; )
+	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartActionBase::Execute, return FHeartEvent::Invalid; )
 	virtual bool CanUndo(UObject* Target) const { return false; }
 	virtual bool Undo(UObject* Target) { return false; }
 };

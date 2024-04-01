@@ -12,8 +12,8 @@ bool UHeartCanvasInputHandler_DragDropOperationBase::Bind(UHeartInputLinkerBase*
 {
 	using namespace Heart::Input;
 
-	auto UMGLinker = Cast<UHeartWidgetInputLinker>(Linker);
-	if (!IsValidChecked(UMGLinker))
+	auto WidgetLinker = Cast<UHeartWidgetInputLinker>(Linker);
+	if (!IsValidChecked(WidgetLinker))
 	{
 		return false;
 	}
@@ -22,7 +22,7 @@ bool UHeartCanvasInputHandler_DragDropOperationBase::Bind(UHeartInputLinkerBase*
 		MakeShared<TLinkerType<UWidget>::FCreateDDODelegate>(this, &ThisClass::BeginDDO),
 		FDescriptionDelegate::CreateUObject(this, &ThisClass::GetDescription),
 		FConditionDelegate::CreateUObject(this, &ThisClass::PassCondition),
-		Event );
+		Event);
 
 	for (auto&& Trigger : InTriggers)
 	{
@@ -32,7 +32,7 @@ bool UHeartCanvasInputHandler_DragDropOperationBase::Bind(UHeartInputLinkerBase*
 
 			for (auto&& Trip : Trips)
 			{
-				UMGLinker->BindToOnDragDetected(Trip, Callback);
+				WidgetLinker->BindToOnDragDetected(Trip, Callback);
 			}
 		}
 	}

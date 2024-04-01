@@ -2,6 +2,7 @@
 
 #pragma once
 
+struct FHeartEvent;
 struct FHeartInputActivation;
 
 namespace Heart::Input
@@ -116,15 +117,13 @@ namespace Heart::Input
 
 	using FDescriptionDelegate = TDelegate<FText(const UObject*)>;
 	using FConditionDelegate = TDelegate<bool(const UObject*)>;
+	using FHandlerDelegate = TDelegate<FHeartEvent(UObject*, const FHeartInputActivation&)>;
 
-	// @todo are we going to wrap FReply with an abstraction for Scene support??
-	using FHandlerDelegate = TDelegate<FReply(UObject*, const FHeartInputActivation&)>;
-
-	enum EHeartInputLayer
+	enum EExecutionOrder
 	{
 		None, // Blank layer. Do not use.
-		Event, // Default layer. Events may return FReply::Handled
-		Listener, // Interception layer. Listeners always return FReply::Unhandled
+		Event, // Default layer. Handlers can capture input or bubble it.
+		Listener, // Interception layer. Handlers can intercept, but cannot stop it from bubbling.
 	};
 
 	struct FConditionalInputBase
@@ -135,13 +134,13 @@ namespace Heart::Input
 		// Callback to determine if the context of the trigger is valid for executing the action
 		const FConditionDelegate Condition;
 
-		// Input layers determine the priority of callbacks, and whether they Handle the input callstack
-		const EHeartInputLayer Layer = None;
+		// Determines the order that callback handler run in, and whether they bubble the input callstack
+		const EExecutionOrder Priority = None;
 
 		friend bool operator<(const FConditionalInputBase& A, const FConditionalInputBase& B)
 		{
-			// Sort in reverse. Higher layers should be ordered first, lower layers after.
-			return A.Layer > B.Layer;
+			// Sort in reverse. Higher priorities should be ordered first, lower after.
+			return A.Priority > B.Priority;
 		}
 	};
 
@@ -151,8 +150,8 @@ namespace Heart::Input
 			const FHandlerDelegate& Handler,
 			const FDescriptionDelegate& Description,
 			const FConditionDelegate& Condition,
-			const EHeartInputLayer Layer)
-		  : FConditionalInputBase(Description, Condition, Layer), Handler(Handler) {}
+			const EExecutionOrder Priority)
+		  : FConditionalInputBase(Description, Condition, Priority), Handler(Handler) {}
 
 		// Callback to execute the event
 		const FHandlerDelegate Handler;
@@ -164,8 +163,8 @@ namespace Heart::Input
 			const TSharedPtr<FDelegateBase>& Handler,
 			const FDescriptionDelegate& Description,
 			const FConditionDelegate& Condition,
-			const EHeartInputLayer Layer)
-		  : FConditionalInputBase(Description, Condition, Layer), Handler(Handler) {}
+			const EExecutionOrder Priority)
+		  : FConditionalInputBase(Description, Condition, Priority), Handler(Handler) {}
 
 		// Callback to begin a DDO
 		const TSharedPtr<FDelegateBase> Handler;

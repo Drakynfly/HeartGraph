@@ -16,27 +16,32 @@ bool UHeartAction_DisconnectPins::CanExecute(const UObject* Object) const
 			Object->Implements<UHeartGraphNodeInterface>();
 }
 
-void UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
+FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
 											   const FHeartInputActivation& Activation, UObject* ContextObject)
 {
-	if (UHeartGraphNode* Node = Pin->GetHeartGraphNode())
+	UHeartGraphNode* Node = Pin->GetHeartGraphNode();
+	if (!IsValid(Node))
 	{
-		const FHeartGraphPinReference PinRef{Node->GetGuid(), Pin->GetPinGuid()};
-
-		if (Heart::Action::History::IsUndoable())
-		{
-			TargetNode = Node;
-			Node->GetGraph()->EditConnections().CreateMementos(PinRef, Mementos).DisconnectAll(PinRef);
-		}
-		else
-		{
-			// Quick path when not undoable; don't bother caching mementos
-			Node->GetGraph()->EditConnections().DisconnectAll(PinRef);
-		}
+		return FHeartEvent::Failed;
 	}
+
+	const FHeartGraphPinReference PinRef{Node->GetGuid(), Pin->GetPinGuid()};
+
+	if (Heart::Action::History::IsUndoable())
+	{
+		TargetNode = Node;
+		Node->GetGraph()->EditConnections().CreateMementos(PinRef, Mementos).DisconnectAll(PinRef);
+	}
+	else
+	{
+		// Quick path when not undoable; don't bother caching mementos
+		Node->GetGraph()->EditConnections().DisconnectAll(PinRef);
+	}
+
+	return FHeartEvent::Handled;
 }
 
-void UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
 												UObject* ContextObject)
 {
 	const FHeartNodeGuid Guid = Node->GetGuid();
@@ -51,6 +56,8 @@ void UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, const FHe
 		// Quick path when not undoable; don't bother caching mementos
 		Node->GetGraph()->EditConnections().DisconnectAll(Guid);
 	}
+
+	return FHeartEvent::Handled;
 }
 
 bool UHeartAction_DisconnectPins::Undo(UObject* Target)

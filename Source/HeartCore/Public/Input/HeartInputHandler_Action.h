@@ -15,7 +15,7 @@ class HEARTCORE_API UHeartInputHandler_Action : public UHeartInputHandlerBase
 public:
 	virtual FText GetDescription(const UObject* TestTarget) const override;
 	virtual bool PassCondition(const UObject* TestTarget) const override;
-	virtual FReply OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const override;
+	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const override;
 
 	void SetAction(const TSubclassOf<UHeartActionBase> Class)
 	{
