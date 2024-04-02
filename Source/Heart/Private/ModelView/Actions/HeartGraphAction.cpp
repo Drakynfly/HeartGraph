@@ -19,22 +19,20 @@ FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Argument
 				return FHeartEvent::Invalid;
 			}
 
-			FHeartEvent Event = FHeartEvent::Ignored;
-
 			if (auto&& GraphInterface = Cast<IHeartGraphInterface>(Arguments.Target))
 			{
-				Event = ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload, UndoData);
+				return ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload, UndoData);
 			}
-			else if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
+			if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
 			{
-				Event = ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload, UndoData);
+				return ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload, UndoData);
 			}
-			else if (Arguments.Target->Implements<UHeartGraphPinInterface>())
+			if (Arguments.Target->Implements<UHeartGraphPinInterface>())
 			{
-				Event = ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload, UndoData);
+				return ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload, UndoData);
 			}
 
-			return Event;
+			return FHeartEvent::Ignored;
 		});
 }
 

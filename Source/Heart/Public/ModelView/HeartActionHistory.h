@@ -56,7 +56,7 @@ struct FHeartActionRecord
 	// Original arguments used to execute this action. Used to 'Redo' an un-done action.
 	Heart::Action::FArguments Arguments;
 
-	// Data stored by the action when it first ran, such as mouse position or guid, everything needed to undo the action.
+	// Data stored by the action when it first ran, such as mouse position or node guids, everything needed to undo the action.
 	UPROPERTY()
 	FBloodContainer UndoData;
 
