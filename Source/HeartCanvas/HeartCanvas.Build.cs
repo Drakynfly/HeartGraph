@@ -23,6 +23,7 @@ public class HeartCanvas : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new []
             {
+                "Blood",
                 "HeartCore",
                 "Heart"
             }

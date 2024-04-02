@@ -37,14 +37,14 @@ FHeartEvent UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Ar
 	}
 
 	return Heart::Action::History::Log(this, Arguments,
-		[&]()
+		[&](FBloodContainer& UndoData)
 		{
-			return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload);
+			return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload, UndoData);
 		});
 }
 
 FHeartEvent UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation,
-	UObject* ContextObject)
+													 UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (!IsValid(Widget))
 	{
@@ -54,19 +54,19 @@ FHeartEvent UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widg
 	if (auto&& Graph = Cast<UHeartGraphCanvas>(Widget))
     {
     	return UHeartSlateReplyWrapper::ReplyEventToHeartEvent(FHeartEvent::Handled,
-    		ExecuteOnGraph(Graph, Activation, ContextObject));
+    		ExecuteOnGraph(Graph, Activation, ContextObject, UndoData));
     }
 
     if (auto&& Node = Cast<UHeartGraphCanvasNode>(Widget))
     {
     	return UHeartSlateReplyWrapper::ReplyEventToHeartEvent(FHeartEvent::Handled,
-    		ExecuteOnNode(Node, Activation, ContextObject));
+    		ExecuteOnNode(Node, Activation, ContextObject, UndoData));
     }
 
     if (auto&& Pin = Cast<UHeartGraphCanvasPin>(Widget))
     {
     	return UHeartSlateReplyWrapper::ReplyEventToHeartEvent(FHeartEvent::Handled,
-    		ExecuteOnPin(Pin, Activation, ContextObject));
+    		ExecuteOnPin(Pin, Activation, ContextObject, UndoData));
     }
 
 	return FHeartEvent::Ignored;
@@ -99,29 +99,29 @@ bool UHeartGraphCanvasAction_BlueprintBase::CanExecuteOnWidget(const UHeartGraph
 	return true;
 }
 
-FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
+FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (ensure(IsValid(Graph)))
 	{
-		return BP_ExecuteOnGraph(Graph, Activation, ContextObject);
+		return BP_ExecuteOnGraph(Graph, Activation, ContextObject, UndoData);
 	}
 	return false;
 }
 
-FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject)
+FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (ensure(IsValid(Node)))
 	{
-		return BP_ExecuteOnNode(Node, Activation, ContextObject);
+		return BP_ExecuteOnNode(Node, Activation, ContextObject, UndoData);
 	}
 	return false;
 }
 
-FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
+FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (ensure(IsValid(Pin)))
 	{
-		return BP_ExecuteOnPin(Pin, Activation, ContextObject);
+		return BP_ExecuteOnPin(Pin, Activation, ContextObject, UndoData);
 	}
 	return false;
 }
@@ -132,12 +132,12 @@ bool UHeartGraphCanvasAction_BlueprintBase::CanUndo(UObject* Target) const
 	return GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_Undo));
 }
 
-bool UHeartGraphCanvasAction_BlueprintBase::Undo(UObject* Target)
+bool UHeartGraphCanvasAction_BlueprintBase::Undo(UObject* Target, const FBloodContainer& UndoData)
 {
 	if (auto&& WidgetTarget = Cast<UHeartGraphWidgetBase>(Target))
 	{
-		return BP_Undo(WidgetTarget);
+		return BP_Undo(WidgetTarget, UndoData);
 	}
 
-	return Super::Undo(Target);
+	return Super::Undo(Target, UndoData);
 }

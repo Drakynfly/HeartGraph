@@ -67,13 +67,13 @@ namespace Heart::Action::History
 			ExecutingActionsLoggableStack.Emplace(FNullOpt(0));
 		}
 
-		void EndLog(const bool Success)
+		void EndLog(const bool Successful, FBloodContainer* UndoData)
 		{
 			if (const TOptional<FExecutingAction> LoggedAction = ExecutingActionsLoggableStack.Pop();
-				Success && LoggedAction.IsSet())
+				Successful && LoggedAction.IsSet())
 			{
 				const FExecutingAction& Value = LoggedAction.GetValue();
-				Value.History->AddRecord({Value.Action, Value.Arguments});
+				Value.History->AddRecord({Value.Action, Value.Arguments, MoveTemp(*UndoData)});
 			}
 		}
 	}
@@ -128,7 +128,7 @@ namespace Heart::Action::History
 
 bool FHeartActionRecord::Serialize(FArchive& Ar)
 {
-	Ar << Action << Arguments;
+	Ar << Action << Arguments << UndoData;
 	return true;
 }
 
@@ -177,7 +177,7 @@ bool UHeartActionHistory::Undo()
 		return false;
 	}
 
-	return Record->Action->Undo(Record->Arguments.Target);
+	return Record->Action->Undo(Record->Arguments.Target, Record->UndoData);
 }
 
 FHeartEvent UHeartActionHistory::Redo()
@@ -188,10 +188,14 @@ FHeartEvent UHeartActionHistory::Redo()
 		return FHeartEvent::Invalid;
 	}
 
-	auto Record = Actions[++ActionPointer];
-	Record.Arguments.Activation = FHeartActionIsRedo();
-	EnumAddFlags(Record.Arguments.Flags, Heart::Action::IsRedo);
-	return Record.Action->Execute(Record.Arguments);
+	// @todo it would be nice to not mutate the OriginalRecord's UndoData when Redo'ing, but not all actions are
+	// completely compatible with reconstructing their state from undo data, example, creating new nodes always uses
+	// a new guid, there is no API to construct a node with an existing guid.
+	FHeartActionRecord& Original = Actions[++ActionPointer];
+	FHeartActionRecord Copy = Original;
+	Copy.Arguments.Activation = FHeartActionIsRedo{&Original.UndoData};
+	EnumAddFlags(Copy.Arguments.Flags, Heart::Action::IsRedo);
+	return Original.Action->Execute(Copy.Arguments);
 }
 
 bool UHeartActionHistory::IsUndoable()

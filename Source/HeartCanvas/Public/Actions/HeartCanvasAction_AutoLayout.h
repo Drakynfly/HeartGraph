@@ -16,9 +16,9 @@ class HEARTCANVAS_API UHeartCanvasAction_AutoLayout : public UHeartGraphCanvasAc
 	GENERATED_BODY()
 
 public:
-	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) override;
 	virtual bool CanUndo(UObject* Target) const override { return true; }
-	virtual bool Undo(UObject* Target) override;
+	virtual bool Undo(UObject* Target, const FBloodContainer& UndoData) override;
 
 private:
 	// Undo data

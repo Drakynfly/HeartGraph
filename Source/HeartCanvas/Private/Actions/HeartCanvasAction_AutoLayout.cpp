@@ -9,7 +9,7 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasAction_AutoLayout)
 
 FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
-	UObject* ContextObject)
+														  UObject* ContextObject, FBloodContainer& UndoData)
 {
 	const UHeartLayoutHelper* LayoutHelper = Cast<UHeartLayoutHelper>(ContextObject);
 
@@ -42,7 +42,7 @@ FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* Can
 	return true;
 }
 
-bool UHeartCanvasAction_AutoLayout::Undo(UObject* Target)
+bool UHeartCanvasAction_AutoLayout::Undo(UObject* Target, const FBloodContainer& UndoData)
 {
 	UHeartGraphCanvas* GraphCanvas = Cast<UHeartGraphCanvas>(Target);
 	if (!IsValid(GraphCanvas))

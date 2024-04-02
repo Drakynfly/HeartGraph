@@ -8,19 +8,19 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasAction_Zoom)
 
-FEventReply UHeartCanvasAction_Zoom::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject)
+FEventReply UHeartCanvasAction_Zoom::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	HandleAddZoom(CanvasGraph, Activation);
 	return true;
 }
 
-FEventReply UHeartCanvasAction_Zoom::ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject)
+FEventReply UHeartCanvasAction_Zoom::ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	HandleAddZoom(CanvasNode->GetCanvas(), Activation);
 	return true;
 }
 
-FEventReply UHeartCanvasAction_Zoom::ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject)
+FEventReply UHeartCanvasAction_Zoom::ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	HandleAddZoom(CanvasPin->GetCanvas(), Activation);
 	return true;

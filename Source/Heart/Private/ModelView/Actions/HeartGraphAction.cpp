@@ -12,46 +12,46 @@
 FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Arguments)
 {
 	return Heart::Action::History::Log(this, Arguments,
-		[&]()
+		[&](FBloodContainer& UndoData)
 		{
 			if (!IsValid(Arguments.Target))
 			{
 				return FHeartEvent::Invalid;
 			}
 
+			FHeartEvent Event = FHeartEvent::Ignored;
+
 			if (auto&& GraphInterface = Cast<IHeartGraphInterface>(Arguments.Target))
 			{
-				return ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload);
+				Event = ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload, UndoData);
 			}
-
-			if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
+			else if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
 			{
-				return ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload);
+				Event = ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload, UndoData);
 			}
-
-			if (Arguments.Target->Implements<UHeartGraphPinInterface>())
+			else if (Arguments.Target->Implements<UHeartGraphPinInterface>())
 			{
-				return ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload);
+				Event = ExecuteOnPin(Arguments.Target, Arguments.Activation, Arguments.Payload, UndoData);
 			}
 
-			return FHeartEvent::Ignored;
+			return Event;
 		});
 }
 
 FHeartEvent UHeartGraphAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
-	UObject* ContextObject)
+	UObject* ContextObject, FBloodContainer& UndoData)
 {
 	return FHeartEvent::Ignored;
 }
 
 FHeartEvent UHeartGraphAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-	UObject* ContextObject)
+	UObject* ContextObject, FBloodContainer& UndoData)
 {
 	return FHeartEvent::Ignored;
 }
 
 FHeartEvent UHeartGraphAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
-	const FHeartInputActivation& Activation, UObject* ContextObject)
+	const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	return FHeartEvent::Ignored;
 }
@@ -76,35 +76,35 @@ bool UHeartGraphAction_BlueprintBase::CanUndo(UObject* Target) const
 	return GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_Undo));
 }
 
-bool UHeartGraphAction_BlueprintBase::Undo(UObject* Target)
+bool UHeartGraphAction_BlueprintBase::Undo(UObject* Target, const FBloodContainer& UndoData)
 {
-	BP_Undo(Target);
+	BP_Undo(Target, UndoData);
 	return true;
 }
 
-FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject)
+FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_ExecuteOnGraph)))
 	{
-		return BP_ExecuteOnGraph(Graph, Activation, ContextObject);
+		return BP_ExecuteOnGraph(Graph, Activation, ContextObject, UndoData);
 	}
 	return FHeartEvent::Ignored;
 }
 
-FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject)
+FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_ExecuteOnNode)))
 	{
-		return BP_ExecuteOnNode(Node, Activation, ContextObject);
+		return BP_ExecuteOnNode(Node, Activation, ContextObject, UndoData);
 	}
 	return FHeartEvent::Ignored;
 }
 
-FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject)
+FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_ExecuteOnPin)))
 	{
-		return BP_ExecuteOnPin(Pin, Activation, ContextObject);
+		return BP_ExecuteOnPin(Pin, Activation, ContextObject, UndoData);
 	}
 	return FHeartEvent::Ignored;
 }

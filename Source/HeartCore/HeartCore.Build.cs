@@ -20,6 +20,13 @@ public class HeartCore : ModuleRules
                 "StructUtils"
             });
 
+        // Project dependencies
+        PublicDependencyModuleNames.AddRange(
+            new []
+            {
+                "Blood"
+            });
+
         PrivateDependencyModuleNames.AddRange(
             new []
             {
@@ -27,8 +34,7 @@ public class HeartCore : ModuleRules
                 "Engine",
                 "Slate",
                 "SlateCore"
-            }
-        );
+            });
     }
 
     public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)

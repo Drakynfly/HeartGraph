@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "BloodContainer.h"
 #include "InstancedStruct.h"
 #include "Concepts/BaseStructureProvider.h"
 #include "HeartEvent.generated.h"

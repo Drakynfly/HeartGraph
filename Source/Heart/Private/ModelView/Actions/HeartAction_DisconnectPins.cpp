@@ -17,7 +17,7 @@ bool UHeartAction_DisconnectPins::CanExecute(const UObject* Object) const
 }
 
 FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
-											   const FHeartInputActivation& Activation, UObject* ContextObject)
+													  const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
 {
 	UHeartGraphNode* Node = Pin->GetHeartGraphNode();
 	if (!IsValid(Node))
@@ -42,7 +42,7 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHe
 }
 
 FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-												UObject* ContextObject)
+													   UObject* ContextObject, FBloodContainer& UndoData)
 {
 	const FHeartNodeGuid Guid = Node->GetGuid();
 
@@ -60,7 +60,7 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, co
 	return FHeartEvent::Handled;
 }
 
-bool UHeartAction_DisconnectPins::Undo(UObject* Target)
+bool UHeartAction_DisconnectPins::Undo(UObject* Target, const FBloodContainer& UndoData)
 {
 	if (TargetNode.IsValid())
 	{

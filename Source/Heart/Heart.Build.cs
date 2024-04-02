@@ -25,6 +25,7 @@ public class Heart : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new []
 			{
+				"Blood",
 				"HeartCore"
 			});
 

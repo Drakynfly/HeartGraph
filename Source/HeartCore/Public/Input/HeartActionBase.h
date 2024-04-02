@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "BloodContainer.h"
 #include "HeartEvent.h"
 #include "UObject/Object.h"
 #include "Input/HeartInputActivation.h"
@@ -80,7 +81,12 @@ public:
 public:
 	virtual FText GetDescription(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::GetDescription, return FText::GetEmpty(); )
 	virtual bool CanExecute(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::CanExecute, return false; )
-	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) PURE_VIRTUAL(UHeartActionBase::Execute, return FHeartEvent::Invalid; )
+	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments)
+		PURE_VIRTUAL(UHeartActionBase::Execute, return FHeartEvent::Invalid; )
+
+	// CanUndo and Undo must either both be implemented, or neither. If the action cannot be undone, leave CanUndo
+	// un-overridden, as it returns false by default. If it is overridden to return true, then Undo will be called.
 	virtual bool CanUndo(UObject* Target) const { return false; }
-	virtual bool Undo(UObject* Target) { return false; }
+	virtual bool Undo(UObject* Target, const FBloodContainer& UndoData)
+		PURE_VIRTUAL(UHeartActionBase::Undo, return false; )
 };

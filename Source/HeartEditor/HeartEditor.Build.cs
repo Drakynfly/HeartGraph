@@ -17,6 +17,7 @@ public class HeartEditor : ModuleRules
                 "EditorSubsystem",
                 "GameplayTags",
                 "GameplayTagsEditor",   // For FGameplayTagCustomizationPublic
+                "Blood",
                 "HeartCore",
                 "HeartCoreEditor",
                 "Heart",

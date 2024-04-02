@@ -187,10 +187,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DeprecatedFunction))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return GetGraph(); }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Heart|GraphNode")
 	FHeartNodeGuid GetGuid() const { return Guid; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Heart|GraphNode")
 	FVector2D GetLocation() const { return Location; }
 
 	// @todo enable UFUNCTION in whenever UE supports TOptional pins
@@ -348,10 +348,10 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	TObjectPtr<UObject> NodeObject;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	FHeartNodeGuid Guid;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	FVector2D Location;
 
 	UE_DEPRECATED(5.3, "Use PinData instead")
@@ -362,13 +362,13 @@ protected:
 	UPROPERTY()
 	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
 
-	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "Heart|GraphNode")
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "GraphNode")
 	FHeartNodePinData PinData;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphNode")
+	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	uint8 InstancedInputs = 0;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Heart|GraphNode")
+	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	uint8 InstancedOutputs = 0;
 };
 

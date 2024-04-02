@@ -11,7 +11,7 @@ namespace Heart::Action::History
 	namespace Impl
 	{
 		HEART_API void BeginLog(UHeartActionBase* Action, const FArguments& Arguments);
-		HEART_API void EndLog(bool Success);
+		HEART_API void EndLog(bool Successful, FBloodContainer* UndoData);
 	}
 
 	// Is this action being executing in a state that we want to record.
@@ -26,9 +26,19 @@ namespace Heart::Action::History
 	FHeartEvent Log(UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
 	{
 		Impl::BeginLog(Action, Arguments);
-		FHeartEvent Reply = Lambda();
-		Impl::EndLog(Reply.WasEventSuccessful());
-		return Reply;
+		FHeartEvent Event;
+		if (EnumHasAnyFlags(Arguments.Flags, IsRedo))
+		{
+			Event = Lambda(*Arguments.Activation.As<FHeartActionIsRedo>()->UndoneData);
+			Impl::EndLog(Event.WasEventSuccessful(), nullptr);
+		}
+		else
+		{
+			FBloodContainer NewUndoData;
+			Event = Lambda(NewUndoData);
+			Impl::EndLog(Event.WasEventSuccessful(), &NewUndoData);
+		}
+		return Event;
 	}
 
 	bool TryUndo(const UHeartGraph* Graph);
@@ -45,6 +55,10 @@ struct FHeartActionRecord
 
 	// Original arguments used to execute this action. Used to 'Redo' an un-done action.
 	Heart::Action::FArguments Arguments;
+
+	// Data stored by the action when it first ran, such as mouse position or guid, everything needed to undo the action.
+	UPROPERTY()
+	FBloodContainer UndoData;
 
 	bool Serialize(FArchive& Ar);
 };

@@ -53,14 +53,14 @@ FHeartEvent UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UObject*
 
 		if (Ref.Handler.IsBound())
 		{
-			FHeartEvent Reply = Ref.Handler.Execute(Target, Activation);
+			FHeartEvent Event = Ref.Handler.Execute(Target, Activation);
 
-			// If Priority is eEvent, this event Reply is allowed to stop capture input, and break out of the input handling loop
-			if (Ref.Priority == Event)
+			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
+			if (Ref.Priority == EExecutionOrder::Event)
 			{
-				if (Reply.WasEventCaptured())
+				if (Event.WasEventCaptured())
 				{
-					return Reply;
+					return Event;
 				}
 			}
 		}

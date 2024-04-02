@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "BloodContainer.h"
 #include "Components/SlateWrapperTypes.h"
 #include "Input/HeartActionBase.h"
 #include "HeartGraphCanvasAction.generated.h"
@@ -25,7 +26,7 @@ public:
 	virtual bool CanExecute(const UObject* Target) const override final;
 	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) override final;
 
-	virtual FHeartEvent ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject);
+	virtual FHeartEvent ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual FText GetDescription(const UHeartGraphWidgetBase* Widget) const;
@@ -33,14 +34,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
 	virtual bool CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
-	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject) { return false; }
+	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) { return false; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphAction")
-	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject) { return false; }
+	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) { return false; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|PinAction")
-	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject) { return false; }
+	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) { return false; }
 };
 
 
@@ -52,11 +53,11 @@ class HEARTCANVAS_API UHeartGraphCanvasAction_BlueprintBase final : public UHear
 public:
 	virtual FText GetDescription(const UHeartGraphWidgetBase* Widget) const override;
 	virtual bool CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const override;
-	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject) override;
-	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject) override;
-	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject) override;
+	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) override;
+	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) override;
+	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) override;
 	virtual bool CanUndo(UObject* Target) const override;
-	virtual bool Undo(UObject* Target) override;
+	virtual bool Undo(UObject* Target, const FBloodContainer& UndoData) override;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Get Description"))
@@ -66,14 +67,14 @@ protected:
 	bool BP_CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Graph"))
-	FEventReply BP_ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject);
+	FEventReply BP_ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Node"))
-	FEventReply BP_ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject);
+	FEventReply BP_ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Pin"))
-	FEventReply BP_ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject);
+	FEventReply BP_ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData);
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Undo"))
-	bool BP_Undo(UHeartGraphWidgetBase* Target);
+	bool BP_Undo(UHeartGraphWidgetBase* Target, const FBloodContainer& UndoData);
 };
