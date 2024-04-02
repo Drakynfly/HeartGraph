@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "BloodBlueprintLibrary.h"
+#include "BloodContainer.h"
 #include "BloodFProperty.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BloodBlueprintLibrary)
@@ -40,6 +41,55 @@ bool UBloodBlueprintLibrary::AssignBloodToProperty(uint8&, const FBloodValue&)
 	return false;
 }
 
+void UBloodBlueprintLibrary::AddBloodValue(FBloodContainer& Container, const FName Name, const FBloodValue& Value)
+{
+	Container.AddBloodValue(Name, Value);
+}
+
+void UBloodBlueprintLibrary::Remove(FBloodContainer& Container, const FName Name)
+{
+	Container.Remove(Name);
+}
+
+void UBloodBlueprintLibrary::Clear(FBloodContainer& Container)
+{
+	Container.Clear();
+}
+
+void UBloodBlueprintLibrary::GetBloodValue(const FBloodContainer& Container, const FName Name, FBloodValue& Value)
+{
+	if (TOptional<FBloodValue> Option = Container.GetBloodValue(Name);
+		Option.IsSet())
+	{
+		Value = Option.GetValue();
+	}
+	else
+	{
+		Value = FBloodValue();
+	}
+}
+
+bool UBloodBlueprintLibrary::FindBloodValue(const FBloodContainer& Container, const FName Name, FBloodValue& Value)
+{
+	GetBloodValue(Container, Name, Value);
+	return Value.IsValid();
+}
+
+bool UBloodBlueprintLibrary::Contains(const FBloodContainer& Container, const FName Name)
+{
+	return Container.Contains(Name);
+}
+
+int32 UBloodBlueprintLibrary::Num(const FBloodContainer& Container)
+{
+	return Container.Num();
+}
+
+bool UBloodBlueprintLibrary::IsEmpty(const FBloodContainer& Container)
+{
+	return Container.IsEmpty();
+}
+
 DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 {
 	P_GET_OBJECT(UObject, Object);
@@ -55,7 +105,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 
 	if (!IsValid(Object))
 	{
-		FBlueprintExceptionInfo ExceptionInfo(
+		const FBlueprintExceptionInfo ExceptionInfo(
 			EBlueprintExceptionType::AbortExecution,
 			LOCTEXT("execReadProperty_MakeInvalidObjectWarning", "Failed to resolve the Object for Read Property")
 		);
@@ -66,7 +116,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execReadProperty)
 
 	if (!ValueProp)
 	{
-		FBlueprintExceptionInfo ExceptionInfo(
+		const FBlueprintExceptionInfo ExceptionInfo(
 			EBlueprintExceptionType::AbortExecution,
 			LOCTEXT("execReadProperty_MakeInvalidValueWarning", "Failed to resolve the output Value for Read Property")
 		);
@@ -97,7 +147,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execPropertyToBlood)
 
 	if (!ValueProp || !ValuePtr)
 	{
-		FBlueprintExceptionInfo ExceptionInfo(
+		const FBlueprintExceptionInfo ExceptionInfo(
 			EBlueprintExceptionType::AbortExecution,
 			LOCTEXT("execPropertyToBlood_MakeInvalidValueWarning", "Failed to resolve the Property for Property to Blood")
 		);
@@ -105,13 +155,13 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execPropertyToBlood)
 		FBlueprintCoreDelegates::ThrowScriptException(P_THIS, Stack, ExceptionInfo);
 
 		P_NATIVE_BEGIN;
-		(*(FBloodValue*)RESULT_PARAM).Reset();
+		static_cast<FBloodValue*>(RESULT_PARAM)->Reset();
 		P_NATIVE_END;
 	}
 	else
 	{
 		P_NATIVE_BEGIN;
-		(*(FBloodValue*)RESULT_PARAM) = Blood::ReadFromFProperty(ValueProp, ValuePtr);
+		*static_cast<FBloodValue*>(RESULT_PARAM) = Blood::ReadFromFProperty(ValueProp, ValuePtr);
 		P_NATIVE_END;
 	}
 }
@@ -129,9 +179,9 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execBloodToProperty)
 
 	P_FINISH;
 
-	if (!ValueProp || !ValuePtr)
+	if (!ValueProp || !ValuePtr || !Value.IsValid())
 	{
-		FBlueprintExceptionInfo ExceptionInfo(
+		const FBlueprintExceptionInfo ExceptionInfo(
 			EBlueprintExceptionType::AbortExecution,
 			LOCTEXT("execBloodToProperty_MakeInvalidValueWarning", "Failed to resolve the Property for Blood to Property")
 		);
@@ -161,7 +211,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 
 	if (!ValueProp || !ValuePtr)
 	{
-		FBlueprintExceptionInfo ExceptionInfo(
+		const FBlueprintExceptionInfo ExceptionInfo(
 			EBlueprintExceptionType::AbortExecution,
 			LOCTEXT("execAssignPropertyToBlood_MakeInvalidValueWarning", "Failed to resolve the Property for Assign Property to Blood")
 		);
@@ -177,7 +227,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 	{
 		P_NATIVE_BEGIN;
 		Value = Blood::ReadFromFProperty(ValueProp, ValuePtr);
-		*(bool*)RESULT_PARAM = Value.IsValid();
+		*static_cast<bool*>(RESULT_PARAM) = Value.IsValid();
 		P_NATIVE_END;
 	}
 }
@@ -197,7 +247,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignBloodToProperty)
 
 	if (!ValueProp || !ValuePtr)
 	{
-		FBlueprintExceptionInfo ExceptionInfo(
+		const FBlueprintExceptionInfo ExceptionInfo(
 			EBlueprintExceptionType::AbortExecution,
 			LOCTEXT("execAssignBloodToProperty_MakeInvalidValueWarning", "Failed to resolve the Property for Assign Blood to Property")
 		);
@@ -207,7 +257,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignBloodToProperty)
 	else
 	{
 		P_NATIVE_BEGIN;
-		*(bool*)RESULT_PARAM = Blood::WriteToFProperty(ValueProp, ValuePtr, Value);
+		*static_cast<bool*>(RESULT_PARAM) = Blood::WriteToFProperty(ValueProp, ValuePtr, Value);
 		P_NATIVE_END;
 	}
 }

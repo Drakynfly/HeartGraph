@@ -1,6 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "BloodValue.h"
+#include "BloodProperty.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(BloodValue)
 
 FBloodValue::FBloodValue(const UScriptStruct* Type, const uint8* Memory)
 {
@@ -26,6 +29,26 @@ FBloodValue::FBloodValue(const UEnum* Type, const uint8* Memory)
 	const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
 
 	Desc->CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+}
+
+bool FBloodValue::IsSingle() const
+{
+	return IsValid() &&
+		PropertyBag.FindPropertyDescByName(Blood::Private::V0)->ContainerTypes.IsEmpty();
+}
+
+bool FBloodValue::IsContainer1() const
+{
+	return IsValid() &&
+		PropertyBag.FindPropertyDescByName(Blood::Private::V0)->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
+		PropertyBag.FindPropertyDescByName(Blood::Private::V1) == nullptr;
+}
+
+bool FBloodValue::IsContainer2() const
+{
+	return IsValid() &&
+		PropertyBag.FindPropertyDescByName(Blood::Private::V0)->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
+		PropertyBag.FindPropertyDescByName(Blood::Private::V1)->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array;
 }
 
 #if ALLOCATE_BLOOD_STATICS

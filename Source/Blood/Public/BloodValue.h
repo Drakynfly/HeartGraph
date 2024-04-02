@@ -12,8 +12,14 @@ struct BLOOD_API FBloodValue
 {
 	GENERATED_BODY()
 
+	friend struct FBloodContainer; // @todo Temp, please improve API here, and remove this
+
 	// Blank ctor
 	FBloodValue() {}
+
+	// Ctor from existing data. WARNING, this does not enforce, nor check, the validity of this data
+	FBloodValue(FInstancedPropertyBag&& FormattedData)
+	  : PropertyBag(MoveTemp(FormattedData)) {}
 
 	// Ctor from single value
 	template<typename TBloodData>
@@ -131,6 +137,15 @@ struct BLOOD_API FBloodValue
 		const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
 		return Desc->ValueTypeObject == Type;
 	}
+
+	// Is this a single value
+	bool IsSingle() const;
+
+	// Is this a one-dimensional container, eg, Arrays and Sets
+	bool IsContainer1() const;
+
+	// Is this a two-dimensional container, eg, Maps
+	bool IsContainer2() const;
 
 	friend bool operator==(const FBloodValue& Lhs, const FBloodValue& Rhs)
 	{

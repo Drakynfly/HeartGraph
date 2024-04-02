@@ -18,16 +18,14 @@ public class Blood : ModuleRules
             {
                 "Core",
                 "StructUtils"
-            }
-        );
+            });
 
         PrivateDependencyModuleNames.AddRange(
             new []
             {
                 "CoreUObject",
                 "Engine"
-            }
-        );
+            });
 
         PublicDefinitions.Add("ALLOCATE_BLOOD_STATICS=0");
     }
