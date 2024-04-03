@@ -256,15 +256,15 @@ namespace Blood
 			return Type();
 		}
 
-		static T Read(const FInstancedPropertyBag& PropertyBag)
+		static T Read(const FInstancedPropertyBag& PropertyBag, const FName Name)
 		{
 			if constexpr (TIsUEnumClass<T>::Value)
 			{
-				return PropertyBag.GetValueEnum<T>(Private::V0).GetValue();
+				return PropertyBag.GetValueEnum<T>(Name).GetValue();
 			}
 			else
 			{
-				return *static_cast<T*>(PropertyBag.GetValueStruct(Private::V0).GetValue().GetMemory());
+				return *reinterpret_cast<T*>(PropertyBag.GetValueStruct(Name).GetValue().GetMemory());
 			}
 		}
 
@@ -280,15 +280,15 @@ namespace Blood
 			}
 		}
 
-		static void Write(FInstancedPropertyBag& PropertyBag, const T& Value)
+		static void Write(FInstancedPropertyBag& PropertyBag, const FName Name, const T& Value)
 		{
 			if constexpr (TIsUEnumClass<T>::Value)
 			{
-				PropertyBag.SetValueEnum<T>(Private::V0, Value);
+				PropertyBag.SetValueEnum<T>(Name, Value);
 			}
 			else
 			{
-				PropertyBag.SetValueStruct(Private::V0, FConstStructView(Type(), reinterpret_cast<const uint8*>(&Value)));
+				PropertyBag.SetValueStruct(Name, FConstStructView(Type(), reinterpret_cast<const uint8*>(&Value)));
 			}
 		}
 
@@ -328,14 +328,14 @@ namespace Blood
 				return nullptr;\
 			}\
 			\
-			static ActualType Read(const FInstancedPropertyBag& PropertyBag)\
+			static ActualType Read(const FInstancedPropertyBag& PropertyBag, const FName Name)\
 			{\
-				return ActualType(PropertyBag.GetValue##TypeInBag(Private::V0).GetValue());\
+				return ActualType(PropertyBag.GetValue##TypeInBag(Name).GetValue());\
 			}\
 			\
-			static void Write(FInstancedPropertyBag& PropertyBag, const ActualType Value)\
+			static void Write(FInstancedPropertyBag& PropertyBag, const FName Name, const ActualType Value)\
 			{\
-				PropertyBag.SetValue##TypeInBag(Private::V0, Getter);\
+				PropertyBag.SetValue##TypeInBag(Name, Getter);\
 			}\
 			\
 			static ActualType ReadIndex(const FPropertyBagArrayRef& Array, const int32 Index)\
@@ -366,14 +366,14 @@ namespace Blood
 				return T::StaticClass();\
 			}\
 			\
-			static ActualType Read(const FInstancedPropertyBag& PropertyBag)\
+			static ActualType Read(const FInstancedPropertyBag& PropertyBag, const FName Name)\
 			{\
-				return ActualType(PropertyBag.GetValue##TypeInBag(Private::V0).GetValue());\
+				return ActualType(PropertyBag.GetValue##TypeInBag(Name).GetValue());\
 			}\
 			\
-			static void Write(FInstancedPropertyBag& PropertyBag, const ActualType& Value)\
+			static void Write(FInstancedPropertyBag& PropertyBag, const FName Name, const ActualType& Value)\
 			{\
-				PropertyBag.SetValue##TypeInBag(Private::V0, Value.Get());\
+				PropertyBag.SetValue##TypeInBag(Name, Value.Get());\
 			}\
 			\
 			static ActualType ReadIndex(const FPropertyBagArrayRef& Array, const int32 Index)\
@@ -409,22 +409,22 @@ namespace Blood
 	namespace Read
 	{
 		template <typename TType>
-		static auto Value(const FInstancedPropertyBag& Value)
+		static auto Value(const FInstancedPropertyBag& Value, const FName Name)
 		{
 			if constexpr (TIsPoDWrapperStruct<TType>::Value)
 			{
-				return TDataConverter<decltype(TType::Value)>::Read(Value);
+				return TDataConverter<decltype(TType::Value)>::Read(Value, Name);
 			}
 			else
 			{
-				return TDataConverter<TType>::Read(Value);
+				return TDataConverter<TType>::Read(Value, Name);
 			}
 		}
 
 		template <template <typename> class TContainer, typename TType>
-		static void Container1(const FInstancedPropertyBag& Value, TContainer<TType>& Out)
+		static void Container1(const FInstancedPropertyBag& Value, const FName Name, TContainer<TType>& Out)
 		{
-			auto MaybeArrayRef = Value.GetArrayRef(Private::V0);
+			auto MaybeArrayRef = Value.GetArrayRef(Name);
 			check(MaybeArrayRef.HasValue());
 
 			const FPropertyBagArrayRef& ArrayRef = MaybeArrayRef.GetValue();
@@ -436,10 +436,10 @@ namespace Blood
 		}
 
 		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
-		static void Container2(const FInstancedPropertyBag& Value, TContainer<TType0, TType1>& Out)
+		static void Container2(const FInstancedPropertyBag& Value, const TPair<FName, FName>& Names, TContainer<TType0, TType1>& Out)
 		{
-			auto MaybeArrayRef0 = Value.GetArrayRef(Private::V0);
-			auto MaybeArrayRef1 = Value.GetArrayRef(Private::V1);
+			auto MaybeArrayRef0 = Value.GetArrayRef(Names.Key);
+			auto MaybeArrayRef1 = Value.GetArrayRef(Names.Value);
 			check(MaybeArrayRef0.HasValue());
 			check(MaybeArrayRef1.HasValue());
 
@@ -457,35 +457,35 @@ namespace Blood
 	namespace Write
 	{
 		template <typename TType>
-		static void Value(FInstancedPropertyBag& Bag, const TType& Value)
+		static void Value(FInstancedPropertyBag& Bag, FName Name, const TType& Value)
 		{
 			// Init property
 			Bag.AddProperty(
-				Private::V0,
+				Name,
 				TDataConverter<TType>::PropertyBagType(),
 				TDataConverter<TType>::PropertyBagTypeObject());
 
 			if constexpr (TIsPoDWrapperStruct<TType>::Value)
 			{
-				TDataConverter<TType>::Write(Bag, Value.Value);
+				TDataConverter<TType>::Write(Bag, Name, Value.Value);
 			}
 			else
 			{
-				TDataConverter<TType>::Write(Bag, Value);
+				TDataConverter<TType>::Write(Bag, Name, Value);
 			}
 		}
 
 		template <template <typename> class TContainer, typename TType>
-		static void Container1(FInstancedPropertyBag& Bag, const TContainer<TType>& Value)
+		static void Container1(FInstancedPropertyBag& Bag, FName Name, const TContainer<TType>& Value)
 		{
 			// Init property
 			Bag.AddContainerProperty(
-				Private::V0,
+				Name,
 				EPropertyBagContainerType::Array,
 				TDataConverter<TType>::PropertyBagType(),
 				TDataConverter<TType>::PropertyBagTypeObject());
 
-			auto&& BetterBeArray = Bag.GetMutableArrayRef(Private::V0);
+			auto&& BetterBeArray = Bag.GetMutableArrayRef(Name);
 			check(BetterBeArray.HasValue());
 
 			FPropertyBagArrayRef& ArrayRef = BetterBeArray.GetValue();
@@ -500,18 +500,18 @@ namespace Blood
 		}
 
 		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
-		static void Container2(FInstancedPropertyBag& Bag, const TContainer<TType0, TType1>& Value)
+		static void Container2(FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, const TContainer<TType0, TType1>& Value)
 		{
 			// Init properties
 			const TArray<FPropertyBagPropertyDesc> PropertyDescs{
-				FPropertyBagPropertyDesc(Private::V0, EPropertyBagContainerType::Array, TDataConverter<TType0>::PropertyBagType(), TDataConverter<TType0>::PropertyBagTypeObject()),
-				FPropertyBagPropertyDesc(Private::V1, EPropertyBagContainerType::Array, TDataConverter<TType1>::PropertyBagType(), TDataConverter<TType1>::PropertyBagTypeObject())
+				FPropertyBagPropertyDesc(Names.Key, EPropertyBagContainerType::Array, TDataConverter<TType0>::PropertyBagType(), TDataConverter<TType0>::PropertyBagTypeObject()),
+				FPropertyBagPropertyDesc(Names.Value, EPropertyBagContainerType::Array, TDataConverter<TType1>::PropertyBagType(), TDataConverter<TType1>::PropertyBagTypeObject())
 			};
 
 			Bag.AddProperties(PropertyDescs);
 
-			auto&& BetterBeArray0 = Bag.GetMutableArrayRef(Private::V0);
-			auto&& BetterBeArray1 = Bag.GetMutableArrayRef(Private::V1);
+			auto&& BetterBeArray0 = Bag.GetMutableArrayRef(Names.Key);
+			auto&& BetterBeArray1 = Bag.GetMutableArrayRef(Names.Value);
 			check(BetterBeArray0.HasValue());
 			check(BetterBeArray1.HasValue());
 

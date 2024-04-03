@@ -4,8 +4,9 @@
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "BloodValue.h"
-#include "BloodContainer.h"
 #include "BloodBlueprintLibrary.generated.h"
+
+struct FBloodContainer;
 
 /**
  * Library exclusively for exposing Blood type functionality to blueprint. This class is not to be used by native code.
