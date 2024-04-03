@@ -104,20 +104,20 @@ template <typename TBloodData> auto FBloodValue::GetValue() const
 	if constexpr (TIsTMap<TBloodData>::Value)
 	{
 		static const TPair<FName, FName> Names{ Blood::Private::V0, Blood::Private::V1 };
-		TMap<typename TBloodData::KeyType, typename TBloodData::ValueType> Out;
+		TBloodData Out;
 		Blood::Read::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(
 			PropertyBag, Names, Out);
 		return Out;
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
 	{
-		TArray<typename TBloodData::ElementType> Out;
+		TBloodData Out;
 		Blood::Read::Container1<TArray, typename TBloodData::ElementType>(PropertyBag, Blood::Private::V0, Out);
 		return Out;
 	}
 	else if constexpr (TIsTSet<TBloodData>::Value)
 	{
-		TSet<typename TBloodData::ElementType> Out;
+		TBloodData Out;
 		Blood::Read::Container1<TSet, typename TBloodData::ElementType>(PropertyBag, Blood::Private::V0, Out);
 		return Out;
 	}

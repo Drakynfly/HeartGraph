@@ -100,20 +100,20 @@ template <typename TBloodData> TBloodData FBloodContainer::Get(const FName Name)
 		NameBuilder[0].Append(TEXT("__V0"));
 		NameBuilder[1].Append(TEXT("__V1"));
 		const TPair<FName, FName> Names{ NameBuilder[0], NameBuilder[1] };
-		TMap<typename TBloodData::KeyType, typename TBloodData::ValueType> Out;
+		TBloodData Out;
 		Blood::Read::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(
 			PropertyBag, Names, Out);
 		return Out;
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
 	{
-		TArray<typename TBloodData::ElementType> Out;
+		TBloodData Out;
 		Blood::Read::Container1<TArray, typename TBloodData::ElementType>(PropertyBag, Name, Out);
 		return Out;
 	}
 	else if constexpr (TIsTSet<TBloodData>::Value)
 	{
-		TSet<typename TBloodData::ElementType> Out;
+		TBloodData Out;
 		Blood::Read::Container1<TSet, typename TBloodData::ElementType>(PropertyBag, Name, Out);
 		return Out;
 	}

@@ -79,7 +79,7 @@ bool BloodValueTest::RunTest(const FString& Parameters)
 	TestTrue("Blood as I32/String Map", TestMap1.OrderIndependentCompareEqual(Val_I32StringMap.GetValue<TMap<int32, FString>>()));
 	TestTrue("Blood as Enum/Struct Map", TestMap2.OrderIndependentCompareEqual(Val_EnumStructMap.GetValue<TMap<EPropertyBagPropertyType, FVector3f>>()));
 
-	// Un-set values should not not be value
+	// Un-set values should not be value
 	FBloodValue Val_ResetValid;
 	TestFalse("Blood is invalid", Val_ResetValid.IsValid());
 
