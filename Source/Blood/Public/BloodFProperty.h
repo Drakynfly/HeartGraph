@@ -12,7 +12,7 @@ namespace Blood
 		class BLOOD_API FPropertyHelpers
 		{
 		public:
-			static TObjectPtr<UField> GetFPropertyFieldTypeImpl(const FProperty* Prop);
+			static TObjectPtr<UField> GetFPropertyFieldType(const FProperty* Prop);
 			static bool WriteToFPropertyValuePtr(const FProperty* ValueProp, uint8* ValuePtr, const FBloodValue& Value);
 			static FBloodValue ReadFromFPropertyValuePtr(const FProperty* ValueProp, const uint8* ValuePtr);
 		};
@@ -20,7 +20,7 @@ namespace Blood
 
 	static TObjectPtr<UField> GetFPropertyFieldType(const FProperty* Prop)
 	{
-		return Impl::FPropertyHelpers::GetFPropertyFieldTypeImpl(Prop);
+		return Impl::FPropertyHelpers::GetFPropertyFieldType(Prop);
 	}
 
 	// Write the data from a BloodValue to an FProperty
@@ -51,7 +51,7 @@ namespace Blood
 
 	// Read the value of the UPROPERTY by its name from an object. Works for both Blueprint Properties and Native UPROPS
 	template <typename T>
-	static T ReadUProperty(UObject* Container, const FName& PropName)
+	static TOptional<T> ReadUProperty(UObject* Container, const FName& PropName)
 	{
 		if (const FProperty* Property = Container->GetClass()->FindPropertyByName(PropName))
 		{
@@ -59,6 +59,6 @@ namespace Blood
 			return BloodValue.GetValue<T>();
 		}
 
-		return T();
+		return {};
 	}
 }

@@ -16,27 +16,28 @@ struct BLOOD_API FBloodProperty
 
 	FBloodProperty() {}
 
-	UPROPERTY(EditDefaultsOnly, Category = "BloodType")
+	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	FName PropName = NAME_None;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BloodType")
+	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	FText ToolTip;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BloodType")
+	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	EPinContainerType ContainerType = EPinContainerType::None;
 
 	// The UClass or UStruct that this type represents
-	UPROPERTY(EditDefaultsOnly, Category = "BloodType")
+	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	TObjectPtr<UField> FieldType = nullptr;
 
 	// Type of the Value when this is a map
-	UPROPERTY(EditDefaultsOnly, Category = "BloodType", meta = (EditCondition = "ContainerType == EPinContainerType::Map", EditConditionHides))
+	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty", meta = (EditCondition = "ContainerType == EPinContainerType::Map", EditConditionHides))
 	TObjectPtr<UField> MapValueFieldType = nullptr;
 
-	UPROPERTY(EditDefaultsOnly, Category = "BloodType")
+	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	bool Const = false;
 
 #if WITH_EDITOR
+	// @todo move this somewhere else. I think only Plato is using it anyway
 	FEdGraphPinType ToEdGraphPin() const
 	{
 		return FEdGraphPinType("struct", NAME_None, FieldType, ContainerType, false, FEdGraphTerminalType());

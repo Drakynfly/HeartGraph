@@ -6,7 +6,7 @@
 
 namespace Blood::Impl
 {
-	TObjectPtr<UField> FPropertyHelpers::GetFPropertyFieldTypeImpl(const FProperty* Prop)
+	TObjectPtr<UField> FPropertyHelpers::GetFPropertyFieldType(const FProperty* Prop)
 	{
 	#define TRY_BIND_VALUE(type, actual)\
 		if (auto&& type##Prop = CastField<F##type##Property>(Prop))\
