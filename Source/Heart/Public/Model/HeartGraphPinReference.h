@@ -31,6 +31,11 @@ struct FHeartGraphPinReference
 	{
 		return !(Lhs == Rhs);
 	}
+
+	friend FArchive& operator<<(FArchive& Ar, FHeartGraphPinReference& V)
+	{
+		return Ar << V.NodeGuid << V.PinGuid;
+	}
 };
 
 FORCEINLINE uint32 GetTypeHash(const FHeartGraphPinReference& PinReference)
@@ -45,4 +50,9 @@ struct FHeartGraphPinConnections
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
 	TSet<FHeartGraphPinReference> Links;
+
+	friend FArchive& operator<<(FArchive& Ar, FHeartGraphPinConnections& V)
+	{
+		return Ar << V.Links;
+	}
 };

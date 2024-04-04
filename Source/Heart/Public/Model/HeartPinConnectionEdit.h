@@ -18,6 +18,11 @@ namespace Heart::Connections
 		{
 			friend FEdit;
 			TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
+
+			friend FArchive& operator<<(FArchive& Ar, FMemento& V)
+			{
+				return Ar << V.PinConnections;
+			}
 		};
 
 		FEdit(UHeartGraph* Graph)

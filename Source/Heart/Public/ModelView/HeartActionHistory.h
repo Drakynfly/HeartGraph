@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "BloodContainer.h"
 #include "Input/HeartActionBase.h"
 #include "Model/HeartGraphExtension.h"
 #include "HeartActionHistory.generated.h"

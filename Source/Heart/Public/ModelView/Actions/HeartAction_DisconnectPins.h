@@ -8,6 +8,17 @@
 
 class IHeartGraphPinInterface;
 
+USTRUCT()
+struct FHeartDisconnectPinsUndoData
+{
+	GENERATED_BODY()
+
+	TSoftObjectPtr<UHeartGraphNode> TargetNode;
+	TMap<FHeartNodeGuid, Heart::Connections::FEdit::FMemento> Mementos;
+
+	bool Serialize(FArchive& Ar);
+};
+
 /**
  *
  */
@@ -22,9 +33,4 @@ protected:
 	virtual FHeartEvent ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) override;
 	virtual bool CanUndo(UObject* Target) const override { return true; }
 	virtual bool Undo(UObject* Target, const FBloodContainer& UndoData) override;
-
-private:
-	// Undo data
-	TWeakObjectPtr<UHeartGraphNode> TargetNode;
-	TMap<FHeartNodeGuid, Heart::Connections::FEdit::FMemento> Mementos;
 };

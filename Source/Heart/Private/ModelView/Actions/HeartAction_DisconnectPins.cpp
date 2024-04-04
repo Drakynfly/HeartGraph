@@ -10,6 +10,13 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_DisconnectPins)
 
+static const FLazyName DisconnectPinsStorage("discpins");
+
+bool FHeartDisconnectPinsUndoData::Serialize(FArchive& Ar)
+{
+	return !(Ar << TargetNode << Mementos).IsError();
+}
+
 bool UHeartAction_DisconnectPins::CanExecute(const UObject* Object) const
 {
 	return Object->Implements<UHeartGraphPinInterface>() ||
@@ -17,7 +24,8 @@ bool UHeartAction_DisconnectPins::CanExecute(const UObject* Object) const
 }
 
 FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
-													  const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+													  const FHeartInputActivation& Activation, UObject* ContextObject,
+													  FBloodContainer& UndoData)
 {
 	UHeartGraphNode* Node = Pin->GetHeartGraphNode();
 	if (!IsValid(Node))
@@ -29,8 +37,10 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHe
 
 	if (Heart::Action::History::IsUndoable())
 	{
-		TargetNode = Node;
-		Node->GetGraph()->EditConnections().CreateMementos(PinRef, Mementos).DisconnectAll(PinRef);
+		FHeartDisconnectPinsUndoData Data;
+		Data.TargetNode = Node;
+		Node->GetGraph()->EditConnections().CreateMementos(PinRef, Data.Mementos).DisconnectAll(PinRef);
+		UndoData.Add(DisconnectPinsStorage, Data);
 	}
 	else
 	{
@@ -48,8 +58,10 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, co
 
 	if (Heart::Action::History::IsUndoable())
 	{
-		TargetNode = Node;
-		Node->GetGraph()->EditConnections().CreateAllMementos(Guid, Mementos).DisconnectAll(Guid);
+		FHeartDisconnectPinsUndoData Data;
+		Data.TargetNode = Node;
+		Node->GetGraph()->EditConnections().CreateAllMementos(Guid, Data.Mementos).DisconnectAll(Guid);
+		UndoData.Add(DisconnectPinsStorage, Data);
 	}
 	else
 	{
@@ -62,11 +74,13 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, co
 
 bool UHeartAction_DisconnectPins::Undo(UObject* Target, const FBloodContainer& UndoData)
 {
-	if (TargetNode.IsValid())
+	auto&& Data = UndoData.Get<FHeartDisconnectPinsUndoData>(DisconnectPinsStorage);
+
+	if (!Data.TargetNode.IsValid())
 	{
-		TargetNode->GetGraph()->EditConnections().RestoreMementos(Mementos);
-		return true;
+		return false;
 	}
 
-	return false;
+	Data.TargetNode->GetGraph()->EditConnections().RestoreMementos(Data.Mementos);
+	return true;
 }
