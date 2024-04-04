@@ -136,7 +136,7 @@ public:
 
 	// Use this to remote execute graph actions on the server, to make changes to the source graph.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
-	void ExecuteGraphActionOnServer(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
+	void ExecuteGraphActionOnServer(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
 
 protected:
 	UFUNCTION()
@@ -160,7 +160,7 @@ protected:
 	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 
 	virtual void UpdateNodeData_Client(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
-	virtual void ExecuteGraphAction_Client(const FHeartFlake& ActionData, const FHeartRemoteGraphActionArguments& Args);
+	virtual void ExecuteGraphAction_Client(TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);
 
 	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, FGameplayTag EventType);
 	bool RemoveNodeProxy(const FHeartNodeGuid& NodeGuid);

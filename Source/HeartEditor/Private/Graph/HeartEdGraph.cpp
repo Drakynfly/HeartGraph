@@ -31,7 +31,7 @@ bool UHeartEditorDebugAction::CanExecute(const UObject* Target) const
 }
 
 FHeartEvent UHeartEditorDebugAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
-													UObject* ContextObject, FBloodContainer& UndoData)
+													UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
 		FString::Printf(TEXT("Executing Debug Action on graph '%s'"), Graph ? *Graph->GetName() : TEXT("null")));
@@ -39,7 +39,7 @@ FHeartEvent UHeartEditorDebugAction::ExecuteOnGraph(UHeartGraph* Graph, const FH
 }
 
 FHeartEvent UHeartEditorDebugAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-												   UObject* ContextObject, FBloodContainer& UndoData)
+												   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
 	FString::Printf(TEXT("Executing Debug Action on node '%s'"), Node ? *Node->GetName() : TEXT("null")));
@@ -47,7 +47,7 @@ FHeartEvent UHeartEditorDebugAction::ExecuteOnNode(UHeartGraphNode* Node, const 
 }
 
 FHeartEvent UHeartEditorDebugAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
-												  const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+												  const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
 	FString::Printf(TEXT("Executing Debug Action on pin '%s'"), Pin ? *Pin.GetObject()->GetName() : TEXT("null")));

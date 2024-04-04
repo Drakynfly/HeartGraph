@@ -11,7 +11,7 @@ namespace Heart::Action::History
 {
 	namespace Impl
 	{
-		HEART_API void BeginLog(UHeartActionBase* Action, const FArguments& Arguments);
+		HEART_API void BeginLog(const UHeartActionBase* Action, const FArguments& Arguments);
 		HEART_API void EndLog(bool Successful, FBloodContainer* UndoData);
 	}
 
@@ -24,7 +24,7 @@ namespace Heart::Action::History
 	// A simple wrapper around a lamba that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded, provided that an Action History extension can be found.
 	template <typename T>
-	FHeartEvent Log(UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
+	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
 	{
 		Impl::BeginLog(Action, Arguments);
 		FHeartEvent Event;
@@ -52,7 +52,7 @@ struct FHeartActionRecord
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TObjectPtr<UHeartActionBase> Action;
+	TSubclassOf<UHeartActionBase> Action;
 
 	// Original arguments used to execute this action. Used to 'Redo' an un-done action.
 	Heart::Action::FArguments Arguments;

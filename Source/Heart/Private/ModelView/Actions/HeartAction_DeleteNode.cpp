@@ -46,7 +46,7 @@ bool UHeartAction_DeleteNode::CanExecute(const UObject* Object) const
 }
 
 FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-												   UObject* ContextObject, FBloodContainer& UndoData)
+												   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::IsUndoable())
 	{
@@ -64,7 +64,7 @@ FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const 
 	return FHeartEvent::Handled;
 }
 
-bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoData)
+bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoData) const
 {
 	// Target may or may not be valid at this point, so just ignore it.
 

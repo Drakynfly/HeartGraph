@@ -27,7 +27,7 @@ bool UHeartGraphCanvasAction::CanExecute(const UObject* Target) const
 	return false;
 }
 
-FHeartEvent UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Arguments)
+FHeartEvent UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Arguments) const
 {
 	auto&& Widget = Cast<UHeartGraphWidgetBase>(Arguments.Target);
 
@@ -43,8 +43,18 @@ FHeartEvent UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Ar
 		});
 }
 
+FText UHeartGraphCanvasAction::GetDescription(const UHeartGraphWidgetBase* Widget) const
+{
+	return FText::GetEmpty();
+}
+
+bool UHeartGraphCanvasAction::CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const
+{
+	return true;
+}
+
 FHeartEvent UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation,
-													 UObject* ContextObject, FBloodContainer& UndoData)
+													 UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (!IsValid(Widget))
 	{
@@ -72,16 +82,6 @@ FHeartEvent UHeartGraphCanvasAction::ExecuteOnWidget(UHeartGraphWidgetBase* Widg
 	return FHeartEvent::Ignored;
 }
 
-FText UHeartGraphCanvasAction::GetDescription(const UHeartGraphWidgetBase* Widget) const
-{
-	return FText::GetEmpty();
-}
-
-bool UHeartGraphCanvasAction::CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const
-{
-	return true;
-}
-
 FText UHeartGraphCanvasAction_BlueprintBase::GetDescription(const UHeartGraphWidgetBase* Widget) const
 {
 	return BP_GetDescription(Widget);
@@ -99,7 +99,7 @@ bool UHeartGraphCanvasAction_BlueprintBase::CanExecuteOnWidget(const UHeartGraph
 	return true;
 }
 
-FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (ensure(IsValid(Graph)))
 	{
@@ -108,7 +108,7 @@ FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnGraph(UHeartGraphCan
 	return false;
 }
 
-FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (ensure(IsValid(Node)))
 	{
@@ -117,7 +117,7 @@ FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnNode(UHeartGraphCanv
 	return false;
 }
 
-FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (ensure(IsValid(Pin)))
 	{
@@ -126,18 +126,18 @@ FEventReply UHeartGraphCanvasAction_BlueprintBase::ExecuteOnPin(UHeartGraphCanva
 	return false;
 }
 
-bool UHeartGraphCanvasAction_BlueprintBase::CanUndo(UObject* Target) const
+bool UHeartGraphCanvasAction_BlueprintBase::CanUndo(const UObject* Target) const
 {
 	// A Blueprint action can undo if it has an implementation of BP_Undo
 	return GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_Undo));
 }
 
-bool UHeartGraphCanvasAction_BlueprintBase::Undo(UObject* Target, const FBloodContainer& UndoData)
+bool UHeartGraphCanvasAction_BlueprintBase::Undo(UObject* Target, const FBloodContainer& UndoData) const
 {
 	if (auto&& WidgetTarget = Cast<UHeartGraphWidgetBase>(Target))
 	{
 		return BP_Undo(WidgetTarget, UndoData);
 	}
 
-	return Super::Undo(Target, UndoData);
+	return false;
 }

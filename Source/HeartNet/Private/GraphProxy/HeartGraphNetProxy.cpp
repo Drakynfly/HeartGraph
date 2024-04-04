@@ -358,7 +358,7 @@ void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid NodeGu
 	LocalClient->Server_UpdateGraphNode(this, NodeFlake, Type);
 }
 
-void UHeartGraphNetProxy::ExecuteGraphActionOnServer(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject)
+void UHeartGraphNetProxy::ExecuteGraphActionOnServer(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject)
 {
 	if (!ensure(IsValid(Action)))
 	{
@@ -373,7 +373,6 @@ void UHeartGraphNetProxy::ExecuteGraphActionOnServer(UHeartActionBase* Action, U
 		return;
 	}
 
-	const FHeartFlake Flake = Heart::Flakes::CreateFlake(Action);
 	FHeartRemoteGraphActionArguments Args;
 
 	if (Target->Implements<UGraphNodeVisualizerInterface>())
@@ -402,7 +401,7 @@ void UHeartGraphNetProxy::ExecuteGraphActionOnServer(UHeartActionBase* Action, U
 	Args.ContextObject = ContextObject;
 
 	UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeRemoved"))
-	LocalClient->Server_ExecuteGraphAction(this, Flake, Args);
+	LocalClient->Server_ExecuteGraphAction(this, Action, Args);
 }
 
 void UHeartGraphNetProxy::OnRep_GraphClass()
@@ -558,7 +557,7 @@ void UHeartGraphNetProxy::UpdateNodeData_Client(const FHeartNodeFlake& NodeData,
 	EditReplicatedNodeData(NodeData, Heart::Net::Tags::Node_ConnectionsChanged);
 }
 
-void UHeartGraphNetProxy::ExecuteGraphAction_Client(const FHeartFlake& ActionData, const FHeartRemoteGraphActionArguments& Args)
+void UHeartGraphNetProxy::ExecuteGraphAction_Client(const TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args)
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Permission_Actions))
 	{
@@ -567,7 +566,6 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const FHeartFlake& ActionDat
 		return;
 	}
 
-	UHeartActionBase* Action = Heart::Flakes::CreateObject<UHeartActionBase>(ActionData);
 	if (!IsValid(Action))
 	{
 		UE_LOG(LogHeartNet, Warning, TEXT("Graph Action data sent from client failed deserialization from flake!"))
@@ -591,7 +589,7 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const FHeartFlake& ActionDat
 		Target = Args.PinTarget;
 	}
 
-	if (!UHeartActionBase::ExecuteGraphAction(Action, Target, Args.Activation).WasEventSuccessful())
+	if (!Heart::Action::Execute(Action, Target, Args.Activation).WasEventSuccessful())
 	{
 		UE_LOG(LogHeartNet, Log, TEXT("Graph Action data received from client, but Execute failed."))
 		return;

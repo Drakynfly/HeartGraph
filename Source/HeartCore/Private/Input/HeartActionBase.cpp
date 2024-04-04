@@ -4,76 +4,108 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartActionBase)
 
-FHeartEvent UHeartActionBase::QuickExecuteGraphAction(const TSubclassOf<UHeartActionBase> Class,
-													UObject* Target, const FHeartManualEvent& Activation)
+namespace Heart::Action
 {
-	if (!ensure(IsValid(Class)))
+	FText FNativeExec::GetDescription(const UHeartActionBase* Action, const UObject* Target)
 	{
-		return FHeartEvent::Invalid;
+		return Action->GetDescription(Target);
 	}
 
-	if (!Class->GetDefaultObject<UHeartActionBase>()->CanExecute(Target))
+	bool FNativeExec::CanExecute(const UHeartActionBase* Action, const UObject* Target)
 	{
-		return FHeartEvent::Invalid;
+		return Action->CanExecute(Target);
 	}
 
-	auto&& Action = CreateGraphAction(Class);
+	FHeartEvent FNativeExec::Execute(const UHeartActionBase* Action, const FArguments& Arguments)
+	{
+		return Action->Execute(Arguments);
+	}
 
-	Heart::Action::FArguments Args;
-	Args.Target = Target;
-	Args.Activation = Activation;
+	bool FNativeExec::CanUndo(const UHeartActionBase* Action, const UObject* Target)
+	{
+		return Action->CanUndo(Target);
+	}
 
-	return Action->Execute(Args);
+	bool FNativeExec::Undo(const UHeartActionBase* Action, UObject* Target, const FBloodContainer& UndoData)
+	{
+		return Action->Undo(Target, UndoData);
+	}
+
+	FText GetDescription(const TSubclassOf<UHeartActionBase> Action, const UObject* Target)
+	{
+		return IsValid(Action) ?
+			FNativeExec::GetDescription(Action->GetDefaultObject<UHeartActionBase>(), Target) :
+			FText::GetEmpty();
+	}
+
+	bool CanExecute(const TSubclassOf<UHeartActionBase> Action, const UObject* Target)
+	{
+		return IsValid(Action) ?
+			FNativeExec::CanExecute(Action->GetDefaultObject<UHeartActionBase>(), Target) :
+			false;
+	}
+
+	FHeartEvent Execute(const TSubclassOf<UHeartActionBase> Action, UObject* Target,
+						const FHeartInputActivation& Activation, UObject* Payload)
+	{
+		if (!ensure(IsValid(Action)))
+		{
+			return FHeartEvent::Invalid;
+		}
+
+		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Action);
+
+		if (!FNativeExec::CanExecute(ActionObject, Target))
+		{
+			return FHeartEvent::Invalid;
+		}
+
+		FArguments Args;
+		Args.Target = Target;
+		Args.Activation = Activation;
+		Args.Payload = Payload;
+
+		return FNativeExec::Execute(ActionObject, Args);
+	}
+
+	bool Undo(const TSubclassOf<UHeartActionBase> Action, UObject* Target, const FBloodContainer& UndoData)
+	{
+		if (!ensure(IsValid(Action)))
+		{
+			return false;
+		}
+
+		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Action);
+
+		return FNativeExec::Undo(ActionObject, Target, UndoData);
+	}
 }
 
-FHeartEvent UHeartActionBase::QuickExecuteGraphActionWithPayload(const TSubclassOf<UHeartActionBase> Class,
-                                                               UObject* Target, const FHeartManualEvent& Activation, UObject* Payload)
+void UHeartActionBase::PostInitProperties()
 {
-	if (!ensure(IsValid(Class)))
-	{
-		return FHeartEvent::Invalid;
-	}
-
-	if (!Class->GetDefaultObject<UHeartActionBase>()->CanExecute(Target))
-	{
-		return FHeartEvent::Invalid;
-	}
-
-	auto&& Action = CreateGraphAction(Class);
-
-	Heart::Action::FArguments Args;
-	Args.Target = Target;
-	Args.Activation = Activation;
-	Args.Payload = Payload;
-
-	return Action->Execute(Args);
+	Super::PostInitProperties();
+	ensureMsgf(IsTemplate(),
+		TEXT("Heart Actions should not be created via NewObject. They are const classes that have all their member functions called by statics!"));
 }
 
-UHeartActionBase* UHeartActionBase::CreateGraphAction(const TSubclassOf<UHeartActionBase> Class)
+FText UHeartActionBase::GetActionDescription(const TSubclassOf<UHeartActionBase> Class, const UObject* Target)
 {
-	if (!ensure(IsValid(Class)))
-	{
-		return nullptr;
-	}
-
-	return NewObject<UHeartActionBase>(GetTransientPackage(), Class);
+	return Heart::Action::GetDescription(Class, Target);
 }
 
-FHeartEvent UHeartActionBase::ExecuteGraphAction(UHeartActionBase* Action, UObject* Target, const FHeartManualEvent& Activation)
+bool UHeartActionBase::CanExecute(const TSubclassOf<UHeartActionBase> Class, const UObject* Target)
 {
-	if (!ensure(IsValid(Action)))
-	{
-		return FHeartEvent::Invalid;
-	}
+	return Heart::Action::CanExecute(Class, Target);
+}
 
-	if (!Action->CanExecute(Target))
-	{
-		return FHeartEvent::Invalid;
-	}
+FHeartEvent UHeartActionBase::ExecuteGraphAction(const TSubclassOf<UHeartActionBase> Class,
+													  UObject* Target, const FHeartManualEvent& Activation)
+{
+	return Heart::Action::Execute(Class, Target, Activation);
+}
 
-	Heart::Action::FArguments Args;
-	Args.Target = Target;
-	Args.Activation = Activation;
-
-	return Action->Execute(Args);
+FHeartEvent UHeartActionBase::ExecuteGraphActionWithPayload(const TSubclassOf<UHeartActionBase> Class,
+															   UObject* Target, const FHeartManualEvent& Activation, UObject* Payload)
+{
+	return Heart::Action::Execute(Class, Target, Activation, Payload);
 }

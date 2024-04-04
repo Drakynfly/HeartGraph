@@ -9,7 +9,7 @@ FText UHeartInputHandler_Action::GetDescription(const UObject* TestTarget) const
 {
 	if (IsValid(ActionClass))
 	{
-		return ActionClass.GetDefaultObject()->GetDescription(TestTarget);
+		return Heart::Action::GetDescription(ActionClass, TestTarget);
 	}
 
 	return Super::GetDescription(TestTarget);
@@ -21,7 +21,7 @@ bool UHeartInputHandler_Action::PassCondition(const UObject* TestTarget) const
 
 	if (IsValid(ActionClass))
 	{
-		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestTarget);
+		Failed |= !Heart::Action::CanExecute(ActionClass, TestTarget);
 	}
 
 	return !Failed;
@@ -35,11 +35,5 @@ FHeartEvent UHeartInputHandler_Action::OnTriggered(UObject* Target, const FHeart
 		return FHeartEvent::Invalid;
 	}
 
-	auto&& Action = UHeartActionBase::CreateGraphAction(ActionClass);
-
-	Heart::Action::FArguments Args;
-	Args.Target = Target;
-	Args.Activation = Activation;
-
-	return Action->Execute(Args);
+	return Heart::Action::Execute(ActionClass, Target, Activation);
 }

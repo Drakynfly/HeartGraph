@@ -15,9 +15,9 @@ namespace Heart::Action::History
 	{
 		struct FExecutingAction
 		{
-			FExecutingAction(UHeartActionBase* Action, UHeartActionHistory* History, const FArguments& Arguments)
+			FExecutingAction(const UHeartActionBase* Action, UHeartActionHistory* History, const FArguments& Arguments)
 			  : Action(Action), History(History), Arguments(Arguments) {}
-			UHeartActionBase* Action;
+			const UHeartActionBase* Action;
 			UHeartActionHistory* History;
 			const FArguments& Arguments;
 		};
@@ -30,7 +30,7 @@ namespace Heart::Action::History
 		 */
 		static TArray<TOptional<FExecutingAction>> ExecutingActionsLoggableStack;
 
-		void BeginLog(UHeartActionBase* Action, const FArguments& Arguments)
+		void BeginLog(const UHeartActionBase* Action, const FArguments& Arguments)
 		{
 			if (IsLoggable(Action, Arguments))
 			{
@@ -73,14 +73,14 @@ namespace Heart::Action::History
 				Successful && LoggedAction.IsSet())
 			{
 				const FExecutingAction& Value = LoggedAction.GetValue();
-				Value.History->AddRecord({Value.Action, Value.Arguments, MoveTemp(*UndoData)});
+				Value.History->AddRecord({Value.Action->GetClass(), Value.Arguments, MoveTemp(*UndoData)});
 			}
 		}
 	}
 
 	bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments)
 	{
-		const bool ShouldLog = Action->CanUndo(Arguments.Target) || EnumHasAnyFlags(Arguments.Flags, ForceRecord);
+		const bool ShouldLog = FNativeExec::CanUndo(Action, Arguments.Target) || EnumHasAnyFlags(Arguments.Flags, ForceRecord);
 		const bool CannotLog = EnumHasAnyFlags(Arguments.Flags, DisallowRecord | IsRedo);
 
 		return ShouldLog && !CannotLog;
@@ -177,7 +177,7 @@ bool UHeartActionHistory::Undo()
 		return false;
 	}
 
-	return Record->Action->Undo(Record->Arguments.Target, Record->UndoData);
+	return Heart::Action::Undo(Record->Action, Record->Arguments.Target, Record->UndoData);
 }
 
 FHeartEvent UHeartActionHistory::Redo()
@@ -195,7 +195,10 @@ FHeartEvent UHeartActionHistory::Redo()
 	FHeartActionRecord Copy = Original;
 	Copy.Arguments.Activation = FHeartActionIsRedo{&Original.UndoData};
 	EnumAddFlags(Copy.Arguments.Flags, Heart::Action::IsRedo);
-	return Original.Action->Execute(Copy.Arguments);
+
+	const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Original.Action);
+
+	return Heart::Action::FNativeExec::Execute(ActionObject, Copy.Arguments);
 }
 
 bool UHeartActionHistory::IsUndoable()

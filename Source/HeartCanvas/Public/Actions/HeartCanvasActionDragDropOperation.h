@@ -21,7 +21,7 @@ public:
 	virtual void Drop_Implementation(const FPointerEvent& PointerEvent) override;
 
 	UPROPERTY(BlueprintReadOnly, meta = (ExposeOnSpawn))
-	TObjectPtr<UHeartActionBase> Action;
+	TSubclassOf<UHeartActionBase> Action;
 };
 
 /**

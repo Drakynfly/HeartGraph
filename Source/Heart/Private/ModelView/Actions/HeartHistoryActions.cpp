@@ -8,7 +8,7 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartHistoryActions)
 
 FHeartEvent UHeartUndoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
-												  UObject* ContextObject, FBloodContainer& UndoData)
+												  UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::TryUndo(Graph))
 	{
@@ -18,7 +18,7 @@ FHeartEvent UHeartUndoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInp
 }
 
 FHeartEvent UHeartUndoAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-												 UObject* ContextObject, FBloodContainer& UndoData)
+												 UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::TryUndo(Node->GetGraph()))
 	{
@@ -28,7 +28,7 @@ FHeartEvent UHeartUndoAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartI
 }
 
 FHeartEvent UHeartUndoAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
-										   const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+										   const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::TryUndo(Pin->GetHeartGraphNode()->GetGraph()))
 	{
@@ -38,19 +38,19 @@ FHeartEvent UHeartUndoAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPin
 }
 
 FHeartEvent UHeartRedoAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
-											 UObject* ContextObject, FBloodContainer& UndoData)
+											 UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	return Heart::Action::History::TryRedo(Graph);
 }
 
 FHeartEvent UHeartRedoAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-											UObject* ContextObject, FBloodContainer& UndoData)
+											UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	return Heart::Action::History::TryRedo(Node->GetGraph());
 }
 
 FHeartEvent UHeartRedoAction::ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin,
-										   const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData)
+										   const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	return Heart::Action::History::TryRedo(Pin->GetHeartGraphNode()->GetGraph());
 }

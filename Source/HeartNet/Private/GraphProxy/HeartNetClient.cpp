@@ -4,6 +4,7 @@
 #include "LogHeartNet.h"
 #include "GraphProxy/HeartGraphNetProxy.h"
 #include "GraphProxy/HeartNetReplicationTypes.h"
+#include "Input/HeartActionBase.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 #include "Model/HeartGraphTypes.h"
@@ -148,10 +149,10 @@ void UHeartNetClient::Server_OnNodeConnectionsChanged_Implementation(UHeartGraph
 	Proxy->OnNodeConnectionsChanged_Client(GraphConnectionEvent);
 }
 
-void UHeartNetClient::Server_ExecuteGraphAction_Implementation(UHeartGraphNetProxy* Proxy, const FHeartFlake& ActionData,
+void UHeartNetClient::Server_ExecuteGraphAction_Implementation(UHeartGraphNetProxy* Proxy, TSubclassOf<UHeartActionBase> Action,
 															   const FHeartRemoteGraphActionArguments& Args)
 {
 	ensure(IsValid(Proxy));
-	UE_LOG(LogHeartNet, Log, TEXT("Server: Client wants to run graph action '%s'"), *ActionData.Struct.ToString())
-	Proxy->ExecuteGraphAction_Client(ActionData, Args);
+	UE_LOG(LogHeartNet, Log, TEXT("Server: Client wants to run graph action '%s'"), *Action->GetName())
+	Proxy->ExecuteGraphAction_Client(Action, Args);
 }

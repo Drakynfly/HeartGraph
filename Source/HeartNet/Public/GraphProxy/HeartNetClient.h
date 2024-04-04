@@ -15,6 +15,7 @@ struct FHeartNodeMoveEvent;
 struct FHeartNodeMoveEvent_Net;
 struct FHeartRemoteGraphActionArguments;
 struct FHeartReplicatedNodeData;
+class UHeartActionBase;
 class UHeartGraphNetProxy;
 class UHeartGraphNode;
 
@@ -57,5 +58,5 @@ protected:
 	void Server_UpdateGraphNode(UHeartGraphNetProxy* Proxy, const FHeartNodeFlake& NodeFlake, EHeartUpdateNodeType Type);
 
 	UFUNCTION(Server, Reliable)
-	void Server_ExecuteGraphAction(UHeartGraphNetProxy* Proxy, const FHeartFlake& ActionData, const FHeartRemoteGraphActionArguments& Args);
+	void Server_ExecuteGraphAction(UHeartGraphNetProxy* Proxy, TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);
 };

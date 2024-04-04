@@ -81,7 +81,7 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	{
 		if (IsValid(EditorPreSaveAction))
 		{
-			UHeartActionBase::QuickExecuteGraphAction(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
+			Heart::Action::Execute(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
 		}
 	}
 #endif

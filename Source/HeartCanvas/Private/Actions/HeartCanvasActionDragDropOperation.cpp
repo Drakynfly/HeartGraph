@@ -20,15 +20,7 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 
 	if (IsValid(Action))
 	{
-		if (Action->CanExecute(GetHoveredWidget()))
-		{
-			Heart::Action::FArguments Args;
-			Args.Target = GetHoveredWidget();
-			Args.Activation = PointerEvent;
-			Args.Payload = Payload;
-
-			Action->Execute(Args);
-		}
+		Heart::Action::Execute(Action, GetHoveredWidget(), PointerEvent, Payload);
 	}
 }
 
@@ -38,7 +30,7 @@ bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UObject* TestTarge
 
 	if (IsValid(ActionClass))
 	{
-		Failed |= !ActionClass.GetDefaultObject()->CanExecute(TestTarget);
+		Failed |= !Heart::Action::CanExecute(ActionClass, TestTarget);
 	}
 
 	return !Failed;
@@ -65,7 +57,7 @@ UHeartDragDropOperation* UHeartCanvasInputHandler_DDO_Action::BeginDDO(UWidget* 
 		NewDDO->Offset = Offset;
 	}
 
-	NewDDO->Action = NewObject<UHeartGraphCanvasAction>(NewDDO, ActionClass);
+	NewDDO->Action = ActionClass;
 
 	return NewDDO;
 }
