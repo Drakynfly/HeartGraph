@@ -409,22 +409,22 @@ namespace Blood
 	namespace Read
 	{
 		template <typename TType>
-		static auto Value(const FInstancedPropertyBag& Value, const FName Name)
+		static auto Value(const FInstancedPropertyBag& Bag, const FName Name)
 		{
 			if constexpr (TIsPoDWrapperStruct<TType>::Value)
 			{
-				return TDataConverter<decltype(TType::Value)>::Read(Value, Name);
+				return TDataConverter<decltype(TType::Value)>::Read(Bag, Name);
 			}
 			else
 			{
-				return TDataConverter<TType>::Read(Value, Name);
+				return TDataConverter<TType>::Read(Bag, Name);
 			}
 		}
 
 		template <template <typename> class TContainer, typename TType>
-		static void Container1(const FInstancedPropertyBag& Value, const FName Name, TContainer<TType>& Out)
+		static void Container1(const FInstancedPropertyBag& Bag, const FName Name, TContainer<TType>& Out)
 		{
-			auto MaybeArrayRef = Value.GetArrayRef(Name);
+			auto MaybeArrayRef = Bag.GetArrayRef(Name);
 			check(MaybeArrayRef.HasValue());
 
 			const FPropertyBagArrayRef& ArrayRef = MaybeArrayRef.GetValue();
@@ -436,10 +436,10 @@ namespace Blood
 		}
 
 		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
-		static void Container2(const FInstancedPropertyBag& Value, const TPair<FName, FName>& Names, TContainer<TType0, TType1>& Out)
+		static void Container2(const FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, TContainer<TType0, TType1>& Out)
 		{
-			auto MaybeArrayRef0 = Value.GetArrayRef(Names.Key);
-			auto MaybeArrayRef1 = Value.GetArrayRef(Names.Value);
+			auto MaybeArrayRef0 = Bag.GetArrayRef(Names.Key);
+			auto MaybeArrayRef1 = Bag.GetArrayRef(Names.Value);
 			check(MaybeArrayRef0.HasValue());
 			check(MaybeArrayRef1.HasValue());
 

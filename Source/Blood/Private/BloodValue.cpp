@@ -13,9 +13,9 @@ FBloodValue::FBloodValue(const UScriptStruct* Type, const uint8* Memory)
 		EPropertyBagPropertyType::Struct,
 		const_cast<UScriptStruct*>(Type));
 
-	const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
+	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 
-	Desc->CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+	Desc.CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
 }
 
 FBloodValue::FBloodValue(const UEnum* Type, const uint8* Memory)
@@ -26,29 +26,38 @@ FBloodValue::FBloodValue(const UEnum* Type, const uint8* Memory)
 		EPropertyBagPropertyType::Enum,
 		const_cast<UEnum*>(Type));
 
-	const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
+	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 
-	Desc->CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+	Desc.CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+}
+
+bool FBloodValue::Is(const UField* Type) const
+{
+	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+	return Desc.ValueTypeObject == Type;
 }
 
 bool FBloodValue::IsSingle() const
 {
-	return IsValid() &&
-		PropertyBag.FindPropertyDescByName(Blood::Private::V0)->ContainerTypes.IsEmpty();
+	if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+	return Desc.ContainerTypes.IsEmpty();
 }
 
 bool FBloodValue::IsContainer1() const
 {
-	return IsValid() &&
-		PropertyBag.FindPropertyDescByName(Blood::Private::V0)->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
-		PropertyBag.FindPropertyDescByName(Blood::Private::V1) == nullptr;
+	if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+	return Desc.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array;
 }
 
 bool FBloodValue::IsContainer2() const
 {
-	return IsValid() &&
-		PropertyBag.FindPropertyDescByName(Blood::Private::V0)->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
-		PropertyBag.FindPropertyDescByName(Blood::Private::V1)->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array;
+	if (PropertyBag.GetNumPropertiesInBag() != 2) return false;
+	const FPropertyBagPropertyDesc& Desc0 = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+	const FPropertyBagPropertyDesc& Desc1 = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[1];
+	return Desc0.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
+		   Desc1.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array;
 }
 
 #if ALLOCATE_BLOOD_STATICS

@@ -44,7 +44,7 @@ struct BLOOD_API FBloodContainer
 	TOptional<FBloodValue> GetBloodValue(FName Name) const;
 
 	template<typename TBloodData>
-	TBloodData Get(const FName Name) const;
+	auto Get(const FName Name) const;
 
 	// Does this container have a value for a Name
 	bool Contains(FName Name) const;
@@ -88,7 +88,7 @@ template <typename TBloodData> void FBloodContainer::Add(FName Name, const TBloo
 	}
 }
 
-template <typename TBloodData> TBloodData FBloodContainer::Get(const FName Name) const
+template <typename TBloodData> auto FBloodContainer::Get(const FName Name) const
 {
 	if constexpr (TIsTMap<TBloodData>::Value)
 	{

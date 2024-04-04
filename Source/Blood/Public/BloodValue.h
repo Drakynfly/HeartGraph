@@ -48,11 +48,7 @@ struct BLOOD_API FBloodValue
 	bool Is() const;
 
 	// @todo this should really also work with wrapped types
-	bool Is(const UField* Type) const
-	{
-		const FPropertyBagPropertyDesc* Desc = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
-		return Desc->ValueTypeObject == Type;
-	}
+	bool Is(const UField* Type) const;
 
 	// Is this a single value
 	bool IsSingle() const;
@@ -129,37 +125,43 @@ template <typename TBloodData> auto FBloodValue::GetValue() const
 
 template <typename TBloodData> bool FBloodValue::Is() const
 {
-	const FPropertyBagPropertyDesc* Desc0 = PropertyBag.FindPropertyDescByName(Blood::Private::V0);
-
 	if constexpr (TIsTMap<TBloodData>::Value)
 	{
-		const FPropertyBagPropertyDesc* Desc1 = PropertyBag.FindPropertyDescByName(Blood::Private::V1);
-		return Desc0->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
-			   Desc1->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
-			   Desc0->ValueType == Blood::TDataConverter<typename TBloodData::KeyType>::PropertyBagType() &&
-			   Desc1->ValueType == Blood::TDataConverter<typename TBloodData::ValueType>::PropertyBagType() &&
-			   Desc0->ValueTypeObject == Blood::TDataConverter<typename TBloodData::KeyType>::PropertyBagTypeObject() &&
-			   Desc1->ValueTypeObject == Blood::TDataConverter<typename TBloodData::ValueType>::PropertyBagTypeObject();
+		if (PropertyBag.GetNumPropertiesInBag() != 2) return false;
+		const FPropertyBagPropertyDesc& Desc0 = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+		const FPropertyBagPropertyDesc& Desc1 = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[1];
+		return Desc0.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
+			   Desc1.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
+			   Desc0.ValueType == Blood::TDataConverter<typename TBloodData::KeyType>::PropertyBagType() &&
+			   Desc1.ValueType == Blood::TDataConverter<typename TBloodData::ValueType>::PropertyBagType() &&
+			   Desc0.ValueTypeObject == Blood::TDataConverter<typename TBloodData::KeyType>::PropertyBagTypeObject() &&
+			   Desc1.ValueTypeObject == Blood::TDataConverter<typename TBloodData::ValueType>::PropertyBagTypeObject();
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value || TIsTSet<TBloodData>::Value)
 	{
-		return Desc0->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
-			   Desc0->ValueType == Blood::TDataConverter<typename TBloodData::ElementType>::PropertyBagType() &&
-			   Desc0->ValueTypeObject == Blood::TDataConverter<typename TBloodData::ElementType>::PropertyBagTypeObject();
+		if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+		const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+		return Desc.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::Array &&
+			   Desc.ValueType == Blood::TDataConverter<typename TBloodData::ElementType>::PropertyBagType() &&
+			   Desc.ValueTypeObject == Blood::TDataConverter<typename TBloodData::ElementType>::PropertyBagTypeObject();
 	}
 	else
 	{
 		if constexpr (Blood::TIsPoDWrapperStruct<TBloodData>::Value)
 		{
-			return Desc0->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::None &&
-			   Desc0->ValueType == Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagType() &&
-			   Desc0->ValueTypeObject == Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagTypeObject();
+			if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+			const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+			return Desc.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::None &&
+			   Desc.ValueType == Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagType() &&
+			   Desc.ValueTypeObject == Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagTypeObject();
 		}
 		else
 		{
-			return Desc0->ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::None &&
-			   Desc0->ValueType == Blood::TDataConverter<TBloodData>::PropertyBagType() &&
-			   Desc0->ValueTypeObject == Blood::TDataConverter<TBloodData>::PropertyBagTypeObject();
+			if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+			const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+			return Desc.ContainerTypes.IsEmpty() &&
+			   Desc.ValueType == Blood::TDataConverter<TBloodData>::PropertyBagType() &&
+			   Desc.ValueTypeObject == Blood::TDataConverter<TBloodData>::PropertyBagTypeObject();;
 		}
 	}
 }

@@ -17,17 +17,19 @@ void FBloodContainer::AddBloodValue(const FName Name, const FBloodValue& Value)
 			return;
 		}
 
-		FPropertyBagPropertyDesc DescV0 = Value.PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
-		FPropertyBagPropertyDesc DescV1 = Value.PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[1];
+		const FPropertyBagPropertyDesc& Desc_Src_0 = Value.PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+		const FPropertyBagPropertyDesc& Desc_Src_1 = Value.PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[1];
 
-		const uint8* Memory = Value.GetMemory();
+		FPropertyBagPropertyDesc DescV0 = Desc_Src_0;
+		FPropertyBagPropertyDesc DescV1 = Desc_Src_1;
 
 		CreateMapNames(Name, DescV0.Name, DescV1.Name);
 
 		PropertyBag.AddProperties({DescV0, DescV1});
 
-		PropertyBag.SetValue(DescV0.Name, DescV0.CachedProperty, Memory);
-		PropertyBag.SetValue(DescV1.Name, DescV1.CachedProperty, Memory);
+		const uint8* Memory = Value.GetMemory();
+		PropertyBag.SetValue(DescV0.Name, Desc_Src_0.CachedProperty, Memory);
+		PropertyBag.SetValue(DescV1.Name, Desc_Src_1.CachedProperty, Memory);
 	}
 	else
 	{
@@ -37,13 +39,12 @@ void FBloodContainer::AddBloodValue(const FName Name, const FBloodValue& Value)
 			return;
 		}
 
-		FPropertyBagPropertyDesc DescV0 = Value.PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
-		DescV0.Name = Name;
+		const FPropertyBagPropertyDesc& Desc_Src = Value.PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+		FPropertyBagPropertyDesc Desc_Copy = Desc_Src;
+		Desc_Copy.Name = Name;
 
-		const uint8* Memory = Value.GetMemory();
-
-		PropertyBag.AddProperties({DescV0});
-		PropertyBag.SetValue(Name, DescV0.CachedProperty, Memory);
+		PropertyBag.AddProperties({Desc_Copy});
+		PropertyBag.SetValue(Name, Desc_Src.CachedProperty, Value.GetMemory());
 	}
 }
 

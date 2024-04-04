@@ -1,5 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
+#if WITH_DEV_AUTOMATION_TESTS
+
 #include "BloodValue.h"
 #include "Misc/AutomationTest.h"
 
@@ -93,3 +95,5 @@ bool BloodValueTest::RunTest(const FString& Parameters)
 
 	return true;
 }
+
+#endif
