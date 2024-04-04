@@ -22,14 +22,7 @@ void FBloodContainer::AddBloodValue(const FName Name, const FBloodValue& Value)
 
 		const uint8* Memory = Value.GetMemory();
 
-		FNameBuilder NameBuilder[2];
-		Name.ToString(NameBuilder[0]);
-		Name.ToString(NameBuilder[1]);
-		NameBuilder[0].Append(TEXT("__V0"));
-		NameBuilder[1].Append(TEXT("__V1"));
-
-		DescV0.Name = FName(NameBuilder[0]);
-		DescV1.Name = FName(NameBuilder[1]);
+		CreateMapNames(Name, DescV0.Name, DescV1.Name);
 
 		PropertyBag.AddProperties({DescV0, DescV1});
 
@@ -56,16 +49,10 @@ void FBloodContainer::AddBloodValue(const FName Name, const FBloodValue& Value)
 
 void FBloodContainer::Remove(const FName Name)
 {
-	TArray<FName> Names { Name };
-
-	FNameBuilder NameBuilder[2];
-	Name.ToString(NameBuilder[0]);
-	Name.ToString(NameBuilder[1]);
-	NameBuilder[0].Append(TEXT("__V0"));
-	NameBuilder[1].Append(TEXT("__V1"));
-	Names.Emplace(NameBuilder[0]);
-	Names.Emplace(NameBuilder[1]);
-
+	TArray<FName, TInlineAllocator<3>> Names;
+	Names.SetNum(3);
+	Names[0] = Name;
+	CreateMapNames(Name, Names[1], Names[2]);
 	PropertyBag.RemovePropertiesByName(Names);
 }
 
@@ -88,13 +75,10 @@ TOptional<FBloodValue> FBloodContainer::GetBloodValue(const FName Name) const
 
 	// If access as single value/container1 fails, try access as container2
 	{
-		FNameBuilder NameBuilder[2];
-		Name.ToString(NameBuilder[0]);
-		Name.ToString(NameBuilder[1]);
-		NameBuilder[0].Append(TEXT("__V0"));
-		NameBuilder[1].Append(TEXT("__V1"));
-		auto&& DescV0 = PropertyBag.FindPropertyDescByName(FName(NameBuilder[0]));
-		auto&& DescV1 = PropertyBag.FindPropertyDescByName(FName(NameBuilder[1]));
+		FName KeyName, ValueName;
+		CreateMapNames(Name, KeyName, ValueName);
+		auto&& DescV0 = PropertyBag.FindPropertyDescByName(KeyName);
+		auto&& DescV1 = PropertyBag.FindPropertyDescByName(ValueName);
 		if (DescV0 && DescV1)
 		{
 			FInstancedPropertyBag Temp;
@@ -124,4 +108,15 @@ int32 FBloodContainer::Num() const
 bool FBloodContainer::IsEmpty() const
 {
 	return PropertyBag.GetNumPropertiesInBag() == 0;
+}
+
+void FBloodContainer::CreateMapNames(const FName Base, FName& KeyName, FName& ValueName)
+{
+	FNameBuilder NameBuilder[2];
+	Base.ToString(NameBuilder[0]);
+	Base.ToString(NameBuilder[1]);
+	NameBuilder[0].Append(TEXT("__V0"));
+	NameBuilder[1].Append(TEXT("__V1"));
+	KeyName = FName(NameBuilder[0]);
+	ValueName = FName(NameBuilder[1]);
 }

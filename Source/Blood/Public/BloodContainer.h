@@ -60,6 +60,8 @@ struct BLOOD_API FBloodContainer
 	}
 
 private:
+	static void CreateMapNames(FName Base, FName& KeyName, FName& ValueName);
+
 	UPROPERTY()
 	FInstancedPropertyBag PropertyBag;
 };
@@ -68,12 +70,8 @@ template <typename TBloodData> void FBloodContainer::Add(FName Name, const TBloo
 {
 	if constexpr (TIsTMap<TBloodData>::Value)
 	{
-		FNameBuilder NameBuilder[2];
-		Name.ToString(NameBuilder[0]);
-		Name.ToString(NameBuilder[1]);
-		NameBuilder[0].Append(TEXT("__V0"));
-		NameBuilder[1].Append(TEXT("__V1"));
-		const TPair<FName, FName> Names{ NameBuilder[0], NameBuilder[1] };
+		TPair<FName, FName> Names;
+		CreateMapNames(Name, Names.Key, Names.Value);
 		Blood::Write::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(PropertyBag, Names, Value);
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
@@ -94,12 +92,8 @@ template <typename TBloodData> TBloodData FBloodContainer::Get(const FName Name)
 {
 	if constexpr (TIsTMap<TBloodData>::Value)
 	{
-		FNameBuilder NameBuilder[2];
-		Name.ToString(NameBuilder[0]);
-		Name.ToString(NameBuilder[1]);
-		NameBuilder[0].Append(TEXT("__V0"));
-		NameBuilder[1].Append(TEXT("__V1"));
-		const TPair<FName, FName> Names{ NameBuilder[0], NameBuilder[1] };
+		TPair<FName, FName> Names;
+		CreateMapNames(Name, Names.Key, Names.Value);
 		TBloodData Out;
 		Blood::Read::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(
 			PropertyBag, Names, Out);
