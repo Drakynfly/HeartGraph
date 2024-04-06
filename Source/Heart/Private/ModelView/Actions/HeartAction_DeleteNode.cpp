@@ -14,7 +14,6 @@ static const FLazyName DeletedNodeStorage("delnode");
 bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 {
 	FHeartFlake NodeData;
-	TSoftObjectPtr<> NodeOuter = DeletedNode.GetOuter();
 
 	if (Ar.IsSaving())
 	{
@@ -22,13 +21,12 @@ bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 		NodeData = Heart::Flakes::CreateFlake(DeletedNode);
 	}
 
-	Ar << NodeOuter;
 	Ar << NodeData;
 
-	if (Ar.IsLoading() && NodeOuter.IsValid())
+	if (Ar.IsLoading())
 	{
-		// Restore the node from binary
-		DeletedNode = Heart::Flakes::CreateObject<UHeartGraphNode>(NodeData, NodeOuter.Get());
+		// Restore the node from binary; outer is temporarily the TransientPackage, until it's renamed by ::Undo
+		DeletedNode = Heart::Flakes::CreateObject<UHeartGraphNode>(NodeData);
 	}
 
 	Ar << Mementos;
@@ -75,8 +73,10 @@ bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoD
 		return false;
 	}
 
-	// The graph is still its outer, even tho it was deleted.
-	UHeartGraph* Graph = Data.DeletedNode->GetGraph();
+	UHeartGraph* Graph = Heart::Action::History::GetGraphFromActionStack();
+
+	// Ensure that the node is reconstructed with the correct graph outer.
+	Data.DeletedNode->Rename(nullptr, Graph);
 
 	Graph->AddNode(Data.DeletedNode);
 

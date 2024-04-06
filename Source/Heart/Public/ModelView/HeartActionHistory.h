@@ -21,6 +21,9 @@ namespace Heart::Action::History
 	// Are we currently running an undoable action.
 	HEART_API bool IsUndoable();
 
+	// Callable while inside a Execute or Undo callstack; retrieves the owning Graph for the History Extension on top
+	HEART_API UHeartGraph* GetGraphFromActionStack();
+
 	// A simple wrapper around a lamba that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded, provided that an Action History extension can be found.
 	template <typename T>

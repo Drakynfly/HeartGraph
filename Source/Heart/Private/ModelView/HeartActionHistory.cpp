@@ -15,9 +15,9 @@ namespace Heart::Action::History
 	{
 		struct FExecutingAction
 		{
-			FExecutingAction(const UHeartActionBase* Action, UHeartActionHistory* History, const FArguments& Arguments)
+			FExecutingAction(const TSubclassOf<UHeartActionBase> Action, UHeartActionHistory* History, const FArguments& Arguments)
 			  : Action(Action), History(History), Arguments(Arguments) {}
-			const UHeartActionBase* Action;
+			TSubclassOf<UHeartActionBase> Action;
 			UHeartActionHistory* History;
 			const FArguments& Arguments;
 		};
@@ -28,7 +28,7 @@ namespace Heart::Action::History
 		 * If an action is going to be logged, should it succeed, it will be stored here, otherwise a blank Option will
 		 * fill its slot in the stack.
 		 */
-		static TArray<TOptional<FExecutingAction>> ExecutingActionsLoggableStack;
+		static TArray<TOptional<FExecutingAction>> ExecutingActionsStack;
 
 		void BeginLog(const UHeartActionBase* Action, const FArguments& Arguments)
 		{
@@ -56,7 +56,7 @@ namespace Heart::Action::History
 						IsValid(History))
 					{
 						// Store a log for the action
-						ExecutingActionsLoggableStack.Emplace(InPlace, Action, History, Arguments);
+						ExecutingActionsStack.Emplace(InPlace, Action->GetClass(), History, Arguments);
 						return;
 					}
 				}
@@ -64,16 +64,16 @@ namespace Heart::Action::History
 			}
 
 			// Store current action as non-loggable.
-			ExecutingActionsLoggableStack.Emplace(FNullOpt(0));
+			ExecutingActionsStack.Emplace(FNullOpt(0));
 		}
 
 		void EndLog(const bool Successful, FBloodContainer* UndoData)
 		{
-			if (const TOptional<FExecutingAction> LoggedAction = ExecutingActionsLoggableStack.Pop();
+			if (const TOptional<FExecutingAction> LoggedAction = ExecutingActionsStack.Pop();
 				Successful && LoggedAction.IsSet())
 			{
 				const FExecutingAction& Value = LoggedAction.GetValue();
-				Value.History->AddRecord({Value.Action->GetClass(), Value.Arguments, MoveTemp(*UndoData)});
+				Value.History->AddRecord({Value.Action, Value.Arguments, MoveTemp(*UndoData)});
 			}
 		}
 	}
@@ -88,7 +88,12 @@ namespace Heart::Action::History
 
 	bool IsUndoable()
 	{
-		return !Impl::ExecutingActionsLoggableStack.IsEmpty() && Impl::ExecutingActionsLoggableStack.Last().IsSet();
+		return !Impl::ExecutingActionsStack.IsEmpty() && Impl::ExecutingActionsStack.Last().IsSet();
+	}
+
+	UHeartGraph* GetGraphFromActionStack()
+	{
+		return Impl::ExecutingActionsStack.Last()->History->GetGraph();
 	}
 
 	bool TryUndo(const UHeartGraph* Graph)
@@ -177,7 +182,15 @@ bool UHeartActionHistory::Undo()
 		return false;
 	}
 
-	return Heart::Action::Undo(Record->Action, Record->Arguments.Target, Record->UndoData);
+	// Doing this here is kinda wack,
+	Heart::Action::History::Impl::ExecutingActionsStack.Emplace(InPlace, Record->Action, this, Record->Arguments);
+
+	const bool Success = Heart::Action::Undo(Record->Action, Record->Arguments.Target, Record->UndoData);
+
+	// Pop the action frame
+	Heart::Action::History::Impl::ExecutingActionsStack.Pop();
+
+	return Success;
 }
 
 FHeartEvent UHeartActionHistory::Redo()

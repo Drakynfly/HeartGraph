@@ -10,12 +10,16 @@ class UHeartGraph;
 /**
  *
  */
-UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew)
+UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, Within = HeartGraph)
 class HEART_API UHeartGraphExtension : public UObject
 {
 	GENERATED_BODY()
 
 	friend UHeartGraph;
+
+public:
+	// Get the owning Heart Graph
+	UHeartGraph* GetGraph() const;
 
 protected:
 	virtual void PostExtensionAdded() {}

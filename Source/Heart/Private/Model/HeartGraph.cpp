@@ -368,6 +368,8 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
+	checkSlow(Node->GetOuter() == this);
+
 	if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
 	{
 		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
