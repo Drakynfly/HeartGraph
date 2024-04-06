@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Input/SlatePointerWrappers.h"
+#include "HeartCanvasLog.h"
 #include "Slate/SHeartGraphWidgetBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SlatePointerWrappers)
@@ -12,7 +13,7 @@ UHeartSlatePtr* UHeartSlatePtr::Wrap(const TSharedRef<SWidget>& Widget)
 	auto&& Metadata = Widget->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
+		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
 		return nullptr;
 	}
 
@@ -45,7 +46,7 @@ UHeartGraphNode* UHeartSlateNode::GetHeartGraphNode() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
+		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
 		return nullptr;
 	}
 
@@ -57,7 +58,7 @@ UHeartGraphNode* UHeartSlatePin::GetHeartGraphNode() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
+		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
 		return nullptr;
 	}
 

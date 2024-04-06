@@ -34,11 +34,11 @@ void UHeartFlakeSaveFile::Serialize(FArchive& Ar)
 {
 	Super::Serialize(Ar);
 
-	UE_LOG(LogTemp, Log, TEXT("Serialize for RoseSaveFile called with Archive in state: %s"),
+	UE_LOG(LogFlakes, Log, TEXT("Serialize for RoseSaveFile called with Archive in state: %s"),
 		Ar.IsLoading() ? TEXT("Loading") : Ar.IsSaving() ? TEXT("Saving") : TEXT("Unknown"));
 
 	Ar << Flake;
 
-	UE_LOG(LogTemp, Log, TEXT("Serialize for RoseSaveFile class: %s"),
+	UE_LOG(LogFlakes, Log, TEXT("Serialize for RoseSaveFile class: %s"),
 		*Flake.Struct.ToString());
 }

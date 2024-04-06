@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "BloodFProperty.h"
+#include "BloodLog.h"
 #include "BloodValue.h"
 #include "BloodPrecomputedMaps.h"
 
@@ -48,19 +49,19 @@ namespace Blood::Impl
 
 		if (auto&& ArrayProp = CastField<FArrayProperty>(ValueProp))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Array types are not supported yet."))
+			UE_LOG(LogBlood, Error, TEXT("Array types are not supported yet."))
 			unimplemented()
 			return false;
 		}
 		if (auto&& SetProp = CastField<FSetProperty>(ValueProp))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Set types are not supported yet."))
+			UE_LOG(LogBlood, Error, TEXT("Set types are not supported yet."))
 			unimplemented()
 			return false;
 		}
 		if (auto&& MapProp = CastField<FMapProperty>(ValueProp))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Map types are not supported yet."))
+			UE_LOG(LogBlood, Error, TEXT("Map types are not supported yet."))
 			unimplemented()
 			return false;
 		}
@@ -139,19 +140,19 @@ namespace Blood::Impl
 
 		if (auto&& ArrayProp = CastField<FArrayProperty>(ValueProp))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Array types are not supported yet."))
+			UE_LOG(LogBlood, Error, TEXT("Array types are not supported yet."))
 			unimplemented()
 			return FBloodValue();
 		}
 		if (auto&& SetProp = CastField<FSetProperty>(ValueProp))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Set types are not supported yet."))
+			UE_LOG(LogBlood, Error, TEXT("Set types are not supported yet."))
 			unimplemented()
 			return FBloodValue();
 		}
 		if (auto&& MapProp = CastField<FMapProperty>(ValueProp))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Map types are not supported yet."))
+			UE_LOG(LogBlood, Error, TEXT("Map types are not supported yet."))
 			unimplemented()
 			return FBloodValue();
 		}

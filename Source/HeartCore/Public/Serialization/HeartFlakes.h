@@ -7,6 +7,8 @@
 
 #include "HeartFlakes.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogFlakes, Log, All)
+
 namespace Heart::Flakes
 {
 	class HEARTCORE_API FRecursiveMemoryWriter : public FMemoryWriter

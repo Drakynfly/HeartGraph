@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Actions/HeartCanvasDragDropOperation.h"
+#include "HeartCanvasLog.h"
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasNode.h"
 #include "UMG/HeartGraphCanvasPin.h"
@@ -21,7 +22,7 @@ bool UHeartCanvasDragDropOperation::OnHoverWidget(UWidget* Widget)
 		return LastHoveredResult;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("OnHoverWidget changed: %s"), Widget ? *Widget->GetName() : TEXT("nullptr"))
+	UE_LOG(LogHeartCanvas, Log, TEXT("OnHoverWidget changed: %s"), Widget ? *Widget->GetName() : TEXT("nullptr"))
 
 	// If there could be a current hover than clear it
 	if (!LastHovered.IsExplicitlyNull())

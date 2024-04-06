@@ -7,6 +7,8 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartFlakes)
 
+DEFINE_LOG_CATEGORY(LogFlakes)
+
 #if WITH_EDITOR
 TAutoConsoleVariable<bool> CVarLogCompressionStatistics{
 	TEXT("heart.LogCompressionStatistics"),
@@ -182,7 +184,7 @@ namespace Heart::Flakes
 		const auto AfterCompression = Flake.Data.Num();
 		if (CVarLogCompressionStatistics.GetValueOnGameThread())
 		{
-			UE_LOG(LogTemp, Log, TEXT("[Flake Compression Log]: Compressed '%i' bytes to '%i' bytes"), BeforeCompression, AfterCompression);
+			UE_LOG(LogFlakes, Log, TEXT("[Flake Compression Log]: Compressed '%i' bytes to '%i' bytes"), BeforeCompression, AfterCompression);
 		}
 #endif
 	}

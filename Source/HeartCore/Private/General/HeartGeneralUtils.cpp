@@ -11,8 +11,6 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGeneralUtils)
 
-DEFINE_LOG_CATEGORY(LogHeartGeneral)
-
 UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 {
 	return DuplicateObject(Source, Outer);

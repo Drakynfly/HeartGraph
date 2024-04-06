@@ -135,7 +135,7 @@ UHeartNodeLocationProxy* UHeartNodeLocationProxy::Create(UObject* ObjectToProxy,
 
 	if (!ObjectToProxy->Implements<UHeartNodeLocationAccessor>())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Object passed into UHeartNodeLocationProxy::Create cannot be proxied!"))
+		UE_LOG(LogHeartGraph, Error, TEXT("Object passed into UHeartNodeLocationProxy::Create cannot be proxied!"))
 		return nullptr;
 	}
 

@@ -7,7 +7,6 @@
 #include "Vector2DBounds.h"
 #include "HeartGeneralUtils.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogHeartGeneral, Log, All)
 
 /**
  *
