@@ -345,7 +345,7 @@ namespace Heart::Flakes
 	void WriteStruct(const FName Serializer, FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
 		TArray<uint8> Raw;
-		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+		DecompressFlake(Flake, Raw);
 
 		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
 			[&](ISerializationProvider* Provider)
@@ -362,7 +362,7 @@ namespace Heart::Flakes
 	void WriteObject(const FName Serializer, UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
 		TArray<uint8> Raw;
-		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+		DecompressFlake(Flake, Raw);
 
 		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
 			[&](ISerializationProvider* Provider)
