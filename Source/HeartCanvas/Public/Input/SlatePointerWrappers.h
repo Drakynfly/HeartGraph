@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UObject/Object.h"
+#include "Input/HeartEvent.h"
 #include "View/HeartVisualizerInterfaces.h"
 #include "SlatePointerWrappers.generated.h"
 
@@ -43,4 +44,16 @@ class UHeartSlatePin : public UHeartSlatePtr, public IGraphPinVisualizerInterfac
 
 public:
 	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+};
+
+/**
+ * This object is a wrapper around a FDragDropOperation shared pointer, to allow it to be passed through the heart linker
+ */
+UCLASS()
+class UHeartSlateDragDropOperation : public UObject, public IHeartDeferredEventHandler
+{
+	GENERATED_BODY()
+
+public:
+	TSharedPtr<FDragDropOperation> SlatePointer;
 };

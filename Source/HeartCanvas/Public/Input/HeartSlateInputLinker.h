@@ -20,7 +20,12 @@ public:
 	virtual FReply HandleOnKeyDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
 	virtual FReply HandleOnKeyUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
 
-	// @todo slate DDO support
+	// Drag drop events
+	virtual FReply HandleOnDragDetected(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry, const FPointerEvent& MouseEvent);
+	virtual FReply HandleOnDrop(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent);
+	virtual FReply HandleOnDragOver(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent);
+	virtual void HandleOnDragEnter(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent);
+	virtual void HandleOnDragLeave(const TSharedRef<SWidget>& Widget, const FDragDropEvent& DragDropEvent);
 };
 
 namespace Heart::Input
@@ -33,8 +38,6 @@ namespace Heart::Input
 		using FReplyType = FReply;
 		using FValueType = const TSharedRef<SWidget>&;
 		// DDO type // using FDDOType = const TSharedRef<SWidget>&;
-
-		// DDO handler
 
 		static FReplyType NoReply() { return FReply::Unhandled(); }
 

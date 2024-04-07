@@ -1,13 +1,13 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Input/HeartInputHandlerBase.h"
+#include "Input/HeartInputBindingBase.h"
 #include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartInputTrigger.h"
 #include "Input/HeartInputTypes.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputHandlerBase)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputBindingBase)
 
-bool UHeartInputHandlerBase::Bind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const
+bool UHeartInputBinding_Deferred::Bind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const
 {
 	using namespace Heart::Input;
 
@@ -15,7 +15,7 @@ bool UHeartInputHandlerBase::Bind(UHeartInputLinkerBase* Linker, const TArray<FI
 		FHandlerDelegate::CreateUObject(this, &ThisClass::OnTriggered),
 		FDescriptionDelegate::CreateUObject(this, &ThisClass::GetDescription),
 		FConditionDelegate::CreateUObject(this, &ThisClass::PassCondition),
-		HandleInput ? Event : Listener);
+		Deferred);
 
 	for (auto&& Trigger : InTriggers)
 	{
@@ -35,14 +35,15 @@ bool UHeartInputHandlerBase::Bind(UHeartInputLinkerBase* Linker, const TArray<FI
 	return true;
 }
 
-bool UHeartInputHandlerBase::Unbind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const
+bool UHeartInputBinding_Deferred::Unbind(UHeartInputLinkerBase* Linker,
+															const TArray<FInstancedStruct>& InTriggers) const
 {
 	for (auto&& Trigger : InTriggers)
 	{
 		if (!Trigger.IsValid())
-		{
-			continue;
-		}
+    	{
+    		continue;
+    	}
 
 		auto&& Trips = Trigger.Get<FHeartInputTrigger>().CreateTrips();
 

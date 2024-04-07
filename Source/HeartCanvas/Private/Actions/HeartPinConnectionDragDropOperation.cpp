@@ -32,7 +32,7 @@ bool UHeartPinConnectionDragDropOperation::SetupDragDropOperation()
 	return false;
 }
 
-bool UHeartPinConnectionDragDropOperation::CanDropOnWidget(UWidget* Widget)
+bool UHeartPinConnectionDragDropOperation::OnDropOnWidget(UWidget* Widget)
 {
 	return IsValid(Cast<UHeartGraphCanvasPin>(Widget));
 }

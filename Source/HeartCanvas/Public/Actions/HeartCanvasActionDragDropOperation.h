@@ -3,7 +3,7 @@
 #pragma once
 
 #include "HeartCanvasDragDropOperation.h"
-#include "Input/HeartCanvasInputBinding.h"
+#include "Input/HeartInputBindingBase.h"
 #include "HeartCanvasActionDragDropOperation.generated.h"
 
 class UHeartActionBase;
@@ -28,13 +28,13 @@ public:
  *
  */
 UCLASS(meta = (DisplayName = "Drag Drop Action"))
-class HEARTCANVAS_API UHeartCanvasInputHandler_DDO_Action : public UHeartCanvasInputHandler_DragDropOperationBase
+class HEARTCANVAS_API UHeartCanvasInputHandler_DDO_Action : public UHeartInputBinding_Deferred
 {
 	GENERATED_BODY()
 
 protected:
 	virtual bool PassCondition(const UObject* TestTarget) const override;
-	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
+	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Canvas DDO", meta = (AllowAbstract = "false"))
 	TSubclassOf<UHeartActionBase> ActionClass;

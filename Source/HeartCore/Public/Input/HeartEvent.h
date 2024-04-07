@@ -6,7 +6,7 @@
 #include "Concepts/BaseStructureProvider.h"
 #include "HeartEvent.generated.h"
 
-UINTERFACE()
+UINTERFACE(MinimalAPI)
 class UHeartDeferredEventHandler : public UInterface
 {
 	GENERATED_BODY()
@@ -23,6 +23,14 @@ USTRUCT()
 struct FHeartDeferredEvent
 {
 	GENERATED_BODY()
+
+	FHeartDeferredEvent() {}
+
+	FHeartDeferredEvent(IHeartDeferredEventHandler* Handler)
+	  : Handler(Cast<UObject>(Handler)) {}
+
+	FHeartDeferredEvent(const TScriptInterface<IHeartDeferredEventHandler> Handler)
+	  : Handler(Handler) {}
 
 	UPROPERTY()
 	TScriptInterface<IHeartDeferredEventHandler> Handler;

@@ -8,5 +8,5 @@
 
 bool UHeartSceneInputLinker::InputKey(const FInputKeyParams& Params, UObject* Target)
 {
-	return TryCallbacks(Heart::Input::FInputTrip(Params), Target, FHeartInputActivation(Params)).WasEventCaptured();
+	return QuickTryCallbacks(Heart::Input::FInputTrip(Params), Target, FHeartInputActivation(Params)).WasEventCaptured();
 }

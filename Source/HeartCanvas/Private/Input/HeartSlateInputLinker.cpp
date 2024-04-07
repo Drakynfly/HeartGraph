@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Input/HeartSlateInputLinker.h"
+#include "Input/HeartDragDropOperation.h"
 #include "Input/HeartInputActivation.h"
 #include "Input/HeartSlateReplyWrapper.h"
 #include "Input/SlatePointerWrappers.h"
@@ -27,7 +28,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Wid
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
 	// Mouse wheel events must always use the 'Press' type
-	const FHeartEvent Reply = TryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent);
+	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent);
 	if (auto EventReply = Reply.As<FEventReply>();
 		EventReply.IsSet())
 	{
@@ -42,59 +43,44 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	const FHeartEvent Reply = TryCallbacks(FInputTrip(PointerEvent, Press), Wrapper, PointerEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
+	FReply Reply = FReply::Unhandled();
 
-	// If no regular handles triggered, try DDO triggers.
+	const FHeartInputActivation Activation = PointerEvent;
 
-	/*
-	TArray<const FConditionalCallback_DDO*> DropDropTriggerArray;
-	DragDropTriggers.MultiFindPointer(Trip, DropDropTriggerArray);
-	DropDropTriggerArray.Sort();
-	for (const FConditionalCallback_DDO*& CallbackPtr : DropDropTriggerArray)
-	{
-		const FConditionalCallback_DDO& Ref = *CallbackPtr;
-
-		bool PassedCondition = true;
-
-		if (const auto ConditionCallback = static_cast<TLinkerType<UWidget>::FConditionDelegate*>(Ref.Condition.Get());
-			ConditionCallback->IsBound())
+	Query(FInputTrip(PointerEvent, Press)).ForEachWithBreak(Wrapper,
+		[&](const FConditionalCallback& Ref)
 		{
-			PassedCondition = ConditionCallback->Execute(Widget);
-		}
-
-		if (!PassedCondition)
-		{
-			continue;
-		}
-
-		const auto HandlerCallback = static_cast<TLinkerType<UWidget>::FCreateDDODelegate*>(Ref.Handler.Get());
-		if (!HandlerCallback->IsBound())
-		{
-			continue;
-		}
-
-		const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget->GetCachedWidget();
-		if (SlateWidgetDetectingDrag.IsValid())
-		{
-			FReply Reply = FReply::Handled().DetectDrag(SlateWidgetDetectingDrag.ToSharedRef(), PointerEvent.GetEffectingButton());
-
-			if (Ref.Layer == Event)
+			if (Ref.Priority == Deferred)
 			{
-				if (Reply.IsEventHandled())
+				if (const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget;
+					SlateWidgetDetectingDrag.IsValid())
 				{
-					return Reply;
+					Reply = FReply::Handled().DetectDrag(SlateWidgetDetectingDrag.ToSharedRef(), PointerEvent.GetEffectingButton());
+					return false;
+				}
+				return true;
+			}
+
+			const FHeartEvent Event = Ref.Handler.Execute(Wrapper, Activation);
+
+			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
+			if (Ref.Priority <= HighestHandlingPriority)
+			{
+				if (Event.WasEventCaptured())
+				{
+					if (auto EventReply = Event.As<FEventReply>();
+						EventReply.IsSet())
+					{
+						Reply = EventReply.GetValue().NativeReply;
+						return false;
+					}
 				}
 			}
-		}
-	}
-	*/
 
-	return FReply::Unhandled();
+			return true;
+		});
+
+	return Reply;
 }
 
 FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
@@ -102,7 +88,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& 
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	const FHeartEvent Reply = TryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent);
+	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent);
 	if (auto EventReply = Reply.As<FEventReply>();
 		EventReply.IsSet())
 	{
@@ -117,7 +103,7 @@ FReply UHeartSlateInputLinker::HandleOnKeyDown(const TSharedRef<SWidget>& Widget
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	const FHeartEvent Reply = TryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent);
+	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent);
 	if (auto EventReply = Reply.As<FEventReply>();
 		EventReply.IsSet())
 	{
@@ -132,7 +118,7 @@ FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, 
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
-	const FHeartEvent Reply = TryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent);
+	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent);
 	if (auto EventReply = Reply.As<FEventReply>();
 		EventReply.IsSet())
 	{
@@ -140,6 +126,64 @@ FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, 
 	}
 
 	return FReply::Unhandled();
+}
+
+FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
+	const FPointerEvent& MouseEvent)
+{
+	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
+
+	UHeartSlateDragDropOperation* OperationWrapper = nullptr;
+
+	const FHeartInputActivation Activation = MouseEvent;
+
+	Query(FInputTrip(MouseEvent, Press))
+		.ForEachWithBreak(Wrapper,
+		[&](const FConditionalCallback& Ref)
+		{
+			const FHeartEvent HandlerEvent = Ref.Handler.Execute(Wrapper, Activation);
+			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();
+				Option.IsSet())
+			{
+				OperationWrapper = Cast<UHeartSlateDragDropOperation>(Option.GetValue().Handler.GetObject());
+				if (IsValid(OperationWrapper))
+				{
+					return false;
+				}
+			}
+
+			return true;
+		});
+
+	if (IsValid(OperationWrapper) && OperationWrapper->SlatePointer.IsValid())
+	{
+		return FReply::Handled().BeginDragDrop(OperationWrapper->SlatePointer.ToSharedRef());
+	}
+
+	return FReply::Unhandled();
+}
+
+FReply UHeartSlateInputLinker::HandleOnDrop(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
+	const FDragDropEvent& DragDropEvent)
+{
+	return DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>()->OnHoverWidget(Widget);
+}
+
+FReply UHeartSlateInputLinker::HandleOnDragOver(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
+	const FDragDropEvent& DragDropEvent)
+{
+	return DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>()->OnHoverWidget(Widget);
+}
+
+void UHeartSlateInputLinker::HandleOnDragEnter(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
+	const FDragDropEvent& DragDropEvent)
+{
+	// Nothing here yet
+}
+
+void UHeartSlateInputLinker::HandleOnDragLeave(const TSharedRef<SWidget>& Widget, const FDragDropEvent& DragDropEvent)
+{
+	// Nothing here yet
 }
 
 namespace Heart::Input

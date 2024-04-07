@@ -14,7 +14,7 @@ class HEARTCANVAS_API UHeartPinConnectionDragDropOperation : public UHeartCanvas
 public:
 	virtual bool CanRunOnWidget(const UWidget* Widget) const override;
 	virtual bool SetupDragDropOperation() override;
-	virtual bool CanDropOnWidget(UWidget* Widget) override;
+	virtual bool OnDropOnWidget(UWidget* Widget) override;
 
 	virtual void Drop_Implementation(const FPointerEvent& PointerEvent) override;
 	virtual void DragCancelled_Implementation(const FPointerEvent& PointerEvent) override;

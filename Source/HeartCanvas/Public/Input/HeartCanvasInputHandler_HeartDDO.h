@@ -2,24 +2,24 @@
 
 #pragma once
 
-#include "HeartCanvasInputBinding.h"
+#include "Input/HeartInputBindingBase.h"
 #include "HeartCanvasInputHandler_HeartDDO.generated.h"
 
 enum class EDragPivot : uint8;
+class UHeartDragDropOperation;
 
 /**
  * A heart input handler that can launch a Drag Drop Operation
  */
 UCLASS(meta = (DisplayName = "Drag Drop Operation"))
-class HEARTCANVAS_API UHeartCanvasInputHandler_HeartDDO : public UHeartCanvasInputHandler_DragDropOperationBase
+class HEARTCANVAS_API UHeartCanvasInputHandler_HeartDDO : public UHeartInputBinding_Deferred
 {
 	GENERATED_BODY()
 
 protected:
 	virtual bool PassCondition(const UObject* TestTarget) const override;
-	virtual UHeartDragDropOperation* BeginDDO(UWidget* Widget) const override;
+	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const override;
 
-protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Canvas DDO", meta = (AllowAbstract = "false"))
 	TSubclassOf<UHeartDragDropOperation> OperationClass;
 

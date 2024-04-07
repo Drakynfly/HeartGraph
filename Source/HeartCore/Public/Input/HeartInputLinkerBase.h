@@ -7,6 +7,7 @@
 #include "Input/HeartInputTrip.h"
 #include "HeartInputLinkerBase.generated.h"
 
+class UHeartInputLinkerBase;
 struct FHeartBoundInput;
 struct FHeartManualEvent;
 
@@ -22,13 +23,34 @@ struct FHeartManualInputQueryResult
 	FText Description;
 };
 
+using FCallbackPtr = const TSharedPtr<const Heart::Input::FConditionalCallback>*;
+using FCallbackPtrArray = TArray<FCallbackPtr>;
+
+namespace Heart::Input
+{
+	class HEARTCORE_API FCallbackQuery
+	{
+	public:
+		FCallbackQuery(const UHeartInputLinkerBase* Linker, const FInputTrip& Trip);
+
+		FCallbackQuery& Sort();
+
+		FCallbackQuery& ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FConditionalCallback&)>& Predicate);
+
+	private:
+		TArray<FCallbackPtr> Callbacks;
+	};
+}
+
 UCLASS()
 class HEARTCORE_API UHeartInputLinkerBase : public UObject
 {
 	GENERATED_BODY()
 
+	friend Heart::Input::FCallbackQuery;
+
 protected:
-	FHeartEvent TryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
+	FHeartEvent QuickTryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
 
 public:
 	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback>& InputCallback);
@@ -37,6 +59,8 @@ public:
 	// Custom input
 	virtual FHeartEvent HandleManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
 	TArray<FHeartManualInputQueryResult> QueryManualTriggers(const UObject* Target) const;
+
+	Heart::Input::FCallbackQuery Query(const Heart::Input::FInputTrip& Trip) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|InputLinker")
 	void AddBindings(const TArray<FHeartBoundInput>& Bindings);

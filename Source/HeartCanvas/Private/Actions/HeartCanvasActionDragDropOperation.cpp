@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Actions/HeartCanvasActionDragDropOperation.h"
+#include "HeartCanvasLog.h"
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
@@ -36,9 +37,13 @@ bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UObject* TestTarge
 	return !Failed;
 }
 
-UHeartDragDropOperation* UHeartCanvasInputHandler_DDO_Action::BeginDDO(UWidget* Widget) const
+FHeartEvent UHeartCanvasInputHandler_DDO_Action::OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const
 {
+	UWidget* Widget = Cast<UWidget>(Target);
+
 	auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
+
+	NewDDO->SummonedBy = Widget;
 
 	if (IsValid(VisualClass))
 	{
@@ -57,7 +62,18 @@ UHeartDragDropOperation* UHeartCanvasInputHandler_DDO_Action::BeginDDO(UWidget* 
 		NewDDO->Offset = Offset;
 	}
 
+	if (Widget->Implements<UHeartContextObject>())
+	{
+		NewDDO->Payload = IHeartContextObject::Execute_GetContextObject(Widget);
+	}
+
 	NewDDO->Action = ActionClass;
 
-	return NewDDO;
+	if (!NewDDO->SetupDragDropOperation())
+	{
+		UE_LOG(LogHeartCanvas, Warning, TEXT("Created DDO (%s) unnecessarily, figure out why"), *NewDDO->GetClass()->GetName())
+		return FHeartEvent::Failed;
+	}
+
+	return FHeartEvent::Handled.Detail<FHeartDeferredEvent>(NewDDO);
 }

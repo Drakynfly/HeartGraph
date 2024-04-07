@@ -2,8 +2,11 @@
 
 #pragma once
 
+#include "Input/HeartEvent.h"
 #include "HeartInputHandlerAssetBase.h"
 #include "HeartInputBindingBase.generated.h"
+
+struct FHeartInputActivation;
 
 /**
  *
@@ -23,4 +26,20 @@ public:
 	{
 		return true;
 	}
+
+	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const
+		PURE_VIRTUAL(UHeartInputBindingBase::OnTriggered, return FHeartEvent::Invalid; )
+};
+
+/**
+ * Base class for deferred handlers
+ */
+UCLASS(Abstract)
+class HEARTCORE_API UHeartInputBinding_Deferred : public UHeartInputBindingBase
+{
+	GENERATED_BODY()
+
+public:
+	virtual bool Bind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const override final;
+	virtual bool Unbind(UHeartInputLinkerBase* Linker, const TArray<FInstancedStruct>& InTriggers) const override final;
 };

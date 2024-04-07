@@ -8,7 +8,6 @@
 
 class UWidget;
 class UDragDropOperation;
-class UHeartDragDropOperation;
 
 /**
  * Binds to UWidgets and externalizes input functions. This is used to set the DefaultLinkerClass in a
@@ -29,20 +28,12 @@ public:
 	virtual FReply HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent);
 
 	// Drag drop events
-	virtual UHeartDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
+	virtual UDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
 	virtual bool HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	virtual bool HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	virtual void HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	virtual void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 	virtual void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-
-public:
-	void BindToOnDragDetected(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback_DDO>& DragDropTrigger);
-	void UnbindToOnDragDetected(const Heart::Input::FInputTrip& Trip);
-
-private:
-	// Input trips that begin a drag drop operation
-	TMultiMap<Heart::Input::FInputTrip, TSharedPtr<const Heart::Input::FConditionalCallback_DDO>> DragDropTriggers;
 };
 
 namespace Heart::Input
@@ -55,8 +46,6 @@ namespace Heart::Input
 		using FReplyType = FReply;
 		using FValueType = UWidget*;
 		using FDDOType = UDragDropOperation*;
-
-		using FCreateDDODelegate = TSpecifiedDelegate<TDelegate<UHeartDragDropOperation*(UWidget*)>>;
 
 		static FReplyType NoReply() { return FReply::Unhandled(); }
 

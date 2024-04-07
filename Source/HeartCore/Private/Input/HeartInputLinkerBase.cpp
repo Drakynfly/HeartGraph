@@ -25,16 +25,23 @@ DECLARE_CYCLE_STAT(TEXT("HandleManualInput"), STAT_HandleManualInput, STATGROUP_
 
 using namespace Heart::Input;
 
-FHeartEvent UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
+FCallbackQuery::FCallbackQuery(const UHeartInputLinkerBase* Linker, const FInputTrip& Trip)
 {
-	TArray<const TSharedPtr<const FConditionalCallback>*> Callbacks;
-	InputCallbackMappings.MultiFindPointer(Trip, Callbacks);
+	Linker->InputCallbackMappings.MultiFindPointer(Trip, Callbacks);
+}
+
+FCallbackQuery& FCallbackQuery::Sort()
+{
 	Algo::Sort(Callbacks,
 		[](const TSharedPtr<const FConditionalCallback>* A, const TSharedPtr<const FConditionalCallback>* B)
 		{
 			return *A->Get() < *B->Get();
 		});
+	return *this;
+}
 
+FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FConditionalCallback&)>& Predicate)
+{
 	for (auto&& CallbackPtr : Callbacks)
 	{
 		const FConditionalCallback& Ref = *CallbackPtr->Get();
@@ -51,19 +58,44 @@ FHeartEvent UHeartInputLinkerBase::TryCallbacks(const FInputTrip& Trip, UObject*
 			continue;
 		}
 
-		if (Ref.Handler.IsBound())
+		if (!Ref.Handler.IsBound())
 		{
-			FHeartEvent Event = Ref.Handler.Execute(Target, Activation);
+			continue;
+		}
+
+		if (!Predicate(Ref))
+		{
+			break;
+		}
+	}
+	return *this;
+}
+
+FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
+{
+	TOptional<FHeartEvent> Return;
+
+	Query(Trip).ForEachWithBreak(Target,
+		[&](const FConditionalCallback& Ref)
+		{
+			const FHeartEvent Event = Ref.Handler.Execute(Target, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
-			if (Ref.Priority == EExecutionOrder::Event)
+			if (Ref.Priority <= HighestHandlingPriority)
 			{
 				if (Event.WasEventCaptured())
 				{
-					return Event;
+					Return = Event;
+					return false;
 				}
 			}
-		}
+
+			return true;
+		});
+
+	if (Return.IsSet())
+	{
+		return Return.GetValue();
 	}
 
 	// Nothing handled input.
@@ -92,7 +124,7 @@ FHeartEvent UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FNam
 		return FHeartEvent::Invalid;
 	}
 
-	return TryCallbacks(FInputTrip(Key), Target, Activation);
+	return QuickTryCallbacks(FInputTrip(Key), Target, Activation);
 }
 
 TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(const UObject* Target) const
@@ -129,6 +161,11 @@ TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(
 	}
 
 	return Results;
+}
+
+FCallbackQuery UHeartInputLinkerBase::Query(const FInputTrip& Trip) const
+{
+	return FCallbackQuery(this, Trip).Sort();
 }
 
 void UHeartInputLinkerBase::AddBindings(const TArray<FHeartBoundInput>& Bindings)
