@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartCanvasDragDropOperation.h"
+#include "Input/HeartCanvasDragDropOperation.h"
 #include "ModelView/HeartGraphSchema.h"
 #include "HeartPinConnectionDragDropOperation.generated.h"
 

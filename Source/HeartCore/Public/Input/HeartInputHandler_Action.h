@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "HeartInputHandlerBase.h"
+#include "HeartInputHandler_Immediate.h"
 #include "HeartInputHandler_Action.generated.h"
 
 class UHeartActionBase;
 
 UCLASS(meta = (DisplayName = "Graph Action"))
-class HEARTCORE_API UHeartInputHandler_Action : public UHeartInputHandlerBase
+class HEARTCORE_API UHeartInputHandler_Action : public UHeartInputHandler_Immediate
 {
 	GENERATED_BODY()
 

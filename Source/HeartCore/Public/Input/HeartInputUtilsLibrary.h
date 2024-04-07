@@ -83,7 +83,7 @@ public:
 	static TArray<struct FHeartManualInputQueryResult> GetInputLinkerActions(const UObject* Target);
 
 	//UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	//static FHeartWidgetInputBinding MakeInputBinding(UHeartInputHandlerAsset* InputHandler, UHeartWidgetInputTrigger* Trigger);
+	//static FHeartWidgetInputBinding MakeInputBinding(UHeartInputHandlerAsset* Handler, UHeartWidgetInputTrigger* Trigger);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static bool AddInputBindingAssetToLinker(UHeartInputLinkerBase* Linker, UHeartInputBindingAsset* BindingAsset);

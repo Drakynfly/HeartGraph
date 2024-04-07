@@ -5,6 +5,8 @@
 struct FHeartEvent;
 struct FHeartInputActivation;
 
+class UHeartInputHandlerAssetBase;
+
 namespace Heart::Input
 {
 	template <typename T>
@@ -12,10 +14,6 @@ namespace Heart::Input
 	{
 		static constexpr bool Supported = false;
 	};
-
-	using FHandlerDelegate = TDelegate<FHeartEvent(UObject*, const FHeartInputActivation&)>;
-	using FDescriptionDelegate = TDelegate<FText(const UObject*)>;
-	using FConditionDelegate = TDelegate<bool(const UObject*)>;
 
 	enum EExecutionOrder
 	{
@@ -29,14 +27,7 @@ namespace Heart::Input
 
 	struct FConditionalCallback
 	{
-		// Callback to execute the event
-		const FHandlerDelegate Handler;
-
-		// Callback to retrieve a text description of the action
-		const FDescriptionDelegate Description;
-
-		// Callback to determine if the context of the trigger is valid for executing the action
-		const FConditionDelegate Condition;
+		TObjectPtr<const UHeartInputHandlerAssetBase> Handler;
 
 		// Determines the order that callback handler run in, and whether they bubble the input callstack
 		const EExecutionOrder Priority = None;

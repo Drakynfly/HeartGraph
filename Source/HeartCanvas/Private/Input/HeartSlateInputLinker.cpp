@@ -3,6 +3,7 @@
 #include "Input/HeartSlateInputLinker.h"
 #include "Input/HeartDragDropOperation.h"
 #include "Input/HeartInputActivation.h"
+#include "Input/HeartInputHandlerAssetBase.h"
 #include "Input/HeartSlateReplyWrapper.h"
 #include "Input/SlatePointerWrappers.h"
 #include "Slate/SHeartGraphWidgetBase.h"
@@ -61,7 +62,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 				return true;
 			}
 
-			const FHeartEvent Event = Ref.Handler.Execute(Wrapper, Activation);
+			const FHeartEvent Event = Ref.Handler->OnTriggered(Wrapper, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
 			if (Ref.Priority <= HighestHandlingPriority)
@@ -141,7 +142,7 @@ FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& W
 		.ForEachWithBreak(Wrapper,
 		[&](const FConditionalCallback& Ref)
 		{
-			const FHeartEvent HandlerEvent = Ref.Handler.Execute(Wrapper, Activation);
+			const FHeartEvent HandlerEvent = Ref.Handler->OnTriggered(Wrapper, Activation);
 			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();
 				Option.IsSet())
 			{

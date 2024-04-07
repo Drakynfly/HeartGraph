@@ -8,6 +8,7 @@
 #include "Input/HeartInputLinkerInterface.h"
 #include "Input/HeartInputTypes.h"
 #include "Input/HeartEvent.h"
+#include "Input/HeartInputHandlerAssetBase.h"
 #include "Input/HeartSlateReplyWrapper.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetInputLinker)
@@ -64,7 +65,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 				return true;
 			}
 
-			const FHeartEvent Event = Ref.Handler.Execute(Widget, Activation);
+			const FHeartEvent Event = Ref.Handler->OnTriggered(Widget, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
 			if (Ref.Priority <= HighestHandlingPriority)
@@ -140,7 +141,7 @@ UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widge
 		.ForEachWithBreak(Widget,
 		[&](const FConditionalCallback& Ref)
 		{
-			const FHeartEvent HandlerEvent = Ref.Handler.Execute(Widget, PointerEvent);
+			const FHeartEvent HandlerEvent = Ref.Handler->OnTriggered(Widget, PointerEvent);
 			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();
 				Option.IsSet())
 			{

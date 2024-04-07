@@ -8,6 +8,7 @@
 #include "HeartCorePrivate.h"
 #include "Input/HeartInputActivation.h"
 #include "Input/HeartEvent.h"
+#include "Input/HeartInputTrigger.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputLinkerBase)
 
@@ -46,19 +47,12 @@ FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TF
 	{
 		const FConditionalCallback& Ref = *CallbackPtr->Get();
 
-		bool PassedCondition = true;
-
-		if (Ref.Condition.IsBound())
-		{
-			PassedCondition = Ref.Condition.Execute(Target);
-		}
-
-		if (!PassedCondition)
+		if (!IsValid(Ref.Handler))
 		{
 			continue;
 		}
 
-		if (!Ref.Handler.IsBound())
+		if (!Ref.Handler->PassCondition(Target))
 		{
 			continue;
 		}
@@ -78,7 +72,7 @@ FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UOb
 	Query(Trip).ForEachWithBreak(Target,
 		[&](const FConditionalCallback& Ref)
 		{
-			const FHeartEvent Event = Ref.Handler.Execute(Target, Activation);
+			const FHeartEvent Event = Ref.Handler->OnTriggered(Target, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
 			if (Ref.Priority <= HighestHandlingPriority)
@@ -133,31 +127,23 @@ TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(
 
 	for (auto&& ConditionalInputCallback : InputCallbackMappings)
 	{
+		const UHeartInputHandlerAssetBase* Handler = ConditionalInputCallback.Value->Handler;
+		if (!IsValid(Handler))
+		{
+			continue;
+		}
+
 		if (ConditionalInputCallback.Key.Type != Manual)
 		{
 			continue;
 		}
 
-		bool PassedCondition = true;
-
-		if (ConditionalInputCallback.Value->Condition.IsBound())
-		{
-			PassedCondition = ConditionalInputCallback.Value->Condition.Execute(Target);
-		}
-
-		if (!PassedCondition)
+		if (!Handler->PassCondition(Target))
 		{
 			continue;
 		}
 
-		if (ConditionalInputCallback.Value->Description.IsBound())
-		{
-			Results.Add({ConditionalInputCallback.Key.CustomKey, ConditionalInputCallback.Value->Description.Execute(Target)});
-		}
-		else
-		{
-			Results.Add({ConditionalInputCallback.Key.CustomKey});
-		}
+		Results.Add({ConditionalInputCallback.Key.CustomKey, Handler->GetDescription(Target)});
 	}
 
 	return Results;
@@ -174,7 +160,24 @@ void UHeartInputLinkerBase::AddBindings(const TArray<FHeartBoundInput>& Bindings
 	{
 		if (!IsValid(Binding.InputHandler)) continue;
 
-		Binding.InputHandler->Bind(this, Binding.Triggers);
+		const TSharedRef<FConditionalCallback> Callback = MakeShared<FConditionalCallback>(
+			Binding.InputHandler,
+			Binding.InputHandler->GetExecutionOrder());
+
+		for (auto&& Trigger : Binding.Triggers)
+		{
+			if (!Trigger.IsValid())
+			{
+				continue;
+			}
+
+			auto&& Trips = Trigger.Get<FHeartInputTrigger>().CreateTrips();
+
+			for (auto&& Trip : Trips)
+			{
+				BindInputCallback(Trip, Callback);
+			}
+		}
 	}
 }
 
@@ -184,6 +187,19 @@ void UHeartInputLinkerBase::RemoveBindings(const TArray<FHeartBoundInput>& Bindi
 	{
 		if (!IsValid(Binding.InputHandler)) continue;
 
-		Binding.InputHandler->Unbind(this, Binding.Triggers);
+		for (auto&& Trigger : Binding.Triggers)
+		{
+			if (!Trigger.IsValid())
+			{
+				continue;
+			}
+
+			auto&& Trips = Trigger.Get<FHeartInputTrigger>().CreateTrips();
+
+			for (auto&& Trip : Trips)
+			{
+				UnbindInputCallback(Trip);
+			}
+		}
 	}
 }

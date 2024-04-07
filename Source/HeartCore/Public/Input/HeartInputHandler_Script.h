@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "HeartInputHandlerBase.h"
+#include "HeartInputHandler_Immediate.h"
 #include "HeartInputHandler_Script.generated.h"
 
 /**
  *
  */
 UCLASS(Blueprintable, Abstract)
-class HEARTCORE_API UHeartInputHandler_Script : public UHeartInputHandlerBase
+class HEARTCORE_API UHeartInputHandler_Script : public UHeartInputHandler_Immediate
 {
 	GENERATED_BODY()
 

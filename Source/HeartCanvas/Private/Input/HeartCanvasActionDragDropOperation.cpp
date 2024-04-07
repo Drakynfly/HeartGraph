@@ -1,6 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Actions/HeartCanvasActionDragDropOperation.h"
+#include "Input/HeartCanvasInputHandler_DDO_Action.h"
 #include "HeartCanvasLog.h"
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
@@ -8,7 +8,7 @@
 #include "General/HeartContextObject.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasActionDragDropOperation)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasInputHandler_DDO_Action)
 
 bool UHeartCanvasActionDragDropOperation::SetupDragDropOperation()
 {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Input/HeartInputBindingBase.h"
+#include "Input/HeartInputHandlerAssetBase.h"
 #include "HeartCanvasInputHandler_HeartDDO.generated.h"
 
 enum class EDragPivot : uint8;
@@ -12,11 +12,12 @@ class UHeartDragDropOperation;
  * A heart input handler that can launch a Drag Drop Operation
  */
 UCLASS(meta = (DisplayName = "Drag Drop Operation"))
-class HEARTCANVAS_API UHeartCanvasInputHandler_HeartDDO : public UHeartInputBinding_Deferred
+class HEARTCANVAS_API UHeartCanvasInputHandler_HeartDDO : public UHeartInputHandlerAssetBase
 {
 	GENERATED_BODY()
 
 protected:
+	virtual Heart::Input::EExecutionOrder GetExecutionOrder() const override { return Heart::Input::Deferred; }
 	virtual bool PassCondition(const UObject* TestTarget) const override;
 	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const override;
 
