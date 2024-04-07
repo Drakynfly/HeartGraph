@@ -9,6 +9,8 @@
 #include "UMG/HeartGraphCanvasNode.h"
 
 #include "Components/CanvasPanelSlot.h"
+#include "ModelView/HeartActionHistory.h"
+#include "ModelView/Actions/HeartAction_MoveNodeProxy.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasNodeMoveDragDropOperation)
 
@@ -22,6 +24,7 @@ bool UHeartCanvasNodeMoveDragDropOperation::SetupDragDropOperation()
 	if (UHeartGraphCanvasNode* CreatedByNode = Cast<UHeartGraphCanvasNode>(SummonedBy))
 	{
 		Node = CreatedByNode;
+		OriginalLocation = Node->GetGraphNode()->GetLocation();
 
 		if (FSlateApplication::IsInitialized())
 		{
@@ -75,12 +78,36 @@ void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEv
 {
 	Super::Drop_Implementation(PointerEvent);
 
-	if (Node.IsValid() && FSlateApplication::IsInitialized())
+	if (!Node.IsValid())
+	{
+		return;
+	}
+
+	const FVector2D NodeLocation = Node->GetGraphNode()->GetLocation();
+
+	if (OriginalLocation.IsSet() &&
+		!OriginalLocation.GetValue().Equals(NodeLocation))
 	{
 		auto&& Canvas = Node->GetCanvas();
 
 		// Final call to notify graph that the movement in no longer in-progress
 		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, false);
+
+		if (auto&& History = Canvas->GetHeartGraph()->GetExtension<UHeartActionHistory>())
+		{
+			TMap<FHeartNodeGuid, FHeartMoveNodeProxyLocationPair> Locations;
+			Locations.Add(Node->GetGraphNode()->GetGuid(),
+				{ OriginalLocation.GetValue(), NodeLocation });
+
+			// Manually record an action
+			FHeartActionRecord Record;
+			Record.Action = UHeartAction_MoveNodeProxy::StaticClass();
+			Record.Arguments.Target = Canvas->GetHeartGraph();
+			Record.Arguments.Activation = PointerEvent; // Not used, but for posterity
+			Record.UndoData.Add(UHeartAction_MoveNodeProxy::LocationStorage, Locations);
+
+			History->AddRecord(Record);
+		}
 	}
 }
 
