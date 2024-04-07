@@ -4,7 +4,6 @@
 #include "BloodContainer.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGuids.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_MoveNodeProxy)
 
@@ -15,9 +14,9 @@ FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(UHeartGraph* Graph, const
 {
 	checkfSlow(Activation.IsRedoAction(), TEXT("HeartAction_MoveNodeProxy should only be executed as a Redo!"))
 
-	auto&& Locations = UndoData.Get<TMap<FHeartNodeGuid, FHeartMoveNodeProxyLocationPair>>(LocationStorage);
+	auto&& LocationData = UndoData.Get<FHeartMoveNodeProxyUndoData>(LocationStorage);
 
-	for (auto NodeLocations : Locations)
+	for (auto NodeLocations : LocationData.Locations)
 	{
 		if (auto&& Node = Graph->GetNode(NodeLocations.Key))
 		{
@@ -32,9 +31,9 @@ bool UHeartAction_MoveNodeProxy::Undo(UObject* Target, const FBloodContainer& Un
 {
 	auto&& Graph = CastChecked<UHeartGraph>(Target);
 
-	auto&& Locations = UndoData.Get<TMap<FHeartNodeGuid, FHeartMoveNodeProxyLocationPair>>(LocationStorage);
+	auto&& LocationData = UndoData.Get<FHeartMoveNodeProxyUndoData>(LocationStorage);
 
-	for (auto NodeLocations : Locations)
+	for (auto NodeLocations : LocationData.Locations)
 	{
 		if (auto&& Node = Graph->GetNode(NodeLocations.Key))
 		{

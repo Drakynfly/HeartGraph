@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartGraphAction.h"
+#include "Model/HeartGuids.h"
 #include "HeartAction_MoveNodeProxy.generated.h"
 
 USTRUCT()
@@ -15,6 +16,15 @@ struct FHeartMoveNodeProxyLocationPair
 
 	UPROPERTY()
 	FVector2D New;
+};
+
+USTRUCT()
+struct FHeartMoveNodeProxyUndoData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TMap<FHeartNodeGuid, FHeartMoveNodeProxyLocationPair> Locations;
 };
 
 /**

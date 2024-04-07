@@ -95,8 +95,8 @@ void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEv
 
 		if (auto&& History = Canvas->GetHeartGraph()->GetExtension<UHeartActionHistory>())
 		{
-			TMap<FHeartNodeGuid, FHeartMoveNodeProxyLocationPair> Locations;
-			Locations.Add(Node->GetGraphNode()->GetGuid(),
+			FHeartMoveNodeProxyUndoData LocationData;
+			LocationData.Locations.Add(Node->GetGraphNode()->GetGuid(),
 				{ OriginalLocation.GetValue(), NodeLocation });
 
 			// Manually record an action
@@ -104,7 +104,7 @@ void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEv
 			Record.Action = UHeartAction_MoveNodeProxy::StaticClass();
 			Record.Arguments.Target = Canvas->GetHeartGraph();
 			Record.Arguments.Activation = PointerEvent; // Not used, but for posterity
-			Record.UndoData.Add(UHeartAction_MoveNodeProxy::LocationStorage, Locations);
+			Record.UndoData.Add(UHeartAction_MoveNodeProxy::LocationStorage, LocationData);
 
 			History->AddRecord(Record);
 		}
