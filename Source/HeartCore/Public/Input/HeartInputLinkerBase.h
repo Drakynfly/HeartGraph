@@ -23,9 +23,6 @@ struct FHeartManualInputQueryResult
 	FText Description;
 };
 
-using FCallbackPtr = const TSharedPtr<const Heart::Input::FConditionalCallback>*;
-using FCallbackPtrArray = TArray<FCallbackPtr>;
-
 namespace Heart::Input
 {
 	class HEARTCORE_API FCallbackQuery
@@ -35,10 +32,10 @@ namespace Heart::Input
 
 		FCallbackQuery& Sort();
 
-		FCallbackQuery& ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FConditionalCallback&)>& Predicate);
+		FCallbackQuery& ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FSortableCallback&)>& Predicate);
 
 	private:
-		TArray<FCallbackPtr> Callbacks;
+		TArray<const FSortableCallback*> Callbacks;
 	};
 }
 
@@ -53,7 +50,7 @@ protected:
 	FHeartEvent QuickTryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
 
 public:
-	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const TSharedPtr<const Heart::Input::FConditionalCallback>& InputCallback);
+	void BindInputCallback(const Heart::Input::FInputTrip& Trip, const Heart::Input::FSortableCallback& InputCallback);
 	void UnbindInputCallback(const Heart::Input::FInputTrip& Trip);
 
 	// Custom input
@@ -70,7 +67,7 @@ public:
 
 protected:
 	// Input trips that fire a delegate.
-	TMultiMap<Heart::Input::FInputTrip, TSharedPtr<const Heart::Input::FConditionalCallback>> InputCallbackMappings;
+	TMultiMap<Heart::Input::FInputTrip, const Heart::Input::FSortableCallback> InputCallbackMappings;
 };
 
 namespace Heart::Input

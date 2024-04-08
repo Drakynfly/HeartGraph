@@ -52,7 +52,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 	Query(FInputTrip(PointerEvent, Press))
 		.ForEachWithBreak(Widget,
-		[&](const FConditionalCallback& Ref)
+		[&](const FSortableCallback& Ref)
 		{
 			if (Ref.Priority == Deferred)
 			{
@@ -139,7 +139,7 @@ UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widge
 
 	Query(FInputTrip(PointerEvent, Press))
 		.ForEachWithBreak(Widget,
-		[&](const FConditionalCallback& Ref)
+		[&](const FSortableCallback& Ref)
 		{
 			const FHeartEvent HandlerEvent = Ref.Handler->OnTriggered(Widget, PointerEvent);
 			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();

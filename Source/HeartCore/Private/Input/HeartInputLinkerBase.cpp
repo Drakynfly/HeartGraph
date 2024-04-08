@@ -34,18 +34,18 @@ FCallbackQuery::FCallbackQuery(const UHeartInputLinkerBase* Linker, const FInput
 FCallbackQuery& FCallbackQuery::Sort()
 {
 	Algo::Sort(Callbacks,
-		[](const TSharedPtr<const FConditionalCallback>* A, const TSharedPtr<const FConditionalCallback>* B)
+		[](const FSortableCallback* A, const FSortableCallback* B)
 		{
-			return *A->Get() < *B->Get();
+			return *A < *B;
 		});
 	return *this;
 }
 
-FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FConditionalCallback&)>& Predicate)
+FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FSortableCallback&)>& Predicate)
 {
 	for (auto&& CallbackPtr : Callbacks)
 	{
-		const FConditionalCallback& Ref = *CallbackPtr->Get();
+		const FSortableCallback& Ref = *CallbackPtr;
 
 		if (!IsValid(Ref.Handler))
 		{
@@ -70,7 +70,7 @@ FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UOb
 	TOptional<FHeartEvent> Return;
 
 	Query(Trip).ForEachWithBreak(Target,
-		[&](const FConditionalCallback& Ref)
+		[&](const FSortableCallback& Ref)
 		{
 			const FHeartEvent Event = Ref.Handler->OnTriggered(Target, Activation);
 
@@ -96,7 +96,7 @@ FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UOb
 	return FHeartEvent::Ignored;
 }
 
-void UHeartInputLinkerBase::BindInputCallback(const FInputTrip& Trip, const TSharedPtr<const FConditionalCallback>& InputCallback)
+void UHeartInputLinkerBase::BindInputCallback(const FInputTrip& Trip, const FSortableCallback& InputCallback)
 {
 	if (ensure(Trip.IsValid()))
 	{
@@ -127,7 +127,7 @@ TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(
 
 	for (auto&& ConditionalInputCallback : InputCallbackMappings)
 	{
-		const UHeartInputHandlerAssetBase* Handler = ConditionalInputCallback.Value->Handler;
+		const UHeartInputHandlerAssetBase* Handler = ConditionalInputCallback.Value.Handler;
 		if (!IsValid(Handler))
 		{
 			continue;
@@ -160,7 +160,7 @@ void UHeartInputLinkerBase::AddBindings(const TArray<FHeartBoundInput>& Bindings
 	{
 		if (!IsValid(Binding.InputHandler)) continue;
 
-		const TSharedRef<FConditionalCallback> Callback = MakeShared<FConditionalCallback>(
+		const FSortableCallback Callback(
 			Binding.InputHandler,
 			Binding.InputHandler->GetExecutionOrder());
 

@@ -25,14 +25,14 @@ namespace Heart::Input
 		HighestHandlingPriority = Deferred
 	};
 
-	struct FConditionalCallback
+	struct FSortableCallback
 	{
 		TObjectPtr<const UHeartInputHandlerAssetBase> Handler;
 
 		// Determines the order that callback handler run in, and whether they bubble the input callstack
 		const EExecutionOrder Priority = None;
 
-		friend bool operator<(const FConditionalCallback& A, const FConditionalCallback& B)
+		friend bool operator<(const FSortableCallback& A, const FSortableCallback& B)
 		{
 			// Sort in reverse. Higher priorities should be ordered first, lower after.
 			return A.Priority > B.Priority;

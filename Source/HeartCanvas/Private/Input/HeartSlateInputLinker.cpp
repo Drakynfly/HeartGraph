@@ -49,7 +49,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 	const FHeartInputActivation Activation = PointerEvent;
 
 	Query(FInputTrip(PointerEvent, Press)).ForEachWithBreak(Wrapper,
-		[&](const FConditionalCallback& Ref)
+		[&](const FSortableCallback& Ref)
 		{
 			if (Ref.Priority == Deferred)
 			{
@@ -140,7 +140,7 @@ FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& W
 
 	Query(FInputTrip(MouseEvent, Press))
 		.ForEachWithBreak(Wrapper,
-		[&](const FConditionalCallback& Ref)
+		[&](const FSortableCallback& Ref)
 		{
 			const FHeartEvent HandlerEvent = Ref.Handler->OnTriggered(Wrapper, Activation);
 			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();
