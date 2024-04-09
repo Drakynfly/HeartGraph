@@ -186,10 +186,7 @@ void UHeartGraph::GetNodeGuids(TArray<FHeartNodeGuid>& OutGuids) const
 
 void UHeartGraph::GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
 {
-	// *le sign* epic templates mess this up . . .
-	TArray<TObjectPtr<UHeartGraphNode>> NodeArray;
-	Nodes.GenerateValueArray(NodeArray);
-	OutNodes = NodeArray;
+	Nodes.GenerateValueArray(ObjectPtrWrap(OutNodes));
 }
 
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
