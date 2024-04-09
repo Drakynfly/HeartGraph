@@ -15,13 +15,12 @@ bool FHeartNodePinData::RemovePin(const FHeartPinGuid Key)
 	PinDescriptions.Remove(Key);
 	PinConnections.Remove(Key);
 
-	if (PinOrder.Contains(Key))
+	if (const int32* Order = PinOrder.Find(Key))
 	{
 		// @todo this is horrid
-		const int32 PinIndex = PinOrder[Key];
 		for (auto&& Element : PinOrder)
 		{
-			if (Element.Value > PinIndex)
+			if (Element.Value > *Order)
 			{
 				Element.Value--;
 			}
@@ -43,18 +42,18 @@ int32 FHeartNodePinData::GetPinIndex(const FHeartPinGuid Key) const
 
 bool FHeartNodePinData::HasConnections(const FHeartPinGuid Key) const
 {
-	if (PinConnections.Contains(Key))
+	if (const FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
 	{
-		return !PinConnections[Key].Links.IsEmpty();
+		return !Connections->Connections.IsEmpty();
 	}
 	return false;
 }
 
-TOptional<FHeartGraphPinDesc> FHeartNodePinData::GetPinDesc(const FHeartPinGuid Pin) const
+TOptional<FHeartGraphPinDesc> FHeartNodePinData::GetPinDesc(const FHeartPinGuid Key) const
 {
-	if (Pin.IsValid() && PinDescriptions.Contains(Pin))
+	if (const FHeartGraphPinDesc* Descriptions = PinDescriptions.Find(Key))
 	{
-		return PinDescriptions[Pin];
+		return *Descriptions;
 	}
 	return {};
 }
@@ -74,22 +73,17 @@ FHeartGraphPinConnections& FHeartNodePinData::GetConnectionsMutable(const FHeart
 	return PinConnections.FindOrAdd(Key);
 }
 
-const FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartPinGuid Key)
-{
-	return PinConnections.FindChecked(Key);
-}
-
 void FHeartNodePinData::AddConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin)
 {
-	PinConnections.FindOrAdd(Key).Links.Add(Pin);
+	PinConnections.FindOrAdd(Key).Connections.AddUnique(Pin);
 }
 
 bool FHeartNodePinData::RemoveConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin)
 {
 	if (FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
 	{
-		const int32 Removed = Connections->Links.Remove(Pin);
-		if (Connections->Links.IsEmpty())
+		const int32 Removed = Connections->Connections.Remove(Pin);
+		if (Connections->Connections.IsEmpty())
 		{
 			PinConnections.Remove(Key);
 		}

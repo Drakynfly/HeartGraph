@@ -63,8 +63,8 @@ namespace Heart::Connections
 			return *this;
 		}
 
-		for (const FHeartGraphPinConnections Connections = Node->PinData.GetConnections(Pin.PinGuid);
-			const FHeartGraphPinReference& Link : Connections)
+		for (const TOptional<FHeartGraphPinConnections> Connections = Node->PinData.GetConnections(Pin.PinGuid);
+			 const FHeartGraphPinReference& Link : Connections.GetValue())
 		{
 			UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);
 			Internal_Disconnect(Node, Pin, BNode, Link);

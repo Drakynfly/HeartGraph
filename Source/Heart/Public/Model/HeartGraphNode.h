@@ -240,7 +240,7 @@ public:
 	TOptional<FHeartGraphPinConnections> GetConnections(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	bool FindConnections(const FHeartPinGuid& Pin, TSet<FHeartGraphPinReference>& Connections) const;
+	bool FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGraphPinReference>& Connections) const;
 
 	UE_DEPRECATED(5.4, "Please use FindConnections or native GetConnections instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")

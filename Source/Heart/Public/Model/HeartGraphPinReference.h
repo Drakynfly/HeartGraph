@@ -51,20 +51,51 @@ struct FHeartGraphPinConnections
 	friend struct FHeartNodePinData;
 
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
+	UPROPERTY(VisibleAnywhere)
 	TSet<FHeartGraphPinReference> Links;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
+	TArray<FHeartGraphPinReference> Connections;
+
 public:
-	TSet<FHeartGraphPinReference> GetLinks() const { return Links; }
+	TArray<FHeartGraphPinReference> GetLinks() const { return Connections; }
+
+	bool Serialize(FArchive& Ar)
+	{
+		Ar << *this;
+		return true;
+	}
+
+	void PostSerialize(const FArchive& Ar)
+	{
+		if (Ar.IsLoading())
+		{
+			if (!Links.IsEmpty())
+			{
+				Connections.Append(Links.Array());
+				Links.Empty();
+			}
+		}
+	}
 
 	friend FArchive& operator<<(FArchive& Ar, FHeartGraphPinConnections& V)
 	{
-		return Ar << V.Links;
+		Ar << V.Connections;
+		return Ar;
 	}
 
-	//using RangedForConstIteratorType = TArray<FHeartGraphPinReference>::RangedForConstIteratorType;
-    using RangedForConstIteratorType = TSet<FHeartGraphPinReference>::TRangedForConstIterator;
+	using RangedForConstIteratorType = TArray<FHeartGraphPinReference>::RangedForConstIteratorType;
 
-	FORCEINLINE RangedForConstIteratorType begin() const { return Links.begin(); }
-	FORCEINLINE RangedForConstIteratorType end()   const { return Links.end(); }
+	FORCEINLINE RangedForConstIteratorType begin() const { return Connections.begin(); }
+	FORCEINLINE RangedForConstIteratorType end()   const { return Connections.end(); }
+};
+
+template<>
+struct TStructOpsTypeTraits<FHeartGraphPinConnections> : public TStructOpsTypeTraitsBase2<FHeartGraphPinConnections>
+{
+	enum
+	{
+		WithSerialize = true,
+		WithPostSerialize = true,
+	};
 };

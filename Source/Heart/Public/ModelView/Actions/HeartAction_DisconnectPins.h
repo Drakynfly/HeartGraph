@@ -19,6 +19,15 @@ struct FHeartDisconnectPinsUndoData
 	bool Serialize(FArchive& Ar);
 };
 
+template<>
+struct TStructOpsTypeTraits<FHeartDisconnectPinsUndoData> : public TStructOpsTypeTraitsBase2<FHeartDisconnectPinsUndoData>
+{
+	enum
+	{
+		WithSerializer = true,
+	};
+};
+
 /**
  *
  */

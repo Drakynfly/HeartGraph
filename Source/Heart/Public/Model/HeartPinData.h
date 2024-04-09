@@ -48,15 +48,19 @@ protected:
 	int32 GetPinIndex(FHeartPinGuid Key) const;
 	bool HasConnections(FHeartPinGuid Key) const;
 
-	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Pin) const;
+	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Key) const;
 	FHeartGraphPinDesc& GetPinDesc(FHeartPinGuid Key);
 
 	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
 	FHeartGraphPinConnections& GetConnectionsMutable(FHeartPinGuid Key);
-	const FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
 
 	void AddConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin);
 	bool RemoveConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin);
+
+	FORCEINLINE const FHeartGraphPinConnections& operator[](const FHeartPinGuid Key)
+	{
+		return PinConnections.FindChecked(Key);
+	}
 
 	/**
 	 * Try to find a pin by a predicate. Quicker then using a Query, but cannot be chained.
