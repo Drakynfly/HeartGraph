@@ -54,6 +54,8 @@ protected:
 	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
 	FHeartGraphPinConnections& GetConnectionsMutable(FHeartPinGuid Key);
 	const FHeartGraphPinConnections& GetConnections(FHeartPinGuid Key);
+
+	void AddConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin);
 	bool RemoveConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin);
 
 	/**

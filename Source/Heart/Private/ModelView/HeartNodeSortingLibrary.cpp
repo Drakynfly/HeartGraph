@@ -136,7 +136,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 					return;
 				}
 
-				for (auto&& ConnectedPin : Connections.GetValue().Links)
+				for (auto&& ConnectedPin : Connections.GetValue())
 				{
 					if (auto&& ConnectedNode = Node->GetGraph()->GetNode(ConnectedPin.NodeGuid))
 					{

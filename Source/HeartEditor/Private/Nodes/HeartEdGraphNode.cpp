@@ -202,7 +202,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	if (TOptional<FHeartGraphPinConnections> PinConnections = HeartGraphNode->GetConnections(HeartPin);
 		PinConnections.IsSet())
 	{
-		for (auto&& LinkedRef : PinConnections.GetValue().Links)
+		for (auto&& LinkedRef : PinConnections.GetValue())
 		{
 			const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
 			if (!IsValid(LinkedNode))

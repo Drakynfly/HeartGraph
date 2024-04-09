@@ -35,7 +35,7 @@ bool UHeartLayout_KamadaKawai::Layout(IHeartNodeLocationAccessor* Accessor, cons
 				continue;
 			}
 
-			for (auto&& Connection : Connections.GetValue().Links)
+			for (auto&& Connection : Connections.GetValue())
 			{
 				TEMPARRAY.Add(Nodes.Find(Node->GetGraph()->GetNode(Connection.NodeGuid)));
 			}

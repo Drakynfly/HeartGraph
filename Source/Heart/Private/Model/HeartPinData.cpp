@@ -79,6 +79,11 @@ const FHeartGraphPinConnections& FHeartNodePinData::GetConnections(const FHeartP
 	return PinConnections.FindChecked(Key);
 }
 
+void FHeartNodePinData::AddConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin)
+{
+	PinConnections.FindOrAdd(Key).Links.Add(Pin);
+}
+
 bool FHeartNodePinData::RemoveConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin)
 {
 	if (FHeartGraphPinConnections* Connections = PinConnections.Find(Key))

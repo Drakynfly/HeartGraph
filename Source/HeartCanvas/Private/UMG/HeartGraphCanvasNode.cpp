@@ -124,7 +124,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 		return;
 	}
 
-	for (const FHeartGraphPinReference& Connection : Connections.GetValue().Links)
+	for (const FHeartGraphPinReference& Connection : Connections.GetValue())
 	{
 		const FHeartGraphPinDesc& ConnectionDesc = GraphNode->GetPinDescChecked(Connection.PinGuid);
 

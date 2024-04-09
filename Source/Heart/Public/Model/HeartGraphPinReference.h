@@ -48,11 +48,23 @@ struct FHeartGraphPinConnections
 {
 	GENERATED_BODY()
 
+	friend struct FHeartNodePinData;
+
+protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
 	TSet<FHeartGraphPinReference> Links;
+
+public:
+	TSet<FHeartGraphPinReference> GetLinks() const { return Links; }
 
 	friend FArchive& operator<<(FArchive& Ar, FHeartGraphPinConnections& V)
 	{
 		return Ar << V.Links;
 	}
+
+	//using RangedForConstIteratorType = TArray<FHeartGraphPinReference>::RangedForConstIteratorType;
+    using RangedForConstIteratorType = TSet<FHeartGraphPinReference>::TRangedForConstIterator;
+
+	FORCEINLINE RangedForConstIteratorType begin() const { return Links.begin(); }
+	FORCEINLINE RangedForConstIteratorType end()   const { return Links.end(); }
 };

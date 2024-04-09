@@ -212,7 +212,7 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 					continue;
 				}
 
-				for (auto&& Link : Connections.GetValue().Links)
+				for (auto&& Link : Connections.GetValue())
 				{
 					if (Link.IsValid())
 					{
