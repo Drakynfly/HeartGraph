@@ -5,7 +5,9 @@
 #include "UMG/HeartGraphCanvasPin.h"
 
 #include "Model/HeartGraph.h"
+#include "ModelView/HeartActionHistory.h"
 #include "ModelView/HeartGraphSchema.h"
+#include "ModelView/Actions/HeartAction_PinsEditProxy.h"
 #include "View/PinConnectionStatusInterface.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPinConnectionDragDropOperation)
@@ -44,9 +46,41 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 	if (DraggedPin.IsValid() && HoveredPin.IsValid())
 	{
 		UHeartGraph* Graph = Canvas->GetGraph();
+		auto&& FromPin = DraggedPin->GetPinReference();
+		auto&& ToPin = HoveredPin->GetPinReference();
 
-		if (Graph->GetSchema()->TryConnectPins(Graph, DraggedPin->GetPinReference(), HoveredPin->GetPinReference()))
+		if (auto&& History = Graph->GetExtension<UHeartActionHistory>())
 		{
+			// Stash the state of the pins prior to running TryConnectPins
+			FHeartPinsEditProxyUndoData MementoData;
+			Graph->EditConnections()
+				.CreateMementos(FromPin, MementoData.Original)
+				.CreateMementos(ToPin, MementoData.Original);
+
+			if (Graph->GetSchema()->TryConnectPins(Graph, FromPin, ToPin))
+			{
+				{
+					Heart::Connections::FEdit Edit = Graph->EditConnections();
+					for (auto&& Element : MementoData.Original)
+					{
+						Edit.CreateAllMementos(Element.Key, MementoData.New);
+					}
+				}
+
+				// Manually record an action, if successfully modified connections
+				FHeartActionRecord Record;
+				Record.Action = UHeartAction_PinsEditProxy::StaticClass();
+				Record.Arguments.Target = Graph;
+				Record.Arguments.Activation = PointerEvent; // Not used, but for posterity
+				Record.UndoData.Add(UHeartAction_PinsEditProxy::MementosStorage, MementoData);
+				History->AddRecord(Record);
+			}
+		}
+		else
+		{
+			if (Graph->GetSchema()->TryConnectPins(Graph, FromPin, ToPin))
+			{
+			}
 		}
 	}
 

@@ -15,7 +15,7 @@ namespace Heart::Connections
 
 		FHeartGraphConnectionEvent Event;
 
-		for (auto Element : ChangedPins)
+		for (auto&& Element : ChangedPins)
 		{
 			Event.AffectedNodes.Add(Element.Key);
 			Event.AffectedPins.Add(Element.Value);
@@ -141,12 +141,12 @@ namespace Heart::Connections
 			return *this;
 		}
 
+		// Memento for this pin
+		OutMementos.Add(NodeGuid).PinConnections = Node->PinData.PinConnections;
+
 		for (auto&& Connections = Node->PinData.PinConnections;
 			 auto&& Element : Connections)
 		{
-			// Memento for this pin
-			OutMementos.Add(NodeGuid).PinConnections = Node->PinData.PinConnections;
-
 			// Mementos for all connected pins
 			for (const FHeartGraphPinReference& Link : Element.Value.Links)
 			{
@@ -167,9 +167,15 @@ namespace Heart::Connections
 				return *this;
 			}
 
+			// Mark all pins as changed, we have no idea what the memento will remove.
+			for (auto&& Element : ANode->PinData.PinConnections)
+			{
+				ChangedPins.Add(ANode, Element.Key);
+			}
+
 			ANode->PinData.PinConnections = PinAndMemento.Value.PinConnections;
 
-			// Mark all pins as changed, we have no idea what the memento has restored.
+			// Mark all pins as changed again, as we have no idea what the memento has restored.
 			for (auto&& Element : ANode->PinData.PinConnections)
 			{
 				ChangedPins.Add(ANode, Element.Key);
