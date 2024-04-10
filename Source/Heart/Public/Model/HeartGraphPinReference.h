@@ -51,11 +51,12 @@ struct FHeartGraphPinConnections
 	friend struct FHeartNodePinData;
 
 protected:
-	UPROPERTY(VisibleAnywhere)
-	TSet<FHeartGraphPinReference> Links;
-
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
 	TArray<FHeartGraphPinReference> Connections;
+
+	// DEPRECATED
+	UPROPERTY()
+	TSet<FHeartGraphPinReference> Links;
 
 public:
 	TArray<FHeartGraphPinReference> GetLinks() const { return Connections; }
