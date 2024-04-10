@@ -79,15 +79,15 @@ template <typename TBloodData> FBloodValue::FBloodValue(const TBloodData& Value)
 	if constexpr (TIsTMap<TBloodData>::Value)
 	{
 		static const TPair<FName, FName> Names{ Blood::Private::V0, Blood::Private::V1 };
-		Blood::Write::Container2<TMap,  typename TBloodData::KeyType, typename TBloodData::ValueType>(PropertyBag, Names, Value);
+		Blood::Write::Container2<TBloodData>(PropertyBag, Names, Value);
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
 	{
-		Blood::Write::Container1<TArray, typename TBloodData::ElementType>(PropertyBag, Blood::Private::V0, Value);
+		Blood::Write::Container1<TBloodData>(PropertyBag, Blood::Private::V0, Value);
 	}
 	else if constexpr (TIsTSet<TBloodData>::Value)
 	{
-		Blood::Write::Container1<TSet, typename TBloodData::ElementType>(PropertyBag, Blood::Private::V0, Value);
+		Blood::Write::Container1<TBloodData>(PropertyBag, Blood::Private::V0, Value);
 	}
 	else
 	{
@@ -101,20 +101,20 @@ template <typename TBloodData> auto FBloodValue::GetValue() const
 	{
 		static const TPair<FName, FName> Names{ Blood::Private::V0, Blood::Private::V1 };
 		TBloodData Out;
-		Blood::Read::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(
+		Blood::Read::Container2<TBloodData>(
 			PropertyBag, Names, Out);
 		return Out;
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
 	{
 		TBloodData Out;
-		Blood::Read::Container1<TArray, typename TBloodData::ElementType>(PropertyBag, Blood::Private::V0, Out);
+		Blood::Read::Container1<TBloodData>(PropertyBag, Blood::Private::V0, Out);
 		return Out;
 	}
 	else if constexpr (TIsTSet<TBloodData>::Value)
 	{
 		TBloodData Out;
-		Blood::Read::Container1<TSet, typename TBloodData::ElementType>(PropertyBag, Blood::Private::V0, Out);
+		Blood::Read::Container1<TBloodData>(PropertyBag, Blood::Private::V0, Out);
 		return Out;
 	}
 	else

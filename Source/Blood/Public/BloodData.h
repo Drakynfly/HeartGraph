@@ -421,8 +421,8 @@ namespace Blood
 			}
 		}
 
-		template <template <typename> class TContainer, typename TType>
-		static void Container1(const FInstancedPropertyBag& Bag, const FName Name, TContainer<TType>& Out)
+		template <class TContainer>
+		void Container1(const FInstancedPropertyBag& Bag, const FName Name, TContainer& Out)
 		{
 			auto MaybeArrayRef = Bag.GetArrayRef(Name);
 			check(MaybeArrayRef.HasValue());
@@ -431,12 +431,12 @@ namespace Blood
 
 			for (int32 i = 0; i < ArrayRef.Num(); ++i)
 			{
-				Out.Add(TDataConverter<TType>::ReadIndex(ArrayRef, i));
+				Out.Add(TDataConverter<typename TContainer::ElementType>::ReadIndex(ArrayRef, i));
 			}
 		}
 
-		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
-		static void Container2(const FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, TContainer<TType0, TType1>& Out)
+		template <class TContainer>
+		void Container2(const FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, TContainer& Out)
 		{
 			auto MaybeArrayRef0 = Bag.GetArrayRef(Names.Key);
 			auto MaybeArrayRef1 = Bag.GetArrayRef(Names.Value);
@@ -448,8 +448,8 @@ namespace Blood
 
 			for (int32 i = 0; i < ArrayRef0.Num(); ++i)
 			{
-				Out.Add(TDataConverter<TType0>::ReadIndex(ArrayRef0, i),
-						TDataConverter<TType1>::ReadIndex(ArrayRef1, i));
+				Out.Add(TDataConverter<typename TContainer::KeyType>::ReadIndex(ArrayRef0, i),
+						TDataConverter<typename TContainer::ValueType>::ReadIndex(ArrayRef1, i));
 			}
 		}
 	}
@@ -475,15 +475,15 @@ namespace Blood
 			}
 		}
 
-		template <template <typename> class TContainer, typename TType>
-		static void Container1(FInstancedPropertyBag& Bag, FName Name, const TContainer<TType>& Value)
+		template <class TContainer>
+		void Container1(FInstancedPropertyBag& Bag, FName Name, const TContainer& Value)
 		{
 			// Init property
 			Bag.AddContainerProperty(
 				Name,
 				EPropertyBagContainerType::Array,
-				TDataConverter<TType>::PropertyBagType(),
-				TDataConverter<TType>::PropertyBagTypeObject());
+				TDataConverter<typename TContainer::ElementType>::PropertyBagType(),
+				TDataConverter<typename TContainer::ElementType>::PropertyBagTypeObject());
 
 			auto&& BetterBeArray = Bag.GetMutableArrayRef(Name);
 			check(BetterBeArray.HasValue());
@@ -494,18 +494,18 @@ namespace Blood
 			int32 Index = 0;
 			for (auto&& Element : Value)
 			{
-				TDataConverter<TType>::WriteIndex(ArrayRef, Index, Element);
+				TDataConverter<typename TContainer::ElementType>::WriteIndex(ArrayRef, Index, Element);
 				Index++;
 			}
 		}
 
-		template <template <typename, typename> class TContainer, typename TType0, typename TType1>
-		static void Container2(FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, const TContainer<TType0, TType1>& Value)
+		template <class TContainer>
+		void Container2(FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, const TContainer& Value)
 		{
 			// Init properties
 			const TArray<FPropertyBagPropertyDesc> PropertyDescs{
-				FPropertyBagPropertyDesc(Names.Key, EPropertyBagContainerType::Array, TDataConverter<TType0>::PropertyBagType(), TDataConverter<TType0>::PropertyBagTypeObject()),
-				FPropertyBagPropertyDesc(Names.Value, EPropertyBagContainerType::Array, TDataConverter<TType1>::PropertyBagType(), TDataConverter<TType1>::PropertyBagTypeObject())
+				FPropertyBagPropertyDesc(Names.Key, EPropertyBagContainerType::Array, TDataConverter<typename TContainer::KeyType>::PropertyBagType(), TDataConverter<typename TContainer::KeyType>::PropertyBagTypeObject()),
+				FPropertyBagPropertyDesc(Names.Value, EPropertyBagContainerType::Array, TDataConverter<typename TContainer::ValueType>::PropertyBagType(), TDataConverter<typename TContainer::ValueType>::PropertyBagTypeObject())
 			};
 
 			Bag.AddProperties(PropertyDescs);
@@ -523,8 +523,8 @@ namespace Blood
 			int32 Index = 0;
 			for (auto&& Element : Value)
 			{
-				TDataConverter<TType0>::WriteIndex(ArrayRef0, Index, Element.Key);
-				TDataConverter<TType1>::WriteIndex(ArrayRef1, Index, Element.Value);
+				TDataConverter<typename TContainer::KeyType>::WriteIndex(ArrayRef0, Index, Element.Key);
+				TDataConverter<typename TContainer::ValueType>::WriteIndex(ArrayRef1, Index, Element.Value);
 				Index++;
 			}
 		}

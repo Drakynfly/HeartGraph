@@ -72,15 +72,15 @@ template <typename TBloodData> void FBloodContainer::Add(FName Name, const TBloo
 	{
 		TPair<FName, FName> Names;
 		CreateMapNames(Name, Names.Key, Names.Value);
-		Blood::Write::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(PropertyBag, Names, Value);
+		Blood::Write::Container2<TBloodData>(PropertyBag, Names, Value);
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
 	{
-		Blood::Write::Container1<TArray, typename TBloodData::ElementType>(PropertyBag, Name, Value);
+		Blood::Write::Container1<TBloodData>(PropertyBag, Name, Value);
 	}
 	else if constexpr (TIsTSet<TBloodData>::Value)
 	{
-		Blood::Write::Container1<TSet, typename TBloodData::ElementType>(PropertyBag, Name, Value);
+		Blood::Write::Container1<TBloodData>(PropertyBag, Name, Value);
 	}
 	else
 	{
@@ -95,20 +95,20 @@ template <typename TBloodData> auto FBloodContainer::Get(const FName Name) const
 		TPair<FName, FName> Names;
 		CreateMapNames(Name, Names.Key, Names.Value);
 		TBloodData Out;
-		Blood::Read::Container2<TMap, typename TBloodData::KeyType, typename TBloodData::ValueType>(
+		Blood::Read::Container2<TBloodData>(
 			PropertyBag, Names, Out);
 		return Out;
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)
 	{
 		TBloodData Out;
-		Blood::Read::Container1<TArray, typename TBloodData::ElementType>(PropertyBag, Name, Out);
+		Blood::Read::Container1<TBloodData>(PropertyBag, Name, Out);
 		return Out;
 	}
 	else if constexpr (TIsTSet<TBloodData>::Value)
 	{
 		TBloodData Out;
-		Blood::Read::Container1<TSet, typename TBloodData::ElementType>(PropertyBag, Name, Out);
+		Blood::Read::Container1<TBloodData>(PropertyBag, Name, Out);
 		return Out;
 	}
 	else

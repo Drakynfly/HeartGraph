@@ -78,7 +78,7 @@ bool BloodContainerTest::RunTest(const FString& Parameters)
 	TestEqual("Get Enum", Container.Get<EPropertyBagPropertyType>("Val_Enum"), EPropertyBagPropertyType::Enum);
 	TestEqual("Get I32", Container.Get<int32>("Val_I32"), 10259);
 	TestEqual("Get I32 (Wrapper)", Container.Get<FBloodI32>("Val_I32"), 10259);
-	TestEqual("Get I64", Container.Get<int64>("Val_I64"), 8689101304);
+	TestEqual("Get I64", Container.Get<int64>("Val_I64"), int64(8689101304));
 
 	TestEqual("Get Name", Container.Get<FName>("Val_Name"), FName("Hello, World!"));
 	TestEqual("Get String", Container.Get<FString>("Val_String"), "Hello, World!");

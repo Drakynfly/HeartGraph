@@ -160,9 +160,9 @@ void UHeartInputLinkerBase::AddBindings(const TArray<FHeartBoundInput>& Bindings
 	{
 		if (!IsValid(Binding.InputHandler)) continue;
 
-		const FSortableCallback Callback(
+		const FSortableCallback Callback{
 			Binding.InputHandler,
-			Binding.InputHandler->GetExecutionOrder());
+			Binding.InputHandler->GetExecutionOrder()};
 
 		for (auto&& Trigger : Binding.Triggers)
 		{
