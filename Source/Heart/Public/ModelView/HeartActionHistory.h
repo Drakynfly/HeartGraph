@@ -47,8 +47,8 @@ namespace Heart::Action::History
 		return Event;
 	}
 
-	bool TryUndo(const UHeartGraph* Graph);
-	bool TryUndo(const UHeartActionHistory* History);
+	bool TryUndo(UHeartGraph* Graph);
+	bool TryUndo(UHeartActionHistory* History);
 
 	FHeartEvent TryRedo(const UHeartGraph* Graph);
 }

@@ -96,7 +96,7 @@ namespace Heart::Action::History
 		return Impl::ExecutingActionsStack.Last()->History->GetGraph();
 	}
 
-	bool TryUndo(const UHeartGraph* Graph)
+	bool TryUndo(UHeartGraph* Graph)
 	{
 		if (!IsValid(Graph))
 		{
