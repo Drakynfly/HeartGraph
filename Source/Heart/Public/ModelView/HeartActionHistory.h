@@ -7,6 +7,8 @@
 #include "Model/HeartGraphExtension.h"
 #include "HeartActionHistory.generated.h"
 
+class UHeartActionHistory;
+
 namespace Heart::Action::History
 {
 	namespace Impl
@@ -46,6 +48,8 @@ namespace Heart::Action::History
 	}
 
 	bool TryUndo(const UHeartGraph* Graph);
+	bool TryUndo(const UHeartActionHistory* History);
+
 	FHeartEvent TryRedo(const UHeartGraph* Graph);
 }
 

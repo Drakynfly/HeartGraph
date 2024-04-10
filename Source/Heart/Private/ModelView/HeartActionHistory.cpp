@@ -110,7 +110,27 @@ namespace Heart::Action::History
 			return false;
 		}
 
-		return History->Undo();
+		return TryUndo(History);
+	}
+
+	bool TryUndo(UHeartActionHistory* History)
+	{
+		auto Record = History->RetrieveRecord();
+		if (!Record.IsSet() ||
+			!IsValid(Record->Action))
+		{
+			return false;
+		}
+
+		// Push an action frame
+		Impl::ExecutingActionsStack.Emplace(InPlace, Record->Action, History, Record->Arguments);
+
+		const bool Success = Undo(Record->Action, Record->Arguments.Target, Record->UndoData);
+
+		// Pop the action frame
+		Impl::ExecutingActionsStack.Pop();
+
+		return Success;
 	}
 
 	FHeartEvent TryRedo(const UHeartGraph* Graph)
@@ -175,22 +195,7 @@ TConstArrayView<FHeartActionRecord> UHeartActionHistory::RetrieveRecords(const i
 
 bool UHeartActionHistory::Undo()
 {
-	auto Record = RetrieveRecord();
-	if (!Record.IsSet() ||
-		!IsValid(Record->Action))
-	{
-		return false;
-	}
-
-	// Doing this here is kinda wack,
-	Heart::Action::History::Impl::ExecutingActionsStack.Emplace(InPlace, Record->Action, this, Record->Arguments);
-
-	const bool Success = Heart::Action::Undo(Record->Action, Record->Arguments.Target, Record->UndoData);
-
-	// Pop the action frame
-	Heart::Action::History::Impl::ExecutingActionsStack.Pop();
-
-	return Success;
+	return Heart::Action::History::TryUndo(this);
 }
 
 FHeartEvent UHeartActionHistory::Redo()
