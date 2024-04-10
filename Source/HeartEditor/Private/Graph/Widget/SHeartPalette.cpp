@@ -85,7 +85,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 
 FReply SHeartPaletteItem::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
 {
-	// Our super checks for an explicitely bound Double-click action, which we want to respect first.
+	// Our super checks for an explicitly bound Double-click action, which we want to respect first.
 	if (FReply SuperReply = SGraphPaletteItem::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
 		SuperReply.IsEventHandled())
 	{

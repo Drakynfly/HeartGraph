@@ -43,7 +43,7 @@ struct FHeartNodeSource
 		return NodeObj->GetClass();
 	}
 
-	// Returns either the SuperClass if its a UClass, or the Class of the NodeObj otherwise
+	// Returns either the SuperClass if it's a UClass, or the Class of the NodeObj otherwise
 	const UClass* NextClass() const
 	{
 		if (const UClass* AsClass = As<UClass>())

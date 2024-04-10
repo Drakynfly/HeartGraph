@@ -16,7 +16,7 @@ namespace Heart::AssetEditor
 	{
 		static const FLazyName TabId;
 
-		FPreviewCanvasSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor);
+		FPreviewCanvasSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor);
 
 		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;
@@ -28,7 +28,7 @@ namespace Heart::AssetEditor
 	{
 		static const FLazyName TabId;
 
-		FPreviewCanvasDetailsPanelSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& OnDetailsCreated);
+		FPreviewCanvasDetailsPanelSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor, const FOnDetailsCreated& OnDetailsCreated);
 
 		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;

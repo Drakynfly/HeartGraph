@@ -23,7 +23,7 @@ FHeartEvent UHeartSlateReplyWrapper::ReplyEventToHeartEvent(const FHeartEvent& E
 		return FHeartEvent::Handled.Detail<FEventReply>(EventReply);
 	}
 
-	// Otherwise, Reply has more responces than just "Unhandled"
+	// Otherwise, Reply has more responses than just "Unhandled"
 	return Event.Detail<FEventReply>(EventReply);
 }
 

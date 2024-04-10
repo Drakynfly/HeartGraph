@@ -81,7 +81,7 @@ void UHeartGraph::PostLoad()
 #if WITH_EDITOR
 	TArray<FHeartNodeGuid> DeadNodes;
 
-	// Fix-up node map in editor, when loading asset
+	// Fix-up node map in Editor, when loading asset
 	for (auto&& Node : Nodes)
 	{
 		if (!IsValid(Node.Value))
@@ -341,7 +341,6 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	}
 
 	return Internal_CreateNode_Instanced(GraphNodeClass, NodeClass, Location);
-
 }
 
 UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
@@ -377,7 +376,7 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 	/*
 	if (!ensure(IsValid(Node->GetNodeObject())))
 	{
-		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node with invalid object!"))
+		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
 		return;
 	}
 	*/

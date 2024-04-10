@@ -23,7 +23,7 @@ class HEARTCORE_API IHeartInputLinkerInterface
 public:
 	/**
 	 * Get the Input Linker for this widget, or null if it doesn't have one.
-	 * It is supported, and in fact, encouraged, to implement this by deferring to another widget's implementation:
+	 * It is supported and, in fact, encouraged to implement this by deferring to another widget's implementation:
 	 *
 	 * {
 	 *     return Execute_ResolveLinker(SomeWidget);

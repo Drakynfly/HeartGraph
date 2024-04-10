@@ -131,7 +131,7 @@ private:
 
 		const TSharedPtr<FHeartDefaultClassFilter> Filter = MakeShared<FHeartDefaultClassFilter>();
 
-		// All child child classes of UHeartGraph are valid
+		// All child classes of UHeartGraph are valid
 		Filter->AllowedChildrenOfClasses.Add(UHeartGraph::StaticClass());
 		Options.ClassFilters = {Filter.ToSharedRef()};
 
@@ -161,7 +161,7 @@ private:
 		return FReply::Handled();
 	}
 
-	void CloseDialog(bool bWasPicked = false)
+	void CloseDialog(const bool bWasPicked = false)
 	{
 		bOkClicked = bWasPicked;
 		if (PickerWindow.IsValid())
@@ -226,7 +226,7 @@ bool UHeartGraphBlueprintFactory::ConfigureProperties()
 	return Dialog->ConfigureProperties(this);
 }
 
-UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
+UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* InParent, const FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, const FName CallingContext)
 {
 	check(Class->IsChildOf(UHeartGraphBlueprint::StaticClass()));
 
@@ -254,7 +254,7 @@ UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* I
 	return NewBP;
 }
 
-UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
+UObject* UHeartGraphBlueprintFactory::FactoryCreateNew(UClass* Class, UObject* InParent, const FName Name, const EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn)
 {
 	return FactoryCreateNew(Class, InParent, Name, Flags, Context, Warn, NAME_None);
 }

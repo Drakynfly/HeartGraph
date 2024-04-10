@@ -28,7 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEvent, UHeart
  * Stores a list of nodes, graph nodes, usable by a Graph, along with their internal graph representations and
  * visual representations.
  * The registry counts how many times each class is registered so that multiple registrars can safely register the same
- * classes and they can be deregistered without removing classes that other registrars have also added.
+ * classes, and they can be deregistered without removing classes that other registrars have also added.
  */
 UCLASS()
 class HEART_API UHeartGraphNodeRegistry : public UObject

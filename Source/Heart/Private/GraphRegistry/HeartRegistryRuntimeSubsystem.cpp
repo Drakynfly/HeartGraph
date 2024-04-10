@@ -98,7 +98,7 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 {
 	const UClass* Class = AssetData.GetClass();
 
-	if (Class && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
+	if (IsValid(Class) && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
 	{
 		UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetRemoved detected GraphNodeRegistrar"))
 
@@ -119,18 +119,17 @@ void UHeartRegistryRuntimeSubsystem::FetchNativeRegistrars()
 	TArray<UClass*> Classes;
 	GetDerivedClasses(UGraphNodeRegistrar::StaticClass(), Classes);
 
-	for (auto&& Class : Classes)
+	for (const TSubclassOf<UGraphNodeRegistrar> Class : Classes)
 	{
-		TSubclassOf<UGraphNodeRegistrar> RegistarClass = Class;
-		if (IsValid(RegistarClass))
+		if (IsValid(Class))
 		{
 			// Skip classes with banned flags
-			if (RegistarClass->HasAnyClassFlags(BannedClassFlags))
+			if (Class->HasAnyClassFlags(BannedClassFlags))
 			{
 				continue;
 			}
 
-			const UGraphNodeRegistrar* RegistrarDefault = GetDefault<UGraphNodeRegistrar>(RegistarClass);
+			const UGraphNodeRegistrar* RegistrarDefault = GetDefault<UGraphNodeRegistrar>(Class);
 			AutoAddRegistrar(RegistrarDefault);
 		}
 	}

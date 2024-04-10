@@ -19,7 +19,7 @@ namespace Heart::Input
 	{
 		None, // Blank layer. Do not use.
 		Event, // Default layer. Handlers can capture input or bubble it.
-		Deferred, // Layer for events that handle event in the moment, but continue to have effects for multiple frames.
+		Deferred, // Layer for events that handle event at the moment, but continue to have effects for multiple frames.
 		Listener, // Interception layer. Handlers can intercept, but cannot stop it from bubbling.
 
 		HighestHandlingPriority = Deferred
@@ -29,7 +29,7 @@ namespace Heart::Input
 	{
 		TObjectPtr<const UHeartInputHandlerAssetBase> Handler;
 
-		// Determines the order that callback handler run in, and whether they bubble the input callstack
+		// Determines the order that callback handler runs in, and whether they bubble the input callstack
 		const EExecutionOrder Priority = None;
 
 		friend bool operator<(const FSortableCallback& A, const FSortableCallback& B)

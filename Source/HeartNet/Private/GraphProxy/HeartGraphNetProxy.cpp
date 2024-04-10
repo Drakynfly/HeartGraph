@@ -109,7 +109,7 @@ UHeartGraph* UHeartGraphNetProxy::GetGraph() const
 	return ProxyGraph;
 }
 
-UHeartGraphNetProxy* UHeartGraphNetProxy::CreateHeartNetProxy(AActor* Owner, UHeartGraph* SourceGraph, TSubclassOf<UHeartGraphNetProxy> ProxyClassOverride)
+UHeartGraphNetProxy* UHeartGraphNetProxy::CreateHeartNetProxy(AActor* Owner, UHeartGraph* SourceGraph, const TSubclassOf<UHeartGraphNetProxy> ProxyClassOverride)
 {
 	ensure(Owner->GetIsReplicated());
 	ensure(Owner->IsUsingRegisteredSubObjectList());
@@ -358,7 +358,7 @@ void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid NodeGu
 	LocalClient->Server_UpdateGraphNode(this, NodeFlake, Type);
 }
 
-void UHeartGraphNetProxy::ExecuteGraphActionOnServer(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject)
+void UHeartGraphNetProxy::ExecuteGraphActionOnServer(const TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject)
 {
 	if (!ensure(IsValid(Action)))
 	{
@@ -415,7 +415,7 @@ void UHeartGraphNetProxy::OnRep_GraphClass()
 	ProxyGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemoved_Proxy);
 	ProxyGraph->GetOnNodeConnectionsChanged().AddUObject(this, &ThisClass::OnNodeConnectionsChanged_Proxy);
 
-	// Add all existing nodes to proxy graph
+	// Add all existing nodes to the proxy graph
 	for (auto&& Element : ReplicatedNodes.Items)
 	{
 		UpdateNodeProxy(Element, Heart::Net::Tags::Node_Added);
@@ -436,7 +436,7 @@ bool UHeartGraphNetProxy::CanClientPerformEvent(const FGameplayTag RequestedEven
 	/*
 	 * Default logic for determining if the Requested event can be executed. Will succeed if the tag itself or the
 	 * AllPermissions tag is present in the ClientPermissions container. This single container is used for all possible
-	 * clients. To have unique permissions on a per-client bases, override this function in a child class.
+	 * clients. To have unique permissions on a per-client basis, override this function in a child class.
 	 */
 
 	const FGameplayTagQuery Query = FGameplayTagQuery::MakeQuery_MatchAnyTags(FGameplayTagContainer::CreateFromArray(
@@ -576,12 +576,12 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const TSubclassOf<UHeartActi
 
 	if (!Args.NodeAndPinGuid.NodeGuid.IsValid())
 	{
-		// If there is no node target then the only possible target is the graph itself
+		// If there is no node target, then the only possible target is the graph itself
 		Target = SourceGraph;
 	}
 	else if (!Args.NodeAndPinGuid.PinGuid.IsValid())
 	{
-		// If there is no pin target then the next possible target is a node
+		// If there is no pin target, then the next possible target is a node
 		Target = SourceGraph->GetNode(Args.NodeAndPinGuid.NodeGuid);
 	}
 	else

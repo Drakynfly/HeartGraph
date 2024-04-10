@@ -76,7 +76,7 @@ public:
 	static UHeartInputLinkerBase* GetInputLinker(const UObject* Target);
 
 	/**
-	 * Get all manually-keyed actions for a widget. This only works if either the widget, or one of its parents,
+	 * Get all manually keyed actions for a widget. This only works if either the widget, or one of its parents,
 	 * implements IHeartInputLinkerInterface.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
@@ -91,7 +91,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
 	static bool RemoveInputBindingAssetFromLinker(UHeartInputLinkerBase* Linker, UHeartInputBindingAsset* BindingAsset);
 
-	// Trigger a manual keyed input binding on a linker, if one can be found for the target.
+	// Trigger a manually keyed input binding on a linker if one can be found for the target.
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
 	static FHeartEvent TriggerManualInput(UObject* Target, FName Key, const FHeartManualEvent& Activation);
 };

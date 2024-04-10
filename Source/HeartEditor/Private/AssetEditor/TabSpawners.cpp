@@ -47,7 +47,7 @@ namespace Heart::AssetEditor
 
 	const FLazyName FGraphEditorSummoner::TabId("Heart_AssetEditor_GraphEditor");
 
-	FGraphEditorSummoner::FGraphEditorSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FCreateGraphEditor& InCreateGraphEditor)
+	FGraphEditorSummoner::FGraphEditorSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor, const FCreateGraphEditor& InCreateGraphEditor)
 	  : FWorkflowTabFactory(TabId, AssetEditor),
 		CreateGraphEditor(InCreateGraphEditor)
 	{

@@ -7,7 +7,7 @@
 #include "HeartPlayerInput.generated.h"
 
 /**
- * A simple override of UEnhancedPlayerInput to defer input to an input linker, if one is able to be found.
+ * A simple override of UEnhancedPlayerInput to defer input to an input linker if one is able to be found.
  */
 UCLASS()
 class HEARTSCENE_API UHeartPlayerInput : public UEnhancedPlayerInput

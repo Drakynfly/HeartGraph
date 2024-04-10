@@ -86,7 +86,7 @@ void UHeartEdGraphNode::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 		if (IsValid(HeartGraphNode) && HeartGraphNode->GetGraph())
 		{
 			// @todo this check ensures that nodes are not duplicated at runtime, when Duplicating a HeartGraph:
-			// Doing so propogates sub-object DuplicateObject calls to us, and results in HeartNodes being added to the
+			// Doing so propagates sub-object DuplicateObject calls to us, and results in HeartNodes being added to the
 			// graph twice. This is all kinda ugly, since the code below is a hack to fix duplicating nodes in the first
 			// place, and now this code is a secondary hack to fix the first, so really, the node duplication stuff below
 			// needs to be moved elsewhere, then this can be removed too.
@@ -106,7 +106,7 @@ void UHeartEdGraphNode::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 			{
 				DuplicatedNode->NodeObject = DuplicateObject(HeartGraphNode->NodeObject, HeartGraphNode->GetGraph());
 			}
-			// Otherwise, its an external asset, that we can both reference.
+			// Otherwise, it's an external asset, that we can both reference.
 			else
 			{
 				DuplicatedNode->NodeObject = HeartGraphNode->NodeObject;
@@ -131,7 +131,7 @@ void UHeartEdGraphNode::PreSave(const FObjectPreSaveContext SaveContext)
 {
 	Super::PreSave(SaveContext);
 
-	// Sync runtime location with position in edgraph
+	// Sync runtime location with position in EdGraph
 	// @todo maybe move this to the edgraph's presave, where it can bulk edit validation stuff like this
 	if (IsValid(HeartGraphNode))
 	{
@@ -173,7 +173,7 @@ void UHeartEdGraphNode::PostPasteNode()
 		{
 			HeartGraphNode->NodeObject = DuplicateObject(HeartGraphNode->NodeObject, HeartGraphNode->GetGraph());
 		}
-		// Otherwise, its an external asset, that we can both reference.
+		// Otherwise, it's an external asset, that we can both reference.
 	}
 }
 
@@ -336,7 +336,7 @@ void UHeartEdGraphNode::OnBlueprintPreCompile(UBlueprint* Blueprint)
 		if (NodeObject->GetOuter() == HeartGraphNode)
 		{
 			// While we are compiling, our NodeObject needs to be moved temporarily to the EdGraph for ownership.
-			// If we don't then it gets destroyed for some reason! (relevant for 5.2, retest on future versions)
+			// If we don't, then it gets destroyed for some reason! (relevant for 5.2, retest on future versions)
 			NodeObject->Rename(nullptr, GetGraph());
 		}
 	}
@@ -346,7 +346,7 @@ void UHeartEdGraphNode::OnBlueprintCompiled()
 {
 	if (bBlueprintCompilationPending)
 	{
-		// Restore the node from the above hack, if it was applied.
+		// Restore the node from the above hack if it was applied.
 		UObject* NodeObject = HeartGraphNode->GetNodeObject();
 		if (ensure(IsValid(NodeObject)))
 		{
@@ -518,7 +518,7 @@ void UHeartEdGraphNode::RewireOldPinsToNewPins(TArray<UEdGraphPin*>& InOldPins)
 	{
 		UEdGraphPin* OldPin = InOldPins[OldPinIndex];
 
-		// common case is for InOldPins and Pins to match, so we start searching from the current index:
+		// A common case is for InOldPins and Pins to match, so we start searching from the current index:
 		bool bMatched = false;
 		int32 NewPinIndex = (NumNewPins ? OldPinIndex % NumNewPins : 0);
 		for (int32 NewPinCount = NumNewPins - 1; NewPinCount >= 0; --NewPinCount)
@@ -735,7 +735,7 @@ FText UHeartEdGraphNode::GetNodeTitle(const ENodeTitleType::Type TitleType) cons
 
 	if (!ensure(IsValid(HeartGraphNode)))
 	{
-		// Display error with *our* name, in case we are a custom EdGraphNode that may help debug the situation.
+		// Display error with *our* name in case we are a custom EdGraphNode that may help debug the situation.
 		return FText::Format(
 			LOCTEXT("GetNodeTitle_InvalidGraphNode", "[Invalid GraphNode ({0})]"), FText::FromString(GetName()));
 	}
@@ -1081,7 +1081,7 @@ void UHeartEdGraphNode::OnOutputTriggered(const int32 Index)
 
 void UHeartEdGraphNode::TryPausingSession(bool bPauseSession)
 {
-	// Node breakpoints waits on any pin triggered
+	// Node breakpoints wait on any pin triggered
 	if (NodeBreakpoint.IsBreakpointEnabled())
 	{
 		NodeBreakpoint.bBreakpointHit = true;

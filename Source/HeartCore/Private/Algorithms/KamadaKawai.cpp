@@ -10,7 +10,7 @@ namespace Nodesoup
     {
         const FTwoDimIntArray Distances = FloydWarshall(Graph);
 
-        // find biggest distance
+        // find the biggest distance
         size_t BiggestDistance = 0;
         for (int32 i = 0; i < Graph.Num(); i++)
         {
@@ -23,8 +23,8 @@ namespace Nodesoup
             }
         }
 
-        // Ideal length for all edges. we don't really care, the layout is going to be scaled.
-        // Let's chose 1.0 as the initial positions will be on a 1.0 radius circle, so we're
+        // Ideal length for all edges. We don't really care, the layout is going to be scaled.
+        // Let's choose 1.0 as the initial positions will be on a radius 1.0 circle, so we're
         // on the same order of magnitude
         const double Length = 1.0 / BiggestDistance;
 
@@ -69,7 +69,7 @@ namespace Nodesoup
             }
         }
 
-        // floyd warshall itself, find length of shortest path for each pair of vertices
+        // floyd warshall itself, find length of the shortest path for each pair of vertices
         for (int32 k = 0; k < Graph.Num(); k++)
         {
             for (int32 i = 0; i < Graph.Num(); i++)
@@ -89,7 +89,7 @@ namespace Nodesoup
 
     /**
     Reduce the energy of the next vertex with most energy until all the vertices have
-    a energy below energy_threshold
+    an energy below energy_threshold
     */
     void KamadaKawai::operator()(TArray<FVector2D>& Positions) const
     {
@@ -99,7 +99,7 @@ namespace Nodesoup
 
         while (MaxVertexEnergy > EnergyThreshold && SteadyEnergyCount < MAX_STEADY_ENERGY_ITERS_COUNT)
         {
-            // move vertex step by step until its energy goes below threshold
+            // move vertex step by step until its energy goes below the threshold
             // (apparently this is equivalent to the newton raphson method)
             uint32 VertexCount = 0;
             do

@@ -18,7 +18,7 @@ struct FHeartNodeFlake
 	UPROPERTY()
 	FHeartNodeGuid Guid;
 
-	// Data for this node. Can be anything; up to code path to interpret correctly
+	// Data for this node. Can be anything; up to code-path to interpret correctly
 	UPROPERTY()
 	FHeartFlake Flake;
 };

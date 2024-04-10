@@ -87,14 +87,14 @@ FText SHeartGraphAssetBreadcrumb::GetBreadcrumbText(const TWeakObjectPtr<UHeartG
 
 // Heart Graph Asset Toolbar
 
-FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> InAssetEditor, UToolMenu* ToolbarMenu)
+FHeartGraphAssetToolbar::FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor>& InAssetEditor, UToolMenu* ToolbarMenu)
 	: AssetEditor(InAssetEditor)
 {
 	BuildAssetToolbar(ToolbarMenu);
 	BuildDebuggerToolbar(ToolbarMenu);
 }
 
-void FHeartGraphAssetToolbar::AddEditorModesToolbar(TSharedPtr<FExtender> Extender)
+void FHeartGraphAssetToolbar::AddEditorModesToolbar(const TSharedPtr<FExtender>& Extender)
 {
 	const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> AssetEditorPtr = AssetEditor.Pin();
 
@@ -243,7 +243,7 @@ TSharedRef<SWidget> FHeartGraphAssetToolbar::MakeDiffMenu() const
 		}
 		else
 		{
-			// if asset is null then this means that multiple assets are selected
+			// if asset is null, then this means that multiple assets are selected
 			FMenuBuilder MenuBuilder(true, nullptr);
 			MenuBuilder.AddMenuEntry(LOCTEXT("NoRevisionsForMultipleHeartGraphAssets", "Multiple Heart Graph Assets selected"), FText::GetEmpty(), FSlateIcon(), FUIAction());
 			return MenuBuilder.MakeWidget();

@@ -36,7 +36,7 @@ namespace Heart::Net::Tags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_ClientUpdateNodeObject)
 
-	// This tag can be used for custom replicating events, but its suggested to create unique tags.
+	// This tag can be used for custom replicating events, but it's suggested to create unique tags.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Other)
 
 	// Permissions-only tag for allowing clients to run graph action edits.
@@ -106,7 +106,7 @@ public:
 protected:
 	bool SetupGraphProxy(UHeartGraph* InSourceGraph);
 
-	// These functions are callbacks for when the source graph is changed, which propogate via replication to clients.
+	// These functions are callbacks for when the source graph is changed, which propagate via replication to clients.
 	virtual void OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode);
 	virtual void OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode);
@@ -134,7 +134,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
 	void RequestUpdateNode_OnServer(FHeartNodeGuid NodeGuid, EHeartUpdateNodeType Type = EHeartUpdateNodeType::HeartNode);
 
-	// Use this to remote execute graph actions on the server, to make changes to the source graph.
+	// Use this to RPC graph actions on the server, to make changes to the source graph.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
 	void ExecuteGraphActionOnServer(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
 
@@ -185,7 +185,7 @@ public:
 	/**-------------------------*/
 
 protected:
-	// Container to setup the types of edits a client connection can make to the source graph. To allow all client edits
+	// Container to set up the types of edits a client connection can make to the source graph. To allow all client edits
 	// simply add the "Heart.Net.AllPermissions" tag. Replicated to let client know what actions they can perform.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintSetter = "SetPermissions", ReplicatedUsing = "OnRep_ClientPermissions", Category = "Config", meta = (Categories = "Heart.Net"))
 	FGameplayTagContainer ClientPermissions;

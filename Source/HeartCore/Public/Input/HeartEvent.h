@@ -105,7 +105,7 @@ public:
 	// Event that was invalid, and not handled
 	static const FHeartEvent Invalid;
 
-	// Event that was valid, but intentially not captured
+	// Event that was valid, but intentionally not captured
 	static const FHeartEvent Ignored;
 
 	// Event that was valid, and handled successfully
@@ -136,7 +136,7 @@ private:
 	UPROPERTY()
 	int32 Status;
 
-	// Detailed response struct, that can be interpreted by specific input linkers
+	// Detailed response struct that can be interpreted by specific input linkers
 	UPROPERTY()
 	FInstancedStruct Details;
 };
@@ -152,7 +152,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Heart|Event")
 	static bool WasEventInvalid(const FHeartEvent& Event);
 
-	// Event that was valid, but intentially not captured
+	// Event that was valid, but intentionally not captured
 	UFUNCTION(BlueprintPure, Category = "Heart|Event")
 	static bool WasEventIgnored(const FHeartEvent& Event);
 

@@ -221,7 +221,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void SetSortByScore(const FHeartRegistryBlueprintScore& Predicate);
 
-	// Use the built in sort function for the queried data.
+	// Use the built-in sort function for the queried data.
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void SetSortByDefault();
 

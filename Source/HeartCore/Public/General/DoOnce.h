@@ -5,7 +5,7 @@
 namespace DoOnceSupport
 {
 	/**
-	 * Not meant for direct consumption : use DO_ONCE instead.
+	 * Not meant for direct consumption: use DO_ONCE instead.
 	 *
 	 * RAII class that calls a lambda the first time it is created.
 	 *

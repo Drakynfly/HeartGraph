@@ -54,7 +54,7 @@ public:
 	void PaintTimeDrawPinConnection(UPARAM(ref) FPaintContext& Context, const FVector2D& Start, const FVector2D& End,
 									const FHeartCanvasConnectionPinParams& GeneralParams) const;
 
-	// @todo  GraphDesktopGeometry is a hack because I dont know how to use the Context.AllocatedGeometry correctly
+	// @todo  GraphDesktopGeometry is a hack because I don't know how to use the Context.AllocatedGeometry correctly
 	void PaintTimeDrawPinConnections(UPARAM(ref) FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|CanvasConnectionVisualizer")

@@ -73,7 +73,7 @@ public:
 	// --
 
 	/**
-	 * Handles inserting the node between the FromPin and what the FromPin was original connected to
+	 * Handles inserting the node between the FromPin and what the FromPin was originally connected to
 	 *
 	 * @param FromPin			The pin this node is being spawned from
 	 * @param NewLinkPin		The new pin the FromPin will connect to

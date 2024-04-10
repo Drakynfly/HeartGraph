@@ -61,7 +61,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Instanced, Category = "Visualization", NoClear, meta = (ShowInnerProperties))
 	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
 
-	// Should the LocationModifiers work with world space vectors, instead of relative.
+	// Should the LocationModifiers work with world space vectors, instead of relative?
 	UPROPERTY(EditAnywhere, Category = "Visualization")
 	bool UseWorldSpaceInModifiers;
 };

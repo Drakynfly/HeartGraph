@@ -26,7 +26,7 @@ struct BLOOD_API FBloodValue
 	explicit FBloodValue(const TBloodData& Value);
 
 	// Ctor from a type and memory
-	// @todo only works for structs right now (using BloodWrappers doesnt work)
+	// @todo only works for structs right now (using BloodWrappers doesn't work)
 	explicit FBloodValue(const UScriptStruct* Type, const uint8* Memory);
 
 	// Ctor from single value
@@ -53,10 +53,10 @@ struct BLOOD_API FBloodValue
 	// Is this a single value
 	bool IsSingle() const;
 
-	// Is this a one-dimensional container, eg, Arrays and Sets
+	// Is this a one-dimensional container, e.g, Arrays and Sets
 	bool IsContainer1() const;
 
-	// Is this a two-dimensional container, eg, Maps
+	// Is this a two-dimensional container, e.g, Maps
 	bool IsContainer2() const;
 
 	friend bool operator==(const FBloodValue& Lhs, const FBloodValue& Rhs)

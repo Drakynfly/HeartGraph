@@ -21,7 +21,7 @@ public:
 	}
 
 protected:
-	// Does this handler block input from bubbling (a capture), or allow other handlers to also respond to it.
+	// Does this handler block input from bubbling (a capture), or allow other handlers to also respond to it?
 	UPROPERTY(EditAnywhere, Category = "Trigger")
 	bool HandleInput = true;
 };

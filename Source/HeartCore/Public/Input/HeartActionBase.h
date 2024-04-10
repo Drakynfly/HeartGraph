@@ -20,7 +20,7 @@ namespace Heart::Action
 	{
 		NoFlags = 0,
 
-		// This action is being ran as a Redo of an previously undone action
+		// This action is being run as a Redo of a previously undone action
 		IsRedo = 1 << 0,
 
 		// Prevent this action from being recorded by action history
@@ -38,7 +38,7 @@ namespace Heart::Action
 		// Input from the user or system that triggered this action.
 		FHeartInputActivation Activation;
 
-		// Optional payload object that can be used by execution if applicable.
+		// Optional payload object that execution can use if applicable.
 		UObject* Payload = nullptr;
 
 		// Behavior modification flags that can be checked during execution.
@@ -67,7 +67,7 @@ namespace Heart::Action
 	/** Gets the description for an action, optionally adaptive to a specific target */
 	HEARTCORE_API FText GetDescription(TSubclassOf<UHeartActionBase> Action, const UObject* Target = nullptr);
 
-	/** Can a Heart Action be ran on a target */
+	/** Can a Heart Action be run on a target? */
 	HEARTCORE_API bool CanExecute(TSubclassOf<UHeartActionBase> Action, const UObject* Target);
 
 	HEARTCORE_API FHeartEvent Execute(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartInputActivation& Activation, UObject* Payload = nullptr);
@@ -79,7 +79,7 @@ ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
 
 /**
  * Base class for scriptable actions that perform mutations on a Heart Graph or Heart Graph View.
- * Heart Actions are ran by calling Execute on their CDO, so they do not need to be instanced, nor should they ever be.
+ * Heart Actions are run by calling Execute on their CDO, so they do not need to be instanced, nor should they ever be.
  * All member functions are const, and all mutations to graph state are performed through Execution parameters.
  *
  * Any non-abstract child must implement `GetDescription`, `CanExecute`, and `Execute` unless a parent does it for them.
@@ -99,7 +99,7 @@ protected:
 	UFUNCTION(BlueprintPure, Category = "Heart|GraphActionBase")
 	static FText GetActionDescription(TSubclassOf<UHeartActionBase> Class, const UObject* Target = nullptr);
 
-	/** Can a Heart Action be ran on a target */
+	/** Can a Heart Action be run on a target? */
 	UFUNCTION(BlueprintPure, Category = "Heart|GraphActionBase")
 	static bool CanExecute(TSubclassOf<UHeartActionBase> Class, const UObject* Target);
 

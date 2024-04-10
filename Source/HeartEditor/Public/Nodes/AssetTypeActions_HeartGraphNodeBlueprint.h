@@ -9,7 +9,7 @@
 
 //#include "AssetTypeActions_HeartGraphNodeBlueprint.generated.h"
 
-// @todo this will eventually be replaced by a UAssetDefinition_Blueprint, but that isnt properly exposed yet
+// @todo this will eventually be replaced by a UAssetDefinition_Blueprint, but that isn't properly exposed yet
 class HEARTEDITOR_API FAssetTypeActions_HeartGraphNodeBlueprint final : public FAssetTypeActions_Blueprint
 {
 public:

@@ -20,7 +20,7 @@ class HEARTJSON_API UHeartJsonLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	/** Serialize an struct (and all its subobjects) into a flake. */
+	/** Serialize a struct (and all its subobjects) into a flake. */
 	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary", meta = (DisplayName = "Create Flake JSON (Struct)"))
 	static FJsonObjectWrapper CreateFlake_Struct_Json(const FInstancedStruct& Struct);
 

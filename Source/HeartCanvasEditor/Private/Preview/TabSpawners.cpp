@@ -15,7 +15,7 @@ namespace Heart::AssetEditor
 
 	const FLazyName FPreviewCanvasSummoner::TabId("Heart_AssetEditor_PreviewCanvas");
 
-	FPreviewCanvasSummoner::FPreviewCanvasSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor)
+	FPreviewCanvasSummoner::FPreviewCanvasSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor)
 	  : FWorkflowTabFactory(TabId, AssetEditor)
 	{
 		TabLabel = LOCTEXT("PreviewCanvasTabLabel", "Preview");
@@ -43,8 +43,8 @@ namespace Heart::AssetEditor
 
 	const FLazyName FPreviewCanvasDetailsPanelSummoner::TabId("Heart_AssetEditor_PreviewCanvasDetails");
 
-	FPreviewCanvasDetailsPanelSummoner::FPreviewCanvasDetailsPanelSummoner(
-		TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnDetailsCreated& OnDetailsCreated)
+	FPreviewCanvasDetailsPanelSummoner::FPreviewCanvasDetailsPanelSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor,
+		const FOnDetailsCreated& OnDetailsCreated)
 	  : FWorkflowTabFactory(TabId, AssetEditor), Callback(OnDetailsCreated)
 	{
 		TabLabel = LOCTEXT("PreviewCanvasDetailsTabLabel", "Details");

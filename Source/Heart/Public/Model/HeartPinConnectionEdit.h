@@ -37,7 +37,7 @@ namespace Heart::Connections
 		// Remove all connections from a specific pin
 		FEdit& DisconnectAll(const FHeartGraphPinReference& Pin);
 
-		// Remove all connections from a every pin on a node
+		// Remove all connections from every pin on a node
 		FEdit& DisconnectAll(const FHeartNodeGuid& NodeGuid);
 
 		// Manually set the connections on for a pin. WARNING: this is a very dangerous function as it does not check
@@ -47,7 +47,7 @@ namespace Heart::Connections
 		// Create a memento for each pin connected to this pin, as well as itself
 		FEdit& CreateMementos(const FHeartGraphPinReference& Pin, TMap<FHeartNodeGuid, FMemento>& OutMementos);
 
-		// Create a memento for each pin on this nodes, as well as all connected pins
+		// Create a memento for each pin on this node, as well as all connected pins
 		FEdit& CreateAllMementos(const FHeartNodeGuid& NodeGuid, TMap<FHeartNodeGuid, FMemento>& OutMementos);
 
 		FEdit& RestoreMementos(const TMap<FHeartNodeGuid, FMemento>& Mementos);

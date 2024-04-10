@@ -75,7 +75,7 @@ namespace Heart::AssetEditor
 		ToolbarExtender = HeartEditorModule.GetToolBarExtensibilityManager()->GetAllExtenders();
 		AssetEditor->GetToolbar()->AddEditorModesToolbar(ToolbarExtender);
 
-		// @todo why doesnt this do anything?
+		// @todo why doesn't this do anything?
 		ToolbarExtender->AddToolBarExtension(
 			"PreviewScene",
 			EExtensionHook::After,

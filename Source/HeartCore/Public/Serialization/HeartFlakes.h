@@ -325,7 +325,7 @@ namespace Heart::Flakes
 
 /**
  * A simple set of functions to convert arbitrary objects/actors into "Flakes", and back. This is Heart's serialization
- * system. Flakes can be stored anywhere, written into a save file, etc, and reconstructed back into a copy of the
+ * system. Flakes can be stored anywhere, written into a save file, etc., and reconstructed back into a copy of the
  * original at any time. Note that a Flake always creates a copy, it doesn't write back into the original object.
  */
 UCLASS()

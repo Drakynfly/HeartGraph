@@ -107,7 +107,7 @@ namespace Heart::Hex
 		const TStaticArray<FCube, 6> Out;
 	};
 
-	constexpr FHex ToAxial(const FCube Cube)
+	constexpr FHex ToAxial(const FCube& Cube)
 	{
 		return FHex(Cube.Q, Cube.R);
 	}

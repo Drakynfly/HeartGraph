@@ -52,9 +52,9 @@ private:
 class HEARTEDITOR_API FHeartGraphAssetToolbar final : public TSharedFromThis<FHeartGraphAssetToolbar>
 {
 public:
-	explicit FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor> InAssetEditor, UToolMenu* ToolbarMenu);
+	explicit FHeartGraphAssetToolbar(const TSharedPtr<Heart::AssetEditor::FHeartGraphEditor>& InAssetEditor, UToolMenu* ToolbarMenu);
 
-	void AddEditorModesToolbar(TSharedPtr<FExtender> Extender);
+	void AddEditorModesToolbar(const TSharedPtr<FExtender>& Extender);
 private:
 	void FillEditorModesToolbar(FToolBarBuilder& ToolBarBuilder);
 

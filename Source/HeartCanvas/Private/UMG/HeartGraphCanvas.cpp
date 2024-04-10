@@ -386,7 +386,7 @@ void UHeartGraphCanvas::CreatePreviewConnection()
 	}
 }
 
-void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget)
+void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, const bool InitNodeWidget)
 {
 	// This function is only used internally, so Node should *always* be validated prior to this point.
 	check(Node);

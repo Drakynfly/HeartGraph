@@ -297,7 +297,7 @@ void FHeartEditorModule::RegisterAssetIndexers() const
 
 void FHeartEditorModule::OnAssetManagerCreated()
 {
-	// Make sure the project has a asset manager configuration for Registrars or we won't be able to load them at runtime
+	// Make sure the project has an asset manager configuration for Registrars, or we won't be able to load them at runtime
 	const FPrimaryAssetId DummyGraphNodeRegistrarAssetId(UGraphNodeRegistrar::StaticClass()->GetFName(), NAME_None);
 	const FPrimaryAssetRules GameDataRules = UAssetManager::Get().GetPrimaryAssetRules(DummyGraphNodeRegistrarAssetId);
 	if (GameDataRules.IsDefault() && !GetDefault<UHeartGraphSettings>()->DisableAssetRegistryError)

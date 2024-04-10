@@ -149,7 +149,7 @@ void UHeartNetClient::Server_OnNodeConnectionsChanged_Implementation(UHeartGraph
 	Proxy->OnNodeConnectionsChanged_Client(GraphConnectionEvent);
 }
 
-void UHeartNetClient::Server_ExecuteGraphAction_Implementation(UHeartGraphNetProxy* Proxy, TSubclassOf<UHeartActionBase> Action,
+void UHeartNetClient::Server_ExecuteGraphAction_Implementation(UHeartGraphNetProxy* Proxy, const TSubclassOf<UHeartActionBase> Action,
 															   const FHeartRemoteGraphActionArguments& Args)
 {
 	ensure(IsValid(Proxy));

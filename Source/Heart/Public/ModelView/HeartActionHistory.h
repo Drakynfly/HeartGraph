@@ -20,13 +20,13 @@ namespace Heart::Action::History
 	// Is this action being executing in a state that we want to record.
 	HEART_API bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments);
 
-	// Are we currently running an undoable action.
+	// Are we currently running an undoable action?
 	HEART_API bool IsUndoable();
 
-	// Callable while inside a Execute or Undo callstack; retrieves the owning Graph for the History Extension on top
+	// Callable while inside an Execute or Undo callstack; retrieves the owning Graph for the History Extension on top
 	HEART_API UHeartGraph* GetGraphFromActionStack();
 
-	// A simple wrapper around a lamba that executes an action. If the action is loggable, and it succeeds, it will be
+	// A simple wrapper around a lambda that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded, provided that an Action History extension can be found.
 	template <typename T>
 	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
@@ -101,7 +101,7 @@ public:
 	FHeartEvent Redo();
 
 protected:
-	// Are we currently running an undoable action.
+	// Are we currently running an undoable action?
 	UFUNCTION(BlueprintPure, Category = "Heart|ActionHistory")
 	static bool IsUndoable();
 

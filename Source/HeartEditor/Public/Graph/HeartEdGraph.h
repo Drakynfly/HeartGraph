@@ -58,7 +58,7 @@ protected:
 	void CreateSlateInputLinker();
 
 private:
-	// Create the EdGraph node equivilent to a HeartNode
+	// Create the EdGraph node equivalent to a HeartNode
 	void CreateEdGraphNode(UHeartGraphNode* Node);
 
 	void OnNodeAdded(UHeartGraphNode* HeartGraphNode);

@@ -139,7 +139,7 @@ void SHeartGraphNode_Vertical::UpdateGraphNode()
 	InputPins.Empty();
 	OutputPins.Empty();
 
-	// Reset variables that are going to be exposed, in case we are refreshing an already setup node.
+	// Reset variables that are going to be exposed, in case we are refreshing an already set-up node.
 	TopNodeBox.Reset();
 	CenterNodeBox.Reset();
 	BottomNodeBox.Reset();
@@ -220,7 +220,7 @@ void SHeartGraphNode_Vertical::UpdateGraphNode()
 			[
 				SNew(SBorder)
 					.BorderImage(FHeartEditorStyle::GetBrush("Heart.Node.Title"))
-					.Padding(FMargin(75.0f, 22.0f)) // Saving enough space for a 'typical' title so the transition isn't quite so abrupt
+					.Padding(FMargin(75.0f, 22.0f)) // Saving enough space for a 'typical' title, so the transition isn't quite so abrupt
 					.BorderBackgroundColor(this, &SGraphNode::GetNodeTitleColor)
 			]
 			.HighDetail()
@@ -228,7 +228,7 @@ void SHeartGraphNode_Vertical::UpdateGraphNode()
 				DefaultTitleAreaWidget
 			];
 
-	// Setup a meta tag for this node
+	// Set up tag meta for this node
 	FGraphNodeMetaData TagMeta(TEXT("HeartGraphNode"));
 	PopulateMetaTag(&TagMeta);
 

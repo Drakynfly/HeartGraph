@@ -220,7 +220,7 @@ DEFINE_FUNCTION(UBloodBlueprintLibrary::execAssignPropertyToBlood)
 
 		P_NATIVE_BEGIN;
 		Value.Reset();
-		*(bool*)RESULT_PARAM = false;
+		*static_cast<bool*>(RESULT_PARAM) = false;
 		P_NATIVE_END;
 	}
 	else

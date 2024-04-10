@@ -42,7 +42,7 @@ struct FHeartActionIsRedo
 {
 	GENERATED_BODY()
 
-	// When an action is being 're-done', this is the data that was originally used to first 'do', then 'undo' the action.
+	// When an action is being 're-done', this is the data originally used to first 'do', then 'undo' the action.
 	FBloodContainer* UndoneData = nullptr;
 };
 

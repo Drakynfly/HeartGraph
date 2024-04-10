@@ -40,7 +40,7 @@ namespace Heart::GraphUtils
 		}
 		else
 		{
-			// @todo unknown if this succeeds, it doesnt return a success value
+			// @todo unknown if this succeeds, it doesn't return a success value
 			FKismetEditorUtilities::BringKismetToFocusAttentionOnObject(Class);
 			return true;
 		}
@@ -72,7 +72,7 @@ namespace Heart::GraphUtils
 			{
 				VisitedNodes.Add(Node);
 
-				// Follow every input pin until we cant any more ('root') or we reach a node we have seen (cycle)
+				// Follow every input pin until we cant anymore ('root') or we reach a node we have seen (cycle)
 				for (int32 PinIndex = 0; PinIndex < Node->Pins.Num(); ++PinIndex)
 				{
 					UEdGraphPin* MyPin = Node->Pins[PinIndex];

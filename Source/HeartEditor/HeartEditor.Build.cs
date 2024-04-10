@@ -21,7 +21,7 @@ public class HeartEditor : ModuleRules
                 "HeartCore",
                 "HeartCoreEditor",
                 "Heart",
-                "HeartCanvas" // @todo i exceedingly don't like this. Either we should move stuff out of HeartCanvas that we depend on, *or*, move our dependant logic to HeartCanvasEditor (but thats unlikely)
+                "HeartCanvas" // @todo i exceedingly don't like this. Either we should move stuff out of HeartCanvas that we depend on, *or*, move our dependant logic to HeartCanvasEditor (but that's unlikely)
             }
         );
 

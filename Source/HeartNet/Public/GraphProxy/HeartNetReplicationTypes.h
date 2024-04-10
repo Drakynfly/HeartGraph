@@ -16,7 +16,7 @@ struct FHeartNodeMoveEvent_Net
 	UPROPERTY()
 	TArray<FHeartNodeFlake> AffectedNodes;
 
-	// Is the move "in-progress" or finished, typically during drag-drop style movement.
+	// Is the move "in-progress" or finished, typically during drag-drop style movement?
 	UPROPERTY()
 	bool MoveFinished = false;
 };

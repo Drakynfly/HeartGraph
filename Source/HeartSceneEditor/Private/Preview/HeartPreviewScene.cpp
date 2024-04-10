@@ -14,15 +14,15 @@
 
 namespace Heart::AssetEditor
 {
-	FHeartPreviewScene::FHeartPreviewScene(ConstructionValues CVS, const TSharedRef<FHeartGraphEditor>& EditorToolkit)
+	FHeartPreviewScene::FHeartPreviewScene(const ConstructionValues& CVS, const TSharedRef<FHeartGraphEditor>& EditorToolkit)
 		: FAdvancedPreviewScene(CVS)
 		, EditorPtr(EditorToolkit)
 	{
-		// Disable killing actors outside of the world
+		// Disable killing actors outside the world
 		AWorldSettings* WorldSettings = GetWorld()->GetWorldSettings(true);
 		WorldSettings->bEnableWorldBoundsChecks = false;
 
-		//Hide default floor
+		// Hide the default floor
 		SetFloorVisibility(false, false);
 	}
 

@@ -15,7 +15,7 @@ namespace Heart::Canvas
 		Pin,
 		Node,
 
-		// note: doesnt do anything, but here for later
+		// note: doesn't do anything, but here for later
 		Connection
 	};
 

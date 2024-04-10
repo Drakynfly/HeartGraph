@@ -36,7 +36,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray
 	Heart::Query::FRegistryQueryResult Query(Subsystem->GetRegistry(GraphClass));
 
 	// Enabling the ProjectionCache is a good idea here because we are jumping into the BP VM, which is
-	// undoubtably less efficient then hashing the results
+	// undoubtably less efficient than hashing the results
 	Query.Enable(Heart::Query::ProjectionCache);
 
 	Query.Filter(

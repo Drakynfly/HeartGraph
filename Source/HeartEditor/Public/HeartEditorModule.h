@@ -70,7 +70,7 @@ private:
     void AddRegistrarPrimaryAssetRule();
     void DisableGraphNodeRegistrarError();
 
-    /** Property Customizations; Cached so they can be unregistered */
+    /** Property Customizations; Cached, so they can be unregistered */
     TSet<FName> PropertyCustomizations;
 
 public:

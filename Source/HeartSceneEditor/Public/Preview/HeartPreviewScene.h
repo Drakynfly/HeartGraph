@@ -17,7 +17,7 @@ namespace Heart::AssetEditor
 	class FHeartPreviewScene : public FAdvancedPreviewScene
 	{
 	public:
-		FHeartPreviewScene(ConstructionValues CVS, const TSharedRef<FHeartGraphEditor>& EditorToolkit);
+		FHeartPreviewScene(const ConstructionValues& CVS, const TSharedRef<FHeartGraphEditor>& EditorToolkit);
 		virtual ~FHeartPreviewScene() override;
 
 		virtual void Tick(float InDeltaTime) override;

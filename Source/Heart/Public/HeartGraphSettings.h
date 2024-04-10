@@ -22,7 +22,7 @@ public:
 	virtual FName GetCategoryName() const override { return FName("Plugins"); }
 	//~ End UDeveloperSettings
 
-	// Enables creation of the Heart Registry Runtime Subsystem outside of the editor. Imposes a small performance hit
+	// Enables creation of the Heart Registry Runtime Subsystem outside the editor. Imposes a small performance hit
 	// during startup, and a small memory footprint, but is required for using the Node Registries during gameplay.
 	UPROPERTY(config, EditAnywhere, Category = "Registry|Runtime")
 	bool CreateRuntimeRegistrySubsystem = false;

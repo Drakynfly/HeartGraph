@@ -52,7 +52,7 @@ namespace Heart::AssetEditor
 		AssetEditor->GetToolbar()->AddEditorModesToolbar(ToolbarExtender);
 	}
 
-	void FApplicationMode_PreviewCanvas::RegisterTabFactories(TSharedPtr<FTabManager> InTabManager)
+	void FApplicationMode_PreviewCanvas::RegisterTabFactories(const TSharedPtr<FTabManager> InTabManager)
 	{
 		const TSharedPtr<FHeartGraphEditor> AssetEditor = HeartGraphAssetEditorPtr.Pin();
 		AssetEditor->RegisterTabSpawners(InTabManager.ToSharedRef());

@@ -25,7 +25,7 @@ protected:
 	/** The area where input pins reside */
 	TSharedPtr<SHorizontalBox> TopNodeBox;
 
-	/** The area where the node title reside */
+	/** The area where the node title resides */
 	TSharedPtr<SHorizontalBox> CenterNodeBox;
 
 	/** The area where output pins reside */

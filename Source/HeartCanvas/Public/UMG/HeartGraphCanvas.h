@@ -123,7 +123,7 @@ public:
 	/** IHeartNodeLocationAccessor */
 
 
-	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing so we can draw the preview link
+	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing, so we can draw the preview link
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);
 
 	UCanvasPanelSlot* AddConnectionWidget(UHeartGraphCanvasConnection* ConnectionWidget);
