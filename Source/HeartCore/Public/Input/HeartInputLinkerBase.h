@@ -137,12 +137,7 @@ namespace Heart::Input
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			auto BindingReply = Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
-
-			if (BindingReply.IsEventHandled())
-	        {
-        		return BindingReply;
-	        }
+			return Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
 		}
 
 		return TLinkerType<TTarget>::NoReply();
@@ -171,91 +166,96 @@ namespace Heart::Input
 		typename TTarget
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static TOptional<typename TLinkerType<TTarget>::FDDOType> LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static typename TLinkerType<TTarget>::FDDOType LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			if (auto&& LinkerOperation = Linker->HandleOnDragDetected(Target, InGeometry, InMouseEvent))
-			{
-				return LinkerOperation;
-			}
+			return Linker->HandleOnDragDetected(Target, InGeometry, InMouseEvent);
 		}
 
-		return {};
+		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
+		{
+			return TLinkerType<TTarget>::NoReply();
+		}
+		else return {};
 	}
 
 	template <
-		typename TTarget
+		typename TTarget,
+		typename TRetVal,
+		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static bool LinkOnDrop(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-						   typename TLinkerType<TTarget>::FDDOType InOperation)
+	static TRetVal LinkOnDrop(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			if (Linker->HandleNativeOnDrop(Target, InGeometry, InDragDropEvent, InOperation))
-			{
-				return true;
-			}
+			return Linker->HandleOnDrop(Target, Args...);
 		}
 
-		return false;
+		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
+		{
+			return TLinkerType<TTarget>::NoReply();
+		}
+		else return {};
 	}
 
 	template <
-		typename TTarget
+		typename TTarget,
+		typename TRetVal,
+		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static bool LinkOnDragOver(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-							   typename TLinkerType<TTarget>::FDDOType InOperation)
+	static TRetVal LinkOnDragOver(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			if (Linker->HandleNativeOnDragOver(Target, InGeometry, InDragDropEvent, InOperation))
-			{
-				return true;
-			}
+			return Linker->HandleOnDragOver(Target, Args...);
 		}
 
-		return false;
+		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
+		{
+			return TLinkerType<TTarget>::NoReply();
+		}
+		else return {};
 	}
 
 	template <
-		typename TTarget
+		typename TTarget,
+		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static void LinkOnDragEnter(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
-								typename TLinkerType<TTarget>::FDDOType InOperation)
+	static void LinkOnDragEnter(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			Linker->HandleNativeOnDragEnter(Target, InGeometry, InDragDropEvent, InOperation);
-		}
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragLeave(typename TLinkerType<TTarget>::FValueType Target, const FDragDropEvent& InDragDropEvent,
-								typename TLinkerType<TTarget>::FDDOType InOperation)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleNativeOnDragLeave(Target, InDragDropEvent, InOperation);
+			Linker->HandleOnDragEnter(Target, Args...);
 		}
 	}
 
 	template <
-		typename TTarget
+		typename TTarget,
+		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static void LinkOnDragCancelled(typename TLinkerType<TTarget>::FValueType Target, const FDragDropEvent& InDragDropEvent,
-									typename TLinkerType<TTarget>::FDDOType InOperation)
+	static void LinkOnDragLeave(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			Linker->HandleNativeOnDragCancelled(Target, InDragDropEvent, InOperation);
+			Linker->HandleOnDragLeave(Target, Args...);
+		}
+	}
+
+	template <
+		typename TTarget,
+		typename... TArgs
+		UE_REQUIRES(TLinkerType<TTarget>::Supported)
+	>
+	static void LinkOnDragCancelled(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
+	{
+		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
+		{
+			Linker->HandleOnDragCancelled(Target, Args...);
 		}
 	}
 }

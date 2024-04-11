@@ -158,7 +158,7 @@ UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widge
 	return Operation;
 }
 
-bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)
+bool UHeartWidgetInputLinker::HandleOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDragOver)
 
@@ -170,7 +170,7 @@ bool UHeartWidgetInputLinker::HandleNativeOnDragOver(UWidget* Widget, const FGeo
 	return false;
 }
 
-bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
+bool UHeartWidgetInputLinker::HandleOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 												 UDragDropOperation* InOperation)
 {
 	//SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
@@ -183,19 +183,19 @@ bool UHeartWidgetInputLinker::HandleNativeOnDrop(UWidget* Widget, const FGeometr
 	return false;
 }
 
-void UHeartWidgetInputLinker::HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
+void UHeartWidgetInputLinker::HandleOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
 	// Nothing here yet
 }
 
-void UHeartWidgetInputLinker::HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent,
+void UHeartWidgetInputLinker::HandleOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
 	// Nothing here yet
 }
 
-void UHeartWidgetInputLinker::HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent,
+void UHeartWidgetInputLinker::HandleOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent,
 	UDragDropOperation* InOperation)
 {
 	// Nothing here yet

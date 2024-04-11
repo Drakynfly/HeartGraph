@@ -29,11 +29,11 @@ public:
 
 	// Drag drop events
 	virtual UDragDropOperation* HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent);
-	virtual bool HandleNativeOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	virtual bool HandleNativeOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	virtual void HandleNativeOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	virtual void HandleNativeOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
-	virtual void HandleNativeOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual bool HandleOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual bool HandleOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual void HandleOnDragEnter(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual void HandleOnDragLeave(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
+	virtual void HandleOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 };
 
 namespace Heart::Input
@@ -108,9 +108,9 @@ FReply type::NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEv
 void type::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)\
 {\
 	auto Operation = Heart::Input::LinkOnDragDetected<UWidget>(this, InGeometry, InMouseEvent);\
-	if (Operation.IsSet())\
+	if (IsValid(Operation))\
 	{\
-		OutOperation = Operation.GetValue();\
+		OutOperation = Operation;\
 	}\
 	else\
 	{\
@@ -120,13 +120,13 @@ void type::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent
 \
 bool type::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
 {\
-	bool Handled = Heart::Input::LinkOnDrop<UWidget>(this, InGeometry, InDragDropEvent, InOperation);\
+	bool Handled = Heart::Input::LinkOnDrop<UWidget, bool>(this, InGeometry, InDragDropEvent, InOperation);\
 	return Handled ? true : Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);\
 }\
 \
 bool type::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
 {\
-	bool Handled = Heart::Input::LinkOnDragOver<UWidget>(this, InGeometry, InDragDropEvent, InOperation);\
+	bool Handled = Heart::Input::LinkOnDragOver<UWidget, bool>(this, InGeometry, InDragDropEvent, InOperation);\
 	return Handled ? true : Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);\
 }\
 \
