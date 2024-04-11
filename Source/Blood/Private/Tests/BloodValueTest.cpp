@@ -67,7 +67,7 @@ bool BloodValueTest::RunTest(const FString& Parameters)
 	TestEqual("Blood as Enum", Val_Enum.GetValue<EPropertyBagPropertyType>(), EPropertyBagPropertyType::Enum);
 	TestEqual("Blood as I32", Val_I32.GetValue<int32>(), 10259);
 	TestEqual("Blood as I32 (Wrapper)", Val_I32.GetValue<FBloodI32>(), 10259);
-	TestEqual("Blood as I64", Val_I64.GetValue<int64>(), 8689101304);
+	TestEqual("Blood as I64", Val_I64.GetValue<int64>(), int64(8689101304));
 
 	TestEqual("Blood as Name", Val_Name.GetValue<FName>(), FName("Hello, World!"));
 	TestEqual("Blood as String", Val_String.GetValue<FString>(), "Hello, World!");
