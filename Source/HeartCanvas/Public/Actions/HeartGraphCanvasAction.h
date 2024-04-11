@@ -43,8 +43,8 @@ protected:
 };
 
 
-UCLASS(Abstract, Blueprintable)
-class HEARTCANVAS_API UHeartGraphCanvasAction_BlueprintBase final : public UHeartGraphCanvasAction
+UCLASS(Abstract, Blueprintable, MinimalAPI)
+class UHeartGraphCanvasAction_BlueprintBase final : public UHeartGraphCanvasAction
 {
 	GENERATED_BODY()
 

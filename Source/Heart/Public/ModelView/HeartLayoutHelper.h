@@ -25,13 +25,13 @@ public:
 	bool Layout(IHeartNodeLocationAccessor* Accessor) const;
 };
 
-UCLASS(Blueprintable)
-class HEART_API UHeartLayoutHelper_BlueprintBase : public UHeartLayoutHelper
+UCLASS(Abstract, Blueprintable, MinimalAPI)
+class UHeartLayoutHelper_BlueprintBase final : public UHeartLayoutHelper
 {
 	GENERATED_BODY()
 
-public:
-	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const override final;
+protected:
+	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<UHeartGraphNode*>& Nodes) const override;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (ScriptName = "Layout"))
 	bool Layout_BP(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, const TArray<UHeartGraphNode*>& Nodes) const;

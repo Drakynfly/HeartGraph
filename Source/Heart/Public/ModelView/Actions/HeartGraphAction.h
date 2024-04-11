@@ -28,8 +28,8 @@ protected:
 };
 
 
-UCLASS(Abstract, Blueprintable)
-class HEART_API UHeartGraphAction_BlueprintBase final : public UHeartGraphAction
+UCLASS(Abstract, Blueprintable, MinimalAPI)
+class UHeartGraphAction_BlueprintBase final : public UHeartGraphAction
 {
 	GENERATED_BODY()
 
