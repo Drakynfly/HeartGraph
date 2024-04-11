@@ -72,6 +72,8 @@ namespace Heart::Action
 
 	HEARTCORE_API FHeartEvent Execute(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartInputActivation& Activation, UObject* Payload = nullptr);
 
+	HEARTCORE_API bool CanUndo(TSubclassOf<UHeartActionBase> Action, const UObject* Target);
+
 	HEARTCORE_API bool Undo(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FBloodContainer& UndoData);
 }
 ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)

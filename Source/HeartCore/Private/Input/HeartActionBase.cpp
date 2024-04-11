@@ -68,6 +68,13 @@ namespace Heart::Action
 		return FNativeExec::Execute(ActionObject, Args);
 	}
 
+	bool CanUndo(const TSubclassOf<UHeartActionBase> Action, const UObject* Target)
+	{
+		return IsValid(Action) ?
+			FNativeExec::CanUndo(Action->GetDefaultObject<UHeartActionBase>(), Target) :
+			false;
+	}
+
 	bool Undo(const TSubclassOf<UHeartActionBase> Action, UObject* Target, const FBloodContainer& UndoData)
 	{
 		if (!ensure(IsValid(Action)))

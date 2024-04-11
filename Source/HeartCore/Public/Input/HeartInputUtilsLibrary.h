@@ -3,11 +3,10 @@
 #pragma once
 
 #include "HeartEvent.h"
-#include "HeartInputActivation.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartInputUtilsLibrary.generated.h"
 
-struct FHeartInputActivation;
+struct FHeartManualEvent;
 class UHeartInputBindingAsset;
 class UHeartInputLinkerBase;
 
