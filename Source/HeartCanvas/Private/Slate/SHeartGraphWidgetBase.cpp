@@ -4,8 +4,6 @@
 
 #include "Model/HeartGraphNode.h"
 
-#include "SlateOptMacros.h"
-
 namespace Heart::Canvas
 {
 	FReply SGraphWidgetBase::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -19,6 +17,9 @@ namespace Heart::Canvas
 		auto&& Reply = Heart::Input::LinkOnMouseButtonDown<SWidget>(SharedThis(this), InGeometry, InMouseEvent);
 		return Reply.IsEventHandled() ? Reply : Super::OnMouseButtonDown(InGeometry, InMouseEvent);
 	}
+	FLinkerMetadata::FLinkerMetadata(UHeartSlateInputLinker* Linker, const ESlateWidgetType WidgetType)
+	  : Linker(Linker),
+		WidgetType(WidgetType) {}
 
 	FReply SGraphWidgetBase::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 	{
@@ -92,18 +93,16 @@ namespace Heart::Canvas
 		Heart::Input::LinkOnDragLeave<SWidget>(SharedThis(this), InDragDropEvent);
 		*/
 	}
+	FGraphAndLinkerMetadata::FGraphAndLinkerMetadata(UHeartGraph* Graph, UHeartSlateInputLinker* Linker)
+	  : FLinkerMetadata(Linker, ESlateWidgetType::Graph),
+		Graph(Graph) {}
 
 	FNodeAndLinkerMetadata::FNodeAndLinkerMetadata(UHeartGraphNode* Node, UHeartSlateInputLinker* Linker, const ESlateWidgetType WidgetType)
-		: Node(Node), Linker(Linker), WidgetType(WidgetType)
-	{
-	}
-
-BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
+	  : FLinkerMetadata(Linker, WidgetType),
+		Node(Node) {}
 
 	void SGraphWidgetBase::Construct(const FArguments& InArgs)
 	{
 		AddMetadata(MakeShared<FNodeAndLinkerMetadata>(InArgs._GraphNode, InArgs._Linker, InArgs._Type));
 	}
-
-END_SLATE_FUNCTION_BUILD_OPTIMIZATION
 }

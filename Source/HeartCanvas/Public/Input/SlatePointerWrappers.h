@@ -4,6 +4,7 @@
 
 #include "UObject/Object.h"
 #include "Input/HeartEvent.h"
+#include "Model/HeartGraphInterface.h"
 #include "View/HeartVisualizerInterfaces.h"
 #include "SlatePointerWrappers.generated.h"
 
@@ -20,6 +21,18 @@ public:
 
 protected:
 	TSharedPtr<SWidget> SlatePointer;
+};
+
+/**
+ * Child of HeartSlatePtr, whose sole purpose is to pass checks for implementing IHeartGraphInterface
+ */
+UCLASS()
+class UHeartSlateGraph : public UHeartSlatePtr, public IHeartGraphInterface
+{
+	GENERATED_BODY()
+
+public:
+	virtual UHeartGraph* GetHeartGraph() const override;
 };
 
 /**

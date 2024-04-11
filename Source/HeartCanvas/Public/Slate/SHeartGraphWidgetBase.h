@@ -5,6 +5,7 @@
 #include "Input/HeartSlateInputLinker.h"
 #include "Widgets/SCompoundWidget.h"
 
+class UHeartGraph;
 class UHeartGraphNode;
 
 namespace Heart::Canvas
@@ -12,8 +13,9 @@ namespace Heart::Canvas
 	enum ESlateWidgetType
 	{
 		None,
-		Pin,
+		Graph,
 		Node,
+		Pin,
 
 		// note: doesn't do anything, but here for later
 		Connection
@@ -22,14 +24,12 @@ namespace Heart::Canvas
 	/**
 	 * RTTI for heart's input and visualization reflection
 	 */
-	class HEARTCANVAS_API FNodeAndLinkerMetadata : public ISlateMetaData
+	class HEARTCANVAS_API FLinkerMetadata : public ISlateMetaData
 	{
 	public:
 		SLATE_METADATA_TYPE(FNodeAndLinkerMetadata, ISlateMetaData)
 
-		FNodeAndLinkerMetadata(UHeartGraphNode* Node, UHeartSlateInputLinker* Linker, ESlateWidgetType WidgetType);
-
-		TWeakObjectPtr<UHeartGraphNode> Node;
+		FLinkerMetadata(UHeartSlateInputLinker* Linker, ESlateWidgetType WidgetType);
 
 		TWeakObjectPtr<UHeartSlateInputLinker> Linker;
 
@@ -37,7 +37,33 @@ namespace Heart::Canvas
 	};
 
 	/**
-	 *
+	 * RTTI for heart's input and visualization reflection
+	 */
+	class HEARTCANVAS_API FGraphAndLinkerMetadata : public FLinkerMetadata
+	{
+	public:
+		SLATE_METADATA_TYPE(FGraphAndLinkerMetadata, FLinkerMetadata)
+
+		FGraphAndLinkerMetadata(UHeartGraph* Graph, UHeartSlateInputLinker* Linker);
+
+		TWeakObjectPtr<UHeartGraph> Graph;
+	};
+
+	/**
+	 * RTTI for heart's input and visualization reflection
+	 */
+	class HEARTCANVAS_API FNodeAndLinkerMetadata : public FLinkerMetadata
+	{
+	public:
+		SLATE_METADATA_TYPE(FNodeAndLinkerMetadata, FLinkerMetadata)
+
+		FNodeAndLinkerMetadata(UHeartGraphNode* Node, UHeartSlateInputLinker* Linker, ESlateWidgetType WidgetType);
+
+		TWeakObjectPtr<UHeartGraphNode> Node;
+	};
+
+	/**
+	 * An example base class for a Node or Pin slate widget
 	 */
 	class HEARTCANVAS_API SGraphWidgetBase : public SCompoundWidget
 	{
