@@ -361,10 +361,9 @@ namespace Heart::Query
 			{
 				for (auto&& Key : Results.GetValue())
 				{
-					if (auto Result = Pred(Lookup(Key));
-						Result.IsSet())
+					if (Pred(Lookup(Key)))
 					{
-						return Result.GetValue();
+						return Key;
 					}
 				}
 			}
@@ -372,10 +371,9 @@ namespace Heart::Query
 			{
 				for (auto&& Element : FQueryRange(this))
 				{
-					if (auto Result = Pred(Element.Value);
-						Result.IsSet())
+					if (Pred(Element.Value))
 					{
-						return Result.GetValue();
+						return Element.Key;
 					}
 				}
 			}
