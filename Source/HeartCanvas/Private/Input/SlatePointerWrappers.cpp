@@ -19,16 +19,15 @@ UHeartSlatePtr* UHeartSlatePtr::Wrap(const TSharedRef<SWidget>& Widget)
 
 	switch (Metadata->WidgetType)
 	{
-	case Heart::Canvas::None:
-		break;
 	case Heart::Canvas::Pin:
 		NewWrapper = NewObject<UHeartSlatePin>();
 		break;
 	case Heart::Canvas::Node:
 		NewWrapper = NewObject<UHeartSlateNode>();
 		break;
+	case Heart::Canvas::None:
 	case Heart::Canvas::Connection:
-		// @todo do we need a unique connection type?
+		// @todo do we need a unique type for connections ?
 		NewWrapper = NewObject<UHeartSlatePtr>();
 		break;
 	}
