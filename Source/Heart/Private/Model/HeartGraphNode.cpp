@@ -246,7 +246,7 @@ TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGui
 	if (auto Links = PinData.GetConnections(Pin);
 		Links.IsSet())
 	{
-		return TSet<FHeartGraphPinReference>(Links.GetValue().GetLinks());
+		return TSet<FHeartGraphPinReference>(TArray<FHeartGraphPinReference>(Links.GetValue().GetLinks()));
 	}
 	return {};
 }

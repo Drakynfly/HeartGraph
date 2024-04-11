@@ -256,7 +256,7 @@ void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
 {
 	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
 	{
-		if (*ExtensionPtr)
+		if (IsValid(*ExtensionPtr))
 		{
 			(*ExtensionPtr)->PreExtensionRemove();
 		}

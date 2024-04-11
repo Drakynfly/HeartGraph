@@ -17,7 +17,7 @@ namespace Heart::Action::History
 		HEART_API void EndLog(bool Successful, FBloodContainer* UndoData);
 	}
 
-	// Is this action being executing in a state that we want to record.
+	// Is this action being executing in a state that we want to record?
 	HEART_API bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments);
 
 	// Are we currently running an undoable action?
@@ -27,7 +27,7 @@ namespace Heart::Action::History
 	HEART_API UHeartGraph* GetGraphFromActionStack();
 
 	// A simple wrapper around a lambda that executes an action. If the action is loggable, and it succeeds, it will be
-	// recorded, provided that an Action History extension can be found.
+	// recorded if an Action History extension can be found.
 	template <typename T>
 	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
 	{
@@ -47,13 +47,13 @@ namespace Heart::Action::History
 		return Event;
 	}
 
-	bool TryUndo(UHeartGraph* Graph);
-	bool TryUndo(UHeartActionHistory* History);
+	HEART_API bool TryUndo(UHeartGraph* Graph);
+	HEART_API bool TryUndo(UHeartActionHistory* History);
 
-	FHeartEvent TryRedo(const UHeartGraph* Graph);
+	HEART_API FHeartEvent TryRedo(const UHeartGraph* Graph);
 }
 
-USTRUCT()
+USTRUCT(BlueprintType, meta = (HasNativeBreak = "/Script/Heart.HeartGraphUtils.BreakHeartActionRecord"))
 struct FHeartActionRecord
 {
 	GENERATED_BODY()
@@ -61,7 +61,7 @@ struct FHeartActionRecord
 	UPROPERTY()
 	TSubclassOf<UHeartActionBase> Action;
 
-	// Original arguments used to execute this action. Used to 'Redo' an un-done action.
+	// Original arguments used to execute this action. Used to 'Redo' an undone action.
 	Heart::Action::FArguments Arguments;
 
 	// Data stored by the action when it first ran, such as mouse position or node guids, everything needed to undo the action.

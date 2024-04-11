@@ -59,7 +59,7 @@ protected:
 	TSet<FHeartGraphPinReference> Links;
 
 public:
-	TArray<FHeartGraphPinReference> GetLinks() const { return Connections; }
+	TConstArrayView<FHeartGraphPinReference> GetLinks() const { return Connections; }
 
 	bool Serialize(FArchive& Ar)
 	{

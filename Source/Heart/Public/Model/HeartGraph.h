@@ -40,11 +40,11 @@ struct FHeartGraphSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Display")
 	FText GraphTypeName;
 
-	// Can the editor create instances of this graph as an asset.
+	// Can the editor create instances of this graph as an asset?
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	bool CanCreateAssetFromFactory = false;
 
-	// Should this class be shown in the "Common" section when creating a new Heart Graph
+	// Should this class be shown in the "Common" section when creating a new Heart Graph?
 	UPROPERTY(EditDefaultsOnly, Category = "Editor")
 	bool DisplayClassAsCommonInFactory = false;
 #endif
@@ -187,7 +187,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void RemoveExtension(TSubclassOf<UHeartGraphExtension> Class);
 
-	/** Remove extension of the template class. */
+	/** Remove the extension of the template class. */
 	template <typename ExtensionType>
 	void RemoveExtension()
 	{
@@ -293,6 +293,7 @@ private:
 	UPROPERTY(Instanced)
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
+	// @todo doesn't need to be a map. Demote to TArray
 	UPROPERTY(Instanced, VisibleAnywhere)
 	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
 

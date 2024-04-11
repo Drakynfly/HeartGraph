@@ -19,6 +19,7 @@ class HEART_API UHeartGraphExtension : public UObject
 
 public:
 	// Get the owning Heart Graph
+	UFUNCTION(BlueprintCallable, Category = "Heart|Extension")
 	UHeartGraph* GetGraph() const;
 
 protected:

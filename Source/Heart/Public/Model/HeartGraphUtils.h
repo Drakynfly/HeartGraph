@@ -9,19 +9,23 @@
 
 #include "HeartGraphUtils.generated.h"
 
-struct FHeartGraphPinDesc;
+struct FBloodContainer;
+struct FHeartActionRecord;
+struct FHeartInputActivation;
 struct FHeartGuid;
+struct FHeartGraphPinDesc;
 struct FHeartGraphPinReference;
 class IHeartGraphInterface;
 class IHeartGraphNodeInterface;
 class IHeartGraphPinInterface;
+class UHeartActionBase;
 class UHeartGraph;
 class UHeartGraphExtension;
 class UHeartGraphNode;
 
 namespace Heart::Utils
 {
-	using FFindNodePredicate = TDelegate<bool(const UHeartGraphNode*)>;
+	using FFindNodePredicate = TFunctionRef<bool(const UHeartGraphNode*)>;
 
 	[[nodiscard]] HEART_API UHeartGraphNode* FindNodeOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
 
@@ -117,6 +121,10 @@ public:
 	//UFUNCTION(BlueprintPure, Category = "Heart|GraphPin")
 	static TOptional<FHeartGraphPinDesc> ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference);
 
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetInputLinker")
+	static void BreakHeartActionRecord(const FHeartActionRecord& Record, TSubclassOf<UHeartActionBase>& Action, UObject*& Target,
+		FHeartInputActivation& Activation, UObject*& Payload, FBloodContainer& UndoData);
 
 	// Makes a Node Source from a Class. Add this to a Registry to spawn nodes with instances of this class.
 	UFUNCTION(BlueprintPure, Category = "Heart|Registry")

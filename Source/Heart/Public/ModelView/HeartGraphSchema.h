@@ -13,7 +13,7 @@ class UHeartGraphAction;
 
 /**
  * This is the type of response the graph editor should take when making a connection
- * WARNING: Must have same order as ECanCreateConnectionResponse!!!
+ * WARNING: Must have the same order as ECanCreateConnectionResponse!!!
  */
 UENUM(BlueprintType)
 enum class EHeartCanConnectPinsResponse : uint8

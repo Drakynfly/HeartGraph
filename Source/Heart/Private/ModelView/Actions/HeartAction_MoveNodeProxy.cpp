@@ -7,7 +7,14 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_MoveNodeProxy)
 
+#define LOCTEXT_NAMESPACE "HeartAction_MoveNodeProxy"
+
 const FLazyName UHeartAction_MoveNodeProxy::LocationStorage("nodelocs");
+
+FText UHeartAction_MoveNodeProxy::GetDescription(const UObject* Target) const
+{
+	return LOCTEXT("Description", "Move Node Helper");
+}
 
 FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
 													   UObject* ContextObject, FBloodContainer& UndoData) const
@@ -21,6 +28,7 @@ FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(UHeartGraph* Graph, const
 		if (auto&& Node = Graph->GetNode(NodeLocations.Key))
 		{
 			Node->SetLocation(NodeLocations.Value.New);
+			Node->GetGraph()->NotifyNodeLocationsChanged({Node}, false);
 		}
 	}
 
@@ -38,8 +46,11 @@ bool UHeartAction_MoveNodeProxy::Undo(UObject* Target, const FBloodContainer& Un
 		if (auto&& Node = Graph->GetNode(NodeLocations.Key))
 		{
 			Node->SetLocation(NodeLocations.Value.Original);
+			Node->GetGraph()->NotifyNodeLocationsChanged({Node}, false);
 		}
 	}
 
 	return true;
 }
+
+#undef LOCTEXT_NAMESPACE

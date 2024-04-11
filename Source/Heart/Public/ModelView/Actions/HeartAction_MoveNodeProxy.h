@@ -39,6 +39,7 @@ public:
 	static const FLazyName LocationStorage;
 
 protected:
+	virtual FText GetDescription(const UObject* Target) const override;
 	virtual bool CanExecute(const UObject* Target) const override { return true; }
 	virtual FHeartEvent ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual bool CanUndo(const UObject* Target) const override { return true; }

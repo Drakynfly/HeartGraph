@@ -6,6 +6,7 @@
 #include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinInterface.h"
+#include "ModelView/HeartActionHistory.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphUtils)
 
@@ -17,7 +18,7 @@ namespace Heart::Utils
 
 		UHeartGraphNode* OutNode = nullptr;
 
-		// Find first node of the given class
+		// Find the first node of the given class
 		Graph->ForEachNode(
 			[Class, &OutNode](UHeartGraphNode* Node)
 			{
@@ -33,15 +34,13 @@ namespace Heart::Utils
 
 	UHeartGraphNode* FindNodeByPredicate(const UHeartGraph* Graph, const FFindNodePredicate& Predicate)
 	{
-		if (UNLIKELY(!Predicate.IsBound())) return nullptr;
-
 		UHeartGraphNode* OutNode = nullptr;
 
-		// Find first node that returns true for the given predicate
+		// Find the first node that returns true for the given predicate
 		Graph->ForEachNode(
 			[Predicate, &OutNode](UHeartGraphNode* Node)
 			{
-				if (Predicate.Execute(Node))
+				if (Predicate(Node))
 				{
 					OutNode = Node;
 				}
@@ -58,7 +57,7 @@ namespace Heart::Utils
 
 		TArray<UHeartGraphNode*> OutNodes;
 
-		// Find first node of the given class
+		// Find the first node of the given class
 		Graph->ForEachNode(
 			[Class, &OutNodes](UHeartGraphNode* Node)
 			{
@@ -76,11 +75,11 @@ namespace Heart::Utils
 	{
 		TArray<UHeartGraphNode*> OutNodes;
 
-		// Find first node of the given class
+		// Find the first node of the given class
 		Graph->ForEachNode(
 			[Predicate, &OutNodes](UHeartGraphNode* Node)
 			{
-				if (Predicate.Execute(Node))
+				if (Predicate(Node))
 				{
 					OutNodes.Add(Node);
 				}
@@ -147,11 +146,11 @@ UHeartGraphNode* UHeartGraphUtils::FindNodeByPredicate(const TScriptInterface<IH
                                                        const FHeartGraphNodePredicate& Predicate)
 {
 	if (!Graph.GetInterface()) return nullptr;
-	return Heart::Utils::FindNodeByPredicate(Graph->GetHeartGraph(), Heart::Utils::FFindNodePredicate::CreateLambda(
+	return Heart::Utils::FindNodeByPredicate(Graph->GetHeartGraph(),
 		[Predicate](const UHeartGraphNode* Node)
 		{
 			return Predicate.Execute(Node);
-		}));
+		});
 }
 
 TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesOfClass(const TScriptInterface<IHeartGraphInterface>& Graph,
@@ -165,11 +164,11 @@ TArray<UHeartGraphNode*> UHeartGraphUtils::FindAllNodesByPredicate(const TScript
                                                                    const FHeartGraphNodePredicate& Predicate)
 {
 	if (!Graph.GetInterface()) return {};
-	return Heart::Utils::FindAllNodesByPredicate(Graph->GetHeartGraph(), Heart::Utils::FFindNodePredicate::CreateLambda(
+	return Heart::Utils::FindAllNodesByPredicate(Graph->GetHeartGraph(),
 		[Predicate](const UHeartGraphNode* Node)
 		{
 			return Predicate.Execute(Node);
-		}));
+		});
 }
 
 TArray<FHeartPinGuid> UHeartGraphUtils::FindPinsByTag(const UHeartGraphNode* Node, const FHeartGraphPinTag Tag)
@@ -281,6 +280,16 @@ FHeartGraphPinReference UHeartGraphUtils::MakeReference(const TScriptInterface<I
 TOptional<FHeartGraphPinDesc> UHeartGraphUtils::ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference)
 {
 	return Heart::Utils::ResolvePinDesc(Graph->GetHeartGraph(), Reference);
+}
+
+void UHeartGraphUtils::BreakHeartActionRecord(const FHeartActionRecord& Record, TSubclassOf<UHeartActionBase>& Action,
+UObject*& Target, FHeartInputActivation& Activation, UObject*& Payload, FBloodContainer& UndoData)
+{
+	Action = Record.Action;
+	Target = Record.Arguments.Target;
+	Activation = Record.Arguments.Activation;
+	Payload = Record.Arguments.Payload;
+	UndoData = Record.UndoData;
 }
 
 FHeartNodeSource UHeartGraphUtils::MakeNodeSourceFromClass(UClass* Class)

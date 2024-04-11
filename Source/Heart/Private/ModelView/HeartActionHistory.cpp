@@ -60,7 +60,7 @@ namespace Heart::Action::History
 						return;
 					}
 				}
-				// Unable to find HeartGraph for some reason, so bail from trying to log.
+				// Unable to find the HeartGraph for some reason, so bail from trying to log.
 			}
 
 			// Store current action as non-loggable.
@@ -162,7 +162,7 @@ void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
 	// Clear history above Pointer
 	Actions.SetNumUninitialized(ActionPointer + 1);
 
-	// Remove element at index 0, but don't shrink array, because we are just going to add another element
+	// Remove the element at index 0, but don't shrink, because we are just going to add another element
 	if (Actions.Num() == MaxRecordedActions)
 	{
 		Actions.RemoveAt(0, 1, false);
