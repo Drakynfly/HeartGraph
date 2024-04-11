@@ -39,7 +39,7 @@ void SHeartGraphNodeBase::Construct(const FArguments& InArgs, UHeartEdGraphNode*
 	check(EditorLinker);
 
 	AddMetadata(MakeShared<Heart::Canvas::FNodeAndLinkerMetadata>(
-		HeartEdGraphNode->GetHeartGraphNode(), EditorLinker, Heart::Canvas::Node));
+		HeartEdGraphNode->GetHeartGraphNode(), EditorLinker));
 
 	SetCursor(EMouseCursor::CardinalCross);
 	UpdateGraphNode();

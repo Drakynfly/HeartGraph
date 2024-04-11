@@ -193,7 +193,7 @@ namespace Heart::Input
 	{
 		for (TSharedPtr<SWidget> Test = Widget; Test.IsValid(); Test = Test->GetParentWidget())
 		{
-			if (TSharedPtr<Canvas::FNodeAndLinkerMetadata> Metadata = Test->GetMetaData<Canvas::FNodeAndLinkerMetadata>();
+			if (TSharedPtr<Canvas::FLinkerMetadata> Metadata = Test->GetMetaData<Canvas::FLinkerMetadata>();
 				Metadata.IsValid())
 			{
 				return Metadata->Linker.Get();

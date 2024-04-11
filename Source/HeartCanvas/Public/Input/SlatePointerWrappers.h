@@ -57,6 +57,7 @@ class UHeartSlatePin : public UHeartSlatePtr, public IGraphPinVisualizerInterfac
 
 public:
 	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	virtual FHeartPinGuid GetPinGuid() const override;
 };
 
 /**

@@ -18,7 +18,9 @@ public:
 	static UHeartEdGraphPin* Wrap(const UEdGraphPin* Pin);
 
 	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	virtual FHeartPinGuid GetPinGuid() const override;
 
 protected:
 	const UEdGraphPin* EdGraphPin = nullptr;
+	FHeartPinGuid PinGuid;
 };
