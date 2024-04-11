@@ -10,7 +10,7 @@ struct FBloodValue;
 
 /**
  * Blood Containers are a collection of Blood Values. They are essentially a dynamic struct, and they can hold any number
- * of values of any type, designated by FName labels.
+ * of values with any type, designated by FName labels.
  * Internally implemented using FInstancedPropertyBag.
  */
 USTRUCT(BlueprintType)
@@ -46,7 +46,7 @@ struct BLOOD_API FBloodContainer
 	template<typename TBloodData>
 	auto Get(const FName Name) const;
 
-	// Does this container have a value for a Name
+	// Does this container have a value for a Name?
 	bool Contains(FName Name) const;
 
 	int32 Num() const;
@@ -95,8 +95,7 @@ template <typename TBloodData> auto FBloodContainer::Get(const FName Name) const
 		TPair<FName, FName> Names;
 		CreateMapNames(Name, Names.Key, Names.Value);
 		TBloodData Out;
-		Blood::Read::Container2<TBloodData>(
-			PropertyBag, Names, Out);
+		Blood::Read::Container2<TBloodData>(PropertyBag, Names, Out);
 		return Out;
 	}
 	else if constexpr (TIsTArray<TBloodData>::Value)

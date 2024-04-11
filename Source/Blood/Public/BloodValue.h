@@ -50,13 +50,13 @@ struct BLOOD_API FBloodValue
 	// @todo this should really also work with wrapped types
 	bool Is(const UField* Type) const;
 
-	// Is this a single value
+	// Is this a single value?
 	bool IsSingle() const;
 
-	// Is this a one-dimensional container, e.g, Arrays and Sets
+	// Is this a one-dimensional container, e.g., Arrays and Sets?
 	bool IsContainer1() const;
 
-	// Is this a two-dimensional container, e.g, Maps
+	// Is this a two-dimensional container, e.g., Maps?
 	bool IsContainer2() const;
 
 	friend bool operator==(const FBloodValue& Lhs, const FBloodValue& Rhs)

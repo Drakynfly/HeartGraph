@@ -424,6 +424,8 @@ namespace Blood
 		template <class TContainer>
 		void Container1(const FInstancedPropertyBag& Bag, const FName Name, TContainer& Out)
 		{
+			using Type = typename TContainer::ElementType;
+
 			auto MaybeArrayRef = Bag.GetArrayRef(Name);
 			check(MaybeArrayRef.HasValue());
 
@@ -431,13 +433,16 @@ namespace Blood
 
 			for (int32 i = 0; i < ArrayRef.Num(); ++i)
 			{
-				Out.Add(TDataConverter<typename TContainer::ElementType>::ReadIndex(ArrayRef, i));
+				Out.Add(TDataConverter<Type>::ReadIndex(ArrayRef, i));
 			}
 		}
 
 		template <class TContainer>
 		void Container2(const FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, TContainer& Out)
 		{
+			using Type0 = typename TContainer::KeyType;
+			using Type1 = typename TContainer::ValueType;
+
 			auto MaybeArrayRef0 = Bag.GetArrayRef(Names.Key);
 			auto MaybeArrayRef1 = Bag.GetArrayRef(Names.Value);
 			check(MaybeArrayRef0.HasValue());
@@ -448,8 +453,8 @@ namespace Blood
 
 			for (int32 i = 0; i < ArrayRef0.Num(); ++i)
 			{
-				Out.Add(TDataConverter<typename TContainer::KeyType>::ReadIndex(ArrayRef0, i),
-						TDataConverter<typename TContainer::ValueType>::ReadIndex(ArrayRef1, i));
+				Out.Add(TDataConverter<Type0>::ReadIndex(ArrayRef0, i),
+						TDataConverter<Type1>::ReadIndex(ArrayRef1, i));
 			}
 		}
 	}
@@ -478,12 +483,14 @@ namespace Blood
 		template <class TContainer>
 		void Container1(FInstancedPropertyBag& Bag, FName Name, const TContainer& Value)
 		{
+			using Type = typename TContainer::ElementType;
+
 			// Init property
 			Bag.AddContainerProperty(
 				Name,
 				EPropertyBagContainerType::Array,
-				TDataConverter<typename TContainer::ElementType>::PropertyBagType(),
-				TDataConverter<typename TContainer::ElementType>::PropertyBagTypeObject());
+				TDataConverter<Type>::PropertyBagType(),
+				TDataConverter<Type>::PropertyBagTypeObject());
 
 			auto&& BetterBeArray = Bag.GetMutableArrayRef(Name);
 			check(BetterBeArray.HasValue());
@@ -494,7 +501,7 @@ namespace Blood
 			int32 Index = 0;
 			for (auto&& Element : Value)
 			{
-				TDataConverter<typename TContainer::ElementType>::WriteIndex(ArrayRef, Index, Element);
+				TDataConverter<Type>::WriteIndex(ArrayRef, Index, Element);
 				Index++;
 			}
 		}
@@ -502,10 +509,13 @@ namespace Blood
 		template <class TContainer>
 		void Container2(FInstancedPropertyBag& Bag, const TPair<FName, FName>& Names, const TContainer& Value)
 		{
+			using Type0 = typename TContainer::KeyType;
+			using Type1 = typename TContainer::ValueType;
+
 			// Init properties
 			const TArray<FPropertyBagPropertyDesc> PropertyDescs{
-				FPropertyBagPropertyDesc(Names.Key, EPropertyBagContainerType::Array, TDataConverter<typename TContainer::KeyType>::PropertyBagType(), TDataConverter<typename TContainer::KeyType>::PropertyBagTypeObject()),
-				FPropertyBagPropertyDesc(Names.Value, EPropertyBagContainerType::Array, TDataConverter<typename TContainer::ValueType>::PropertyBagType(), TDataConverter<typename TContainer::ValueType>::PropertyBagTypeObject())
+				FPropertyBagPropertyDesc(Names.Key, EPropertyBagContainerType::Array, TDataConverter<Type0>::PropertyBagType(), TDataConverter<Type0>::PropertyBagTypeObject()),
+				FPropertyBagPropertyDesc(Names.Value, EPropertyBagContainerType::Array, TDataConverter<Type1>::PropertyBagType(), TDataConverter<Type1>::PropertyBagTypeObject())
 			};
 
 			Bag.AddProperties(PropertyDescs);
@@ -523,8 +533,8 @@ namespace Blood
 			int32 Index = 0;
 			for (auto&& Element : Value)
 			{
-				TDataConverter<typename TContainer::KeyType>::WriteIndex(ArrayRef0, Index, Element.Key);
-				TDataConverter<typename TContainer::ValueType>::WriteIndex(ArrayRef1, Index, Element.Value);
+				TDataConverter<Type0>::WriteIndex(ArrayRef0, Index, Element.Key);
+				TDataConverter<Type1>::WriteIndex(ArrayRef1, Index, Element.Value);
 				Index++;
 			}
 		}
