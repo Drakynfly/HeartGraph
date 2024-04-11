@@ -107,12 +107,8 @@ FReply type::NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEv
 \
 void type::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)\
 {\
-	auto Operation = Heart::Input::LinkOnDragDetected<UWidget>(this, InGeometry, InMouseEvent);\
-	if (IsValid(Operation))\
-	{\
-		OutOperation = Operation;\
-	}\
-	else\
+	OutOperation = Heart::Input::LinkOnDragDetected<UWidget>(this, InGeometry, InMouseEvent);\
+	if (!IsValid(OutOperation))\
 	{\
 		Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);\
 	}\
