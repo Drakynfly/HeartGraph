@@ -116,3 +116,14 @@ FHeartEvent UHeartActionBase::ExecuteGraphActionWithPayload(const TSubclassOf<UH
 {
 	return Heart::Action::Execute(Class, Target, Activation, Payload);
 }
+
+FText UHeartActionBase::GetDescription(const UObject* Target) const
+{
+	if (!IsValid(Target))
+	{
+		return FText::FromString(GetClass()->GetName());
+	}
+
+	return FText::FromString(FString::Printf(TEXT("%s:'%s'"),
+		*GetClass()->GetName(), *Target->GetName()));
+}

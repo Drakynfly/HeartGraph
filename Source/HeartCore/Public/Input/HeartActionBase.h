@@ -84,7 +84,8 @@ ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
  * Heart Actions are run by calling Execute on their CDO, so they do not need to be instanced, nor should they ever be.
  * All member functions are const, and all mutations to graph state are performed through Execution parameters.
  *
- * Any non-abstract child must implement `GetDescription`, `CanExecute`, and `Execute` unless a parent does it for them.
+ * Any non-abstract child must implement `CanExecute` and `Execute` unless a parent does it for them.
+ * Override GetDescription for a custom FText label used in user-facing UI.
  * Optionally, `CanUndo` & `Undo` may be implemented to support Undo/Redo behavior.
  */
 UCLASS(Abstract, Const, meta = (DontUseGenericSpawnObject = "True"))
@@ -95,7 +96,12 @@ class HEARTCORE_API UHeartActionBase : public UObject
 	friend struct Heart::Action::FNativeExec;
 
 protected:
+	//~ UObject
 	virtual void PostInitProperties() override;
+	//~ UObject
+
+
+	/**		STATIC BLUEPRINT API	**/
 
 	/** Gets the description for an action, optionally adaptive to a specific target */
 	UFUNCTION(BlueprintPure, Category = "Heart|GraphActionBase")
@@ -111,7 +117,11 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
 	static FHeartEvent ExecuteGraphActionWithPayload(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation, UObject* Payload);
 
-	virtual FText GetDescription(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::GetDescription, return FText::GetEmpty(); )
+
+	/**		VIRTUAL PROTECTED API	**/
+
+	virtual FText GetDescription(const UObject* Target) const;
+
 	virtual bool CanExecute(const UObject* Target) const PURE_VIRTUAL(UHeartActionBase::CanExecute, return false; )
 	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) const
 		PURE_VIRTUAL(UHeartActionBase::Execute, return FHeartEvent::Invalid; )
