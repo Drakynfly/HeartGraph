@@ -78,7 +78,7 @@ struct HEARTCORE_API FHeartInputTrigger_KeyUpMod : public FHeartInputTrigger
 	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyUp")
-	TSet<FHeartKeyAndModifiers> Keys;
+	TArray<FHeartKeyAndModifiers> Keys;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Manual"))
