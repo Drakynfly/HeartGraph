@@ -12,16 +12,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputLinkerBase)
 
-// @todo hook these back up somewhere
-DECLARE_CYCLE_STAT(TEXT("HandleOnMouseWheel"),		STAT_HandleOnMouseWheel, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonDown"),	STAT_HandleOnMouseButtonDown, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnMouseButtonUp"),	STAT_HandleOnMouseButtonUp, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnKeyDown"),			STAT_HandleOnKeyDown, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnKeyUp"),			STAT_HandleOnKeyUp, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleOnDragDetected"),	STAT_HandleOnDragDetected, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleNativeOnDragOver"),	STAT_HandleNativeOnDragOver, STATGROUP_HeartCore);
-DECLARE_CYCLE_STAT(TEXT("HandleNativeOnDrop"),		STAT_HandleNativeOnDrop, STATGROUP_HeartCore);
-
+DECLARE_CYCLE_STAT(TEXT("QuickTryCallbacks"), STAT_QuickTryCallbacks, STATGROUP_HeartCore);
 DECLARE_CYCLE_STAT(TEXT("HandleManualInput"), STAT_HandleManualInput, STATGROUP_HeartCore);
 
 using namespace Heart::Input;
@@ -67,6 +58,8 @@ FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TF
 
 FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
 {
+	SCOPE_CYCLE_COUNTER(STAT_QuickTryCallbacks)
+
 	TOptional<FHeartEvent> Return;
 
 	Query(Trip).ForEachWithBreak(Target,
@@ -111,7 +104,7 @@ void UHeartInputLinkerBase::UnbindInputCallback(const FInputTrip& Trip)
 
 FHeartEvent UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FName Key, const FHeartManualEvent& Activation)
 {
-	SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
+	SCOPE_CYCLE_COUNTER(STAT_HandleManualInput)
 
 	if (!IsValid(Target) || Key.IsNone())
 	{

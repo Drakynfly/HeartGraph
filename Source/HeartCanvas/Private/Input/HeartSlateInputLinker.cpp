@@ -29,14 +29,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Wid
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
 	// Mouse wheel events must always use the 'Press' type
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
@@ -48,9 +41,11 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 
 	const FHeartInputActivation Activation = PointerEvent;
 
-	Query(FInputTrip(PointerEvent, Press)).ForEachWithBreak(Wrapper,
+	Query(FInputTrip(PointerEvent, Press))
+		.ForEachWithBreak(Wrapper,
 		[&](const FSortableCallback& Ref)
 		{
+			// Slate interprets Deferred as launching a DragDropOperation
 			if (Ref.Priority == Deferred)
 			{
 				if (const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget;
@@ -67,15 +62,8 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
 			if (Ref.Priority <= HighestHandlingPriority)
 			{
-				if (Event.WasEventCaptured())
-				{
-					if (auto EventReply = Event.As<FEventReply>();
-						EventReply.IsSet())
-					{
-						Reply = EventReply.GetValue().NativeReply;
-						return false;
-					}
-				}
+				Reply = HeartEventToReply(Event);
+				return !Reply.IsEventHandled();
 			}
 
 			return true;
@@ -88,45 +76,21 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& 
 	const FPointerEvent& PointerEvent)
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
-
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnKeyDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FKeyEvent& KeyEvent)
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
-
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FKeyEvent& KeyEvent)
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
-
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
