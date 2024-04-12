@@ -334,13 +334,27 @@ namespace Heart::Query
 		QueryType& ForEach_UObject(const UserClass* InUserObject,
 			typename FCallback::template TConstMethodPtr<UserClass, VarTypes...> InFunc, VarTypes... Vars)
 		{
+			using Predicate = typename FCallback::template TConstMethodPtr<>;
 			FCallback Delegate = FCallback::CreateUObject(InUserObject, InFunc, Forward<VarTypes>(Vars)...);
 
 			if (Results.IsSet())
 			{
 				for (auto&& Key : Results.GetValue())
 				{
-					Delegate.Execute(Lookup(Key));
+					if constexpr (TIsPredicate<Predicate>::IsKeyPredicate)
+					{
+						Delegate.Execute(Key);
+					}
+
+					if constexpr (TIsPredicate<Predicate>::IsValuePredicate)
+					{
+						Delegate.Execute(Lookup(Key));
+					}
+
+					if constexpr (TIsPredicate<Predicate>::IsKeyValuePredicate)
+					{
+						Delegate.Execute(Key, Lookup(Key));
+					}
 				}
 			}
 			else
