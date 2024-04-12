@@ -21,6 +21,9 @@ public:
 
 	TSharedPtr<SWidget> GetWidget() const { return SlatePointer; }
 
+	template <class TWidgetType>
+	TSharedPtr<TWidgetType> GetWidget() const { return StaticCastSharedPtr<TWidgetType>(SlatePointer); }
+
 protected:
 	TSharedPtr<SWidget> SlatePointer;
 };
