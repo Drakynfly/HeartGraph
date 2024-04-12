@@ -111,6 +111,20 @@ void UHeartNetClient::OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy,
 	Server_OnNodeConnectionsChanged(Proxy, Event);
 }
 
+void UHeartNetClient::Server_UndoGraphAction_Implementation(UHeartGraphNetProxy* Proxy)
+{
+	ensure(IsValid(Proxy));
+	UE_LOG(LogHeartNet, Log, TEXT("Server: Client undoing action."))
+	Proxy->ExecuteUndo_Client();
+}
+
+void UHeartNetClient::Server_RedoGraphAction_Implementation(UHeartGraphNetProxy* Proxy)
+{
+	ensure(IsValid(Proxy));
+	UE_LOG(LogHeartNet, Log, TEXT("Server: Client redoing action"))
+	Proxy->ExecuteRedo_Client();
+}
+
 void UHeartNetClient::Server_UpdateGraphNode_Implementation(UHeartGraphNetProxy* Proxy,
 															const FHeartNodeFlake& NodeFlake, const EHeartUpdateNodeType Type)
 {

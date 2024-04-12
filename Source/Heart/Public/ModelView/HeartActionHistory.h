@@ -80,6 +80,12 @@ struct TStructOpsTypeTraits<FHeartActionRecord> : public TStructOpsTypeTraitsBas
 	};
 };
 
+using FHeartActionHistoryRecordUpdate = TMulticastDelegate<void(int32, int32)>;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartActionHistoryRecordUpdate_BP, int32, Index, int32, Count);
+
+using FHeartActionHistoryPointerChanged = TMulticastDelegate<void(int32)>;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartActionHistoryPointerChanged_BP, int32, Pointer);
+
 /**
  * A record of recent actions performed on a graph.
  */
@@ -94,13 +100,40 @@ public:
 	TOptional<FHeartActionRecord> RetrieveRecord();
 	TConstArrayView<FHeartActionRecord> RetrieveRecords(int32 Count);
 
+	TConstArrayView<FHeartActionRecord> ViewRecords(int32 Count) const;
+
+	FHeartActionHistoryRecordUpdate& GetOnRecordsUpdated() { return OnRecordsUpdatedNative; }
+	FHeartActionHistoryPointerChanged& GetOnPointerChanged() { return OnPointerChangedNative; }
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
+	int32 GetActionPointer() const { return ActionPointer; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|ActionHistory")
+	void ViewRecords(int32 Count, TArray<FHeartActionRecord>& Records) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintSetter, Category = "Heart|ActionHistory")
+	void SetMaxRecordedActions(int32 Count);
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
 	bool Undo();
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
 	FHeartEvent Redo();
 
+private:
+	void BroadcastPointer();
+	void BroadcastUpdate(int32 Index, int32 Count);
+
 protected:
+	FHeartActionHistoryRecordUpdate OnRecordsUpdatedNative;
+	FHeartActionHistoryPointerChanged OnPointerChangedNative;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FHeartActionHistoryRecordUpdate_BP OnRecordsUpdated;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FHeartActionHistoryPointerChanged_BP OnPointerChanged;
+
 	// Are we currently running an undoable action?
 	UFUNCTION(BlueprintPure, Category = "Heart|ActionHistory")
 	static bool IsUndoable();
@@ -111,9 +144,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ActionHistory")
 	int32 MaxRecordedActions = 50;
 
+
+	/**		STATE		**/
 private:
 	UPROPERTY()
-	TArray<FHeartActionRecord> Actions;
-
 	int32 ActionPointer = INDEX_NONE;
+
+	UPROPERTY()
+	TArray<FHeartActionRecord> Actions;
 };

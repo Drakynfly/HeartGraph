@@ -51,6 +51,7 @@ struct FHeartRemoteGraphActionArguments
 	UPROPERTY()
 	TObjectPtr<UObject> PinTarget;
 
+	// @todo why do we only support ManualEvents?
 	UPROPERTY()
 	FHeartManualEvent Activation;
 

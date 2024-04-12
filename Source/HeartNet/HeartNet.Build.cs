@@ -25,6 +25,7 @@ public class HeartNet : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new []
             {
+                "Blood",
                 "Heart",
                 "HeartCore"
             });

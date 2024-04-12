@@ -3,12 +3,14 @@
 #include "GraphProxy/HeartGraphNetProxy.h"
 #include "GraphProxy/HeartNetClient.h"
 #include "LogHeartNet.h"
+#include "Actions/HeartRemoteActionLog.h"
 #include "GraphProxy/HeartNetReplicationTypes.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNode3D.h"
 #include "Model/HeartNodeQuery.h"
 #include "Input/HeartActionBase.h"
+#include "ModelView/HeartActionHistory.h"
 
 #include "Net/UnrealNetwork.h"
 #include "View/HeartVisualizerInterfaces.h"
@@ -26,7 +28,8 @@ namespace Heart::Net::Tags
 
 	UE_DEFINE_GAMEPLAY_TAG(Other, "Heart.Net.OtherEvent")
 
-	UE_DEFINE_GAMEPLAY_TAG(Permission_Actions, "Heart.Net.GraphActionPermission")
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Permission_Actions, "Heart.Net.GraphActionPermission", "Allows clients to run graph action edits")
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Permission_UndoRedo, "Heart.Net.GraphHistoryPermission", "Allows clients to undo and redo graph action edits")
 	UE_DEFINE_GAMEPLAY_TAG(Permission_All, "Heart.Net.AllPermissions")
 }
 
@@ -400,8 +403,38 @@ void UHeartGraphNetProxy::ExecuteGraphActionOnServer(const TSubclassOf<UHeartAct
 	Args.Activation = Activation;
 	Args.ContextObject = ContextObject;
 
-	UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeRemoved"))
+	if (LogActionsClientside)
+	{
+		if (Heart::Action::CanUndo(Action, Target))
+		{
+			if (auto&& History = ProxyGraph->GetExtension<UHeartActionHistory>();
+				IsValid(History))
+			{
+				FHeartRemoteActionLogUndoData UndoData;
+				UndoData.NetProxy = this;
+
+				FHeartActionRecord Record;
+				Record.Action = UHeartRemoteActionLog::StaticClass();
+				Record.UndoData.Add(UHeartRemoteActionLog::LogStorage, UndoData);
+				History->AddRecord(Record);
+			}
+		}
+	}
+
+	UE_LOG(LogHeartNet, Log, TEXT("Proxy: ExecuteGraphAction"))
 	LocalClient->Server_ExecuteGraphAction(this, Action, Args);
+}
+
+void UHeartGraphNetProxy::ExecuteUndoOnServer()
+{
+	UE_LOG(LogHeartNet, Log, TEXT("Proxy: UndoGraphAction"))
+	LocalClient->Server_UndoGraphAction(this);
+}
+
+void UHeartGraphNetProxy::ExecuteRedoOnServer()
+{
+	UE_LOG(LogHeartNet, Log, TEXT("Proxy: RedoGraphAction"))
+	LocalClient->Server_RedoGraphAction(this);
 }
 
 void UHeartGraphNetProxy::OnRep_GraphClass()
@@ -594,6 +627,28 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const TSubclassOf<UHeartActi
 		UE_LOG(LogHeartNet, Log, TEXT("Graph Action data received from client, but Execute failed."))
 		return;
 	}
+}
+
+void UHeartGraphNetProxy::ExecuteUndo_Client()
+{
+	if (!CanClientPerformEvent(Heart::Net::Tags::Permission_UndoRedo))
+	{
+		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to undo action!"))
+		return;
+	}
+
+	Heart::Action::History::TryUndo(SourceGraph);
+}
+
+void UHeartGraphNetProxy::ExecuteRedo_Client()
+{
+	if (!CanClientPerformEvent(Heart::Net::Tags::Permission_UndoRedo))
+	{
+		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to redo action!"))
+		return;
+	}
+
+	Heart::Action::History::TryRedo(SourceGraph);
 }
 
 bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, const FGameplayTag EventType)

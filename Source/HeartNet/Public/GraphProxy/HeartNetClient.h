@@ -59,4 +59,10 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 	void Server_ExecuteGraphAction(UHeartGraphNetProxy* Proxy, TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);
+
+	UFUNCTION(Server, Reliable)
+	void Server_UndoGraphAction(UHeartGraphNetProxy* Proxy);
+
+	UFUNCTION(Server, Reliable)
+	void Server_RedoGraphAction(UHeartGraphNetProxy* Proxy);
 };

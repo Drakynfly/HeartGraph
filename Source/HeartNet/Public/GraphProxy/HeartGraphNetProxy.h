@@ -42,6 +42,9 @@ namespace Heart::Net::Tags
 	// Permissions-only tag for allowing clients to run graph action edits.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Permission_Actions)
 
+	// Permissions-only tag for allowing clients to undo and redo graph action edits.
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Permission_UndoRedo)
+
 	// Permissions-only tag for allowing any kind of client edit.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Permission_All)
 }
@@ -138,6 +141,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
 	void ExecuteGraphActionOnServer(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartManualEvent& Activation, UObject* ContextObject);
 
+	// Use this to RPC an undo request to the server.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
+	void ExecuteUndoOnServer();
+
+	// Use this to RPC a redo request to the server.
+	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
+	void ExecuteRedoOnServer();
+
 protected:
 	UFUNCTION()
 	virtual void OnRep_GraphClass();
@@ -160,7 +171,10 @@ protected:
 	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 
 	virtual void UpdateNodeData_Client(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
+
 	virtual void ExecuteGraphAction_Client(TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);
+	virtual void ExecuteUndo_Client();
+	virtual void ExecuteRedo_Client();
 
 	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, FGameplayTag EventType);
 	bool RemoveNodeProxy(const FHeartNodeGuid& NodeGuid);
@@ -193,6 +207,10 @@ protected:
 	// Client component used to RPC edits. Only ever valid on the client machine.
 	UPROPERTY(BlueprintReadOnly, Category = "Config")
 	TObjectPtr<UHeartNetClient> LocalClient;
+
+	// Should the client try to log actions that it RPCs locally?
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")
+	bool LogActionsClientside;
 
 
 	/**-------------------------*/

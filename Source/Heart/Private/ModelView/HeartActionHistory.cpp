@@ -170,6 +170,9 @@ void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
 
 	// Add action to record, and reassign Pointer to new index
 	ActionPointer = Actions.Emplace(Record);
+
+	BroadcastUpdate(ActionPointer, 1);
+	BroadcastPointer();
 }
 
 TOptional<FHeartActionRecord> UHeartActionHistory::RetrieveRecord()
@@ -178,7 +181,9 @@ TOptional<FHeartActionRecord> UHeartActionHistory::RetrieveRecord()
 	{
 		return {};
 	}
-	return Actions[ActionPointer--];
+	FHeartActionRecord& Action = Actions[ActionPointer--];
+	BroadcastPointer();
+	return Action;
 }
 
 TConstArrayView<FHeartActionRecord> UHeartActionHistory::RetrieveRecords(const int32 Count)
@@ -186,11 +191,41 @@ TConstArrayView<FHeartActionRecord> UHeartActionHistory::RetrieveRecords(const i
 	if (Count >= Actions.Num())
 	{
 		ActionPointer = INDEX_NONE;
-		return MakeArrayView(Actions);
+		return Actions;
 	}
 
 	ActionPointer -= Count;
+	BroadcastPointer();
+
 	return MakeArrayView(Actions).Right(Count);
+}
+
+TConstArrayView<FHeartActionRecord> UHeartActionHistory::ViewRecords(const int32 Count) const
+{
+	if (Count >= Actions.Num())
+	{
+		return Actions;
+	}
+	return MakeArrayView(Actions).Right(Count);
+}
+
+void UHeartActionHistory::ViewRecords(const int32 Count, TArray<FHeartActionRecord>& Records) const
+{
+	Records = ViewRecords(Count);
+}
+
+void UHeartActionHistory::SetMaxRecordedActions(const int32 Count)
+{
+	if (Count != MaxRecordedActions)
+	{
+		if (Actions.Num() > Count)
+		{
+			Actions.RemoveAt(0, Actions.Num() - Count);
+		}
+		BroadcastUpdate(0, INDEX_NONE);
+
+		MaxRecordedActions = Count;
+	}
 }
 
 bool UHeartActionHistory::Undo()
@@ -202,7 +237,7 @@ FHeartEvent UHeartActionHistory::Redo()
 {
 	if (ActionPointer == Actions.Num()-1)
 	{
-		// Cannot Redo most recent action
+		// Cannot Redo the most recent action
 		return FHeartEvent::Invalid;
 	}
 
@@ -216,7 +251,33 @@ FHeartEvent UHeartActionHistory::Redo()
 
 	const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Original.Action);
 
-	return Heart::Action::FNativeExec::Execute(ActionObject, Copy.Arguments);
+	FHeartEvent Event = Heart::Action::FNativeExec::Execute(ActionObject, Copy.Arguments);
+
+	BroadcastPointer();
+
+	return Event;
+}
+
+void UHeartActionHistory::BroadcastPointer()
+{
+	OnPointerChangedNative.Broadcast(ActionPointer);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		OnPointerChanged.Broadcast(ActionPointer);
+	}
+}
+
+void UHeartActionHistory::BroadcastUpdate(const int32 Index, const int32 Count)
+{
+	OnRecordsUpdatedNative.Broadcast(Index, Count);
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		OnRecordsUpdated.Broadcast(Index, Count);
+	}
 }
 
 bool UHeartActionHistory::IsUndoable()
