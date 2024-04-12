@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
 #include "General/HeartContextObject.h"
+#include "Input/SlatePointerWrappers.h"
 #include "UMG/HeartGraphWidgetBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasInputHandler_DDO_Action)
@@ -19,11 +20,36 @@ void UHeartCanvasActionDragDropOperation::Drop_Implementation(const FPointerEven
 {
 	Super::Drop_Implementation(PointerEvent);
 
-	if (IsValid(Action))
+	if (ensure(IsValid(Action)))
 	{
 		Heart::Action::Execute(Action, GetHoveredWidget(), PointerEvent, Payload);
 	}
 }
+
+namespace Heart::Canvas
+{
+	FReply FSlateActionDragDropOperation::OnHoverWidget(const TSharedRef<SWidget>& Widget)
+	{
+		LastHovered = Widget;
+		return FNativeDragDropOperation::OnHoverWidget(Widget);
+	}
+
+	bool FSlateActionDragDropOperation::SetupDragDropOperation()
+	{
+		return IsValid(Action);
+	}
+
+	void FSlateActionDragDropOperation::OnDrop(const bool bDropWasHandled, const FPointerEvent& MouseEvent)
+	{
+		FNativeDragDropOperation::OnDrop(bDropWasHandled, MouseEvent);
+
+		if (ensure(IsValid(Action)) && LastHovered.IsValid())
+		{
+			Action::Execute(Action, UHeartSlatePtr::Wrap(LastHovered.ToSharedRef()), MouseEvent, nullptr); // @todo Payload for slate DDOs
+		}
+	}
+}
+
 
 bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UObject* TestTarget) const
 {
@@ -39,41 +65,54 @@ bool UHeartCanvasInputHandler_DDO_Action::PassCondition(const UObject* TestTarge
 
 FHeartEvent UHeartCanvasInputHandler_DDO_Action::OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const
 {
-	UWidget* Widget = Cast<UWidget>(Target);
-
-	auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
-
-	NewDDO->SummonedBy = Widget;
-
-	if (IsValid(VisualClass))
+	// Case 1: Target is a UMG widget
+	if (UWidget* Widget = Cast<UWidget>(Target))
 	{
-		auto&& NewVisual = CreateWidget(Widget, VisualClass);
+		auto&& NewDDO = NewObject<UHeartCanvasActionDragDropOperation>(GetTransientPackage());
 
-		// If both the widget and the visual want a context object pass it between them
-		if (Widget->Implements<UHeartContextObject>() &&
-			NewVisual->Implements<UHeartContextObject>())
+		NewDDO->SummonedBy = Widget;
+
+		if (IsValid(VisualClass))
 		{
-			auto&& Context = IHeartContextObject::Execute_GetContextObject(Widget);
-			IHeartContextObject::Execute_SetContextObject(NewVisual, Context);
+			auto&& NewVisual = CreateWidget(Widget, VisualClass);
+
+			// If both the widget and the visual want a context object pass it between them
+			if (Widget->Implements<UHeartContextObject>() &&
+				NewVisual->Implements<UHeartContextObject>())
+			{
+				auto&& Context = IHeartContextObject::Execute_GetContextObject(Widget);
+				IHeartContextObject::Execute_SetContextObject(NewVisual, Context);
+			}
+
+			NewDDO->DefaultDragVisual = NewVisual;
+			NewDDO->Pivot = Pivot;
+			NewDDO->Offset = Offset;
 		}
 
-		NewDDO->DefaultDragVisual = NewVisual;
-		NewDDO->Pivot = Pivot;
-		NewDDO->Offset = Offset;
+		if (Widget->Implements<UHeartContextObject>())
+		{
+			NewDDO->Payload = IHeartContextObject::Execute_GetContextObject(Widget);
+		}
+
+		NewDDO->Action = ActionClass;
+
+		return FHeartEvent::Handled.Detail<FHeartDeferredEvent>(NewDDO);
 	}
 
-	if (Widget->Implements<UHeartContextObject>())
+	// Case 2: Target is a slate widget
+	if (UHeartSlatePtr* SlatePtr = Cast<UHeartSlatePtr>(Target))
 	{
-		NewDDO->Payload = IHeartContextObject::Execute_GetContextObject(Widget);
+		auto&& Operation = MakeShared<Heart::Canvas::FSlateActionDragDropOperation>();
+
+		Operation->SummonedBy = SlatePtr->GetWidget();
+
+		Operation->Action = ActionClass;
+
+		UHeartSlateDragDropOperation* SlateDragDropOperation = NewObject<UHeartSlateDragDropOperation>();
+		SlateDragDropOperation->SlatePointer = Operation;
+		return FHeartEvent::Handled.Detail<FHeartDeferredEvent>(SlateDragDropOperation);
 	}
 
-	NewDDO->Action = ActionClass;
-
-	if (!NewDDO->SetupDragDropOperation())
-	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Created DDO (%s) unnecessarily, figure out why"), *NewDDO->GetClass()->GetName())
-		return FHeartEvent::Failed;
-	}
-
-	return FHeartEvent::Handled.Detail<FHeartDeferredEvent>(NewDDO);
+	// Target is not a type this handler accepts
+	return FHeartEvent::Failed;
 }

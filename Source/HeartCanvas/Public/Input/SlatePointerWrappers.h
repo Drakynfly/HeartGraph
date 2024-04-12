@@ -19,6 +19,8 @@ class UHeartSlatePtr : public UObject
 public:
 	static UHeartSlatePtr* Wrap(const TSharedRef<SWidget>& Widget);
 
+	TSharedPtr<SWidget> GetWidget() const { return SlatePointer; }
+
 protected:
 	TSharedPtr<SWidget> SlatePointer;
 };
