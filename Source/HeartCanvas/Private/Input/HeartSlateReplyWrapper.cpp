@@ -4,15 +4,29 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSlateReplyWrapper)
 
+namespace Heart::Input
+{
+	FReply HeartEventToReply(const FHeartEvent& Event)
+	{
+		// If we got a detailed reply, use that first
+		if (auto EventReply = Event.As<FEventReply>();
+			EventReply.IsSet())
+		{
+			return EventReply.GetValue().NativeReply;
+		}
+
+		// If we got a non-specific, but capturing reply return handled, otherwise nothing was handled, and bubble input
+		return Event.WasEventCaptured() ?
+			FReply::Handled() :
+			FReply::Unhandled();
+	}
+}
+
 FEventReply UHeartSlateReplyWrapper::HeartEventToEventReply(const FHeartEvent& Event)
 {
-	if (auto Option = Event.As<FEventReply>();
-		Option.IsSet())
-	{
-		return Option.GetValue();
-	}
-
-	return FEventReply(false);
+	FEventReply EventReply;
+	EventReply.NativeReply = Heart::Input::HeartEventToReply(Event);
+	return EventReply;
 }
 
 FHeartEvent UHeartSlateReplyWrapper::ReplyEventToHeartEvent(const FHeartEvent& Event, const FEventReply& EventReply)

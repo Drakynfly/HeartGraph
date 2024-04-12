@@ -17,8 +17,6 @@ using namespace Heart::Input;
 
 FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseWheel)
-
 	// @todo what the heck went on here? does PointerEvent have a different/null EffectingButton?
 	const FPointerEvent HackedPointerEvent = FPointerEvent(
 		PointerEvent.GetUserIndex(),
@@ -31,21 +29,11 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 		PointerEvent.GetModifierKeys());
 
 	// Mouse wheel events must always use the 'Press' type
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent);
-
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent));
 }
 
 FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonDown)
-
 	FReply Reply = FReply::Unhandled();
 
 	const FHeartInputActivation Activation = PointerEvent;
@@ -54,6 +42,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 		.ForEachWithBreak(Widget,
 		[&](const FSortableCallback& Ref)
 		{
+			// UMG interprets Deferred as launching a DragDropOperation
 			if (Ref.Priority == Deferred)
 			{
 				if (const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget->GetCachedWidget();
@@ -70,15 +59,8 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
 			if (Ref.Priority <= HighestHandlingPriority)
 			{
-				if (Event.WasEventCaptured())
-				{
-					if (auto EventReply = Event.As<FEventReply>();
-						EventReply.IsSet())
-					{
-						Reply = EventReply.GetValue().NativeReply;
-						return false;
-					}
-				}
+				Reply = HeartEventToReply(Event);
+				return !Reply.IsEventHandled();
 			}
 
 			return true;
@@ -89,50 +71,21 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleOnMouseButtonUp)
-
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent));
 }
 
 FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyDown)
-
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent));
 }
 
 FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleOnKeyUp)
-
-	const FHeartEvent Reply = QuickTryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent);
-	if (auto EventReply = Reply.As<FEventReply>();
-		EventReply.IsSet())
-	{
-		return EventReply.GetValue().NativeReply;
-	}
-
-	return FReply::Unhandled();
+	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent));
 }
 
 UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleOnDragDetected)
-
 	UDragDropOperation* Operation = nullptr;
 
 	const FHeartInputActivation Activation = PointerEvent;
@@ -160,8 +113,6 @@ UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widge
 
 bool UHeartWidgetInputLinker::HandleOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDragOver)
-
 	if (auto&& HeartDDO = Cast<UHeartDragDropOperation>(InOperation))
 	{
 		return HeartDDO->OnHoverWidget(Widget);
@@ -173,8 +124,6 @@ bool UHeartWidgetInputLinker::HandleOnDragOver(UWidget* Widget, const FGeometry&
 bool UHeartWidgetInputLinker::HandleOnDrop(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent,
 												 UDragDropOperation* InOperation)
 {
-	//SCOPE_CYCLE_COUNTER(STAT_HandleNativeOnDrop)
-
 	if (auto&& HeartDDO = Cast<UHeartDragDropOperation>(InOperation))
 	{
 		return HeartDDO->OnDropOnWidget(Widget);

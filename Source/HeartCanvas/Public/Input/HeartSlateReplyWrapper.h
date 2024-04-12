@@ -10,6 +10,12 @@
 // Enable using wrapped slate Replies as Heart Events
 template <> struct TIsHeartEventType<FEventReply> { static constexpr bool Value = true; };
 
+namespace Heart::Input
+{
+	// Make a slate-compatible Reply from a HeartEvent
+	FReply HeartEventToReply(const FHeartEvent& Event);
+}
+
 /**
  *
  */

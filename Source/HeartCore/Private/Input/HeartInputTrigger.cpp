@@ -40,6 +40,18 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUp::CreateTrips() const
 	return Trips;
 }
 
+TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUpMod::CreateTrips() const
+{
+	TArray<Heart::Input::FInputTrip> Trips;
+
+	for (const auto& TripKey : Keys)
+	{
+		Trips.Emplace(TripKey.Key, TripKey.WithControl, TripKey.WithAlt, TripKey.WithShift, TripKey.WithCommand, Heart::Input::Release);
+	}
+
+	return Trips;
+}
+
 TArray<Heart::Input::FInputTrip> FHeartInputTrigger_Manual::CreateTrips() const
 {
 	TArray<Heart::Input::FInputTrip> Trips;

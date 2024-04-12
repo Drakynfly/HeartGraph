@@ -70,6 +70,17 @@ struct HEARTCORE_API FHeartInputTrigger_KeyUp : public FHeartInputTrigger
 	TSet<FKey> Keys;
 };
 
+USTRUCT(BlueprintType, meta = (DisplayName = "Key Up (with modifiers)"))
+struct HEARTCORE_API FHeartInputTrigger_KeyUpMod : public FHeartInputTrigger
+{
+	GENERATED_BODY()
+
+	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyUp")
+	TArray<FHeartKeyAndModifiers> Keys;
+};
+
 USTRUCT(BlueprintType, meta = (DisplayName = "Manual"))
 struct HEARTCORE_API FHeartInputTrigger_Manual : public FHeartInputTrigger
 {
