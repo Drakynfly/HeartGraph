@@ -24,6 +24,28 @@ public:
 	TSubclassOf<UHeartActionBase> Action;
 };
 
+namespace Heart::Canvas
+{
+	/**
+	 * A native drag drop operation that carries a UHeartGraphCanvasAction, which will attempt to run on the widget dropped on.
+	 */
+	class FSlateActionDragDropOperation : public FNativeDragDropOperation
+	{
+	public:
+		DRAG_DROP_OPERATOR_TYPE(FHeartSlateActionDragDropOperation, FNativeDragDropOperation)
+
+		virtual FReply OnHoverWidget(const TSharedRef<SWidget>& Widget) override;
+
+		virtual bool SetupDragDropOperation() override;
+		virtual void OnDrop(bool bDropWasHandled, const FPointerEvent& MouseEvent) override;
+
+		TSubclassOf<UHeartActionBase> Action;
+
+	private:
+		TSharedPtr<SWidget> LastHovered;
+	};
+}
+
 /**
  *
  */
