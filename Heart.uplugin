@@ -6,7 +6,7 @@
 	"Description": "Generic runtime node-graph viewer and authoring toolset",
 	"Category": "Graphs",
 	"CreatedBy": "Guy (Drakynfly) Lundvall",
-	"CreatedByURL": "",
+	"CreatedByURL": "https://github.com/Drakynfly",
 	"DocsURL": "https://heart-1.gitbook.io/heart-plugin/",
 	"SupportURL": "https://discord.gg/AAk9yNwKk8",
 	"MarketplaceURL": "",
@@ -79,6 +79,10 @@
 		},
 		{
 			"Name": "EngineAssetDefinitions",
+			"Enabled": true
+		},
+		{
+			"Name": "EnhancedInput",
 			"Enabled": true
 		},
 		{
