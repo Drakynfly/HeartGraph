@@ -2,7 +2,6 @@
 
 #include "Input/HeartPlayerInput.h"
 #include "Input/HeartInputLinkerBase.h"
-#include "Input/HeartInputLinkerInterface.h"
 #include "Input/HeartSceneInputLinker.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPlayerInput)
@@ -16,19 +15,12 @@ bool UHeartPlayerInput::InputKey(const FInputKeyParams& Params)
 
 	bool bResult = Super::InputKey(Params);
 
-	UObject* Target = reinterpret_cast<AStupidHackPlayerController*>
+	UPrimitiveComponent* Target = reinterpret_cast<AStupidHackPlayerController*>
 		(GetOuterAPlayerController())->CurrentClickablePrimitive.Get();
 
 	if (IsValid(Target))
 	{
-		if (UHeartSceneInputLinker* Linker = Heart::Input::TryFindLinker<UHeartSceneInputLinker>(Target);
-			IsValid(Linker))
-		{
-			if (Linker->InputKey(Params, Target))
-			{
-				bResult = true;
-			}
-		}
+		bResult = Heart::Input::InvokeLinker<USceneComponent>(Target, &UHeartSceneInputLinker::InputKey, Params);
 	}
 
 	return bResult;

@@ -39,7 +39,19 @@ namespace Heart::Input
 		using FValueType = const TSharedRef<SWidget>&;
 		using FDDOType = FReply;
 
-		static FReplyType NoReply() { return FReply::Unhandled(); }
+		template <typename T>
+		static FORCEINLINE T DefaultReply()
+		{
+			if constexpr (std::is_same_v<T, FReply>)
+			{
+				return FReply::Unhandled();
+			}
+			else if constexpr (std::is_same_v<T, void>)
+			{
+				return;
+			}
+			else return {};
+		}
 
 		HEARTCANVAS_API static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget);
 	};
@@ -63,66 +75,36 @@ virtual void OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& Drag
 virtual void OnDragLeave(const FDragDropEvent& DragDropEvent) override;                                                \
 public:
 
+#define HEART_SLATE_INPUT_INVOKE_REPLY(Prototype, InputType)                                                           \
+FReply ThisClass::Prototype(const FGeometry& InGeometry, const InputType& _InputEvent)                                 \
+{                                                                                                                      \
+	auto&& Reply = Heart::Input::InvokeLinker<SWidget>(SharedThis(this),                                               \
+		&UHeartSlateInputLinker::Handle##Prototype, InGeometry, _InputEvent);                                          \
+	return Reply.IsEventHandled() ? Reply : Super::Prototype(InGeometry, _InputEvent);                                 \
+}
+
 /**
  * Place this macro in the .cpp file for the class you put HEART_SLATE_INPUT_LINKER_HEADER in.
  */
-#define HEART_SLATE_INPUT_LINKER_BODY(type)\
-FReply type::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)                              \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnMouseWheel<SWidget>(SharedThis(this), InGeometry, InMouseEvent);                       \
-	return Reply.IsEventHandled() ? Reply : Super::OnMouseWheel(InGeometry, InMouseEvent);                             \
-}                                                                                                                      \
+#define HEART_SLATE_INPUT_LINKER_BODY(type)                                                                            \
+	using ThisClass = type;                                                                                            \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnMouseWheel, FPointerEvent)                                                        \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnMouseButtonDown, FPointerEvent)                                                   \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnMouseButtonUp, FPointerEvent)                                                     \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnKeyDown, FKeyEvent)                                                               \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnKeyUp, FKeyEvent)                                                                 \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnDragDetected, FPointerEvent)                                                      \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnDrop, FDragDropEvent)                                                             \
+	HEART_SLATE_INPUT_INVOKE_REPLY(OnDragOver, FDragDropEvent)                                                         \
 																													   \
-FReply type::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)                         \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnMouseButtonDown<SWidget>(SharedThis(this), InGeometry, InMouseEvent);                  \
-	return Reply.IsEventHandled() ? Reply : Super::OnMouseButtonDown(InGeometry, InMouseEvent);                        \
-}                                                                                                                      \
-																													   \
-FReply type::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)                           \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnMouseButtonUp<SWidget>(SharedThis(this), InGeometry, InMouseEvent);                    \
-	return Reply.IsEventHandled() ? Reply : Super::OnMouseButtonUp(InGeometry, InMouseEvent);                          \
-}                                                                                                                      \
-																													   \
-FReply type::OnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)                                       \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnKeyDown<SWidget>(SharedThis(this), InGeometry, InKeyEvent);                            \
-	return Reply.IsEventHandled() ? Reply : Super::OnKeyDown(InGeometry, InKeyEvent);                                  \
-}                                                                                                                      \
-																													   \
-FReply type::OnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)                                         \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnKeyUp<SWidget>(SharedThis(this), InGeometry, InKeyEvent);                              \
-	return Reply.IsEventHandled() ? Reply : Super::OnKeyUp(InGeometry, InKeyEvent);                                    \
-}                                                                                                                      \
-																													   \
-FReply type::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)                              \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnDragDetected<SWidget>(SharedThis(this), MyGeometry, MouseEvent);                       \
-	return Reply.IsEventHandled() ? Reply : Super::OnDragDetected(MyGeometry, MouseEvent);                             \
-}                                                                                                                      \
-																													   \
-FReply type::OnDrop(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)                                  \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnDrop<SWidget, FReply>(SharedThis(this), MyGeometry, DragDropEvent);                    \
-	return Reply.IsEventHandled() ? Reply : Super::OnDrop(MyGeometry, DragDropEvent);                                  \
-}                                                                                                                      \
-																													   \
-FReply type::OnDragOver(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)                              \
-{                                                                                                                      \
-	auto&& Reply = Input::LinkOnDragOver<SWidget, FReply>(SharedThis(this), MyGeometry, DragDropEvent);                \
-	return Reply.IsEventHandled() ? Reply : Super::OnDragOver(MyGeometry, DragDropEvent);                              \
-}                                                                                                                      \
-																													   \
-void type::OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)                               \
+void ThisClass::OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)                               \
 {                                                                                                                      \
 	Super::OnDragEnter(MyGeometry, DragDropEvent);                                                                     \
-	Input::LinkOnDragEnter<SWidget>(SharedThis(this), MyGeometry, DragDropEvent);                                      \
+	Heart::Input::LinkOnDragEnter<SWidget>(SharedThis(this), MyGeometry, DragDropEvent);                               \
 }                                                                                                                      \
 																													   \
-void type::OnDragLeave(const FDragDropEvent& DragDropEvent)                                                            \
+void ThisClass::OnDragLeave(const FDragDropEvent& DragDropEvent)                                                            \
 {                                                                                                                      \
 	Super::OnDragLeave(DragDropEvent);                                                                                 \
-	Input::LinkOnDragLeave<SWidget>(SharedThis(this), DragDropEvent);                                                  \
+	Heart::Input::LinkOnDragLeave<SWidget>(SharedThis(this), DragDropEvent);                                           \
 }

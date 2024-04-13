@@ -25,6 +25,7 @@ struct FHeartManualInputQueryResult
 
 namespace Heart::Input
 {
+	// @todo this is a stub. this should eventually be refactored to be a Heart::Query result type.
 	class HEARTCORE_API FCallbackQuery
 	{
 	public:
@@ -72,112 +73,43 @@ protected:
 
 namespace Heart::Input
 {
+	/*
+	 * This template takes a function reference to a linker member function, and calls it if a linker for the target can
+	 * be found.
+	 */
 	template <
-		typename TTarget
+		typename TTarget,
+		typename TMember,
+		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseWheel(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static auto InvokeLinker(typename TLinkerType<TTarget>::FValueType Target, TMember&& Member, const TArgs&... Args)
 	{
+		using RetType = typename TLinkerType<TTarget>::FReplyType;
+
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			auto BindingReply = Linker->HandleOnMouseWheel(Target, InGeometry, InMouseEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
+			return Invoke(Member, Linker, Target, Args...);
 		}
 
-		return TLinkerType<TTarget>::NoReply();
+		return TLinkerType<TTarget>::template DefaultReply<RetType>();
 	}
 
 	template <
-		typename TTarget
+		typename TTarget,
+		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseButtonDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+	static typename TLinkerType<TTarget>::FDDOType LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
+		using RetType = typename TLinkerType<TTarget>::FDDOType;
+
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			auto BindingReply = Linker->HandleOnMouseButtonDown(Target, InGeometry, InMouseEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
+			return Linker->HandleOnDragDetected(Target, Args...);
 		}
 
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseButtonUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			auto BindingReply = Linker->HandleOnMouseButtonUp(Target, InGeometry, InMouseEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnKeyDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnKeyUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			auto BindingReply = Linker->HandleOnKeyUp(Target, InGeometry, InKeyEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FDDOType LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnDragDetected(Target, InGeometry, InMouseEvent);
-		}
-
-		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
-		{
-			return TLinkerType<TTarget>::NoReply();
-		}
-		else return {};
+		return TLinkerType<TTarget>::template DefaultReply<RetType>();
 	}
 
 	template <
@@ -188,16 +120,14 @@ namespace Heart::Input
 	>
 	static TRetVal LinkOnDrop(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
+		using RetType = TRetVal;
+
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
 			return Linker->HandleOnDrop(Target, Args...);
 		}
 
-		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
-		{
-			return TLinkerType<TTarget>::NoReply();
-		}
-		else return {};
+		return TLinkerType<TTarget>::template DefaultReply<RetType>();
 	}
 
 	template <
@@ -208,16 +138,14 @@ namespace Heart::Input
 	>
 	static TRetVal LinkOnDragOver(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
 	{
+		using RetType = TRetVal;
+
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
 			return Linker->HandleOnDragOver(Target, Args...);
 		}
 
-		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
-		{
-			return TLinkerType<TTarget>::NoReply();
-		}
-		else return {};
+		return TLinkerType<TTarget>::template DefaultReply<RetType>();
 	}
 
 	template <

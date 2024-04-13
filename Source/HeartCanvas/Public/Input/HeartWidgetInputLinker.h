@@ -47,7 +47,19 @@ namespace Heart::Input
 		using FValueType = UWidget*;
 		using FDDOType = UDragDropOperation*;
 
-		static FReplyType NoReply() { return FReply::Unhandled(); }
+		template <typename T>
+		static FORCEINLINE T DefaultReply()
+		{
+			if constexpr (std::is_same_v<T, FReply>)
+			{
+				return FReply::Unhandled();
+			}
+			else if constexpr (std::is_same_v<T, void>)
+			{
+				return;
+			}
+			else return {};
+		}
 
 		HEARTCANVAS_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
 	};
@@ -71,75 +83,59 @@ virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropO
 virtual void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;\
 public:
 
+#define HEART_UMG_INPUT_INVOKE_REPLY(Prototype, InputType)\
+FReply ThisClass::Native##Prototype(const FGeometry& InGeometry, const InputType& _InputEvent)\
+{\
+	auto&& Reply = Heart::Input::InvokeLinker<UWidget>(this, &UHeartWidgetInputLinker::Handle##Prototype, InGeometry, _InputEvent);\
+	return Reply.IsEventHandled() ? Reply : Super::Native##Prototype(InGeometry, _InputEvent);\
+}\
+
 /**
  * Place this macro in the .cpp file for the class you put HEART_WIDGET_INPUT_LINKER_HEADER in.
  */
-#define HEART_UMG_INPUT_LINKER_BODY(type)\
-FReply type::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)\
-{\
-	auto&& Reply = Heart::Input::LinkOnMouseWheel<UWidget>(this, InGeometry, InMouseEvent);\
-	return Reply.IsEventHandled() ? Reply : Super::NativeOnMouseWheel(InGeometry, InMouseEvent);\
-}\
-\
-FReply type::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)\
-{\
-	auto&& Reply = Heart::Input::LinkOnMouseButtonDown<UWidget>(this, InGeometry, InMouseEvent);\
-	return Reply.IsEventHandled() ? Reply : Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);\
-}\
-\
-FReply type::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)\
-{\
-	auto&& Reply = Heart::Input::LinkOnMouseButtonUp<UWidget>(this, InGeometry, InMouseEvent);\
-	return Reply.IsEventHandled() ? Reply : Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);\
-}\
-\
-FReply type::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)\
-{\
-	auto&& Reply = Heart::Input::LinkOnKeyDown<UWidget>(this, InGeometry, InKeyEvent);\
-	return Reply.IsEventHandled() ? Reply : Super::NativeOnKeyDown(InGeometry, InKeyEvent);\
-}\
-\
-FReply type::NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)\
-{\
-	auto&& Reply = Heart::Input::LinkOnKeyUp<UWidget>(this, InGeometry, InKeyEvent);\
-	return Reply.IsEventHandled() ? Reply : Super::NativeOnKeyUp(InGeometry, InKeyEvent);\
-}\
-\
+#define HEART_UMG_INPUT_LINKER_BODY(type)                                                                              \
+using ThisClass = type;                                                                                                \
+	HEART_UMG_INPUT_INVOKE_REPLY(OnMouseWheel, FPointerEvent)                                                          \
+	HEART_UMG_INPUT_INVOKE_REPLY(OnMouseButtonDown, FPointerEvent)                                                     \
+	HEART_UMG_INPUT_INVOKE_REPLY(OnMouseButtonUp, FPointerEvent)                                                       \
+	HEART_UMG_INPUT_INVOKE_REPLY(OnKeyDown, FKeyEvent)                                                                 \
+	HEART_UMG_INPUT_INVOKE_REPLY(OnKeyUp, FKeyEvent)                                                                   \
+																													   \
 void type::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)\
-{\
-	OutOperation = Heart::Input::LinkOnDragDetected<UWidget>(this, InGeometry, InMouseEvent);\
-	if (!IsValid(OutOperation))\
-	{\
-		Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);\
-	}\
-}\
-\
+{                                                                                                                      \
+	OutOperation = Heart::Input::LinkOnDragDetected<UWidget>(this, InGeometry, InMouseEvent);                          \
+	if (!IsValid(OutOperation))                                                                                        \
+	{                                                                                                                  \
+		Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);                                           \
+	}                                                                                                                  \
+}                                                                                                                      \
+																													   \
 bool type::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
-{\
-	bool Handled = Heart::Input::LinkOnDrop<UWidget, bool>(this, InGeometry, InDragDropEvent, InOperation);\
-	return Handled ? true : Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);\
-}\
-\
+{                                                                                                                      \
+	bool Handled = Heart::Input::LinkOnDrop<UWidget, bool>(this, InGeometry, InDragDropEvent, InOperation);            \
+	return Handled ? true : Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);                             \
+}                                                                                                                      \
+																													   \
 bool type::NativeOnDragOver(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
-{\
-	bool Handled = Heart::Input::LinkOnDragOver<UWidget, bool>(this, InGeometry, InDragDropEvent, InOperation);\
-	return Handled ? true : Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);\
-}\
-\
+{                                                                                                                      \
+	bool Handled = Heart::Input::LinkOnDragOver<UWidget, bool>(this, InGeometry, InDragDropEvent, InOperation);        \
+	return Handled ? true : Super::NativeOnDragOver(InGeometry, InDragDropEvent, InOperation);                         \
+}                                                                                                                      \
+																													   \
 void type::NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
-{\
-	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);\
-	Heart::Input::LinkOnDragEnter<UWidget>(this, InGeometry, InDragDropEvent, InOperation);\
-}\
-\
-void type::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
-{\
-	Super::NativeOnDragLeave(InDragDropEvent, InOperation);\
-	Heart::Input::LinkOnDragLeave<UWidget>(this, InDragDropEvent, InOperation);\
-}\
-\
-void type::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)\
-{\
-	Super::NativeOnDragCancelled(InDragDropEvent, InOperation);\
-	Heart::Input::LinkOnDragCancelled<UWidget>(this, InDragDropEvent, InOperation);\
+{                                                                                                                      \
+	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);                                                \
+	Heart::Input::LinkOnDragEnter<UWidget>(this, InGeometry, InDragDropEvent, InOperation);                            \
+}                                                                                                                      \
+																													   \
+void type::NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)                   \
+{                                                                                                                      \
+	Super::NativeOnDragLeave(InDragDropEvent, InOperation);                                                            \
+	Heart::Input::LinkOnDragLeave<UWidget>(this, InDragDropEvent, InOperation);                                        \
+}                                                                                                                      \
+																													   \
+void type::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)               \
+{                                                                                                                      \
+	Super::NativeOnDragCancelled(InDragDropEvent, InOperation);                                                        \
+	Heart::Input::LinkOnDragCancelled<UWidget>(this, InDragDropEvent, InOperation);                                    \
 }
