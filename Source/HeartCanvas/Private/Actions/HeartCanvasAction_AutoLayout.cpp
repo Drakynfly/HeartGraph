@@ -10,7 +10,7 @@
 
 static const FLazyName OriginalLocationsStorage("oldlocs");
 
-FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
+FReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
 														  UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	const UHeartLayoutHelper* LayoutHelper = Cast<UHeartLayoutHelper>(ContextObject);
@@ -27,7 +27,7 @@ FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* Can
 	if (!IsValid(LayoutHelper))
 	{
 		UE_LOG(LogHeartGraphCanvas, Error, TEXT("UHeartCanvasAction_AutoLayout expects a context action that is a instance or class pointer of a UHeartLayoutHelper type."))
-		return false;
+		return FReply::Unhandled();
 	}
 
 	if (Heart::Action::History::IsUndoable())
@@ -45,7 +45,7 @@ FEventReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* Can
 	}
 
 	LayoutHelper->Layout(CanvasGraph);
-	return true;
+	return FReply::Handled();
 }
 
 bool UHeartCanvasAction_AutoLayout::Undo(UObject* Target, const FBloodContainer& UndoData) const
