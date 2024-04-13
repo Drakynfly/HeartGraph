@@ -47,6 +47,9 @@ class HEARTCORE_API UHeartInputLinkerBase : public UObject
 
 	friend Heart::Input::FCallbackQuery;
 
+public:
+	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
+
 protected:
 	FHeartEvent QuickTryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
 
