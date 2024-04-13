@@ -146,7 +146,7 @@ enum class EHeartInputActivationType : uint8
 };
 
 UCLASS()
-class UHeartInputActivationLibrary : public UBlueprintFunctionLibrary
+class HEARTCORE_API UHeartInputActivationLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
