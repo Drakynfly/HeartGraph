@@ -29,7 +29,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseWheel(const TSharedRef<SWidget>& Wid
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
 
 	// Mouse wheel events must always use the 'Press' type
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(HackedPointerEvent, Press), Wrapper, HackedPointerEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
@@ -41,12 +41,12 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 
 	const FHeartInputActivation Activation = PointerEvent;
 
-	Query(FInputTrip(PointerEvent, Press))
+	Query(FHeartInputTrip(PointerEvent, Press))
 		.ForEachWithBreak(Wrapper,
-		[&](const FSortableCallback& Ref)
+		[&](const FHeartSortableInputCallback& Ref)
 		{
 			// Slate interprets Deferred as launching a DragDropOperation
-			if (Ref.Priority == Deferred)
+			if (Ref.Priority == EHeartInputExecutionOrder::Deferred)
 			{
 				if (const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget;
 					SlateWidgetDetectingDrag.IsValid())
@@ -60,7 +60,7 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonDown(const TSharedRef<SWidget>
 			const FHeartEvent Event = Ref.Handler->OnTriggered(Wrapper, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
-			if (Ref.Priority <= HighestHandlingPriority)
+			if (Ref.Priority <= EHeartInputExecutionOrder::HighestHandlingPriority)
 			{
 				Reply = HeartEventToReply(Event);
 				return !Reply.IsEventHandled();
@@ -76,21 +76,21 @@ FReply UHeartSlateInputLinker::HandleOnMouseButtonUp(const TSharedRef<SWidget>& 
 	const FPointerEvent& PointerEvent)
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(PointerEvent, Release), Wrapper, PointerEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(PointerEvent, Release), Wrapper, PointerEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnKeyDown(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FKeyEvent& KeyEvent)
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Press), Wrapper, KeyEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(KeyEvent, Press), Wrapper, KeyEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnKeyUp(const TSharedRef<SWidget>& Widget, const FGeometry& InGeometry,
 	const FKeyEvent& KeyEvent)
 {
 	auto&& Wrapper = UHeartSlatePtr::Wrap(Widget);
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Release), Wrapper, KeyEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(KeyEvent, Release), Wrapper, KeyEvent));
 }
 
 FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
@@ -102,9 +102,9 @@ FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& W
 
 	const FHeartInputActivation Activation = MouseEvent;
 
-	Query(FInputTrip(MouseEvent, Press))
+	Query(FHeartInputTrip(MouseEvent, Press))
 		.ForEachWithBreak(Wrapper,
-		[&](const FSortableCallback& Ref)
+		[&](const FHeartSortableInputCallback& Ref)
 		{
 			const FHeartEvent HandlerEvent = Ref.Handler->OnTriggered(Wrapper, Activation);
 			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();
@@ -159,19 +159,16 @@ void UHeartSlateInputLinker::HandleOnDragLeave(const TSharedRef<SWidget>& Widget
 	// Nothing here yet
 }
 
-namespace Heart::Input
+UHeartSlateInputLinker* THeartInputLinkerType<SWidget>::FindLinker(const TSharedRef<SWidget>& Widget)
 {
-	UHeartSlateInputLinker* TLinkerType<SWidget>::FindLinker(const TSharedRef<SWidget>& Widget)
+	for (TSharedPtr<SWidget> Test = Widget; Test.IsValid(); Test = Test->GetParentWidget())
 	{
-		for (TSharedPtr<SWidget> Test = Widget; Test.IsValid(); Test = Test->GetParentWidget())
+		if (TSharedPtr<Heart::Canvas::FLinkerMetadata> Metadata = Test->GetMetaData<Heart::Canvas::FLinkerMetadata>();
+			Metadata.IsValid())
 		{
-			if (TSharedPtr<Canvas::FLinkerMetadata> Metadata = Test->GetMetaData<Canvas::FLinkerMetadata>();
-				Metadata.IsValid())
-			{
-				return Metadata->Linker.Get();
-			}
+			return Metadata->Linker.Get();
 		}
-
-		return nullptr;
 	}
+
+	return nullptr;
 }

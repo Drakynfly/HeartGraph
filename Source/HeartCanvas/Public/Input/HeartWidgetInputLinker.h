@@ -36,22 +36,19 @@ public:
 	virtual void HandleOnDragCancelled(UWidget* Widget, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation);
 };
 
-namespace Heart::Input
+template <>
+struct THeartInputLinkerType<UWidget>
 {
-	template <>
-	struct TLinkerType<UWidget>
-	{
-		static constexpr bool Supported = true;
+	static constexpr bool Supported = true;
 
-		using FReplyType = FReply;
-		using FValueType = UWidget*;
-		using FDDOType = UDragDropOperation*;
+	using FReplyType = FReply;
+	using FValueType = UWidget*;
+	using FDDOType = UDragDropOperation*;
 
-		static FReplyType NoReply() { return FReply::Unhandled(); }
+	static FReplyType NoReply() { return FReply::Unhandled(); }
 
-		HEARTCANVAS_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
-	};
-}
+	HEARTCANVAS_API static UHeartWidgetInputLinker* FindLinker(const UWidget* Widget);
+};
 
 /**
  * Place this macro after the GENERATED_BODY or constructor of a UWidget derived class you wish to implement an InputLinker on.

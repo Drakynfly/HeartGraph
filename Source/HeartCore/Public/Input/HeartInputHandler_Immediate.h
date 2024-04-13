@@ -15,9 +15,9 @@ class HEARTCORE_API UHeartInputHandler_Immediate : public UHeartInputHandlerAsse
 	GENERATED_BODY()
 
 public:
-	virtual Heart::Input::EExecutionOrder GetExecutionOrder() const override
+	virtual EHeartInputExecutionOrder GetExecutionOrder() const override
 	{
-		return HandleInput ? Heart::Input::Event : Heart::Input::Listener;
+		return HandleInput ? EHeartInputExecutionOrder::Event : EHeartInputExecutionOrder::Listener;
 	}
 
 protected:

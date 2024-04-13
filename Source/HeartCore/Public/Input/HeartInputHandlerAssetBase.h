@@ -29,8 +29,8 @@ public:
 		return true;
 	}
 
-	virtual Heart::Input::EExecutionOrder GetExecutionOrder() const
-		PURE_VIRTUAL(UHeartInputHandlerAssetBase::GetExecutionOrder, return Heart::Input::None; )
+	virtual EHeartInputExecutionOrder GetExecutionOrder() const
+		PURE_VIRTUAL(UHeartInputHandlerAssetBase::GetExecutionOrder, return EHeartInputExecutionOrder::None; )
 
 	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const
 		PURE_VIRTUAL(UHeartInputHandlerAssetBase::OnTriggered, return FHeartEvent::Invalid; )

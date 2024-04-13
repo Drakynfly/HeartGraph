@@ -55,7 +55,7 @@ class HEARTCANVAS_API UHeartCanvasInputHandler_DDO_Action : public UHeartInputHa
 	GENERATED_BODY()
 
 protected:
-	virtual Heart::Input::EExecutionOrder GetExecutionOrder() const override { return Heart::Input::Deferred; }
+	virtual EHeartInputExecutionOrder GetExecutionOrder() const override { return EHeartInputExecutionOrder::Deferred; }
 	virtual bool PassCondition(const UObject* TestTarget) const override;
 	virtual FHeartEvent OnTriggered(UObject* Target, const FHeartInputActivation& Activation) const override;
 

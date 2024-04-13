@@ -17,26 +17,33 @@ DECLARE_CYCLE_STAT(TEXT("HandleManualInput"), STAT_HandleManualInput, STATGROUP_
 
 using namespace Heart::Input;
 
-FCallbackQuery::FCallbackQuery(const UHeartInputLinkerBase* Linker, const FInputTrip& Trip)
+FCallbackQuery::FCallbackQuery(const UHeartInputLinkerBase* Linker, const FHeartInputTrip& Trip)
 {
-	Linker->InputCallbackMappings.MultiFindPointer(Trip, Callbacks);
+	if (Linker->InputCallbackMappings.Contains(Trip))
+	{
+		Callbacks = Linker->InputCallbackMappings[Trip].Callbacks;
+	} else
+	{
+		Callbacks.Empty();
+	}
 }
 
 FCallbackQuery& FCallbackQuery::Sort()
 {
 	Algo::Sort(Callbacks,
-		[](const FSortableCallback* A, const FSortableCallback* B)
+		[](const FHeartSortableInputCallback& A, const FHeartSortableInputCallback& B)
 		{
-			return *A < *B;
+			// Sort in reverse. Higher priorities should be ordered first, lower after.
+			return A.Priority > B.Priority;
 		});
 	return *this;
 }
 
-FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FSortableCallback&)>& Predicate)
+FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TFunctionRef<bool(const FHeartSortableInputCallback&)>& Predicate)
 {
 	for (auto&& CallbackPtr : Callbacks)
 	{
-		const FSortableCallback& Ref = *CallbackPtr;
+		const FHeartSortableInputCallback& Ref = CallbackPtr;
 
 		if (!IsValid(Ref.Handler))
 		{
@@ -56,19 +63,19 @@ FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TF
 	return *this;
 }
 
-FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
+FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FHeartInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
 {
 	SCOPE_CYCLE_COUNTER(STAT_QuickTryCallbacks)
 
 	TOptional<FHeartEvent> Return;
 
 	Query(Trip).ForEachWithBreak(Target,
-		[&](const FSortableCallback& Ref)
+		[&](const FHeartSortableInputCallback& Ref)
 		{
 			const FHeartEvent Event = Ref.Handler->OnTriggered(Target, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
-			if (Ref.Priority <= HighestHandlingPriority)
+			if (Ref.Priority <= EHeartInputExecutionOrder::HighestHandlingPriority)
 			{
 				if (Event.WasEventCaptured())
 				{
@@ -89,15 +96,15 @@ FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UOb
 	return FHeartEvent::Ignored;
 }
 
-void UHeartInputLinkerBase::BindInputCallback(const FInputTrip& Trip, const FSortableCallback& InputCallback)
+void UHeartInputLinkerBase::BindInputCallback(const FHeartInputTrip& Trip, const FHeartSortableInputCallback& InputCallback)
 {
 	if (ensure(Trip.IsValid()))
 	{
-		InputCallbackMappings.Add(Trip, InputCallback);
+		InputCallbackMappings.FindOrAdd(Trip, {}).Callbacks.Add(InputCallback);
 	}
 }
 
-void UHeartInputLinkerBase::UnbindInputCallback(const FInputTrip& Trip)
+void UHeartInputLinkerBase::UnbindInputCallback(const FHeartInputTrip& Trip)
 {
 	InputCallbackMappings.Remove(Trip);
 }
@@ -111,38 +118,41 @@ FHeartEvent UHeartInputLinkerBase::HandleManualInput(UObject* Target, const FNam
 		return FHeartEvent::Invalid;
 	}
 
-	return QuickTryCallbacks(FInputTrip(Key), Target, Activation);
+	return QuickTryCallbacks(FHeartInputTrip(Key), Target, Activation);
 }
 
 TArray<FHeartManualInputQueryResult> UHeartInputLinkerBase::QueryManualTriggers(const UObject* Target) const
 {
 	TArray<FHeartManualInputQueryResult> Results;
 
-	for (auto&& ConditionalInputCallback : InputCallbackMappings)
+	for (auto&& [Trip, CallbackList] : InputCallbackMappings)
 	{
-		const UHeartInputHandlerAssetBase* Handler = ConditionalInputCallback.Value.Handler;
-		if (!IsValid(Handler))
+		for (auto&& Callback : CallbackList.Callbacks)
 		{
-			continue;
-		}
+			const UHeartInputHandlerAssetBase* Handler = Callback.Handler;
+			if (!IsValid(Handler))
+			{
+				continue;
+			}
 
-		if (ConditionalInputCallback.Key.Type != Manual)
-		{
-			continue;
-		}
+			if (Trip.Type != Manual)
+			{
+				continue;
+			}
 
-		if (!Handler->PassCondition(Target))
-		{
-			continue;
-		}
+			if (!Handler->PassCondition(Target))
+			{
+				continue;
+			}
 
-		Results.Add({ConditionalInputCallback.Key.CustomKey, Handler->GetDescription(Target)});
+			Results.Add({Trip.CustomKey, Handler->GetDescription(Target)});
+		}
 	}
 
 	return Results;
 }
 
-FCallbackQuery UHeartInputLinkerBase::Query(const FInputTrip& Trip) const
+FCallbackQuery UHeartInputLinkerBase::Query(const FHeartInputTrip& Trip) const
 {
 	return FCallbackQuery(this, Trip).Sort();
 }
@@ -153,7 +163,7 @@ void UHeartInputLinkerBase::AddBindings(const TArray<FHeartBoundInput>& Bindings
 	{
 		if (!IsValid(Binding.InputHandler)) continue;
 
-		const FSortableCallback Callback{
+		const FHeartSortableInputCallback Callback{
 			Binding.InputHandler,
 			Binding.InputHandler->GetExecutionOrder()};
 

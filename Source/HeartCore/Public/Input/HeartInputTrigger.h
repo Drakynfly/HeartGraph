@@ -13,7 +13,7 @@ struct HEARTCORE_API FHeartInputTrigger
 
 	virtual ~FHeartInputTrigger() {}
 
-	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const { return TArray<Heart::Input::FInputTrip>(); }
+	virtual TArray<FHeartInputTrip> CreateTrips() const { return TArray<FHeartInputTrip>(); }
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Key Down"))
@@ -21,7 +21,7 @@ struct HEARTCORE_API FHeartInputTrigger_KeyDown : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
+	virtual TArray<FHeartInputTrip> CreateTrips() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
 	TSet<FKey> Keys;
@@ -53,7 +53,7 @@ struct HEARTCORE_API FHeartInputTrigger_KeyDownMod : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
+	virtual TArray<FHeartInputTrip> CreateTrips() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyDown")
 	TArray<FHeartKeyAndModifiers> Keys;
@@ -64,7 +64,7 @@ struct HEARTCORE_API FHeartInputTrigger_KeyUp : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
+	virtual TArray<FHeartInputTrip> CreateTrips() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyUp")
 	TSet<FKey> Keys;
@@ -75,7 +75,7 @@ struct HEARTCORE_API FHeartInputTrigger_KeyUpMod : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
+	virtual TArray<FHeartInputTrip> CreateTrips() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "KeyUp")
 	TArray<FHeartKeyAndModifiers> Keys;
@@ -86,7 +86,7 @@ struct HEARTCORE_API FHeartInputTrigger_Manual : public FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const override;
+	virtual TArray<FHeartInputTrip> CreateTrips() const override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Manual")
 	TSet<FName> Keys;

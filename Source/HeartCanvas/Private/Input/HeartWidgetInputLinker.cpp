@@ -29,7 +29,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseWheel(UWidget* Widget, const FGeome
 		PointerEvent.GetModifierKeys());
 
 	// Mouse wheel events must always use the 'Press' type
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(HackedPointerEvent, Press), Widget, HackedPointerEvent));
 }
 
 FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
@@ -38,12 +38,12 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 	const FHeartInputActivation Activation = PointerEvent;
 
-	Query(FInputTrip(PointerEvent, Press))
+	Query(FHeartInputTrip(PointerEvent, Press))
 		.ForEachWithBreak(Widget,
-		[&](const FSortableCallback& Ref)
+		[&](const FHeartSortableInputCallback& Ref)
 		{
 			// UMG interprets Deferred as launching a DragDropOperation
-			if (Ref.Priority == Deferred)
+			if (Ref.Priority == EHeartInputExecutionOrder::Deferred)
 			{
 				if (const TSharedPtr<SWidget> SlateWidgetDetectingDrag = Widget->GetCachedWidget();
 					SlateWidgetDetectingDrag.IsValid())
@@ -57,7 +57,7 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 			const FHeartEvent Event = Ref.Handler->OnTriggered(Widget, Activation);
 
 			// If Priority is Event, this event Reply is allowed to stop capture input, and break out of the input handling loop
-			if (Ref.Priority <= HighestHandlingPriority)
+			if (Ref.Priority <= EHeartInputExecutionOrder::HighestHandlingPriority)
 			{
 				Reply = HeartEventToReply(Event);
 				return !Reply.IsEventHandled();
@@ -71,17 +71,17 @@ FReply UHeartWidgetInputLinker::HandleOnMouseButtonDown(UWidget* Widget, const F
 
 FReply UHeartWidgetInputLinker::HandleOnMouseButtonUp(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
 {
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(PointerEvent, Release), Widget, PointerEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(PointerEvent, Release), Widget, PointerEvent));
 }
 
 FReply UHeartWidgetInputLinker::HandleOnKeyDown(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Press), Widget, KeyEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(KeyEvent, Press), Widget, KeyEvent));
 }
 
 FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& InGeometry, const FKeyEvent& KeyEvent)
 {
-	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent));
+	return HeartEventToReply(QuickTryCallbacks(FHeartInputTrip(KeyEvent, Release), Widget, KeyEvent));
 }
 
 UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
@@ -90,9 +90,9 @@ UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widge
 
 	const FHeartInputActivation Activation = PointerEvent;
 
-	Query(FInputTrip(PointerEvent, Press))
+	Query(FHeartInputTrip(PointerEvent, Press))
 		.ForEachWithBreak(Widget,
-		[&](const FSortableCallback& Ref)
+		[&](const FHeartSortableInputCallback& Ref)
 		{
 			const FHeartEvent HandlerEvent = Ref.Handler->OnTriggered(Widget, PointerEvent);
 			if (auto Option = HandlerEvent.As<FHeartDeferredEvent>();
@@ -150,10 +150,7 @@ void UHeartWidgetInputLinker::HandleOnDragCancelled(UWidget* Widget, const FDrag
 	// Nothing here yet
 }
 
-namespace Heart::Input
+UHeartWidgetInputLinker* THeartInputLinkerType<UWidget>::FindLinker(const UWidget* Widget)
 {
-	UHeartWidgetInputLinker* TLinkerType<UWidget>::FindLinker(const UWidget* Widget)
-	{
-		return TryFindLinker<UHeartWidgetInputLinker>(Widget);
-	}
+	return TryFindLinker<UHeartWidgetInputLinker>(Widget);
 }

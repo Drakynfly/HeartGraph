@@ -4,9 +4,9 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputTrigger)
 
-TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDown::CreateTrips() const
+TArray<FHeartInputTrip> FHeartInputTrigger_KeyDown::CreateTrips() const
 {
-	TArray<Heart::Input::FInputTrip> Trips;
+	TArray<FHeartInputTrip> Trips;
 
 	for (const FKey& TripKey : Keys)
 	{
@@ -16,9 +16,9 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDown::CreateTrips() const
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDownMod::CreateTrips() const
+TArray<FHeartInputTrip> FHeartInputTrigger_KeyDownMod::CreateTrips() const
 {
-	TArray<Heart::Input::FInputTrip> Trips;
+	TArray<FHeartInputTrip> Trips;
 
 	for (const auto& TripKey : Keys)
 	{
@@ -28,9 +28,9 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyDownMod::CreateTrips() co
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUp::CreateTrips() const
+TArray<FHeartInputTrip> FHeartInputTrigger_KeyUp::CreateTrips() const
 {
-	TArray<Heart::Input::FInputTrip> Trips;
+	TArray<FHeartInputTrip> Trips;
 
 	for (const FKey& TripKey : Keys)
 	{
@@ -40,9 +40,9 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUp::CreateTrips() const
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUpMod::CreateTrips() const
+TArray<FHeartInputTrip> FHeartInputTrigger_KeyUpMod::CreateTrips() const
 {
-	TArray<Heart::Input::FInputTrip> Trips;
+	TArray<FHeartInputTrip> Trips;
 
 	for (const auto& TripKey : Keys)
 	{
@@ -52,9 +52,9 @@ TArray<Heart::Input::FInputTrip> FHeartInputTrigger_KeyUpMod::CreateTrips() cons
 	return Trips;
 }
 
-TArray<Heart::Input::FInputTrip> FHeartInputTrigger_Manual::CreateTrips() const
+TArray<FHeartInputTrip> FHeartInputTrigger_Manual::CreateTrips() const
 {
-	TArray<Heart::Input::FInputTrip> Trips;
+	TArray<FHeartInputTrip> Trips;
 
 	for (const FName TripKey : Keys)
 	{

@@ -28,22 +28,19 @@ public:
 	virtual void HandleOnDragLeave(const TSharedRef<SWidget>& Widget, const FDragDropEvent& DragDropEvent);
 };
 
-namespace Heart::Input
+template <>
+struct THeartInputLinkerType<SWidget>
 {
-	template <>
-	struct TLinkerType<SWidget>
-	{
-		static constexpr bool Supported = true;
+	static constexpr bool Supported = true;
 
-		using FReplyType = FReply;
-		using FValueType = const TSharedRef<SWidget>&;
-		using FDDOType = FReply;
+	using FReplyType = FReply;
+	using FValueType = const TSharedRef<SWidget>&;
+	using FDDOType = FReply;
 
-		static FReplyType NoReply() { return FReply::Unhandled(); }
+	static FReplyType NoReply() { return FReply::Unhandled(); }
 
-		HEARTCANVAS_API static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget);
-	};
-}
+	HEARTCANVAS_API static UHeartSlateInputLinker* FindLinker(const TSharedRef<SWidget>& Widget);
+};
 
 /**
  * Place this macro after the SLATE_END_ARGS or Construct of a SWidget derived class you wish to implement an InputLinker on.
