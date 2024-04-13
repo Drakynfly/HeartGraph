@@ -90,6 +90,22 @@ namespace Heart::Canvas
 	};
 
 	/**
+	 * A base class for a HeartGraph canvas slate widget
+	 */
+	class HEARTCANVAS_API SGraphCanvasWidget : public SGraphWidgetBase
+	{
+	public:
+		SLATE_BEGIN_ARGS(SGraphCanvasWidget)
+		{}
+			SLATE_ARGUMENT(UHeartGraph*, Graph)
+			SLATE_ARGUMENT(UHeartSlateInputLinker*, Linker)
+		SLATE_END_ARGS()
+
+		/** Constructs this widget with InArgs */
+		void Construct(const FArguments& InArgs);
+	};
+
+	/**
 	 * A base class for a HeartNode slate widget
 	 */
 	class HEARTCANVAS_API SGraphNodeWidget : public SGraphWidgetBase
