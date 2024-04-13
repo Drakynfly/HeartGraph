@@ -131,13 +131,21 @@ FReply UHeartSlateInputLinker::HandleOnDragDetected(const TSharedRef<SWidget>& W
 FReply UHeartSlateInputLinker::HandleOnDrop(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
 	const FDragDropEvent& DragDropEvent)
 {
-	return DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>()->OnHoverWidget(Widget);
+	if (auto NativeDDO = DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>())
+	{
+		return NativeDDO->OnHoverWidget(Widget);
+	}
+	return FReply::Unhandled();
 }
 
 FReply UHeartSlateInputLinker::HandleOnDragOver(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
 	const FDragDropEvent& DragDropEvent)
 {
-	return DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>()->OnHoverWidget(Widget);
+	if (auto NativeDDO = DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>())
+	{
+		return NativeDDO->OnHoverWidget(Widget);
+	}
+	return FReply::Unhandled();
 }
 
 void UHeartSlateInputLinker::HandleOnDragEnter(const TSharedRef<SWidget>& Widget, const FGeometry& MyGeometry,
