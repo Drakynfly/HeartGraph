@@ -20,6 +20,7 @@ namespace Heart::Action::History
 			TSubclassOf<UHeartActionBase> Action;
 			UHeartActionHistory* History;
 			const FArguments& Arguments;
+			bool Cancelled = false;
 		};
 
 		/**
@@ -73,6 +74,13 @@ namespace Heart::Action::History
 				Successful && LoggedAction.IsSet())
 			{
 				const FExecutingAction& Value = LoggedAction.GetValue();
+
+				// Skip if this action was canceled.
+				if (Value.Cancelled)
+				{
+					return;
+				}
+
 				Value.History->AddRecord({Value.Action, Value.Arguments, MoveTemp(*UndoData)});
 			}
 		}
@@ -86,14 +94,28 @@ namespace Heart::Action::History
 		return ShouldLog && !CannotLog;
 	}
 
-	bool IsUndoable()
+	bool IsLogging()
 	{
 		return !Impl::ExecutingActionsStack.IsEmpty() && Impl::ExecutingActionsStack.Last().IsSet();
+	}
+
+	bool IsUndoable()
+	{
+		// @note: Currently "Logging" and "Undoable" are the same, because we only log undoable actions. If that changed, update this.
+		return IsLogging();
 	}
 
 	UHeartGraph* GetGraphFromActionStack()
 	{
 		return Impl::ExecutingActionsStack.Last()->History->GetGraph();
+	}
+
+	void CancelLog()
+	{
+		if (IsLogging())
+		{
+			Impl::ExecutingActionsStack.Last().GetValue().Cancelled = true;
+		}
 	}
 
 	bool TryUndo(UHeartGraph* Graph)

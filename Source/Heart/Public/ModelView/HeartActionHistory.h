@@ -47,6 +47,9 @@ namespace Heart::Action::History
 		return Event;
 	}
 
+	// Cancel the executing logging context. The currently running action will not be logged.
+	HEART_API void CancelLog();
+
 	HEART_API bool TryUndo(UHeartGraph* Graph);
 	HEART_API bool TryUndo(UHeartActionHistory* History);
 
