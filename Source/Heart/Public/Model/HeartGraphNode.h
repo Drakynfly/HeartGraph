@@ -21,11 +21,6 @@ struct FHeartGraphNodeMessage;
 class UHeartGraph;
 class UHeartGraphNode;
 
-namespace Heart
-{
-	class IEdNodeInterface;
-}
-
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, const FHeartPinGuid&, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
@@ -79,7 +74,7 @@ struct FHeartGraphNodeSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Editor" /*,(meta = InlineEditConditionToggle)*/)
 	bool OverrideCanCreateInEditor = false;
 
-	// Can this node be created by the editor even if it cannot be created otherwise.
+	// Can this node be created by the editor even if it cannot be created otherwise?
 	UPROPERTY(EditDefaultsOnly, Category = "Editor", meta = (EditCondition = "OverrideCanCreateInEditor"))
 	bool CanCreateInEditor = false;
 
@@ -132,7 +127,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetNodeTitle(const UObject* Node) const;
 
-	// Returns the node title used for template nodes, such as those in menus and palettes, that are not yet instanced.
+	// Returns the node title used for template nodes, such as those in menus and palettes that are not yet instanced.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetPreviewNodeTitle(FHeartNodeSource NodeSource, EHeartPreviewNodeNameContext Context) const;
 
@@ -269,15 +264,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanUserAddOutput() const;
 
-	// Can the user create instances of this node. Only necessary to override for use in graphs with the ability to spawn nodes.
+	// Can the user create instances of this node? Only necessary to override for use in graphs with the ability to spawn nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanCreate() const;
 
-	// Can the user delete this node. Only necessary to override for use in graphs with the ability to delete nodes.
+	// Can the user delete this node? Only necessary to override for use in graphs with the ability to delete nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanDelete() const;
 
-	// Can the user duplicate this node. Only necessary to override for use in graphs with the ability to duplicate nodes.
+	// Can the user duplicate this node? Only necessary to override for use in graphs with the ability to duplicate nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	bool CanDuplicate() const;
 
