@@ -87,6 +87,9 @@ namespace Heart::Canvas
 		SLATE_END_ARGS()
 
 		HEART_SLATE_INPUT_LINKER_HEADER(SCompoundWidget);
+
+		// This must be implemented for slate to respond to key events.
+		virtual bool SupportsKeyboardFocus() const override { return true; }
 	};
 
 	/**
