@@ -20,7 +20,7 @@ bool UHeartPlayerInput::InputKey(const FInputKeyParams& Params)
 
 	if (IsValid(Target))
 	{
-		bResult = Heart::Input::InvokeLinker<USceneComponent>(Target, &UHeartSceneInputLinker::InputKey, Params);
+		bResult = Heart::Input::InvokeLinker<USceneComponent, bool>(Target, &UHeartSceneInputLinker::InputKey, Params);
 	}
 
 	return bResult;

@@ -25,9 +25,7 @@ namespace Heart::Input
 	{
 		static constexpr bool Supported = true;
 
-		using FReplyType = bool;
 		using FValueType = USceneComponent*;
-		//using FDDOType = UDragDropOperation*;
 
 		template <typename T>
 		static FORCEINLINE T DefaultReply()

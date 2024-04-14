@@ -37,7 +37,6 @@ namespace Heart::Input
 
 		using FReplyType = FReply;
 		using FValueType = const TSharedRef<SWidget>&;
-		using FDDOType = FReply;
 
 		template <typename T>
 		static FORCEINLINE T DefaultReply()
@@ -78,7 +77,7 @@ public:
 #define HEART_SLATE_INPUT_INVOKE_REPLY(Prototype, InputType)                                                           \
 FReply ThisClass::Prototype(const FGeometry& InGeometry, const InputType& _InputEvent)                                 \
 {                                                                                                                      \
-	auto&& Reply = Heart::Input::InvokeLinker<SWidget>(SharedThis(this),                                               \
+	auto&& Reply = Heart::Input::InvokeLinker<SWidget, FReply>(SharedThis(this),                                       \
 		&UHeartSlateInputLinker::Handle##Prototype, InGeometry, _InputEvent);                                          \
 	return Reply.IsEventHandled() ? Reply : Super::Prototype(InGeometry, _InputEvent);                                 \
 }
@@ -97,14 +96,16 @@ FReply ThisClass::Prototype(const FGeometry& InGeometry, const InputType& _Input
 	HEART_SLATE_INPUT_INVOKE_REPLY(OnDrop, FDragDropEvent)                                                             \
 	HEART_SLATE_INPUT_INVOKE_REPLY(OnDragOver, FDragDropEvent)                                                         \
 																													   \
-void ThisClass::OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)                               \
+void ThisClass::OnDragEnter(const FGeometry& MyGeometry, const FDragDropEvent& DragDropEvent)                          \
 {                                                                                                                      \
 	Super::OnDragEnter(MyGeometry, DragDropEvent);                                                                     \
-	Heart::Input::LinkOnDragEnter<SWidget>(SharedThis(this), MyGeometry, DragDropEvent);                               \
+	Heart::Input::InvokeLinker<SWidget, void>(SharedThis(this),                                                        \
+		&UHeartSlateInputLinker::HandleOnDragEnter, MyGeometry, DragDropEvent);                                        \
 }                                                                                                                      \
 																													   \
-void ThisClass::OnDragLeave(const FDragDropEvent& DragDropEvent)                                                            \
+void ThisClass::OnDragLeave(const FDragDropEvent& DragDropEvent)                                                       \
 {                                                                                                                      \
 	Super::OnDragLeave(DragDropEvent);                                                                                 \
-	Heart::Input::LinkOnDragLeave<SWidget>(SharedThis(this), DragDropEvent);                                           \
+	Heart::Input::InvokeLinker<SWidget, void>(SharedThis(this),                                                        \
+		&UHeartSlateInputLinker::HandleOnDragLeave, DragDropEvent);                                                    \
 }

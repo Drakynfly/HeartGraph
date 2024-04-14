@@ -82,111 +82,18 @@ namespace Heart::Input
 	 */
 	template <
 		typename TTarget,
+		typename TRet, // @todo i don't know how to extract the return type from TMember.
 		typename TMember,
 		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static auto InvokeLinker(typename TLinkerType<TTarget>::FValueType Target, TMember&& Member, const TArgs&... Args)
+	static TRet InvokeLinker(typename TLinkerType<TTarget>::FValueType Target, TMember&& Member, TArgs&&... Args)
 	{
-		using RetType = typename TLinkerType<TTarget>::FReplyType;
-
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
 			return Invoke(Member, Linker, Target, Args...);
 		}
 
-		return TLinkerType<TTarget>::template DefaultReply<RetType>();
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FDDOType LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		using RetType = typename TLinkerType<TTarget>::FDDOType;
-
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnDragDetected(Target, Args...);
-		}
-
-		return TLinkerType<TTarget>::template DefaultReply<RetType>();
-	}
-
-	template <
-		typename TTarget,
-		typename TRetVal,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static TRetVal LinkOnDrop(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		using RetType = TRetVal;
-
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnDrop(Target, Args...);
-		}
-
-		return TLinkerType<TTarget>::template DefaultReply<RetType>();
-	}
-
-	template <
-		typename TTarget,
-		typename TRetVal,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static TRetVal LinkOnDragOver(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		using RetType = TRetVal;
-
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnDragOver(Target, Args...);
-		}
-
-		return TLinkerType<TTarget>::template DefaultReply<RetType>();
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragEnter(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleOnDragEnter(Target, Args...);
-		}
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragLeave(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleOnDragLeave(Target, Args...);
-		}
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragCancelled(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleOnDragCancelled(Target, Args...);
-		}
+		return TLinkerType<TTarget>::template DefaultReply<TRet>();
 	}
 }
