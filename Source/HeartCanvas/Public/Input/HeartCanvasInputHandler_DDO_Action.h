@@ -32,7 +32,7 @@ namespace Heart::Canvas
 	class FSlateActionDragDropOperation : public FNativeDragDropOperation
 	{
 	public:
-		DRAG_DROP_OPERATOR_TYPE(FHeartSlateActionDragDropOperation, FNativeDragDropOperation)
+		DRAG_DROP_OPERATOR_TYPE(FSlateActionDragDropOperation, FNativeDragDropOperation)
 
 		virtual FReply OnHoverWidget(const TSharedRef<SWidget>& Widget) override;
 
