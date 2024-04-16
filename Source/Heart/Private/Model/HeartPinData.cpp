@@ -42,11 +42,7 @@ int32 FHeartNodePinData::GetPinIndex(const FHeartPinGuid Key) const
 
 bool FHeartNodePinData::HasConnections(const FHeartPinGuid Key) const
 {
-	if (const FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
-	{
-		return !Connections->Connections.IsEmpty();
-	}
-	return false;
+	return PinConnections.Contains(Key);
 }
 
 TOptional<FHeartGraphPinDesc> FHeartNodePinData::GetPinDesc(const FHeartPinGuid Key) const
@@ -87,10 +83,13 @@ bool FHeartNodePinData::RemoveConnection(const FHeartPinGuid Key, const FHeartGr
 	if (FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
 	{
 		const int32 Removed = Connections->Connections.Remove(Pin);
+
+		// Remove Connections element, if empty.
 		if (Connections->Connections.IsEmpty())
 		{
 			PinConnections.Remove(Key);
 		}
+
 		return !!Removed;
 	}
 
