@@ -10,29 +10,31 @@ UHeartSlatePtr* UHeartSlatePtr::Wrap(const TSharedRef<SWidget>& Widget)
 {
 	UHeartSlatePtr* NewWrapper = nullptr;
 
-	auto&& Metadata = Widget->GetMetaData<Heart::Canvas::FLinkerMetadata>();
-	if (!Metadata.IsValid())
+	if (auto&& Metadata = Widget->GetMetaData<Heart::Canvas::FLinkerMetadata>();
+		Metadata.IsValid())
+	{
+		switch (Metadata->WidgetType)
+		{
+		case Heart::Canvas::Graph:
+			NewWrapper = NewObject<UHeartSlateGraph>();
+			break;
+		case Heart::Canvas::Node:
+			NewWrapper = NewObject<UHeartSlateNode>();
+			break;
+		case Heart::Canvas::Pin:
+			NewWrapper = NewObject<UHeartSlatePin>();
+			break;
+		case Heart::Canvas::None:
+		case Heart::Canvas::Connection:
+			// @todo do we need a unique type for connections ?
+			NewWrapper = NewObject<UHeartSlatePtr>();
+			break;
+		}
+	}
+	else
 	{
 		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FLinkerMetadata for slate widget!"))
-		return nullptr;
-	}
-
-	switch (Metadata->WidgetType)
-	{
-	case Heart::Canvas::Graph:
-		NewWrapper = NewObject<UHeartSlateGraph>();
-		break;
-	case Heart::Canvas::Node:
-		NewWrapper = NewObject<UHeartSlateNode>();
-		break;
-	case Heart::Canvas::Pin:
-		NewWrapper = NewObject<UHeartSlatePin>();
-		break;
-	case Heart::Canvas::None:
-	case Heart::Canvas::Connection:
-		// @todo do we need a unique type for connections ?
 		NewWrapper = NewObject<UHeartSlatePtr>();
-		break;
 	}
 
 	if (ensure(IsValid(NewWrapper)))
