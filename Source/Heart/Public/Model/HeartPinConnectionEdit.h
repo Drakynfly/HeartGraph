@@ -41,7 +41,7 @@ namespace Heart::Connections
 		FEdit& DisconnectAll(const FHeartNodeGuid& NodeGuid);
 
 		// Manually set the connections on for a pin. WARNING: this is a very dangerous function as it does not check
-		// for cross node validity. It is up to the callsite to ensure that both nodes linked get updated.
+		// for cross-node validity. It is up to the callsite to ensure that both nodes linked get updated.
 		FEdit& Override(const FHeartGraphPinReference& Pin, const FHeartGraphPinConnections& Connections);
 
 		// Create a memento for each pin connected to this pin, as well as itself

@@ -7,6 +7,7 @@
 #include "HeartGuids.h"
 
 #include "Containers/Map.h"
+#include "General/TStructViewTemp.h"
 #include "Misc/Optional.h"
 
 #include "HeartPinData.generated.h"
@@ -26,7 +27,7 @@ namespace Heart
 
 // @todo this should not be BlueprintType. it only is temporarily until there is a way to view pins in the editor window without making PinData VisibleInstanceOnly
 // Long-term, it would be nice to make this type not a USTRUCT at all, and swap out the TMaps for the faster one from VoxelCore
-// This struct is *intentially* not exported, as it should not be accessible to anything but UHeartGraphNode
+// This struct is *intentionally* not exported, as it should not be accessible to anything but UHeartGraphNode
 
 /**
  * Container for all pin data on a Heart Node, including links to other nodes.
@@ -51,7 +52,7 @@ protected:
 	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Key) const;
 	FHeartGraphPinDesc& GetPinDesc(FHeartPinGuid Key);
 
-	TOptional<FHeartGraphPinConnections> GetConnections(FHeartPinGuid Key) const;
+	TConstStructView<FHeartGraphPinConnections> ViewConnections(FHeartPinGuid Key) const;
 	FHeartGraphPinConnections& GetConnectionsMutable(FHeartPinGuid Key);
 
 	void AddConnection(const FHeartPinGuid Key, const FHeartGraphPinReference& Pin);
@@ -63,7 +64,7 @@ protected:
 	}
 
 	/**
-	 * Try to find a pin by a predicate. Quicker then using a Query, but cannot be chained.
+	 * Try to find a pin by a predicate. Quicker than using a Query, but cannot be chained.
 	 */
 	template <typename Predicate>
 	TOptional<FHeartPinGuid> Find(Predicate Pred) const

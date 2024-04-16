@@ -63,9 +63,13 @@ FHeartGraphPinDesc& FHeartNodePinData::GetPinDesc(const FHeartPinGuid Key)
 	return PinDescriptions.FindChecked(Key);
 }
 
-TOptional<FHeartGraphPinConnections> FHeartNodePinData::GetConnections(const FHeartPinGuid Key) const
+TConstStructView<FHeartGraphPinConnections> FHeartNodePinData::ViewConnections(const FHeartPinGuid Key) const
 {
-	return PinConnections.Contains(Key) ? PinConnections[Key] : TOptional<FHeartGraphPinConnections>{};
+	if (const FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
+	{
+		return *Connections;
+	}
+	return TConstStructView<FHeartGraphPinConnections>{};
 }
 
 FHeartGraphPinConnections& FHeartNodePinData::GetConnectionsMutable(const FHeartPinGuid Key)
