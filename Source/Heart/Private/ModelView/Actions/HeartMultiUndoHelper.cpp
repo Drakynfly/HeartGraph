@@ -18,7 +18,7 @@ namespace Heart::Action::History::MultiUndo
 		}
 
 		if (UHeartActionHistory* History = HeartGraph->GetExtension<UHeartActionHistory>();
-			!IsValid(History))
+			IsValid(History))
 		{
 			FHeartActionRecord Record;
 			Record.Action = UHeartAction_MultiUndoStart::StaticClass();
@@ -37,7 +37,7 @@ namespace Heart::Action::History::MultiUndo
 		}
 
 		if (UHeartActionHistory* History = Graph->GetHeartGraph()->GetExtension<UHeartActionHistory>();
-			!IsValid(History))
+			IsValid(History))
 		{
 			FHeartActionRecord Record;
 			Record.Action = UHeartAction_MultiUndoEnd::StaticClass();
