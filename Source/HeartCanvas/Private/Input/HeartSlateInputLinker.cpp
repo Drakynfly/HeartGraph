@@ -133,7 +133,7 @@ FReply UHeartSlateInputLinker::HandleOnDrop(const TSharedRef<SWidget>& Widget, c
 {
 	if (auto NativeDDO = DragDropEvent.GetOperationAs<Heart::FNativeDragDropOperation>())
 	{
-		return NativeDDO->OnHoverWidget(Widget);
+		return NativeDDO->OnDropOnWidget(Widget);
 	}
 	return FReply::Unhandled();
 }
