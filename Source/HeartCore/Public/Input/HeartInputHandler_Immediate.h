@@ -15,9 +15,17 @@ class HEARTCORE_API UHeartInputHandler_Immediate : public UHeartInputHandlerAsse
 	GENERATED_BODY()
 
 public:
+	//~ UHeartInputHandlerAssetBase
 	virtual Heart::Input::EExecutionOrder GetExecutionOrder() const override
 	{
 		return HandleInput ? Heart::Input::Event : Heart::Input::Listener;
+	}
+	//~ UHeartInputHandlerAssetBase
+
+	bool GetHandleInput() const { return HandleInput; }
+	void SetHandleInput(const bool InHandleInput)
+	{
+		HandleInput = InHandleInput;
 	}
 
 protected:
