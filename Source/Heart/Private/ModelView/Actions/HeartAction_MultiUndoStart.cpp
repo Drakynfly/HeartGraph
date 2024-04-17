@@ -40,10 +40,10 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 	int32 ScopeCounter = 1;
 	do
 	{
-		auto&& Record = History->RetrieveRecordPtr();
+		auto&& Record = History->AdvanceRecordPtr();
 		if (!Record)
 		{
-			// Reached end of records to redo unexpectedly.
+			// Reached the end of records to redo unexpectedly.
 			UE_LOG(LogHeartGraph, Warning, TEXT("Redo of MultiUndo ran until most recent record without hitting an End!"))
 			break;
 		}

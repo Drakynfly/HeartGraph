@@ -146,7 +146,7 @@ namespace Heart::Action::History
 		return FNativeExec::Execute(ActionObject, ArgsCopy);
 	}
 
-	bool TryUndo(UHeartGraph* Graph)
+	bool TryUndo(const UHeartGraph* Graph)
 	{
 		if (!IsValid(Graph))
 		{
@@ -165,14 +165,13 @@ namespace Heart::Action::History
 
 	bool TryUndo(UHeartActionHistory* History)
 	{
-		auto Record = History->RetrieveRecord();
-		if (!Record.IsSet() ||
-			!IsValid(Record->Action))
+		auto Record = History->RetrieveRecordPtr();
+		if (!Record || !IsValid(Record->Action))
 		{
 			return false;
 		}
 
-		return UndoRecord(Record.GetValue(), History);
+		return UndoRecord(*Record, History);
 	}
 
 	FHeartEvent TryRedo(const UHeartGraph* Graph)
@@ -189,7 +188,18 @@ namespace Heart::Action::History
 			return FHeartEvent::Failed;
 		}
 
-		return History->Redo();
+		return TryRedo(History);
+	}
+
+	FHeartEvent TryRedo(UHeartActionHistory* History)
+	{
+		auto Record = History->AdvanceRecordPtr();
+		if (!Record || !IsValid(Record->Action))
+		{
+			return FHeartEvent::Failed;
+		}
+
+		return RedoRecord(*Record);
 	}
 }
 
@@ -212,18 +222,19 @@ FHeartActionRecord* UHeartActionHistory::RetrieveRecordPtr()
 {
 	if (ActionPointer == INDEX_NONE)
 	{
-		return {};
+		return nullptr;
 	}
 	return &Actions[ActionPointer--];
 }
 
-TOptional<FHeartActionRecord> UHeartActionHistory::RetrieveRecord()
+FHeartActionRecord* UHeartActionHistory::AdvanceRecordPtr()
 {
-	if (ActionPointer == INDEX_NONE)
+	if (ActionPointer == Actions.Num()-1)
 	{
-		return {};
+		// Cannot Redo most recent action
+		return nullptr;
 	}
-	return Actions[ActionPointer--];
+	return &Actions[ActionPointer++];
 }
 
 TConstArrayView<FHeartActionRecord> UHeartActionHistory::RetrieveRecords(const int32 Count)
@@ -245,16 +256,7 @@ bool UHeartActionHistory::Undo()
 
 FHeartEvent UHeartActionHistory::Redo()
 {
-	if (ActionPointer == Actions.Num()-1)
-	{
-		// Cannot Redo most recent action
-		return FHeartEvent::Invalid;
-	}
-
-	// @todo it would be nice to not mutate the OriginalRecord's UndoData when Redo'ing, but not all actions are
-	// completely compatible with reconstructing their state from undo data, example, creating new nodes always uses
-	// a new guid, there is no API to construct a node with an existing guid.
-	return Heart::Action::History::RedoRecord(Actions[++ActionPointer]);
+	return Heart::Action::History::TryRedo(this);
 }
 
 bool UHeartActionHistory::IsUndoable()

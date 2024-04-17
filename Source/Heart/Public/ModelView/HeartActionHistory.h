@@ -84,10 +84,11 @@ namespace Heart::Action::History
 	HEART_API bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History);
 	HEART_API FHeartEvent RedoRecord(FHeartActionRecord& Record);
 
-	HEART_API bool TryUndo(UHeartGraph* Graph);
+	HEART_API bool TryUndo(const UHeartGraph* Graph);
 	HEART_API bool TryUndo(UHeartActionHistory* History);
 
 	HEART_API FHeartEvent TryRedo(const UHeartGraph* Graph);
+	HEART_API FHeartEvent TryRedo(UHeartActionHistory* History);
 }
 
 /**
@@ -102,7 +103,8 @@ public:
 	void AddRecord(const FHeartActionRecord& Record);
 
 	FHeartActionRecord* RetrieveRecordPtr();
-	TOptional<FHeartActionRecord> RetrieveRecord();
+	FHeartActionRecord* AdvanceRecordPtr();
+
 	TConstArrayView<FHeartActionRecord> RetrieveRecords(int32 Count);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
