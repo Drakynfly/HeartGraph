@@ -41,7 +41,7 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 		if (!Record)
 		{
 			// Reached the end of records to undo unexpectedly.
-			UE_LOG(LogHeartGraph, Warning, TEXT("Undo of MultiUndo ran until most recent record without hitting an End!"))
+			UE_LOG(LogHeartGraph, Warning, TEXT("Undo of MultiUndo ran until oldest record without hitting a Start!"))
 			break;
 		}
 
