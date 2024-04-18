@@ -18,7 +18,7 @@ int32 UHeartInputUtilsLibrary::FindClosestToDirection(const TArray<FVector2D>& L
 		FVector2D Offset = From - Locations[i];
 
 		// Angle between direction and target
-		const float Dot = Offset.GetSafeNormal() | Direction;
+		const double Dot = Offset.GetSafeNormal() | Direction;
 
 		if (Dot > DotRange)
 		{

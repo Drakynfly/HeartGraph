@@ -327,7 +327,7 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 		PanToSelectionSettings.EnableZoomToSelection) &&
 		!SelectedNodes.IsEmpty())
 	{
-		FVector2D AverageNodePosition = FVector2D::ZeroVector;
+		FVector2f AverageNodePosition = FVector2f::ZeroVector;
 
 		for (const FHeartNodeGuid& SelectedNode : SelectedNodes)
 		{
@@ -336,33 +336,34 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 				if (const TObjectPtr<UHeartGraphCanvasNode> CanvasNode = *Node)
 				{
 					// Add the canonical location of the graph node.
-					AverageNodePosition += CanvasNode->GetGraphNode()->GetLocation();
+					AverageNodePosition += FVector2f(CanvasNode->GetGraphNode()->GetLocation());
 
 					// Add half the size of the node. We are focusing on the center of the node, not the corner
-					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5 * (1.0 / View.Z);
+					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5f * (1.0f / static_cast<float>(View.Z));
 				}
 			}
 		}
 
-		AverageNodePosition *= 1.0 / SelectedNodes.Num();
+		AverageNodePosition *= 1.f / SelectedNodes.Num();
 
 		if (PanToSelectionSettings.EnablePanToSelection)
 		{
-			FVector2D LocalNewCorner = AverageNodePosition;
+			FVector2f LocalNewCorner = AverageNodePosition;
 
 			LocalNewCorner = -LocalNewCorner;
 
 
 			// Add half the size of the canvas, to "center" the focus
-			LocalNewCorner += NodeCanvas->GetCachedGeometry().GetLocalSize() * 0.5;
+			LocalNewCorner += NodeCanvas->GetCachedGeometry().GetLocalSize() * 0.5f;
 
-			SetViewCorner(LocalNewCorner, true);
+			SetViewCorner(FVector2D(LocalNewCorner), true);
 		}
 
 		if (PanToSelectionSettings.EnableZoomToSelection)
 		{
 			float TargetZoom = 0.f;
 
+			// @todo implement
 			//SetZoom(TargetZoom, true);
 		}
 	}

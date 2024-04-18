@@ -92,11 +92,11 @@ void SHeartGraphNodeBase::GetOverlayBrushes(bool bSelected, const FVector2D Widg
 	{
 		if (PinBreakpoint.Key.Get()->Direction == EGPD_Input)
 		{
-			GetPinBrush(true, WidgetSize.X, HeartEdGraphNode->InputPins.IndexOfByKey(PinBreakpoint.Key.Get()), PinBreakpoint.Value, Brushes);
+			GetPinBrush(true, static_cast<float>(WidgetSize.X), HeartEdGraphNode->InputPins.IndexOfByKey(PinBreakpoint.Key.Get()), PinBreakpoint.Value, Brushes);
 		}
 		else
 		{
-			GetPinBrush(false, WidgetSize.X, HeartEdGraphNode->OutputPins.IndexOfByKey(PinBreakpoint.Key.Get()), PinBreakpoint.Value, Brushes);
+			GetPinBrush(false, static_cast<float>(WidgetSize.X), HeartEdGraphNode->OutputPins.IndexOfByKey(PinBreakpoint.Key.Get()), PinBreakpoint.Value, Brushes);
 		}
 	}
 }
