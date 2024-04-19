@@ -23,12 +23,12 @@ public:
 	virtual void Drop_Implementation(const FPointerEvent& PointerEvent) override;
 
 protected:
-	FVector2D ClampToBorder(const FVector2D& Value) const;
+	FVector2f ClampToBorder(const FVector2f& Value) const;
 
 private:
 	TWeakObjectPtr<class UHeartGraphCanvasNode> Node;
 	TOptional<FVector2D> OriginalLocation;
 
 	// Offset between node location and mouse. This is the point on the widget we clicked on, relative to the widget's top left.
-	FVector2D MouseOffset = FVector2D::ZeroVector;
+	FVector2f MouseOffset = FVector2f::ZeroVector;
 };

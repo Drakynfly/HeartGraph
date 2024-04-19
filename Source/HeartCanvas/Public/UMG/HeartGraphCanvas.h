@@ -168,11 +168,11 @@ protected:
 
 	void AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget);
 
-	void SetViewOffset(const FVector2D& Value);
-	void AddToViewOffset(const FVector2D& Value);
+	void SetViewOffset(const FVector2f& Value);
+	void AddToViewOffset(const FVector2f& Value);
 
-	void SetZoom(const double& Value);
-	void AddToZoom(const double& Value);
+	void SetZoom(float Value);
+	void AddToZoom(float Value);
 
 	UFUNCTION()
 	void OnNodeAddedToGraph(UHeartGraphNode* Node);
@@ -205,7 +205,7 @@ public:
 	FVector2D GetViewOffset() const { return {View.X, View.Y}; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	double GetZoom() const { return View.Z; }
+	float GetZoom() const { return View.Z; }
 
 	const FHeartDragIntoViewSettings& GetDragIntoViewSettings() const { return DragIntoViewSettings; }
 
@@ -214,6 +214,9 @@ public:
 			UTILITIES
 	----------------------*/
 
+	FVector2f ScalePositionToCanvasZoom_2f(const FVector2f& Position) const;
+	FVector2f UnscalePositionToCanvasZoom_2f(const FVector2f& Position) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	FVector2D ScalePositionToCanvasZoom(const FVector2D& Position) const;
 
@@ -221,7 +224,7 @@ public:
 	FVector2D UnscalePositionToCanvasZoom(const FVector2D& Position) const;
 
 	// Reconstruct the display for this node. Useful for forcing updates on nodes that are known to have changed, but
-	// don't have specific bindings available. Try not to use Type = Full too much however, as this isn't the cheapest operation.
+	// don't have specific bindings available. Try not to use Type = Full too much, however, as this isn't the cheapest operation.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid, EHeartGraphCanvasInvalidateType Type = EHeartGraphCanvasInvalidateType::Full);
 
@@ -236,6 +239,8 @@ public:
 			GRAPH VIEWING
 	---------------------------*/
 
+	void AddToViewCorner(const FVector2f& NewViewCorner, bool Interp);
+
 	/** Set the displayed graph */
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
 	void SetGraph(UHeartGraph* Graph);
@@ -247,10 +252,10 @@ public:
 	void AddToViewCorner(const FVector2D& NewViewCorner, bool Interp);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	void SetZoom(double NewZoom, bool Interp);
+	void SetZoom(float NewZoom, bool Interp);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")
-	void AddToZoom(double NewZoom, bool Interp);
+	void AddToZoom(float NewZoom, bool Interp);
 
 
 	/*---------------------------
@@ -331,11 +336,11 @@ protected:
 
 	// Multiplies movement to the view of the graph.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
-	FVector ViewMovementScalar;
+	FVector3f ViewMovementScalar;
 
 	// X and Y bounds limit panning. Z bound limits zoom.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
-	FVectorBounds ViewBounds;
+	FVector3fBounds ViewBounds;
 
 	// Interpolation applied while panning.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
@@ -359,8 +364,8 @@ protected:
 	bool UseDeprecatedPaintMethodToDrawConnections = false;
 
 private:
-	FVector View;
-	FVector TargetView;
+	FVector3f View;
+	FVector3f TargetView;
 
 	bool NeedsToUpdatePositions = false;
 };

@@ -18,9 +18,30 @@ struct HEARTCORE_API FVectorBounds
 	  : Min(Min),
 		Max(Max) {}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector2DBounds")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VectorBounds")
 	FVector Min = FVector::ZeroVector;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector2DBounds")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VectorBounds")
 	FVector Max = FVector::ZeroVector;
+};
+
+/**
+ *
+ */
+USTRUCT(BlueprintType)
+struct HEARTCORE_API FVector3fBounds
+{
+	GENERATED_BODY()
+
+	FVector3fBounds() {}
+
+	FVector3fBounds(const FVector3f& Min, const FVector3f& Max)
+	  : Min(Min),
+		Max(Max) {}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector3fBounds")
+	FVector3f Min = FVector3f::ZeroVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vector3fBounds")
+	FVector3f Max = FVector3f::ZeroVector;
 };

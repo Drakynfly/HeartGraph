@@ -36,6 +36,6 @@ void UHeartCanvasAction_Zoom::HandleAddZoom(UHeartGraphCanvas* CanvasGraph, cons
 	else if (const TOptional<FHeartManualEvent> ManualEvent = Activation.As<FHeartManualEvent>();
 			 ManualEvent.IsSet())
 	{
-		CanvasGraph->AddToZoom(ManualEvent.GetValue().EventValue, true);
+		CanvasGraph->AddToZoom(static_cast<float>(ManualEvent.GetValue().EventValue), true);
 	}
 }
