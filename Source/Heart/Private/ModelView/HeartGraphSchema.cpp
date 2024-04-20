@@ -25,7 +25,16 @@ const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph>& 
 	}
 
 	const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
-	UClass* Class = DefaultHeartGraph->GetSchemaClass();
+
+	UClass* Class;
+	{
+#if WITH_EDITOR
+		// GetSchemaClass is a BlueprintNativeEvent, but we should be able to call it in the editor.
+		// This is always safe, as it's a const function running on the CDO.
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		Class = DefaultHeartGraph->GetSchemaClass();
+	}
 
 	if (!ensure(IsValid(Class)))
 	{

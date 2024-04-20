@@ -78,7 +78,10 @@ void UHeartGraph::PostInitProperties()
 {
 	Super::PostInitProperties();
 
-	GetSchema()->RefreshGraphExtensions(this);
+	if (!IsTemplate())
+	{
+		GetSchema()->RefreshGraphExtensions(this);
+	}
 }
 
 void UHeartGraph::PostLoad()
