@@ -169,10 +169,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeterminesOutputType = Class))
 	UObject* GetNodeObjectTyped(TSubclassOf<UObject> Class) const { return NodeObject; }
 
-	template <typename THeartGraph>
+	template <
+		typename THeartGraph
+		UE_REQUIRES(TIsDerivedFrom<THeartGraph, UHeartGraph>::Value)
+	>
 	THeartGraph* GetOwningGraph() const
 	{
-		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "The graph class must derive from UHeartGraph");
 		return Cast<THeartGraph>(GetGraph());
 	}
 

@@ -93,27 +93,29 @@ class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 public:
 	UHeartGraphSchema();
 
+	// Get schema, not checked for the type
 	static const UHeartGraphSchema* Get(const TSubclassOf<UHeartGraph>& GraphClass);
 
-	template <typename THeartGraph>
-	static const UHeartGraphSchema* Get()
-	{
-		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "THeartGraph must derive from UHeartGraph");
-		return Get(THeartGraph::StaticClass());
-	}
-
-	template <typename THeartGraphSchema>
+	// Get schema, cast to a specific class, or nullptr
+	template <
+		typename THeartGraphSchema
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
+	>
 	static const THeartGraphSchema* Get(const TSubclassOf<UHeartGraph> GraphClass)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
 		return Cast<THeartGraphSchema>(Get(GraphClass));
 	}
 
-	template <typename THeartGraphSchema, typename THeartGraph>
+	// Get schema, cast to a specific class, or nullptr, with templated graph class
+	template <
+		typename THeartGraph = UHeartGraph,
+		typename THeartGraphSchema = UHeartGraphSchema
+		UE_REQUIRES(TIsDerivedFrom<THeartGraph,		  UHeartGraph>::Value &&
+					TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
+	>
 	static const THeartGraphSchema* Get()
 	{
-		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
-		return Cast<THeartGraphSchema>(Get<THeartGraph>());
+		return Cast<THeartGraphSchema>(Get(THeartGraph::StaticClass()));
 	}
 
 protected:

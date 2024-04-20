@@ -113,10 +113,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
 
-	template <typename THeartGraphNode>
+	template <
+		typename THeartGraphNode
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
+	>
 	THeartGraphNode* GetNode(const FHeartNodeGuid& NodeGuid) const
 	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
 		return Cast<THeartGraphNode>(GetNode(NodeGuid));
 	}
 
@@ -144,10 +146,12 @@ protected:
 	TSubclassOf<UHeartGraphSchema> GetSchemaClass() const;
 
 public:
-	template <typename THeartGraphSchema>
+	template <
+		typename THeartGraphSchema
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
+	>
 	const THeartGraphSchema* GetSchemaTyped() const
 	{
-		static_assert(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::IsDerived, "THeartGraphSchema must derive from UHeartGraphSchema");
 		return Cast<THeartGraphSchema>(GetSchema());
 	}
 
@@ -158,7 +162,10 @@ public:
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
 	/** Find the first extension of the template type. */
-	template <typename TExtensionClass>
+	template <
+		typename TExtensionClass
+		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
+	>
 	TExtensionClass* GetExtension() const
 	{
 		return CastChecked<TExtensionClass>(GetExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
@@ -169,7 +176,10 @@ public:
 	UHeartGraphExtension* GetExtension(TSubclassOf<UHeartGraphExtension> Class) const;
 
 	/** Add the extension of the template class. */
-	template <typename TExtensionClass>
+	template <
+		typename TExtensionClass
+		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
+	>
 	TExtensionClass* AddExtension()
 	{
 		return CastChecked<TExtensionClass>(AddExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
@@ -188,10 +198,13 @@ public:
 	void RemoveExtension(TSubclassOf<UHeartGraphExtension> Class);
 
 	/** Remove the extension of the template class. */
-	template <typename ExtensionType>
+	template <
+		typename TExtensionClass
+		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
+	>
 	void RemoveExtension()
 	{
-		return RemoveExtension(ExtensionType::StaticClass());
+		return RemoveExtension(TExtensionClass::StaticClass());
 	}
 
 
@@ -207,28 +220,35 @@ private:
 
 public:
 	// Create from template graph class and node object
-	template <typename THeartGraphNode>
+	template <
+		typename THeartGraphNode
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
+	>
 	THeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
 		checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
 		return Cast<THeartGraphNode>(CreateNode_Reference(THeartGraphNode::StaticClass(), NodeObject, Location));
 	}
 
 	// Create from template node class and attempt to cast the return to the template graph class
-	template <typename THeartGraphNode, typename TNodeObject>
+	template <
+		typename THeartGraphNode,
+		typename TNodeObject
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value &&
+					!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::Value)
+	>
 	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
-		static_assert(!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::IsDerived, "TNodeObject must not derive from UHeartGraphNode");
 		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location));
 	}
 
 	// Create from node class and attempt to cast the return to the template graph class
-	template <typename THeartGraphNode>
+	template <
+		typename THeartGraphNode
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
+	>
 	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
 	{
-		static_assert(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::IsDerived, "THeartGraphNode must derive from UHeartGraphNode");
 		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
 		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location));
 	}

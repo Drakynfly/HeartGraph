@@ -188,10 +188,12 @@ protected:
 			GETTERS
 	----------------------*/
 public:
-	template <typename THeartGraph>
+	template <
+		typename THeartGraph
+		UE_REQUIRES(TIsDerivedFrom<THeartGraph, UHeartGraph>::Value)
+	>
 	THeartGraph* GetGraph() const
 	{
-		static_assert(TIsDerivedFrom<THeartGraph, UHeartGraph>::IsDerived, "The graph class must derive from UHeartGraph");
 		return Cast<THeartGraph>(DisplayedGraph);
 	}
 
