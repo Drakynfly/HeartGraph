@@ -26,6 +26,11 @@ namespace Heart::Canvas
 
 	HEART_SLATE_INPUT_LINKER_BODY(SGraphWidgetBase)
 
+	void SGraphCanvasWidget::Construct(const FArguments& InArgs)
+	{
+		AddMetadata(MakeShared<FGraphAndLinkerMetadata>(InArgs._Graph, InArgs._Linker));
+	}
+	
 	void SGraphNodeWidget::Construct(const FArguments& InArgs)
 	{
 		AddMetadata(MakeShared<FNodeAndLinkerMetadata>(InArgs._GraphNode, InArgs._Linker));

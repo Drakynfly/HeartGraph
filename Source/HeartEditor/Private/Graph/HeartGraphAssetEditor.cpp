@@ -806,8 +806,8 @@ namespace Heart::AssetEditor
 			// Select the newly pasted stuff
 			GraphEditor->SetNodeSelection(Node, true);
 
-			Node->NodePosX = (Node->NodePosX - AvgNodePosition.X) + Location.X;
-			Node->NodePosY = (Node->NodePosY - AvgNodePosition.Y) + Location.Y;
+			Node->NodePosX = static_cast<int32>((Node->NodePosX - AvgNodePosition.X) + Location.X);
+			Node->NodePosY = static_cast<int32>((Node->NodePosY - AvgNodePosition.Y) + Location.Y);
 
 			Node->SnapToGrid(SNodePanel::GetSnapGridSize());
 		}

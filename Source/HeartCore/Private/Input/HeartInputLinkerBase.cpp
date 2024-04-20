@@ -56,6 +56,19 @@ FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TF
 	return *this;
 }
 
+void UHeartInputLinkerBase::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
+{
+	const UHeartInputLinkerBase* This = CastChecked<UHeartInputLinkerBase>(InThis);
+
+	for (auto&& Element : This->InputCallbackMappings)
+	{
+		if (!Element.Value.Handler->IsAsset())
+		{
+			Collector.AddReferencedObject(const_cast<FSortableCallback*>(&Element.Value)->Handler, This);
+		}
+	}
+}
+
 FHeartEvent UHeartInputLinkerBase::QuickTryCallbacks(const FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation)
 {
 	SCOPE_CYCLE_COUNTER(STAT_QuickTryCallbacks)

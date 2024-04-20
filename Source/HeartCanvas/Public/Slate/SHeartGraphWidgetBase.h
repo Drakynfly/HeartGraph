@@ -87,6 +87,25 @@ namespace Heart::Canvas
 		SLATE_END_ARGS()
 
 		HEART_SLATE_INPUT_LINKER_HEADER(SCompoundWidget);
+
+		// This must be implemented for slate to respond to key events.
+		virtual bool SupportsKeyboardFocus() const override { return true; }
+	};
+
+	/**
+	 * A base class for a HeartGraph canvas slate widget
+	 */
+	class HEARTCANVAS_API SGraphCanvasWidget : public SGraphWidgetBase
+	{
+	public:
+		SLATE_BEGIN_ARGS(SGraphCanvasWidget)
+		{}
+			SLATE_ARGUMENT(UHeartGraph*, Graph)
+			SLATE_ARGUMENT(UHeartSlateInputLinker*, Linker)
+		SLATE_END_ARGS()
+
+		/** Constructs this widget with InArgs */
+		void Construct(const FArguments& InArgs);
 	};
 
 	/**

@@ -20,6 +20,21 @@ namespace Heart::Input
 			FReply::Handled() :
 			FReply::Unhandled();
 	}
+
+	FHeartEvent ReplyToHeartEvent(const FHeartEvent& Base, const FReply& Reply)
+	{
+		FEventReply EventReply;
+		EventReply.NativeReply = Reply;
+
+		// If the slate reply is handling, enforce using Handled instead of the passed in Reply
+		if (Reply.IsEventHandled())
+		{
+			return FHeartEvent::Handled.Detail<FEventReply>(EventReply);
+		}
+
+		// Otherwise, Reply has more responses than just "Unhandled"
+		return Base.Detail<FEventReply>(EventReply);
+	}
 }
 
 FEventReply UHeartSlateReplyWrapper::HeartEventToEventReply(const FHeartEvent& Event)

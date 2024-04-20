@@ -31,14 +31,14 @@ protected:
 	virtual bool CanExecuteOnSlatePtr(const UHeartSlatePtr* SlatePtr) const;
 	virtual FHeartEvent ExecuteOnSlatePtr(UHeartSlatePtr* SlatePtr, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 
-	virtual FEventReply ExecuteOnGraph(UHeartSlateGraph* SlateGraph, const FHeartInputActivation& Activation,
-		UObject* ContextObject, FBloodContainer& UndoData) const { return false; }
+	virtual FReply ExecuteOnGraph(UHeartSlateGraph* SlateGraph, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) const { return FReply::Unhandled(); }
 
-	virtual FEventReply ExecuteOnNode(UHeartSlateNode* SlateNode, const FHeartInputActivation& Activation,
-		UObject* ContextObject, FBloodContainer& UndoData) const { return false; }
+	virtual FReply ExecuteOnNode(UHeartSlateNode* SlateNode, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) const { return FReply::Unhandled(); }
 
-	virtual FEventReply ExecuteOnPin(UHeartSlatePin* SlatePin, const FHeartInputActivation& Activation,
-		UObject* ContextObject, FBloodContainer& UndoData) const { return false; }
+	virtual FReply ExecuteOnPin(UHeartSlatePin* SlatePin, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) const { return FReply::Unhandled(); }
 };
 
 
@@ -56,9 +56,9 @@ protected:
 	//~ UHeartGraphSlateAction
 	virtual FText GetDescription(const UHeartSlatePtr* SlatePtr) const override;
 	virtual bool CanExecuteOnSlatePtr(const UHeartSlatePtr* SlatePtr) const override;
-	virtual FEventReply ExecuteOnGraph(UHeartSlateGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FEventReply ExecuteOnNode(UHeartSlateNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FEventReply ExecuteOnPin(UHeartSlatePin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FReply ExecuteOnGraph(UHeartSlateGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FReply ExecuteOnNode(UHeartSlateNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FReply ExecuteOnPin(UHeartSlatePin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	//~ UHeartGraphSlateAction
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Get Description"))

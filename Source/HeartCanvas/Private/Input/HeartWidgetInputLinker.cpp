@@ -84,10 +84,8 @@ FReply UHeartWidgetInputLinker::HandleOnKeyUp(UWidget* Widget, const FGeometry& 
 	return HeartEventToReply(QuickTryCallbacks(FInputTrip(KeyEvent, Release), Widget, KeyEvent));
 }
 
-UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent)
+void UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widget, const FGeometry& InGeometry, const FPointerEvent& PointerEvent, UDragDropOperation*& Operation)
 {
-	UDragDropOperation* Operation = nullptr;
-
 	const FHeartInputActivation Activation = PointerEvent;
 
 	Query(FInputTrip(PointerEvent, Press))
@@ -107,8 +105,6 @@ UDragDropOperation* UHeartWidgetInputLinker::HandleOnDragDetected(UWidget* Widge
 
 			return true;
 		});
-
-	return Operation;
 }
 
 bool UHeartWidgetInputLinker::HandleOnDragOver(UWidget* Widget, const FGeometry& InGeometry, const FDragDropEvent& DragDropEvent, UDragDropOperation* InOperation)

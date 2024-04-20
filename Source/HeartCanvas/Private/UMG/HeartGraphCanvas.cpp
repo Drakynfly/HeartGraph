@@ -35,11 +35,11 @@ namespace Heart::Canvas
 
 UHeartGraphCanvas::UHeartGraphCanvas()
 {
-	View = {0.0, 0.0, 1.0};
-	TargetView = {0.0, 0.0, 1.0};
-	ViewMovementScalar = {1.0, 1.0, 0.1};
-	ViewBounds.Min = { -10000.0, -10000.0, 0.1 };
-	ViewBounds.Max = { 10000.0, 10000.0, 10.0 };
+	View = {0.f, 0.f, 1.f};
+	TargetView = {0.f, 0.f, 1.f};
+	ViewMovementScalar = {1.f, 1.f, 0.1f};
+	ViewBounds.Min = { -10000.f, -10000.f, 0.1f };
+	ViewBounds.Max = { 10000.f, 10000.f, 10.f };
 
 	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("LocationModifiers");
 }
@@ -74,7 +74,7 @@ void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDe
 
 	if (TargetView != View)
 	{
-		SetViewOffset(FMath::Vector2DInterpTo(FVector2D(View), FVector2D(TargetView), InDeltaTime, DraggingInterpSpeed));
+		SetViewOffset(Vector2fInterpTo(FVector2f(View), FVector2f(TargetView), InDeltaTime, DraggingInterpSpeed));
 	}
 
 	if (NeedsToUpdatePositions)
@@ -130,16 +130,16 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		{
 			auto&& PinWidgets = GraphNode->GetPinWidgets();
 
-			const FVector2D NodeLoc = GraphNode->GetGraphNode()->GetLocation();
+			const FVector2f NodeLoc(GraphNode->GetGraphNode()->GetLocation());
 
 			for (UHeartGraphCanvasPin* PinWidget : PinWidgets)
 			{
 				FHeartPinGuid WidgetGuid = PinWidget->GetPinGuid();
 				if (WidgetGuid.IsValid())
 				{
-					FVector2D PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
+					FVector2f PinLoc = NodeLoc; // + PinWidget->GetNodeOffset(); TODO
 
-					const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom(PinLoc) * AllottedGeometry.Scale, FVector2D(AllottedGeometry.AbsolutePosition), FVector2D::ZeroVector, 1.f);
+					const FGeometry SynthesizedPinGeometry(ScalePositionToCanvasZoom_2f(PinLoc) * AllottedGeometry.Scale, AllottedGeometry.AbsolutePosition, FVector2f::ZeroVector, 1.f);
 					PinGeometries.Add(WidgetGuid, {PinWidget, SynthesizedPinGeometry});
 				}
 			}
@@ -174,8 +174,8 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 			auto&& GraphGeo = GetTickSpaceGeometry();
 			FGeometry PinGeo = PinGeometries.Find(PreviewPin->GetPinGuid())->Value;
 
-			FVector2D StartPoint;
-			FVector2D EndPoint;
+			FVector2f StartPoint;
+			FVector2f EndPoint;
 
 			FVector CustomPosition;
 			bool RelativeStart;
@@ -189,7 +189,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 			if (HandledStart)
 			{
-				StartPoint += FVector2D(CustomPosition);
+				StartPoint += CustomPosition;
 			}
 
 			//if (PreviewPin->GetPin()->GetDirection() == EHeartPinDirection::Input)
@@ -202,7 +202,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 				EndPoint = GraphGeo.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
 			}
 
-			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
+			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, FVector2D(StartPoint), FVector2D(EndPoint), PreviewPin);
 		}
 	}
 
@@ -327,7 +327,7 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 		PanToSelectionSettings.EnableZoomToSelection) &&
 		!SelectedNodes.IsEmpty())
 	{
-		FVector2D AverageNodePosition = FVector2D::ZeroVector;
+		FVector2f AverageNodePosition = FVector2f::ZeroVector;
 
 		for (const FHeartNodeGuid& SelectedNode : SelectedNodes)
 		{
@@ -336,33 +336,34 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 				if (const TObjectPtr<UHeartGraphCanvasNode> CanvasNode = *Node)
 				{
 					// Add the canonical location of the graph node.
-					AverageNodePosition += CanvasNode->GetGraphNode()->GetLocation();
+					AverageNodePosition += FVector2f(CanvasNode->GetGraphNode()->GetLocation());
 
 					// Add half the size of the node. We are focusing on the center of the node, not the corner
-					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5 * (1.0 / View.Z);
+					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5f * (1.0f / static_cast<float>(View.Z));
 				}
 			}
 		}
 
-		AverageNodePosition *= 1.0 / SelectedNodes.Num();
+		AverageNodePosition *= 1.f / SelectedNodes.Num();
 
 		if (PanToSelectionSettings.EnablePanToSelection)
 		{
-			FVector2D LocalNewCorner = AverageNodePosition;
+			FVector2f LocalNewCorner = AverageNodePosition;
 
 			LocalNewCorner = -LocalNewCorner;
 
 
 			// Add half the size of the canvas, to "center" the focus
-			LocalNewCorner += NodeCanvas->GetCachedGeometry().GetLocalSize() * 0.5;
+			LocalNewCorner += NodeCanvas->GetCachedGeometry().GetLocalSize() * 0.5f;
 
-			SetViewCorner(LocalNewCorner, true);
+			SetViewCorner(FVector2D(LocalNewCorner), true);
 		}
 
 		if (PanToSelectionSettings.EnableZoomToSelection)
 		{
 			float TargetZoom = 0.f;
 
+			// @todo implement
 			//SetZoom(TargetZoom, true);
 		}
 	}
@@ -423,7 +424,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, const bool InitN
 	}
 }
 
-void UHeartGraphCanvas::SetViewOffset(const FVector2D& Value)
+void UHeartGraphCanvas::SetViewOffset(const FVector2f& Value)
 {
 	if (Value.X != View.X || Value.Y != View.Y)
 	{
@@ -434,7 +435,7 @@ void UHeartGraphCanvas::SetViewOffset(const FVector2D& Value)
 	}
 }
 
-void UHeartGraphCanvas::AddToViewOffset(const FVector2D& Value)
+void UHeartGraphCanvas::AddToViewOffset(const FVector2f& Value)
 {
 	if (!Value.IsZero())
 	{
@@ -444,7 +445,7 @@ void UHeartGraphCanvas::AddToViewOffset(const FVector2D& Value)
 	}
 }
 
-void UHeartGraphCanvas::SetZoom(const double& Value)
+void UHeartGraphCanvas::SetZoom(const float Value)
 {
 	if (Value != View.Z)
 	{
@@ -457,26 +458,26 @@ void UHeartGraphCanvas::SetZoom(const double& Value)
 			break;
 		case EHeartGraphZoomAlgorithm::MouseRelative:
 			{
-				auto&& MouseLocation = GetTickSpaceGeometry().AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
+				const FVector2f MouseLocation = GetTickSpaceGeometry().AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
 
-				const FVector2D PreZoomUnscaledDelta = UnscalePositionToCanvasZoom(MouseLocation);
+				const FVector2f PreZoomUnscaledDelta = UnscalePositionToCanvasZoom_2f(MouseLocation);
 
 				View.Z = Value;
 
-				const FVector2D Adjustment = UnscalePositionToCanvasZoom(MouseLocation) - PreZoomUnscaledDelta;
+				const FVector2f Adjustment = UnscalePositionToCanvasZoom_2f(MouseLocation) - PreZoomUnscaledDelta;
 
 				TargetView += Adjustment;
 			}
 			break;
 		case EHeartGraphZoomAlgorithm::GraphRelative:
 			{
-				auto&& CanvasHalfSize = GetTickSpaceGeometry().Size * 0.5;
+				const FVector2f CanvasHalfSize = GetTickSpaceGeometry().Size * 0.5f;
 
-				const FVector2D PreZoomUnscaledDelta = UnscalePositionToCanvasZoom(CanvasHalfSize);
+				const FVector2f PreZoomUnscaledDelta = UnscalePositionToCanvasZoom_2f(CanvasHalfSize);
 
 				View.Z = Value;
 
-				const FVector2D Adjustment = UnscalePositionToCanvasZoom(CanvasHalfSize) - PreZoomUnscaledDelta;
+				const FVector2f Adjustment = UnscalePositionToCanvasZoom_2f(CanvasHalfSize) - PreZoomUnscaledDelta;
 
 				TargetView += Adjustment;
 			}
@@ -489,7 +490,7 @@ void UHeartGraphCanvas::SetZoom(const double& Value)
 	}
 }
 
-void UHeartGraphCanvas::AddToZoom(const double& Value)
+void UHeartGraphCanvas::AddToZoom(const float Value)
 {
 	if (Value != 0.f)
 	{
@@ -594,11 +595,11 @@ bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, con
 
 	//if (GraphNode->ShouldAllowCulling())
 	{
-		const FVector2D Location = GraphNode->GetGraphNode()->GetLocation();
-		const FVector2D MinClipArea = Geometry.GetLocalSize() * -GuardBandArea;
-		const FVector2D MaxClipArea = Geometry.GetLocalSize() * ( 1.f + GuardBandArea);
-		const FVector2D NodeTopLeft = ScalePositionToCanvasZoom(Location);
-		const FVector2D NodeBottomRight = ScalePositionToCanvasZoom(Location + GraphNode->GetDesiredSize());
+		const FVector2f Location(GraphNode->GetGraphNode()->GetLocation());
+		const FVector2f MinClipArea = Geometry.GetLocalSize() * -GuardBandArea;
+		const FVector2f MaxClipArea = Geometry.GetLocalSize() * ( 1.f + GuardBandArea);
+		const FVector2f NodeTopLeft = ScalePositionToCanvasZoom_2f(Location);
+		const FVector2f NodeBottomRight = ScalePositionToCanvasZoom_2f(Location + FVector2f(GraphNode->GetDesiredSize()));
 
 		return
 			NodeBottomRight.X < MinClipArea.X ||
@@ -657,14 +658,24 @@ void UHeartGraphCanvas::OnNodeLocationChanged(UHeartGraphNode* Node, const FVect
 	}
 }
 
+FVector2f UHeartGraphCanvas::ScalePositionToCanvasZoom_2f(const FVector2f& Position) const
+{
+	return (FVector2f(View) + Position) * View.Z;
+}
+
+FVector2f UHeartGraphCanvas::UnscalePositionToCanvasZoom_2f(const FVector2f& Position) const
+{
+	return SafeDivide(Position, View.Z) - FVector2f(View);
+}
+
 FVector2D UHeartGraphCanvas::ScalePositionToCanvasZoom(const FVector2D& Position) const
 {
-	return (FVector2D(View) + Position) * View.Z;
+	return FVector2D(ScalePositionToCanvasZoom_2f(FVector2f(Position)));
 }
 
 FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Position) const
 {
-	return SafeDivide(Position, View.Z) - FVector2D(View);
+	return FVector2D(UnscalePositionToCanvasZoom_2f(FVector2f(Position)));
 }
 
 void UHeartGraphCanvas::InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid, const EHeartGraphCanvasInvalidateType Type)
@@ -726,6 +737,19 @@ UHeartGraphCanvasNode* UHeartGraphCanvas::GetCanvasNode(const FHeartNodeGuid& No
 	return nullptr;
 }
 
+void UHeartGraphCanvas::AddToViewCorner(const FVector2f& NewViewCorner, const bool Interp)
+{
+	const FVector2f Adjustment(NewViewCorner * FVector2f(ViewMovementScalar));
+
+	TargetView.X += FMath::Clamp(Adjustment.X, ViewBounds.Min.X, ViewBounds.Max.X);
+	TargetView.Y += FMath::Clamp(Adjustment.Y, ViewBounds.Min.Y, ViewBounds.Max.Y);
+
+	if (!Interp)
+	{
+		SetViewOffset(FVector2f(TargetView));
+	}
+}
+
 void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 {
 	if (DisplayedGraph.IsValid())
@@ -753,29 +777,21 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 
 void UHeartGraphCanvas::SetViewCorner(const FVector2D& NewViewCorner, const bool Interp)
 {
-	TargetView.X = NewViewCorner.X;
-	TargetView.Y = NewViewCorner.Y;
+	TargetView.X = static_cast<float>(NewViewCorner.X);
+	TargetView.Y = static_cast<float>(NewViewCorner.Y);
 
 	if (!Interp)
 	{
-		SetViewOffset(FVector2D(TargetView));
+		SetViewOffset(FVector2f(TargetView));
 	}
 }
 
 void UHeartGraphCanvas::AddToViewCorner(const FVector2D& NewViewCorner, const bool Interp)
 {
-	TargetView += NewViewCorner * FVector2D(ViewMovementScalar);
-
-	TargetView.X = FMath::Clamp(TargetView.X, ViewBounds.Min.X, ViewBounds.Max.X);
-	TargetView.Y = FMath::Clamp(TargetView.Y, ViewBounds.Min.Y, ViewBounds.Max.Y);
-
-	if (!Interp)
-	{
-		SetViewOffset(FVector2D(TargetView));
-	}
+	AddToViewCorner(FVector2f(NewViewCorner), Interp);
 }
 
-void UHeartGraphCanvas::SetZoom(const double NewZoom, const bool Interp)
+void UHeartGraphCanvas::SetZoom(const float NewZoom, const bool Interp)
 {
 	TargetView.Z = NewZoom;
 
@@ -785,7 +801,7 @@ void UHeartGraphCanvas::SetZoom(const double NewZoom, const bool Interp)
 	}
 }
 
-void UHeartGraphCanvas::AddToZoom(const double NewZoom, const bool Interp)
+void UHeartGraphCanvas::AddToZoom(const float NewZoom, const bool Interp)
 {
 	TargetView.Z += NewZoom * ViewMovementScalar.Z;
 	TargetView.Z = FMath::Clamp(TargetView.Z, ViewBounds.Min.Z, ViewBounds.Max.Y);

@@ -32,14 +32,14 @@ protected:
 	virtual bool CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const;
 	virtual FHeartEvent ExecuteOnWidget(UHeartGraphWidgetBase* Widget, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 
-	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
-		UObject* ContextObject, FBloodContainer& UndoData) const { return false; }
+	virtual FReply ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) const { return FReply::Unhandled(); }
 
-	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation,
-		UObject* ContextObject, FBloodContainer& UndoData) const { return false; }
+	virtual FReply ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) const { return FReply::Unhandled(); }
 
-	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation,
-		UObject* ContextObject, FBloodContainer& UndoData) const { return false; }
+	virtual FReply ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation,
+		UObject* ContextObject, FBloodContainer& UndoData) const { return FReply::Unhandled(); }
 };
 
 
@@ -57,9 +57,9 @@ protected:
 	//~ UHeartGraphCanvasAction
 	virtual FText GetDescription(const UHeartGraphWidgetBase* Widget) const override;
 	virtual bool CanExecuteOnWidget(const UHeartGraphWidgetBase* Widget) const override;
-	virtual FEventReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FEventReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FEventReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FReply ExecuteOnGraph(UHeartGraphCanvas* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FReply ExecuteOnNode(UHeartGraphCanvasNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FReply ExecuteOnPin(UHeartGraphCanvasPin* Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	//~ UHeartGraphCanvasAction
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Get Description"))

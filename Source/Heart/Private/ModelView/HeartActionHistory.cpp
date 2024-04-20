@@ -20,6 +20,7 @@ namespace Heart::Action::History
 			TSubclassOf<UHeartActionBase> Action;
 			UHeartActionHistory* History;
 			const FArguments& Arguments;
+			bool Cancelled = false;
 		};
 
 		/**
@@ -73,6 +74,13 @@ namespace Heart::Action::History
 				Successful && LoggedAction.IsSet())
 			{
 				const FExecutingAction& Value = LoggedAction.GetValue();
+
+				// Skip if this action was canceled.
+				if (Value.Cancelled)
+				{
+					return;
+				}
+
 				Value.History->AddRecord({Value.Action, Value.Arguments, MoveTemp(*UndoData)});
 			}
 		}
@@ -86,9 +94,15 @@ namespace Heart::Action::History
 		return ShouldLog && !CannotLog;
 	}
 
-	bool IsUndoable()
+	bool IsLogging()
 	{
 		return !Impl::ExecutingActionsStack.IsEmpty() && Impl::ExecutingActionsStack.Last().IsSet();
+	}
+
+	bool IsUndoable()
+	{
+		// @note: Currently "Logging" and "Undoable" are the same, because we only log undoable actions. If that changed, update this.
+		return IsLogging();
 	}
 
 	UHeartGraph* GetGraphFromActionStack()
@@ -96,7 +110,43 @@ namespace Heart::Action::History
 		return Impl::ExecutingActionsStack.Last()->History->GetGraph();
 	}
 
-	bool TryUndo(UHeartGraph* Graph)
+	void CancelLog()
+	{
+		if (IsLogging())
+		{
+			Impl::ExecutingActionsStack.Last().GetValue().Cancelled = true;
+		}
+	}
+
+	bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History)
+	{
+		// Push an action frame
+		Impl::ExecutingActionsStack.Emplace(InPlace, Record.Action, History, Record.Arguments);
+
+		const bool Success = Undo(Record.Action, Record.Arguments.Target, Record.UndoData);
+
+		// Pop the action frame
+		Impl::ExecutingActionsStack.Pop();
+
+		return Success;
+	}
+
+	FHeartEvent RedoRecord(FHeartActionRecord& Record)
+	{
+		FArguments ArgsCopy = Record.Arguments;
+		EnumAddFlags(ArgsCopy.Flags, IsRedo);
+
+		// @todo it would be nice to not mutate the Original Record's UndoData when Redo'ing, but not all actions are
+		// completely compatible with reconstructing their state from undo data, example, creating new nodes always uses
+		// a new guid, there is no API to construct a node with an existing guid.
+		ArgsCopy.Activation = FHeartActionIsRedo{&Record.UndoData};
+
+		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Record.Action);
+
+		return FNativeExec::Execute(ActionObject, ArgsCopy);
+	}
+
+	bool TryUndo(const UHeartGraph* Graph)
 	{
 		if (!IsValid(Graph))
 		{
@@ -115,22 +165,13 @@ namespace Heart::Action::History
 
 	bool TryUndo(UHeartActionHistory* History)
 	{
-		auto Record = History->RetrieveRecord();
-		if (!Record.IsSet() ||
-			!IsValid(Record->Action))
+		auto Record = History->RetrieveRecordPtr();
+		if (!Record || !IsValid(Record->Action))
 		{
 			return false;
 		}
 
-		// Push an action frame
-		Impl::ExecutingActionsStack.Emplace(InPlace, Record->Action, History, Record->Arguments);
-
-		const bool Success = Undo(Record->Action, Record->Arguments.Target, Record->UndoData);
-
-		// Pop the action frame
-		Impl::ExecutingActionsStack.Pop();
-
-		return Success;
+		return UndoRecord(*Record, History);
 	}
 
 	FHeartEvent TryRedo(const UHeartGraph* Graph)
@@ -143,18 +184,23 @@ namespace Heart::Action::History
 		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph->GetName())
 			return FHeartEvent::Failed;
 		}
 
-		return History->Redo();
+		return TryRedo(History);
 	}
-}
 
-bool FHeartActionRecord::Serialize(FArchive& Ar)
-{
-	Ar << Action << Arguments << UndoData;
-	return true;
+	FHeartEvent TryRedo(UHeartActionHistory* History)
+	{
+		auto Record = History->AdvanceRecordPtr();
+		if (!Record || !IsValid(Record->Action))
+		{
+			return FHeartEvent::Failed;
+		}
+
+		return RedoRecord(*Record);
+	}
 }
 
 void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
@@ -175,15 +221,29 @@ void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
 	BroadcastPointer();
 }
 
-TOptional<FHeartActionRecord> UHeartActionHistory::RetrieveRecord()
+FHeartActionRecord* UHeartActionHistory::RetrieveRecordPtr()
 {
 	if (ActionPointer == INDEX_NONE)
 	{
-		return {};
+		return nullptr;
 	}
+
 	FHeartActionRecord& Action = Actions[ActionPointer--];
 	BroadcastPointer();
-	return Action;
+	return &Action;
+}
+
+FHeartActionRecord* UHeartActionHistory::AdvanceRecordPtr()
+{
+	if (ActionPointer == Actions.Num()-1)
+	{
+		// Cannot Redo the most recent action
+		return nullptr;
+	}
+
+	FHeartActionRecord& Action = Actions[ActionPointer++];
+	BroadcastPointer();
+	return &Action;
 }
 
 TConstArrayView<FHeartActionRecord> UHeartActionHistory::RetrieveRecords(const int32 Count)
@@ -235,27 +295,7 @@ bool UHeartActionHistory::Undo()
 
 FHeartEvent UHeartActionHistory::Redo()
 {
-	if (ActionPointer == Actions.Num()-1)
-	{
-		// Cannot Redo the most recent action
-		return FHeartEvent::Invalid;
-	}
-
-	// @todo it would be nice to not mutate the OriginalRecord's UndoData when Redo'ing, but not all actions are
-	// completely compatible with reconstructing their state from undo data, example, creating new nodes always uses
-	// a new guid, there is no API to construct a node with an existing guid.
-	FHeartActionRecord& Original = Actions[++ActionPointer];
-	FHeartActionRecord Copy = Original;
-	Copy.Arguments.Activation = FHeartActionIsRedo{&Original.UndoData};
-	EnumAddFlags(Copy.Arguments.Flags, Heart::Action::IsRedo);
-
-	const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Original.Action);
-
-	FHeartEvent Event = Heart::Action::FNativeExec::Execute(ActionObject, Copy.Arguments);
-
-	BroadcastPointer();
-
-	return Event;
+	return Heart::Action::History::TryRedo(this);
 }
 
 void UHeartActionHistory::BroadcastPointer()

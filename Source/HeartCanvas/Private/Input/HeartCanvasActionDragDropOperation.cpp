@@ -1,7 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Input/HeartCanvasInputHandler_DDO_Action.h"
-#include "HeartCanvasLog.h"
 #include "Actions/HeartGraphCanvasAction.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"

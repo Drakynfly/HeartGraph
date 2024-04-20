@@ -17,7 +17,7 @@ bool UHeartCanvasDragViewDragDropOperation::SetupDragDropOperation()
 	if (UHeartGraphCanvas* SummonedByAsCanvas = Cast<UHeartGraphCanvas>(SummonedBy))
 	{
 		Canvas = SummonedByAsCanvas;
-		DeltaMousePosition = FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : FVector2D();
+		DeltaMousePosition = FSlateApplication::IsInitialized() ? FSlateApplication::Get().GetCursorPos() : FVector2f::ZeroVector;
 		return true;
 	}
 
@@ -30,13 +30,13 @@ void UHeartCanvasDragViewDragDropOperation::Dragged_Implementation(const FPointe
 
 	if (Canvas.IsValid() && FSlateApplication::IsInitialized())
 	{
-		const FVector2D MousePosition = FSlateApplication::Get().GetCursorPos();
-		const FVector2D ScreenOffset = MousePosition - DeltaMousePosition;
+		const FVector2f MousePosition = FSlateApplication::Get().GetCursorPos();
+		const FVector2f ScreenOffset = MousePosition - DeltaMousePosition;
 
 		FVector2D ViewportOffset;
-		USlateBlueprintLibrary::ScreenToViewport(Canvas.Get(), ScreenOffset, ViewportOffset);
+		USlateBlueprintLibrary::ScreenToViewport(Canvas.Get(), FVector2D(ScreenOffset), ViewportOffset);
 
-		Canvas->AddToViewCorner(ViewportOffset / Canvas->GetZoom(), true);
+		Canvas->AddToViewCorner(FVector2f(ViewportOffset) / Canvas->GetZoom(), true);
 
 		DeltaMousePosition = MousePosition;
 	}

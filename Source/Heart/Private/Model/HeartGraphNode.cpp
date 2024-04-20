@@ -227,10 +227,10 @@ bool UHeartGraphNode::HasConnections(const FHeartPinGuid& Pin) const
 
 bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGraphPinReference>& Connections) const
 {
-	if (auto Links = PinData.GetConnections(Pin);
-		Links.IsSet())
+	if (auto Links = PinData.ViewConnections(Pin);
+		Links.IsValid())
 	{
-		Connections = Links.GetValue().GetLinks();
+		Connections = Links->GetLinks();
 		return true;
 	}
 	return false;
@@ -238,15 +238,20 @@ bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGra
 
 TOptional<FHeartGraphPinConnections> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin) const
 {
-	return PinData.GetConnections(Pin);
+	if (auto Links = PinData.ViewConnections(Pin);
+		Links.IsValid())
+	{
+		return Links.Get();
+	}
+	return {};
 }
 
 TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin, bool) const
 {
-	if (auto Links = PinData.GetConnections(Pin);
-		Links.IsSet())
+	if (auto Links = PinData.ViewConnections(Pin);
+		Links.IsValid())
 	{
-		return TSet<FHeartGraphPinReference>(TArray<FHeartGraphPinReference>(Links.GetValue().GetLinks()));
+		return TSet<FHeartGraphPinReference>(TArray<FHeartGraphPinReference>(Links->GetLinks()));
 	}
 	return {};
 }
@@ -261,13 +266,13 @@ TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDi
 	FindPinsByDirection(Direction).ForEach(
 		[&](const FHeartPinGuid PinGuid)
 		{
-			auto&& Links = PinData.GetConnections(PinGuid);
-			if (!Links.IsSet())
+			auto&& Links = PinData.ViewConnections(PinGuid);
+			if (!Links.IsValid())
 			{
 				return;
 			}
 
-			for (auto&& Link : Links.GetValue())
+			for (auto&& Link : Links.Get())
 			{
 				if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
 				{

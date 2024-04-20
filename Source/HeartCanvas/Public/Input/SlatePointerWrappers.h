@@ -12,7 +12,7 @@
  * This object is a wrapper around a SWidget shared pointer, to allow it to be passed through the heart linker
  */
 UCLASS()
-class UHeartSlatePtr : public UObject
+class HEARTCANVAS_API UHeartSlatePtr : public UObject
 {
 	GENERATED_BODY()
 
@@ -20,6 +20,9 @@ public:
 	static UHeartSlatePtr* Wrap(const TSharedRef<SWidget>& Widget);
 
 	TSharedPtr<SWidget> GetWidget() const { return SlatePointer; }
+
+	template <class TWidgetType>
+	TSharedPtr<TWidgetType> GetWidget() const { return StaticCastSharedPtr<TWidgetType>(SlatePointer); }
 
 protected:
 	TSharedPtr<SWidget> SlatePointer;
@@ -29,7 +32,7 @@ protected:
  * Child of HeartSlatePtr, whose sole purpose is to pass checks for implementing IHeartGraphInterface
  */
 UCLASS()
-class UHeartSlateGraph : public UHeartSlatePtr, public IHeartGraphInterface
+class HEARTCANVAS_API UHeartSlateGraph : public UHeartSlatePtr, public IHeartGraphInterface
 {
 	GENERATED_BODY()
 
@@ -41,7 +44,7 @@ public:
  * Child of HeartSlatePtr, whose sole purpose is to pass checks for implementing IGraphNodeVisualizerInterface
  */
 UCLASS()
-class UHeartSlateNode : public UHeartSlatePtr, public IGraphNodeVisualizerInterface
+class HEARTCANVAS_API UHeartSlateNode : public UHeartSlatePtr, public IGraphNodeVisualizerInterface
 {
 	GENERATED_BODY()
 
@@ -53,7 +56,7 @@ public:
  * Child of HeartSlatePtr, whose sole purpose is to pass checks for implementing IGraphPinVisualizerInterface
  */
 UCLASS()
-class UHeartSlatePin : public UHeartSlatePtr, public IGraphPinVisualizerInterface
+class HEARTCANVAS_API UHeartSlatePin : public UHeartSlatePtr, public IGraphPinVisualizerInterface
 {
 	GENERATED_BODY()
 
@@ -66,7 +69,7 @@ public:
  * This object is a wrapper around a FDragDropOperation shared pointer, to allow it to be passed through the heart linker
  */
 UCLASS()
-class UHeartSlateDragDropOperation : public UObject, public IHeartDeferredEventHandler
+class HEARTCANVAS_API UHeartSlateDragDropOperation : public UObject, public IHeartDeferredEventHandler
 {
 	GENERATED_BODY()
 

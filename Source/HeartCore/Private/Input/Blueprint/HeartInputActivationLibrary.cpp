@@ -1,8 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Input/HeartInputActivation.h"
+#include "HeartInputActivationLibrary.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputActivation)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputActivationLibrary)
 
 EHeartInputActivationType UHeartInputActivationLibrary::GetActivationType(const FHeartInputActivation& Activation)
 {
@@ -23,45 +23,25 @@ EHeartInputActivationType UHeartInputActivationLibrary::SwitchOnActivationType(
 
 bool UHeartInputActivationLibrary::IsRedoAction(const FHeartInputActivation& Activation)
 {
-	return Activation.GetScriptStruct() == FHeartActionIsRedo::StaticStruct();
+	return Activation.IsRedoAction();
 }
 
 FHeartManualEvent UHeartInputActivationLibrary::ActivationToManualEvent(const FHeartInputActivation& Activation)
 {
-	if (TOptional<FHeartManualEvent> ManualEvent = Activation.As<FHeartManualEvent>();
-		ManualEvent.IsSet())
-	{
-		return ManualEvent.GetValue();
-	}
-	return FHeartManualEvent();
+	return Activation.AsOrDefault<FHeartManualEvent>();
 }
 
 FKeyEvent UHeartInputActivationLibrary::ActivationToKeyEvent(const FHeartInputActivation& Activation)
 {
-	if (TOptional<FKeyEvent> KeyEvent = Activation.As<FKeyEvent>();
-		KeyEvent.IsSet())
-	{
-		return KeyEvent.GetValue();
-	}
-	return FKeyEvent();
+	return Activation.AsOrDefault<FKeyEvent>();
 }
 
 FPointerEvent UHeartInputActivationLibrary::ActivationToPointerEvent(const FHeartInputActivation& Activation)
 {
-	if (TOptional<FPointerEvent> PointerEvent = Activation.As<FPointerEvent>();
-		PointerEvent.IsSet())
-	{
-		return PointerEvent.GetValue();
-	}
-	return FPointerEvent();
+	return Activation.AsOrDefault<FPointerEvent>();
 }
 
 FHeartInputKeyParams UHeartInputActivationLibrary::ActivationToInputKeyParams(const FHeartInputActivation& Activation)
 {
-	if (TOptional<FInputKeyParams> InputKeyParams = Activation.As<FInputKeyParams>();
-		InputKeyParams.IsSet())
-	{
-		return InputKeyParams.GetValue();
-	}
-	return FHeartInputKeyParams();
+	return Activation.AsOrDefault<FInputKeyParams>();
 }

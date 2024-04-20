@@ -12,63 +12,63 @@
 class FGeometryHelper_TEMPEMULATOR
 {
 public:
-	static FVector2D VerticalMiddleLeftOf(const FGeometry& SomeGeometry)
+	static FVector2f VerticalMiddleLeftOf(const FGeometry& SomeGeometry)
 	{
-		const FVector2D GeometryDrawSize = SomeGeometry.GetDrawSize();
-		return FVector2D(
+		const FVector2f GeometryDrawSize = SomeGeometry.GetDrawSize();
+		return FVector2f(
 			SomeGeometry.AbsolutePosition.X,
 			SomeGeometry.AbsolutePosition.Y + GeometryDrawSize.Y/2 );
 	}
 
-	static FVector2D VerticalMiddleRightOf(const FGeometry& SomeGeometry)
+	static FVector2f VerticalMiddleRightOf(const FGeometry& SomeGeometry)
 	{
-		const FVector2D GeometryDrawSize = SomeGeometry.GetDrawSize();
-		return FVector2D(
+		const FVector2f GeometryDrawSize = SomeGeometry.GetDrawSize();
+		return FVector2f(
 			SomeGeometry.AbsolutePosition.X + GeometryDrawSize.X,
 			SomeGeometry.AbsolutePosition.Y + GeometryDrawSize.Y/2 );
 	}
 
-	static FVector2D CenterOf(const FGeometry& SomeGeometry)
+	static FVector2f CenterOf(const FGeometry& SomeGeometry)
 	{
-		const FVector2D GeometryDrawSize = SomeGeometry.GetAbsoluteSize();
-		return FVector2D(SomeGeometry.GetAbsolutePosition()) + (GeometryDrawSize * 0.5f);
+		const FVector2f GeometryDrawSize = SomeGeometry.GetAbsoluteSize();
+		return FVector2f(SomeGeometry.GetAbsolutePosition()) + (GeometryDrawSize * 0.5f);
 	}
 
-	static void ConvertToPoints(const FGeometry& Geom, TArray<FVector2D>& Points)
+	static void ConvertToPoints(const FGeometry& Geom, TArray<FVector2f>& Points)
 	{
-		const FVector2D Size = Geom.GetDrawSize();
-		const FVector2D Location = FVector2D(Geom.AbsolutePosition);
+		const FVector2f Size = Geom.GetDrawSize();
+		const FVector2f Location = FVector2f(Geom.AbsolutePosition);
 
 		int32 Index = Points.AddUninitialized(4);
 		Points[Index++] = Location;
-		Points[Index++] = Location + FVector2D(0.0f, Size.Y);
-		Points[Index++] = Location + FVector2D(Size.X, Size.Y);
-		Points[Index++] = Location + FVector2D(Size.X, 0.0f);
+		Points[Index++] = Location + FVector2f(0.0f, Size.Y);
+		Points[Index++] = Location + FVector2f(Size.X, Size.Y);
+		Points[Index++] = Location + FVector2f(Size.X, 0.0f);
 	}
 
 	/** Find the point on line segment from LineStart to LineEnd which is closest to Point */
-	static FVector2D FindClosestPointOnLine(const FVector2D& LineStart, const FVector2D& LineEnd, const FVector2D& TestPoint)
+	static FVector2f FindClosestPointOnLine(const FVector2f& LineStart, const FVector2f& LineEnd, const FVector2f& TestPoint)
 	{
-		const FVector2D LineVector = LineEnd - LineStart;
+		const FVector2f LineVector = LineEnd - LineStart;
 
-		const float A = -FVector2D::DotProduct(LineStart - TestPoint, LineVector);
+		const float A = -FVector2f::DotProduct(LineStart - TestPoint, LineVector);
 		const float B = LineVector.SizeSquared();
-		const float T = FMath::Clamp<float>(A / B, 0.0f, 1.0f);
+		const float T = FMath::Clamp(A / B, 0.f, 1.f);
 
 		// Generate closest point
 		return LineStart + (T * LineVector);
 	}
 
-	static FVector2D FindClosestPointOnGeom(const FGeometry& Geom, const FVector2D& TestPoint)
+	static FVector2f FindClosestPointOnGeom(const FGeometry& Geom, const FVector2f& TestPoint)
 	{
-		TArray<FVector2D> Points;
+		TArray<FVector2f> Points;
 		FGeometryHelper_TEMPEMULATOR::ConvertToPoints(Geom, Points);
 
 		float BestDistanceSquared = MAX_FLT;
-		FVector2D BestPoint;
+		FVector2f BestPoint;
 		for (int32 i = 0; i < Points.Num(); ++i)
 		{
-			const FVector2D Candidate = FindClosestPointOnLine(Points[i], Points[(i + 1) % Points.Num()], TestPoint);
+			const FVector2f Candidate = FindClosestPointOnLine(Points[i], Points[(i + 1) % Points.Num()], TestPoint);
 			const float CandidateDistanceSquared = (Candidate-TestPoint).SizeSquared();
 			if (CandidateDistanceSquared < BestDistanceSquared)
 			{

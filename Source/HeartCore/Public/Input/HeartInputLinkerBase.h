@@ -25,6 +25,7 @@ struct FHeartManualInputQueryResult
 
 namespace Heart::Input
 {
+	// @todo this is a stub. this should eventually be refactored to be a Heart::Query result type.
 	class HEARTCORE_API FCallbackQuery
 	{
 	public:
@@ -45,6 +46,9 @@ class HEARTCORE_API UHeartInputLinkerBase : public UObject
 	GENERATED_BODY()
 
 	friend Heart::Input::FCallbackQuery;
+
+public:
+	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 
 protected:
 	FHeartEvent QuickTryCallbacks(const Heart::Input::FInputTrip& Trip, UObject* Target, const FHeartInputActivation& Activation);
@@ -72,190 +76,24 @@ protected:
 
 namespace Heart::Input
 {
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseWheel(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			auto BindingReply = Linker->HandleOnMouseWheel(Target, InGeometry, InMouseEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseButtonDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			auto BindingReply = Linker->HandleOnMouseButtonDown(Target, InGeometry, InMouseEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnMouseButtonUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			auto BindingReply = Linker->HandleOnMouseButtonUp(Target, InGeometry, InMouseEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnKeyDown(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnKeyDown(Target, InGeometry, InKeyEvent);
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FReplyType LinkOnKeyUp(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			auto BindingReply = Linker->HandleOnKeyUp(Target, InGeometry, InKeyEvent);
-
-			if (BindingReply.IsEventHandled())
-			{
-				return BindingReply;
-			}
-		}
-
-		return TLinkerType<TTarget>::NoReply();
-	}
-
-	template <
-		typename TTarget
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static typename TLinkerType<TTarget>::FDDOType LinkOnDragDetected(typename TLinkerType<TTarget>::FValueType Target, const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnDragDetected(Target, InGeometry, InMouseEvent);
-		}
-
-		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
-		{
-			return TLinkerType<TTarget>::NoReply();
-		}
-		else return {};
-	}
-
+	/*
+	 * This template takes a function reference to a linker member function, and calls it if a linker for the target can
+	 * be found.
+	 */
 	template <
 		typename TTarget,
-		typename TRetVal,
+		typename TRet, // @todo i don't know how to extract the return type from TMember.
+		typename TMember,
 		typename... TArgs
 		UE_REQUIRES(TLinkerType<TTarget>::Supported)
 	>
-	static TRetVal LinkOnDrop(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
+	static TRet InvokeLinker(typename TLinkerType<TTarget>::FValueType Target, TMember&& Member, TArgs&&... Args)
 	{
 		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
 		{
-			return Linker->HandleOnDrop(Target, Args...);
+			return Invoke(Member, Linker, Target, Args...);
 		}
 
-		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
-		{
-			return TLinkerType<TTarget>::NoReply();
-		}
-		else return {};
-	}
-
-	template <
-		typename TTarget,
-		typename TRetVal,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static TRetVal LinkOnDragOver(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			return Linker->HandleOnDragOver(Target, Args...);
-		}
-
-		if constexpr (std::is_same_v<typename TLinkerType<TTarget>::FDDOType, FReply>)
-		{
-			return TLinkerType<TTarget>::NoReply();
-		}
-		else return {};
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragEnter(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleOnDragEnter(Target, Args...);
-		}
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragLeave(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleOnDragLeave(Target, Args...);
-		}
-	}
-
-	template <
-		typename TTarget,
-		typename... TArgs
-		UE_REQUIRES(TLinkerType<TTarget>::Supported)
-	>
-	static void LinkOnDragCancelled(typename TLinkerType<TTarget>::FValueType Target, TArgs... Args)
-	{
-		if (auto&& Linker = TLinkerType<TTarget>::FindLinker(Target))
-		{
-			Linker->HandleOnDragCancelled(Target, Args...);
-		}
+		return TLinkerType<TTarget>::template DefaultReply<TRet>();
 	}
 }

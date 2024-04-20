@@ -8,22 +8,22 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartCanvasAction_Zoom)
 
-FEventReply UHeartCanvasAction_Zoom::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
+FReply UHeartCanvasAction_Zoom::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	HandleAddZoom(CanvasGraph, Activation);
-	return true;
+	return FReply::Handled();
 }
 
-FEventReply UHeartCanvasAction_Zoom::ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
+FReply UHeartCanvasAction_Zoom::ExecuteOnNode(UHeartGraphCanvasNode* CanvasNode, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	HandleAddZoom(CanvasNode->GetCanvas(), Activation);
-	return true;
+	return FReply::Handled();
 }
 
-FEventReply UHeartCanvasAction_Zoom::ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
+FReply UHeartCanvasAction_Zoom::ExecuteOnPin(UHeartGraphCanvasPin* CanvasPin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	HandleAddZoom(CanvasPin->GetCanvas(), Activation);
-	return true;
+	return FReply::Handled();
 }
 
 void UHeartCanvasAction_Zoom::HandleAddZoom(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation)
@@ -36,6 +36,6 @@ void UHeartCanvasAction_Zoom::HandleAddZoom(UHeartGraphCanvas* CanvasGraph, cons
 	else if (const TOptional<FHeartManualEvent> ManualEvent = Activation.As<FHeartManualEvent>();
 			 ManualEvent.IsSet())
 	{
-		CanvasGraph->AddToZoom(ManualEvent.GetValue().EventValue, true);
+		CanvasGraph->AddToZoom(static_cast<float>(ManualEvent.GetValue().EventValue), true);
 	}
 }

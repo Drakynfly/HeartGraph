@@ -28,9 +28,9 @@ bool UHeartCanvasNodeMoveDragDropOperation::SetupDragDropOperation()
 
 		if (FSlateApplication::IsInitialized())
 		{
-			const FVector2D MousePosition = Node->GetCanvas()->GetTickSpaceGeometry()
+			const FVector2f MousePosition = Node->GetCanvas()->GetTickSpaceGeometry()
 											.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
-			const FVector2D NodePosition = Cast<UCanvasPanelSlot>(Node->Slot)->GetPosition();
+			const FVector2f NodePosition(Cast<UCanvasPanelSlot>(Node->Slot)->GetPosition());
 			MouseOffset = NodePosition - MousePosition;
 		}
 
@@ -48,26 +48,26 @@ void UHeartCanvasNodeMoveDragDropOperation::Dragged_Implementation(const FPointe
 	{
 		auto&& Canvas = Node->GetCanvas();
 
-		const FVector2D MousePosition = Canvas->GetTickSpaceGeometry()
+		const FVector2f MousePosition = Canvas->GetTickSpaceGeometry()
 											.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
 
-		const FVector2D UnclampedPosition = MousePosition + MouseOffset;
-		const FVector2D ClampedPosition = ClampToBorder(UnclampedPosition);
+		const FVector2f UnclampedPosition = MousePosition + MouseOffset;
+		const FVector2f ClampedPosition = ClampToBorder(UnclampedPosition);
 
 		auto&& DIVSettings = Canvas->GetDragIntoViewSettings();
 
 		if (DIVSettings.EnableDragIntoView)
 		{
-			FVector2D Diff = ClampedPosition - UnclampedPosition;
+			FVector2f Diff = ClampedPosition - UnclampedPosition;
 			Diff = Diff.ClampAxes(0, DIVSettings.DragIntoViewClamp);
 			Diff *= DIVSettings.DragMultiplier;
 
 			Canvas->AddToViewCorner(Diff, DIVSettings.InterpDragIntoView);
-			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(UnclampedPosition), true);
+			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), FVector2D(Canvas->UnscalePositionToCanvasZoom_2f(UnclampedPosition)), true);
 		}
 		else
 		{
-			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), Canvas->UnscalePositionToCanvasZoom(ClampedPosition), true);
+			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), FVector2D(Canvas->UnscalePositionToCanvasZoom_2f(ClampedPosition)), true);
 		}
 
 		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, true);
@@ -111,10 +111,10 @@ void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEv
 	}
 }
 
-FVector2D UHeartCanvasNodeMoveDragDropOperation::ClampToBorder(const FVector2D& Value) const
+FVector2f UHeartCanvasNodeMoveDragDropOperation::ClampToBorder(const FVector2f& Value) const
 {
-	const FVector2D PanelSize = Node->GetCanvas()->GetTickSpaceGeometry().GetLocalSize();
-	const FVector2D NodeSize = Node->GetDesiredSize();
-	return FVector2D(FMath::Clamp(Value.X, 0.0, (PanelSize - NodeSize).X),
-					 FMath::Clamp(Value.Y, 0.0, (PanelSize - NodeSize).Y));
+	const FVector2f PanelSize = Node->GetCanvas()->GetTickSpaceGeometry().GetLocalSize();
+	const FVector2f NodeSize(Node->GetDesiredSize());
+	return FVector2f(FMath::Clamp(Value.X, 0.f, (PanelSize - NodeSize).X),
+					 FMath::Clamp(Value.Y, 0.f, (PanelSize - NodeSize).Y));
 }

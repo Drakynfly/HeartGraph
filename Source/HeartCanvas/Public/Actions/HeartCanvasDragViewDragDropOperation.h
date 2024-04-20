@@ -24,5 +24,5 @@ private:
 	TWeakObjectPtr<class UHeartGraphCanvas> Canvas;
 
 	// Mouse position last frame
-	FVector2D DeltaMousePosition = FVector2D::ZeroVector;
+	FVector2f DeltaMousePosition = FVector2f::ZeroVector;
 };

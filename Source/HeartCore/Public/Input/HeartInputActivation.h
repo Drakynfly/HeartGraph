@@ -90,9 +90,13 @@ struct HEARTCORE_API FHeartInputActivation
 	>
 	TOptional<T> As() const
 	{
-		if constexpr (std::is_same_v<T, FInputKeyParams>)
+		if constexpr (std::is_same_v<T, FInputKeyParams> ||
+					  std::is_same_v<T, FHeartInputKeyParams>)
 		{
-			return EventStruct.Get<FHeartInputKeyParams>().Params;
+			if (EventStruct.GetScriptStruct() == FHeartInputKeyParams::StaticStruct())
+			{
+				return EventStruct.Get<FHeartInputKeyParams>().Params;
+			}
 		}
 
 		if constexpr (TModels_V<CBaseStructureProvider, T>)
@@ -103,6 +107,20 @@ struct HEARTCORE_API FHeartInputActivation
 			}
 		}
 		return {};
+	}
+
+	template <
+		typename T
+		UE_REQUIRES(TIsHeartInputActivationType<T>::Value)
+	>
+	T AsOrDefault() const
+	{
+		if (TOptional<T> Option = As<T>();
+			Option.IsSet())
+		{
+			return Option.GetValue();
+		}
+		return T();
 	}
 
 	bool IsRedoAction() const
@@ -121,54 +139,4 @@ struct HEARTCORE_API FHeartInputActivation
 private:
 	UPROPERTY()
 	FInstancedStruct EventStruct;
-};
-
-UENUM(BlueprintType)
-enum class EHeartInputActivationType : uint8
-{
-	// This Activation was not triggered correctly
-	Invalid,
-
-	// This Activation was triggered manually by code and has no associated InputEvent
-	Manual,
-
-	// This Activation was triggered as a Redo of a previously undone action
-	Redo,
-
-	// This Activation was triggered by a KeyEvent
-	KeyEvent,
-
-	// This Activation was triggered by InputKeyParams
-	InputKeyParams,
-
-	// This Activation was triggered by a PointerEvent
-	PointerEvent,
-};
-
-UCLASS()
-class UHeartInputActivationLibrary : public UBlueprintFunctionLibrary
-{
-	GENERATED_BODY()
-
-public:
-	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static EHeartInputActivationType GetActivationType(const FHeartInputActivation& Activation);
-
-	UFUNCTION(BlueprintCallable, Category = "Heart|InputActivation", meta = (ExpandEnumAsExecs = "ReturnValue"))
-	static EHeartInputActivationType SwitchOnActivationType(const FHeartInputActivation& Activation);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static bool IsRedoAction(const FHeartInputActivation& Activation);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static FHeartManualEvent ActivationToManualEvent(const FHeartInputActivation& Activation);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static FKeyEvent ActivationToKeyEvent(const FHeartInputActivation& Activation);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static FPointerEvent ActivationToPointerEvent(const FHeartInputActivation& Activation);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static FHeartInputKeyParams ActivationToInputKeyParams(const FHeartInputActivation& Activation);
 };

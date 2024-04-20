@@ -203,8 +203,8 @@ void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
 
 	auto&& NewEdGraphNode = HeartNodeCreator.CreateNode(false, EdGraphNodeClass);
 
-	NewEdGraphNode->NodePosX = Node->GetLocation().X;
-	NewEdGraphNode->NodePosY = Node->GetLocation().Y;
+	NewEdGraphNode->NodePosX = static_cast<int32>(Node->GetLocation().X);
+	NewEdGraphNode->NodePosY = static_cast<int32>(Node->GetLocation().Y);
 
 	// Assign runtime node pointer
 	NewEdGraphNode->SetHeartGraphNode(Node);

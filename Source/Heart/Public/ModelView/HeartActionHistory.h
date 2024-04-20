@@ -9,6 +9,37 @@
 
 class UHeartActionHistory;
 
+USTRUCT(BlueprintType, meta = (HasNativeBreak = "/Script/Heart.HeartGraphUtils.BreakHeartActionRecord"))
+struct FHeartActionRecord
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TSubclassOf<UHeartActionBase> Action;
+
+	// Original arguments used to execute this action. Used to 'Redo' an undone action.
+	Heart::Action::FArguments Arguments;
+
+	// Data stored by the action when it first ran, such as mouse position or node guids, everything needed to undo the action.
+	UPROPERTY()
+	FBloodContainer UndoData;
+
+	bool Serialize(FArchive& Ar)
+	{
+		Ar << Action << Arguments << UndoData;
+		return true;
+	}
+};
+
+template<>
+struct TStructOpsTypeTraits<FHeartActionRecord> : public TStructOpsTypeTraitsBase2<FHeartActionRecord>
+{
+	enum
+	{
+		WithSerializer = true,
+	};
+};
+
 namespace Heart::Action::History
 {
 	namespace Impl
@@ -47,38 +78,19 @@ namespace Heart::Action::History
 		return Event;
 	}
 
-	HEART_API bool TryUndo(UHeartGraph* Graph);
+	// Cancel the executing logging context. The currently running action will not be logged.
+	HEART_API void CancelLog();
+
+	HEART_API bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History);
+	HEART_API FHeartEvent RedoRecord(FHeartActionRecord& Record);
+
+	HEART_API bool TryUndo(const UHeartGraph* Graph);
 	HEART_API bool TryUndo(UHeartActionHistory* History);
 
 	HEART_API FHeartEvent TryRedo(const UHeartGraph* Graph);
+	HEART_API FHeartEvent TryRedo(UHeartActionHistory* History);
 }
 
-USTRUCT(BlueprintType, meta = (HasNativeBreak = "/Script/Heart.HeartGraphUtils.BreakHeartActionRecord"))
-struct FHeartActionRecord
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TSubclassOf<UHeartActionBase> Action;
-
-	// Original arguments used to execute this action. Used to 'Redo' an undone action.
-	Heart::Action::FArguments Arguments;
-
-	// Data stored by the action when it first ran, such as mouse position or node guids, everything needed to undo the action.
-	UPROPERTY()
-	FBloodContainer UndoData;
-
-	bool Serialize(FArchive& Ar);
-};
-
-template<>
-struct TStructOpsTypeTraits<FHeartActionRecord> : public TStructOpsTypeTraitsBase2<FHeartActionRecord>
-{
-	enum
-	{
-		WithSerializer = true,
-	};
-};
 
 using FHeartActionHistoryRecordUpdate = TMulticastDelegate<void(int32, int32)>;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartActionHistoryRecordUpdate_BP, int32, Index, int32, Count);
@@ -97,7 +109,9 @@ class HEART_API UHeartActionHistory : public UHeartGraphExtension
 public:
 	void AddRecord(const FHeartActionRecord& Record);
 
-	TOptional<FHeartActionRecord> RetrieveRecord();
+	FHeartActionRecord* RetrieveRecordPtr();
+	FHeartActionRecord* AdvanceRecordPtr();
+
 	TConstArrayView<FHeartActionRecord> RetrieveRecords(int32 Count);
 
 	TConstArrayView<FHeartActionRecord> ViewRecords(int32 Count) const;

@@ -63,11 +63,15 @@ namespace Heart::Connections
 			return *this;
 		}
 
-		for (const TOptional<FHeartGraphPinConnections> Connections = Node->PinData.GetConnections(Pin.PinGuid);
-			 const FHeartGraphPinReference& Link : Connections.GetValue())
+		if (auto&& Connections = Node->PinData.ViewConnections(Pin.PinGuid);
+			Connections.IsValid())
 		{
-			UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);
-			Internal_Disconnect(Node, Pin, BNode, Link);
+			for (const TArray<FHeartGraphPinReference> ConnectionsCopy(Connections->GetLinks());
+				 const FHeartGraphPinReference& Link : ConnectionsCopy)
+			{
+				UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);
+				Internal_Disconnect(Node, Pin, BNode, Link);
+			}
 		}
 
 		return *this;
@@ -81,13 +85,14 @@ namespace Heart::Connections
 			return *this;
 		}
 
-		for (auto Connections = Node->PinData.PinConnections;
-			 auto&& Element : Connections)
+		for (auto ConnectionsCopy = Node->PinData.PinConnections;
+			 auto&& Element : ConnectionsCopy)
 		{
+			const FHeartGraphPinReference This = {NodeGuid, Element.Key};
 			for (const FHeartGraphPinReference& Link : Element.Value)
 			{
 				UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);
-				Internal_Disconnect(Node, {NodeGuid, Element.Key}, BNode, Link);
+				Internal_Disconnect(Node, This, BNode, Link);
 			}
 		}
 
@@ -121,10 +126,10 @@ namespace Heart::Connections
 		OutMementos.Add(Pin.NodeGuid).PinConnections = Node->PinData.PinConnections;
 
 		// Mementos for all connected pins
-		if (TOptional<FHeartGraphPinConnections> Connections = Node->PinData.GetConnections(Pin.PinGuid);
-			Connections.IsSet())
+		if (auto&& Connections = Node->PinData.ViewConnections(Pin.PinGuid);
+			Connections.IsValid())
 		{
-			for (const FHeartGraphPinReference& Link : Connections.GetValue())
+			for (const FHeartGraphPinReference& Link : Connections.Get())
 			{
 				OutMementos.Add(Link.NodeGuid).PinConnections = Graph->GetNode(Link.NodeGuid)->PinData.PinConnections;
 			}

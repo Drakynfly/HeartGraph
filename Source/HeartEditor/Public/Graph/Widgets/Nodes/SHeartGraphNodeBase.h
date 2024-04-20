@@ -14,11 +14,13 @@ public:
 
 	void Construct(const FArguments& InArgs, UHeartEdGraphNode* InNode);
 
-	template <typename TGraphNodeClass>
+	template <
+		typename TGraphNodeClass
+		UE_REQUIRES(TIsDerivedFrom<TGraphNodeClass, SHeartGraphNodeBase>::Value &&
+					!std::is_same_v<TGraphNodeClass, SHeartGraphNodeBase>)
+	>
 	static TSharedRef<SGraphNode> MakeInstance(UHeartEdGraphNode* InNode)
 	{
-		static_assert(TIsDerivedFrom<TGraphNodeClass, SHeartGraphNodeBase>::Value, TEXT("TGraphNodeClass should derive from SHeartGraphNodeBase..."));
-		static_assert(!std::is_same_v<TGraphNodeClass, SHeartGraphNodeBase>, TEXT("... but not be SHeartGraphNodeBase itself!"));
 		return SNew(TGraphNodeClass, InNode);
 	}
 
