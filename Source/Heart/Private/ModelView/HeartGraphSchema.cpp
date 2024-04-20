@@ -4,6 +4,7 @@
 
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "Model/HeartGraph.h"
+#include "Model/HeartGraphExtension.h"
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "UObject/ObjectSaveContext.h"
 
@@ -50,6 +51,21 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	if (!ensure(HeartGraph)) return;
 
 #if WITH_EDITOR
+	RefreshGraphExtensions(HeartGraph);
+
+	// If we are not running on a CDO or trying to cook, execute the EditorPreSaveAction
+	if (!SaveContext.IsCooking())
+	{
+		if (IsValid(EditorPreSaveAction))
+		{
+			Heart::Action::Execute(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
+		}
+	}
+#endif
+}
+
+void UHeartGraphSchema::RefreshGraphExtensions(UHeartGraph* HeartGraph) const
+{
 	// Reset instance extensions.
 	TSet<TSubclassOf<UHeartGraphExtension>> PreviousClassList;
 	HeartGraph->Extensions.GetKeys(PreviousClassList);
@@ -75,16 +91,6 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 	{
 		HeartGraph->RemoveExtension(Class);
 	}
-
-	// If we are not running on a CDO or trying to cook, execute the EditorPreSaveAction
-	if (!SaveContext.IsCooking())
-	{
-		if (IsValid(EditorPreSaveAction))
-		{
-			Heart::Action::Execute(EditorPreSaveAction, HeartGraph, FHeartManualEvent(0.0));
-		}
-	}
-#endif
 }
 
 bool UHeartGraphSchema::TryConnectPins_Implementation(UHeartGraph* Graph, const FHeartGraphPinReference PinA, const FHeartGraphPinReference PinB) const

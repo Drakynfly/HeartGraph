@@ -8,7 +8,8 @@
 class UHeartGraph;
 
 /**
- *
+ * Extensions are the HeartGraph equivalent to 'ActorComponents'. They are added to graphs by their schema, or manually
+ * at runtime.
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, Within = HeartGraph)
 class HEART_API UHeartGraphExtension : public UObject

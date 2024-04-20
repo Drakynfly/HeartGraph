@@ -4,7 +4,6 @@
 
 #include "UObject/Object.h"
 #include "HeartGraphInterface.h"
-#include "HeartGraphExtension.h"
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
@@ -12,16 +11,17 @@
 #include "HeartGraph.generated.h"
 
 class UHeartGraph;
-class UHeartGraphSchema;
+class UHeartGraphExtension;
 class UHeartGraphNode;
+class UHeartGraphSchema;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
-using FHeartGraphEvent = TMulticastDelegate<void(UHeartGraph*)>;
 using FHeartGraphNodeEvent = TMulticastDelegate<void(UHeartGraphNode*)>;
 using FHeartGraphNodeMovedEvent = TMulticastDelegate<void(const FHeartNodeMoveEvent&)>;
 using FHeartGraphNodeConnectionEvent = TMulticastDelegate<void(const FHeartGraphConnectionEvent&)>;
 
+using FHeartGraphExtensionEvent = TMulticastDelegate<void(UHeartGraphExtension*)>;
 
 /**
  * Class data for UHeartGraph
@@ -73,6 +73,7 @@ public:
 
 	/* UObject */
 	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
+	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
 	virtual void PostDuplicate(EDuplicateMode::Type DuplicateMode) override;
 	/* UObject */
@@ -318,7 +319,10 @@ private:
 	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
 
 	FHeartGraphNodeEvent OnNodeAdded;
-	FHeartGraphNodeMovedEvent OnNodeMoved;
 	FHeartGraphNodeEvent OnNodeRemoved;
+	FHeartGraphNodeMovedEvent OnNodeMoved;
 	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
+
+	FHeartGraphExtensionEvent OnExtensionAdded;
+	FHeartGraphExtensionEvent OnExtensionRemoved;
 };

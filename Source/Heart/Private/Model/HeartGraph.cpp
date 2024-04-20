@@ -1,7 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraph.h"
-
+#include "Model/HeartGraphExtension.h"
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
 
@@ -72,6 +72,13 @@ void UHeartGraph::PreSave(FObjectPreSaveContext SaveContext)
 		}
 	}
 #endif
+}
+
+void UHeartGraph::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	GetSchema()->RefreshGraphExtensions(this);
 }
 
 void UHeartGraph::PostLoad()
@@ -232,6 +239,9 @@ UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExt
 	UHeartGraphExtension* NewExtension = NewObject<UHeartGraphExtension>(this, Class);
 	Extensions.Add(Class, NewExtension);
 	NewExtension->PostExtensionAdded();
+
+	OnExtensionAdded.Broadcast(NewExtension);
+
 	return NewExtension;
 }
 
@@ -246,6 +256,8 @@ bool UHeartGraph::AddExtensionInstance(UHeartGraphExtension* Extension)
 		{
 			Extensions.Add(Extension->GetClass(), Extension);
 			Extension->PostExtensionAdded();
+
+			OnExtensionAdded.Broadcast(Extension);
 		}
 	}
 
@@ -256,11 +268,15 @@ void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
 {
 	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
 	{
-		if (IsValid(*ExtensionPtr))
+		UHeartGraphExtension* Extension = *ExtensionPtr;
+
+		if (IsValid(Extension))
 		{
-			(*ExtensionPtr)->PreExtensionRemove();
+			Extension->PreExtensionRemove();
 		}
 		Extensions.Remove(Class);
+
+		OnExtensionRemoved.Broadcast(Extension);
 	}
 }
 

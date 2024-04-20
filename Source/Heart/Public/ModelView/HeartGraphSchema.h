@@ -122,6 +122,8 @@ protected:
 	// Called by UHeartGraph's PreSave.
 	virtual void OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPreSaveContext& SaveContext) const;
 
+	void RefreshGraphExtensions(UHeartGraph* HeartGraph) const;
+
 public:
 #if WITH_EDITOR
 	bool GetRunCanPinsConnectInEdGraph() const { return RunCanPinsConnectInEdGraph; }
