@@ -107,9 +107,12 @@ public:
 #endif
 
 	FHeartGraphNodeEvent& GetOnNodeAdded() { return OnNodeAdded; }
-	FHeartGraphNodeMovedEvent& GetOnNodeMoved() { return OnNodeMoved; }
 	FHeartGraphNodeEvent& GetOnNodeRemoved() { return OnNodeRemoved; }
+	FHeartGraphNodeMovedEvent& GetOnNodeMoved() { return OnNodeMoved; }
 	FHeartGraphNodeConnectionEvent& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
+
+	FHeartGraphExtensionEvent& GetOnExtensionAdded() { return OnExtensionAdded; }
+	FHeartGraphExtensionEvent& GetOnExtensionRemoved() { return OnExtensionRemoved; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
