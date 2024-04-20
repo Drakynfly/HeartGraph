@@ -131,7 +131,7 @@ namespace Heart::Action::History
 		return Success;
 	}
 
-	FHeartEvent RedoRecord(FHeartActionRecord& Record)
+	FHeartEvent RedoRecord(const FHeartActionRecord& Record)
 	{
 		FArguments ArgsCopy = Record.Arguments;
 		EnumAddFlags(ArgsCopy.Flags, IsRedo);
@@ -139,7 +139,7 @@ namespace Heart::Action::History
 		// @todo it would be nice to not mutate the Original Record's UndoData when Redo'ing, but not all actions are
 		// completely compatible with reconstructing their state from undo data, example, creating new nodes always uses
 		// a new guid, there is no API to construct a node with an existing guid.
-		ArgsCopy.Activation = FHeartActionIsRedo{&Record.UndoData};
+		ArgsCopy.Activation = FHeartActionIsRedo{const_cast<FBloodContainer*>(&Record.UndoData)};
 
 		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Record.Action);
 
@@ -233,12 +233,12 @@ TConstStructView<FHeartActionRecord> UHeartActionHistory::RetrieveRecordPtr()
 	return Action;
 }
 
-TStructView<FHeartActionRecord> UHeartActionHistory::AdvanceRecordPtr()
+TConstStructView<FHeartActionRecord> UHeartActionHistory::AdvanceRecordPtr()
 {
 	if (ActionPointer == Actions.Num()-1)
 	{
 		// Cannot Redo the most recent action
-		return TStructView<FHeartActionRecord>{};
+		return TConstStructView<FHeartActionRecord>{};
 	}
 
 	FHeartActionRecord& Action = Actions[++ActionPointer];

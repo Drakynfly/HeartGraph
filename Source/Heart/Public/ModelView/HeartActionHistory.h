@@ -83,7 +83,7 @@ namespace Heart::Action::History
 	HEART_API void CancelLog();
 
 	HEART_API bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History);
-	HEART_API FHeartEvent RedoRecord(FHeartActionRecord& Record);
+	HEART_API FHeartEvent RedoRecord(const FHeartActionRecord& Record);
 
 	HEART_API bool TryUndo(const UHeartGraph* Graph);
 	HEART_API bool TryUndo(UHeartActionHistory* History);
@@ -111,7 +111,7 @@ public:
 	void AddRecord(const FHeartActionRecord& Record);
 
 	TConstStructView<FHeartActionRecord> RetrieveRecordPtr();
-	TStructView<FHeartActionRecord> AdvanceRecordPtr(); // @todo make this return TConstStructView as well, once Undo-mutating no longer happens
+	TConstStructView<FHeartActionRecord> AdvanceRecordPtr();
 
 	// Grab the most recent N records and rewind the ActionPointer to behind them.
 	TConstArrayView<FHeartActionRecord> RetrieveRecords(int32 Count);
