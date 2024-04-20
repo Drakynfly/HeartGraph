@@ -3,6 +3,7 @@
 #pragma once
 
 #include "BloodContainer.h"
+#include "General/TStructViewTemp.h"
 #include "Input/HeartActionBase.h"
 #include "Model/HeartGraphExtension.h"
 #include "HeartActionHistory.generated.h"
@@ -109,11 +110,13 @@ class HEART_API UHeartActionHistory : public UHeartGraphExtension
 public:
 	void AddRecord(const FHeartActionRecord& Record);
 
-	FHeartActionRecord* RetrieveRecordPtr();
-	FHeartActionRecord* AdvanceRecordPtr();
+	TConstStructView<FHeartActionRecord> RetrieveRecordPtr();
+	TStructView<FHeartActionRecord> AdvanceRecordPtr(); // @todo make this return TConstStructView as well, once Undo-mutating no longer happens
 
+	// Grab the most recent N records and rewind the ActionPointer to behind them.
 	TConstArrayView<FHeartActionRecord> RetrieveRecords(int32 Count);
 
+	// Grab the most recent N records without changing the ActionPointer.
 	TConstArrayView<FHeartActionRecord> ViewRecords(int32 Count) const;
 
 	FHeartActionHistoryRecordUpdate& GetOnRecordsUpdated() { return OnRecordsUpdatedNative; }
@@ -161,6 +164,8 @@ protected:
 
 	/**		STATE		**/
 private:
+	// Index of the most recently ran action. This means that ActionPointer will be equal to Actions.Num()-1 after running
+	// a new action. Undoing actions will decrement this to the index of the undone action.
 	UPROPERTY()
 	int32 ActionPointer = INDEX_NONE;
 

@@ -37,22 +37,22 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 	int32 ScopeCounter = 1;
 	do
 	{
-		auto&& Record = History->RetrieveRecordPtr();
-		if (!Record)
+		auto&& RecordView = History->RetrieveRecordPtr();
+		if (!RecordView.IsValid())
 		{
 			// Reached the end of records to undo unexpectedly.
 			UE_LOG(LogHeartGraph, Warning, TEXT("Undo of MultiUndo ran until oldest record without hitting a Start!"))
 			break;
 		}
 
-		if (Record->Action == UHeartAction_MultiUndoEnd::StaticClass())
+		if (RecordView->Action == UHeartAction_MultiUndoEnd::StaticClass())
 		{
 			// We hit another End marker, so we will undo everything in that scope as well.
 			ScopeCounter++;
 			continue;
 		}
 
-		if (Record->Action == UHeartAction_MultiUndoStart::StaticClass())
+		if (RecordView->Action == UHeartAction_MultiUndoStart::StaticClass())
 		{
 			// We hit a Start marker, so we have undone everything in this scope.
 			ScopeCounter--;
@@ -60,7 +60,7 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 		}
 
 		// If not a scope marker, undo the action.
-		Heart::Action::History::UndoRecord(*Record, History);
+		Heart::Action::History::UndoRecord(RecordView.Get(), History);
 	}
 	while (0 < ScopeCounter);
 

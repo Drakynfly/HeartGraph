@@ -50,6 +50,11 @@ public:
 		return UE::StructUtils::GetStructPtr<T>(ScriptStruct, StructMemory);
 	}
 
+	BaseStructT* operator->() const
+	{
+		return GetPtr();
+	}
+
 	/** Comparison operators. Note: it does not compare the internal structure itself */
 	template<typename T = BaseStructT, typename = std::enable_if_t<std::is_base_of_v<BaseStructT, std::decay_t<T>>>>
 	bool operator==(const TStructView<T>& Other) const

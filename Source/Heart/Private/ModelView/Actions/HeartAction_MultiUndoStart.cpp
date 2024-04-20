@@ -40,22 +40,22 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 	int32 ScopeCounter = 1;
 	do
 	{
-		auto&& Record = History->AdvanceRecordPtr();
-		if (!Record)
+		auto&& RecordView = History->AdvanceRecordPtr();
+		if (!RecordView.IsValid())
 		{
 			// Reached the end of records to redo unexpectedly.
 			UE_LOG(LogHeartGraph, Warning, TEXT("Redo of MultiUndo ran until most recent record without hitting an End!"))
 			break;
 		}
 
-		if (Record->Action == UHeartAction_MultiUndoStart::StaticClass())
+		if (RecordView->Action == UHeartAction_MultiUndoStart::StaticClass())
 		{
 			// We hit another Start marker, so we will re-do everything in that scope as well.
 			ScopeCounter++;
 			continue;
 		}
 
-		if (Record->Action == UHeartAction_MultiUndoEnd::StaticClass())
+		if (RecordView->Action == UHeartAction_MultiUndoEnd::StaticClass())
 		{
 			// We hit an End marker, so we have re-done everything in this scope.
 			ScopeCounter--;
@@ -63,7 +63,7 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 		}
 
 		// If not a scope marker, redo the action.
-		Heart::Action::History::RedoRecord(*Record);
+		Heart::Action::History::RedoRecord(RecordView.Get());
 	}
 	while (0 < ScopeCounter);
 

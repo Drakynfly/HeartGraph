@@ -165,13 +165,13 @@ namespace Heart::Action::History
 
 	bool TryUndo(UHeartActionHistory* History)
 	{
-		auto Record = History->RetrieveRecordPtr();
-		if (!Record || !IsValid(Record->Action))
+		auto RecordView = History->RetrieveRecordPtr();
+		if (!RecordView.IsValid() || !IsValid(RecordView->Action))
 		{
 			return false;
 		}
 
-		return UndoRecord(*Record, History);
+		return UndoRecord(RecordView.Get(), History);
 	}
 
 	FHeartEvent TryRedo(const UHeartGraph* Graph)
@@ -193,13 +193,13 @@ namespace Heart::Action::History
 
 	FHeartEvent TryRedo(UHeartActionHistory* History)
 	{
-		auto Record = History->AdvanceRecordPtr();
-		if (!Record || !IsValid(Record->Action))
+		auto RecordView = History->AdvanceRecordPtr();
+		if (!RecordView.IsValid() || !IsValid(RecordView->Action))
 		{
 			return FHeartEvent::Failed;
 		}
 
-		return RedoRecord(*Record);
+		return RedoRecord(RecordView.Get());
 	}
 }
 
@@ -221,29 +221,29 @@ void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
 	BroadcastPointer();
 }
 
-FHeartActionRecord* UHeartActionHistory::RetrieveRecordPtr()
+TConstStructView<FHeartActionRecord> UHeartActionHistory::RetrieveRecordPtr()
 {
 	if (ActionPointer == INDEX_NONE)
 	{
-		return nullptr;
+		return TConstStructView<FHeartActionRecord>{};
 	}
 
 	FHeartActionRecord& Action = Actions[ActionPointer--];
 	BroadcastPointer();
-	return &Action;
+	return Action;
 }
 
-FHeartActionRecord* UHeartActionHistory::AdvanceRecordPtr()
+TStructView<FHeartActionRecord> UHeartActionHistory::AdvanceRecordPtr()
 {
 	if (ActionPointer == Actions.Num()-1)
 	{
 		// Cannot Redo the most recent action
-		return nullptr;
+		return TStructView<FHeartActionRecord>{};
 	}
 
-	FHeartActionRecord& Action = Actions[ActionPointer++];
+	FHeartActionRecord& Action = Actions[++ActionPointer];
 	BroadcastPointer();
-	return &Action;
+	return Action;
 }
 
 TConstArrayView<FHeartActionRecord> UHeartActionHistory::RetrieveRecords(const int32 Count)
