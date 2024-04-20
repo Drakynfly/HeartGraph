@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartReplicateNodeData.h"
+#include "HeartReplicatedNodeData.h"
 #include "Model/HeartGraphPinReference.h"
 #include "Input/HeartInputActivation.h"
 #include "HeartNetReplicationTypes.generated.h"

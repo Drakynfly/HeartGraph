@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartReplicateNodeData.h"
+#include "HeartReplicatedNodeData.h"
 #include "NativeGameplayTags.h"
 #include "Model/HeartGuids.h"
 #include "HeartGraphNetProxy.generated.h"

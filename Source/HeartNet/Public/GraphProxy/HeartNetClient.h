@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartReplicateNodeData.h"
+#include "HeartReplicatedNodeData.h"
 #include "Components/ActorComponent.h"
 #include "Model/HeartGuids.h"
 #include "HeartNetClient.generated.h"

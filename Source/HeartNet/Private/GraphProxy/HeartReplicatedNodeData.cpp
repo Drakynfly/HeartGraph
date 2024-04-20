@@ -1,9 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "GraphProxy/HeartReplicateNodeData.h"
+#include "GraphProxy/HeartReplicatedNodeData.h"
 #include "GraphProxy/HeartGraphNetProxy.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartReplicateNodeData)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartReplicatedNodeData)
 
 void FHeartReplicatedNodeData::PostReplicatedAdd(const FHeartReplicatedGraphNodes& Array)
 {

@@ -5,7 +5,7 @@
 #include "Serialization/HeartFlakes.h"
 #include "Model/HeartGuids.h"
 #include "Net/Serialization/FastArraySerializer.h"
-#include "HeartReplicateNodeData.generated.h"
+#include "HeartReplicatedNodeData.generated.h"
 
 struct FHeartReplicatedGraphNodes;
 
