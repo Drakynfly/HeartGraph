@@ -129,7 +129,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	UHeartGraphNode* GetNode(const FHeartNodeGuid& NodeGuid) const;
 
-	const TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>>& GetNodes() const { return Nodes; }
+	const auto& GetNodes() const { return Nodes; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "GetNodes"))
 	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return reinterpret_cast<const TMap<FHeartNodeGuid, UHeartGraphNode*>&>(Nodes); }
@@ -165,6 +165,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
+	const auto& GetExtensions() const { return Extensions; }
+
 	/** Finds the first extension of the template type. */
 	template <
 		typename TExtensionClass
@@ -183,9 +185,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class", DisplayName = "Get Extension (by class)"))
 	UHeartGraphExtension* GetExtension(TSubclassOf<UHeartGraphExtension> Class) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	TArray<UHeartGraphExtension*> GetAllExtensions() const;
+
 	/** Finds all extensions of the requested class. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
-	TArray<UHeartGraphExtension*> GetExtensions(TSubclassOf<UHeartGraphExtension> Class) const;
+	TArray<UHeartGraphExtension*> GetExtensionsOfClass(TSubclassOf<UHeartGraphExtension> Class) const;
 
 	/** Add the extension of the template class. */
 	template <

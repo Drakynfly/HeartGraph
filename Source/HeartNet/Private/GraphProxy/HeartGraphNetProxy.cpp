@@ -10,6 +10,7 @@
 #include "Model/HeartGraphNode3D.h"
 #include "Model/HeartNodeQuery.h"
 #include "Input/HeartActionBase.h"
+#include "Model/HeartExtensionQuery.h"
 #include "ModelView/HeartActionHistory.h"
 
 #include "Net/UnrealNetwork.h"
@@ -188,6 +189,10 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 	Heart::Query::TNodeQueryResult<UHeartGraph>(SourceGraph)
 		.Filter_UObject(this, &ThisClass::ShouldReplicateNode)
 		.ForEach_UObject(this, &ThisClass::UpdateReplicatedNodeData);
+
+	Heart::Query::TExtensionQueryResult<UHeartGraph>(SourceGraph)
+		.Filter_UObject(this, &ThisClass::ShouldReplicateExtension)
+		.ForEach_UObject(this, &ThisClass::UpdateReplicatedExtensionData);
 
 	return true;
 }

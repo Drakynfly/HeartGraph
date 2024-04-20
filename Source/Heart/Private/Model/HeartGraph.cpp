@@ -241,7 +241,14 @@ UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExt
 	return nullptr;
 }
 
-TArray<UHeartGraphExtension*> UHeartGraph::GetExtensions(const TSubclassOf<UHeartGraphExtension> Class) const
+TArray<UHeartGraphExtension*> UHeartGraph::GetAllExtensions() const
+{
+	TArray<UHeartGraphExtension*> Out;
+	Extensions.GenerateValueArray(ObjectPtrWrap(Out));
+	return Out;
+}
+
+TArray<UHeartGraphExtension*> UHeartGraph::GetExtensionsOfClass(const TSubclassOf<UHeartGraphExtension> Class) const
 {
 	TArray<UHeartGraphExtension*> Out;
 
