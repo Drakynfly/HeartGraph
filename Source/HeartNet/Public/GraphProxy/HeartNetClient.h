@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "HeartReplicatedNodeData.h"
 #include "Components/ActorComponent.h"
 #include "Model/HeartGuids.h"
 #include "HeartNetClient.generated.h"
@@ -14,7 +13,7 @@ struct FHeartGraphConnectionEvent_Net;
 struct FHeartNodeMoveEvent;
 struct FHeartNodeMoveEvent_Net;
 struct FHeartRemoteGraphActionArguments;
-struct FHeartReplicatedNodeData;
+struct FHeartReplicatedFlake;
 class UHeartActionBase;
 class UHeartGraphNetProxy;
 class UHeartGraphNode;
@@ -43,7 +42,7 @@ protected:
 	virtual void OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy, const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
 	UFUNCTION(Server, Reliable)
-	void Server_OnNodeAdded(UHeartGraphNetProxy* Proxy, const FHeartReplicatedNodeData& NodeData);
+	void Server_OnNodeAdded(UHeartGraphNetProxy* Proxy, const FHeartReplicatedFlake& NodeData);
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeMoveEvent_Net& NodeMoveEvent);
@@ -55,7 +54,7 @@ protected:
 	void Server_OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy, const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 
 	UFUNCTION(Server, Reliable)
-	void Server_UpdateGraphNode(UHeartGraphNetProxy* Proxy, const FHeartNodeFlake& NodeFlake, EHeartUpdateNodeType Type);
+	void Server_UpdateGraphNode(UHeartGraphNetProxy* Proxy, const FHeartReplicatedFlake& NodeFlake, EHeartUpdateNodeType Type);
 
 	UFUNCTION(Server, Reliable)
 	void Server_ExecuteGraphAction(UHeartGraphNetProxy* Proxy, TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);

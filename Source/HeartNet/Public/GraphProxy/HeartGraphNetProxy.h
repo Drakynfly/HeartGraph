@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartReplicatedNodeData.h"
+#include "HeartReplicatedData.h"
 #include "NativeGameplayTags.h"
 #include "Model/HeartGuids.h"
 #include "HeartGraphNetProxy.generated.h"
@@ -13,8 +13,9 @@ struct FHeartManualEvent;
 struct FHeartNodeMoveEvent;
 struct FHeartNodeMoveEvent_Net;
 struct FHeartRemoteGraphActionArguments;
-class UHeartGraph;
 class UHeartActionBase;
+class UHeartGraph;
+class UHeartGraphExtension;
 class UHeartGraphNode;
 class UHeartNetClient;
 
@@ -36,6 +37,9 @@ namespace Heart::Net::Tags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_ClientUpdateNodeObject)
 
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Extension_Added)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Extension_Added)
+
 	// This tag can be used for custom replicating events, but it's suggested to create unique tags.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Other)
 
@@ -50,6 +54,7 @@ namespace Heart::Net::Tags
 }
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartNetProxyNodeEvent, UHeartGraphNode*, Node, FGameplayTag, EditType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartNetProxyExtensionEvent, UHeartGraphExtension*, Node, FGameplayTag, EditType);
 
 /**
  * This class represents a Heart Graph over the network, and can replicate its data between connections.
@@ -59,7 +64,7 @@ class HEARTNET_API UHeartGraphNetProxy : public UObject
 {
 	GENERATED_BODY()
 
-	friend FHeartReplicatedNodeData;
+	friend FHeartReplicatedFlake;
 	friend UHeartNetClient;
 
 public:
@@ -111,15 +116,19 @@ protected:
 
 	// These functions are callbacks for when the source graph is changed, which propagate via replication to clients.
 	virtual void OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode);
-	virtual void OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeConnectionsChanged_Source(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
+	virtual void OnExtensionAdded_Source(UHeartGraphExtension* Extension);
+	virtual void OnExtensionRemoved_Source(UHeartGraphExtension* Extension);
+
 	virtual bool ShouldReplicateNode(TObjectPtr<UHeartGraphNode> Node) const;
+	virtual bool ShouldReplicateExtension(TObjectPtr<UHeartGraphExtension> Extension) const;
 
 	void UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> Node);
-	void RemoveReplicatedNodeData(const FHeartNodeGuid& Node);
-	void EditReplicatedNodeData(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
+	void UpdateReplicatedExtensionData(TObjectPtr<UHeartGraphExtension> Extension);
+	void EditReplicatedNodeData(const FHeartReplicatedFlake& NodeData, FGameplayTag EventType);
 
 
 	/**-------------------------*/
@@ -165,19 +174,26 @@ protected:
 	virtual void OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
 	// These functions are called on the server via RPC when a client wants to edit things.
-	virtual void OnNodeAdded_Client(const FHeartNodeFlake& NodeData);
+	virtual void OnNodeAdded_Client(const FHeartReplicatedFlake& NodeData);
 	virtual void OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent);
 	virtual void OnNodeRemoved_Client(FHeartNodeGuid NodeGuid);
 	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 
-	virtual void UpdateNodeData_Client(const FHeartNodeFlake& NodeData, FGameplayTag EventType);
+	virtual void UpdateNodeData_Client(const FHeartReplicatedFlake& NodeData, FGameplayTag EventType);
 
 	virtual void ExecuteGraphAction_Client(TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);
 	virtual void ExecuteUndo_Client();
 	virtual void ExecuteRedo_Client();
 
-	bool UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, FGameplayTag EventType);
-	bool RemoveNodeProxy(const FHeartNodeGuid& NodeGuid);
+	bool UpdateNodeProxy(const FHeartReplicatedFlake& Data, FGameplayTag EventType);
+	bool RemoveNodeProxy(const FHeartNodeGuid& Guid);
+
+	bool UpdateExtensionProxy(const FHeartReplicatedFlake& Data, FGameplayTag EventType);
+	bool RemoveExtensionProxy(const FHeartExtensionGuid& Guid);
+
+	bool PostReplicatedAdd(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake);
+	bool PostReplicatedChange(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake);
+	bool PreReplicatedRemove(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake);
 
 
 	/**-----------------------------*/
@@ -193,14 +209,18 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
 	FHeartNetProxyNodeEvent OnNodeProxyUpdated;
 
+	// Called when server edits proxy extensions via replication.
+	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
+	FHeartNetProxyExtensionEvent OnExtensionProxyUpdated;
+
 
 	/**-------------------------*/
 	/*		PROXY CONFIG		*/
 	/**-------------------------*/
 
 protected:
-	// Container to set up the types of edits a client connection can make to the source graph. To allow all client edits
-	// simply add the "Heart.Net.AllPermissions" tag. Replicated to let client know what actions they can perform.
+	// Container to set up the types of edits a client connection can make to the source graph. To allow all client edits,
+	// add the "Heart.Net.AllPermissions" tag. Replicated to let client know what actions they can perform.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintSetter = "SetPermissions", ReplicatedUsing = "OnRep_ClientPermissions", Category = "Config", meta = (Categories = "Heart.Net"))
 	FGameplayTagContainer ClientPermissions;
 
@@ -228,8 +248,13 @@ protected:
 	UPROPERTY(ReplicatedUsing = "OnRep_GraphClass")
 	TSubclassOf<UHeartGraph> GraphClass;
 
+	// Replication of UHeartGraph::Nodes from SourceGraph to ProxyGraph
 	UPROPERTY(Replicated)
-	FHeartReplicatedGraphNodes ReplicatedNodes;
+	FHeartReplicatedData ReplicatedNodes;
+
+	// Replication of UHeartGraph::Extensions from SourceGraph to ProxyGraph
+	UPROPERTY(Replicated)
+	FHeartReplicatedData ReplicatedExtensions;
 
 	bool RecursionGuard = false;
 };

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "HeartReplicatedNodeData.h"
+#include "HeartReplicatedData.h"
 #include "Model/HeartGraphPinReference.h"
 #include "Input/HeartInputActivation.h"
 #include "HeartNetReplicationTypes.generated.h"
@@ -14,7 +14,7 @@ struct FHeartNodeMoveEvent_Net
 
 	// Nodes being moved. Usually just one, but mass node movement might be enabled in graph using a marquee tool.
 	UPROPERTY()
-	TArray<FHeartNodeFlake> AffectedNodes;
+	TArray<FHeartReplicatedFlake> AffectedNodes;
 
 	// Is the move "in-progress" or finished, typically during drag-drop style movement?
 	UPROPERTY()
@@ -36,7 +36,7 @@ struct FHeartGraphConnectionEvent_Net
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TArray<FHeartNodeFlake> AffectedNodes;
+	TArray<FHeartReplicatedFlake> AffectedNodes;
 };
 
 USTRUCT()

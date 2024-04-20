@@ -243,10 +243,12 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 
 	Customizations.Add(FHeartGraphGuid::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
+	Customizations.Add(FHeartExtensionGuid::StaticStruct()->GetFName(),
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
 	Customizations.Add(FHeartNodeGuid::StaticStruct()->GetFName(),
-	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
 	Customizations.Add(FHeartPinGuid::StaticStruct()->GetFName(),
-	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
+		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FHeartGuidCustomization::MakeInstance));
 
 	//Customizations.Add(FClassList::StaticStruct()->GetFName(),
 	//	FOnGetPropertyTypeCustomizationInstance::CreateStatic(&Heart::FItemsArrayCustomization::MakeInstance));

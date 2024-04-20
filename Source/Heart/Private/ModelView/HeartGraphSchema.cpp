@@ -76,29 +76,35 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 void UHeartGraphSchema::RefreshGraphExtensions(UHeartGraph* HeartGraph) const
 {
 	// Reset instance extensions.
-	TSet<TSubclassOf<UHeartGraphExtension>> PreviousClassList;
-	HeartGraph->Extensions.GetKeys(PreviousClassList);
+	TArray<FHeartExtensionGuid> PreviousExtensionGuids;
+	HeartGraph->Extensions.GetKeys(PreviousExtensionGuids);
 
 	// @todo this function needs to be rewritten if we want the extensions to be editable on a per graph class basis
 
 	for (auto&& Extension : DefaultExtensions)
 	{
-		PreviousClassList.Remove(Extension->GetClass());
-		HeartGraph->RemoveExtension(Extension->GetClass());
-		HeartGraph->AddExtensionInstance(DuplicateObject(Extension, HeartGraph));
+		if (!IsValid(Extension))
+		{
+			continue;
+		}
+
+		if (!HeartGraph->GetExtensionByGuid(Extension->GetGuid()))
+		{
+			HeartGraph->AddExtensionInstance(DuplicateObject(Extension, HeartGraph));
+		}
+		PreviousExtensionGuids.Remove(Extension->GetGuid());
 	}
 
 	for (auto&& ExtensionClass : AdditionalExtensionClasses)
 	{
 		// Add an extension of this class if none exist
-		PreviousClassList.Remove(ExtensionClass);
 		HeartGraph->AddExtension(ExtensionClass);
 	}
 
-	// Cleanup extensions for classes no longer registered
-	for (auto&& Class : PreviousClassList)
+	// Cleanup extensions for guids no longer registered
+	for (auto&& Guid : PreviousExtensionGuids)
 	{
-		HeartGraph->RemoveExtension(Class);
+		HeartGraph->RemoveExtension(Guid);
 	}
 }
 

@@ -26,6 +26,9 @@ namespace Heart::Net::Tags
 
 	UE_DEFINE_GAMEPLAY_TAG(Node_ClientUpdateNodeObject, "Heart.Net.UpdateNodeObject")
 
+	UE_DEFINE_GAMEPLAY_TAG(Extension_Added, "Heart.Net.ExtensionAdded")
+	UE_DEFINE_GAMEPLAY_TAG(Extension_Removed, "Heart.Net.ExtensionRemoved")
+
 	UE_DEFINE_GAMEPLAY_TAG(Other, "Heart.Net.OtherEvent")
 
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Permission_Actions, "Heart.Net.GraphActionPermission", "Allows clients to run graph action edits")
@@ -36,6 +39,7 @@ namespace Heart::Net::Tags
 UHeartGraphNetProxy::UHeartGraphNetProxy()
 {
 	ReplicatedNodes.OwningProxy = this;
+	ReplicatedExtensions.OwningProxy = this;
 }
 
 UWorld* UHeartGraphNetProxy::GetWorld() const
@@ -57,6 +61,7 @@ void UHeartGraphNetProxy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ClientPermissions, Params);
 
 	DOREPLIFETIME(ThisClass, ReplicatedNodes);
+	DOREPLIFETIME(ThisClass, ReplicatedExtensions);
 
 	//SharedParams.Condition = COND_InitialOnly; // @todo enable this once it works
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, GraphClass, Params);
@@ -147,7 +152,10 @@ void UHeartGraphNetProxy::RequestUpdateNode(UHeartGraphNode* Node)
 {
 	if (GetOwningActor()->HasAuthority())
 	{
-		UpdateReplicatedNodeData(Node);
+		if (ShouldReplicateNode(Node))
+		{
+			UpdateReplicatedNodeData(Node);
+		}
 	}
 	else
 	{
@@ -164,10 +172,15 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 
 	SourceGraph = InSourceGraph;
 
+	// Node delegates
 	SourceGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAdded_Source);
-	SourceGraph->GetOnNodeMoved().AddUObject(this, &ThisClass::OnNodesMoved_Source);
 	SourceGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemoved_Source);
+	SourceGraph->GetOnNodeMoved().AddUObject(this, &ThisClass::OnNodesMoved_Source);
 	SourceGraph->GetOnNodeConnectionsChanged().AddUObject(this, &ThisClass::OnNodeConnectionsChanged_Source);
+
+	// Extension delegates
+	SourceGraph->GetOnExtensionAdded().AddUObject(this, &ThisClass::OnExtensionAdded_Source);
+	SourceGraph->GetOnExtensionRemoved().AddUObject(this, &ThisClass::OnExtensionRemoved_Source);
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, GraphClass, this);
 	GraphClass = SourceGraph->GetClass();
@@ -181,7 +194,18 @@ bool UHeartGraphNetProxy::SetupGraphProxy(UHeartGraph* InSourceGraph)
 
 void UHeartGraphNetProxy::OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode)
 {
-	UpdateReplicatedNodeData(HeartGraphNode);
+	if (ShouldReplicateNode(HeartGraphNode))
+	{
+		UpdateReplicatedNodeData(HeartGraphNode);
+	}
+}
+
+void UHeartGraphNetProxy::OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode)
+{
+	if (ShouldReplicateNode(HeartGraphNode))
+	{
+		ReplicatedNodes.Delete(HeartGraphNode->GetGuid());
+	}
 }
 
 void UHeartGraphNetProxy::OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent)
@@ -190,25 +214,44 @@ void UHeartGraphNetProxy::OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMov
 	{
 		for (auto Element : NodeMoveEvent.AffectedNodes)
 		{
-			UpdateReplicatedNodeData(Element);
+			if (ShouldReplicateNode(Element))
+			{
+				UpdateReplicatedNodeData(Element);
+			}
 		}
 	}
-}
-
-void UHeartGraphNetProxy::OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode)
-{
-	RemoveReplicatedNodeData(HeartGraphNode->GetGuid());
 }
 
 void UHeartGraphNetProxy::OnNodeConnectionsChanged_Source(const FHeartGraphConnectionEvent& GraphConnectionEvent)
 {
 	for (auto Element : GraphConnectionEvent.AffectedNodes)
 	{
-		UpdateReplicatedNodeData(Element);
+		if (ShouldReplicateNode(Element))
+		{
+			UpdateReplicatedNodeData(Element);
+		}
 	}
 }
 
+void UHeartGraphNetProxy::OnExtensionAdded_Source(UHeartGraphExtension* Extension)
+{
+	if (ShouldReplicateExtension(Extension))
+	{
+		UpdateReplicatedExtensionData(Extension);
+	}
+}
+
+void UHeartGraphNetProxy::OnExtensionRemoved_Source(UHeartGraphExtension* Extension)
+{
+	ReplicatedExtensions.Delete(Extension->GetGuid());
+}
+
 bool UHeartGraphNetProxy::ShouldReplicateNode(TObjectPtr<UHeartGraphNode> Node) const
+{
+	return true;
+}
+
+bool UHeartGraphNetProxy::ShouldReplicateExtension(TObjectPtr<UHeartGraphExtension> Extension) const
 {
 	return true;
 }
@@ -218,20 +261,28 @@ void UHeartGraphNetProxy::UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> N
 	if (!IsValid(Node)) return;
 
 	ReplicatedNodes.Operate(Node->GetGuid(),
-		[Node](FHeartReplicatedNodeData& NodeData)
+		[Node](FHeartReplicatedFlake& Data)
 		{
-			NodeData.Data.Flake = Heart::Flakes::CreateFlake(Node);
+			Data.Flake = Heart::Flakes::CreateFlake(Node);
 			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated node '%s' (%i bytes)"),
-				*Node->GetName(), NodeData.Data.Flake.Data.Num());
+				*Node->GetName(), Data.Flake.Data.Num());
 		});
 }
 
-void UHeartGraphNetProxy::RemoveReplicatedNodeData(const FHeartNodeGuid& Node)
+void UHeartGraphNetProxy::UpdateReplicatedExtensionData(TObjectPtr<UHeartGraphExtension> Extension)
 {
-	ReplicatedNodes.Delete(Node);
+	if (!IsValid(Extension)) return;
+
+	ReplicatedExtensions.Operate(Extension->GetGuid(),
+		[Extension](FHeartReplicatedFlake& Data)
+		{
+			Data.Flake = Heart::Flakes::CreateFlake(Extension);
+			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated extension '%s' (%i bytes)"),
+				*Extension->GetName(), Data.Flake.Data.Num());
+		});
 }
 
-void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartNodeFlake& NodeData, const FGameplayTag EventType)
+void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& NodeData, const FGameplayTag EventType)
 {
 	checkf(GetOwningActor()->HasAuthority(), TEXT("The source graph can only be edited on the server!"));
 
@@ -241,7 +292,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartNodeFlake& NodeData
 		return;
 	}
 
-	auto&& ExistingNode = SourceGraph->GetNode(NodeData.Guid);
+	auto&& ExistingNode = SourceGraph->GetNode(NodeData.Guid.Get<FHeartNodeGuid>());
 
 	// Handle clients trying to add nodes
 	if (EventType == Heart::Net::Tags::Node_Added)
@@ -296,7 +347,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartNodeFlake& NodeData
 
 		for (auto&& Element : PinElement.PinConnections)
 		{
-			Edit.Override({ NodeData.Guid, Element.Key}, Element.Value);
+			Edit.Override({ NodeData.Guid.Get<FHeartNodeGuid>(), Element.Key}, Element.Value);
 		}
 
 		OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Node_ConnectionsChanged);
@@ -343,7 +394,7 @@ void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid NodeGu
 		return;
 	}
 
-	FHeartNodeFlake NodeFlake;
+	FHeartReplicatedFlake NodeFlake;
 	NodeFlake.Guid = NodeGuid;
 
 	switch (Type)
@@ -453,6 +504,12 @@ void UHeartGraphNetProxy::OnRep_GraphClass()
 	{
 		UpdateNodeProxy(Element, Heart::Net::Tags::Node_Added);
 	}
+
+	// Add all existing nodes to the proxy graph
+	for (auto&& Element : ReplicatedExtensions.Items)
+	{
+		UpdateExtensionProxy(Element, Heart::Net::Tags::Extension_Added);
+	}
 }
 
 void UHeartGraphNetProxy::OnRep_ClientPermissions(const FGameplayTagContainer& OldPermissions)
@@ -516,7 +573,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 	}
 }
 
-void UHeartGraphNetProxy::OnNodeAdded_Client(const FHeartNodeFlake& NodeData)
+void UHeartGraphNetProxy::OnNodeAdded_Client(const FHeartReplicatedFlake& NodeData)
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Added))
 	{
@@ -579,7 +636,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Client(const FHeartGraphConne
 	}
 }
 
-void UHeartGraphNetProxy::UpdateNodeData_Client(const FHeartNodeFlake& NodeData, const FGameplayTag EventType)
+void UHeartGraphNetProxy::UpdateNodeData_Client(const FHeartReplicatedFlake& NodeData, const FGameplayTag EventType)
 {
 	if (!CanClientPerformEvent(EventType))
 	{
@@ -651,18 +708,18 @@ void UHeartGraphNetProxy::ExecuteRedo_Client()
 	Heart::Action::History::TryRedo(SourceGraph);
 }
 
-bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedNodeData& NodeData, const FGameplayTag EventType)
+bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, const FGameplayTag EventType)
 {
 	if (IsValid(ProxyGraph))
 	{
-		if (UHeartGraphNode* ExistingNode = ProxyGraph->GetNode(NodeData.Data.Guid))
+		if (UHeartGraphNode* ExistingNode = ProxyGraph->GetNode(Data.Guid.Get<FHeartNodeGuid>()))
 		{
-			Heart::Flakes::WriteObject(ExistingNode, NodeData.Data.Flake);
+			Heart::Flakes::WriteObject(ExistingNode, Data.Flake);
 			OnNodeProxyUpdated.Broadcast(ExistingNode, EventType);
 			return true;
 		}
 
-		if (UHeartGraphNode* NewNode = Heart::Flakes::CreateObject<UHeartGraphNode>(NodeData.Data.Flake, ProxyGraph))
+		if (UHeartGraphNode* NewNode = Heart::Flakes::CreateObject<UHeartGraphNode>(Data.Flake, ProxyGraph))
 		{
 			ensure(EventType == Heart::Net::Tags::Node_Added);
 
@@ -680,11 +737,104 @@ bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedNodeData& NodeDa
 	return false;
 }
 
-bool UHeartGraphNetProxy::RemoveNodeProxy(const FHeartNodeGuid& NodeGuid)
+bool UHeartGraphNetProxy::RemoveNodeProxy(const FHeartNodeGuid& Guid)
 {
 	if (IsValid(ProxyGraph))
 	{
-		return ProxyGraph->RemoveNode(NodeGuid);
+		OnNodeProxyUpdated.Broadcast(ProxyGraph->GetNode(Guid), Heart::Net::Tags::Node_Removed);
+		return ProxyGraph->RemoveNode(Guid);
 	}
+	return false;
+}
+
+bool UHeartGraphNetProxy::UpdateExtensionProxy(const FHeartReplicatedFlake& Data, const FGameplayTag EventType)
+{
+	if (IsValid(ProxyGraph))
+	{
+		if (UHeartGraphExtension* ExistingExtension = ProxyGraph->GetExtensionByGuid(Data.Guid.Get<FHeartExtensionGuid>()))
+		{
+			Heart::Flakes::WriteObject(ExistingExtension, Data.Flake);
+			OnExtensionProxyUpdated.Broadcast(ExistingExtension, EventType);
+			return true;
+		}
+
+		if (UHeartGraphExtension* NewExtension = Heart::Flakes::CreateObject<UHeartGraphExtension>(Data.Flake, ProxyGraph))
+		{
+			ensure(EventType == Heart::Net::Tags::Extension_Added);
+
+			{
+				// Prevent OnExtensionAdded_Proxy from pinging this back to the server
+				TGuardValue<bool> bRecursionGuard(RecursionGuard, true);
+				ProxyGraph->AddExtensionInstance(NewExtension);
+			}
+
+			OnExtensionProxyUpdated.Broadcast(NewExtension, Heart::Net::Tags::Extension_Added);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool UHeartGraphNetProxy::RemoveExtensionProxy(const FHeartExtensionGuid& Guid)
+{
+	if (IsValid(ProxyGraph))
+	{
+		OnExtensionProxyUpdated.Broadcast(ProxyGraph->GetExtensionByGuid(Guid), Heart::Net::Tags::Extension_Removed);
+		return ProxyGraph->RemoveExtension(Guid);
+	}
+	return false;
+}
+
+bool UHeartGraphNetProxy::PostReplicatedAdd(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake)
+{
+	if (&Array == &ReplicatedNodes)
+	{
+		UpdateNodeProxy(Flake, Heart::Net::Tags::Node_Added);
+		return true;
+	}
+
+	if (&Array == &ReplicatedExtensions)
+	{
+		UpdateExtensionProxy(Flake, Heart::Net::Tags::Extension_Added);
+		return true;
+	}
+
+	return false;
+}
+
+bool UHeartGraphNetProxy::PostReplicatedChange(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake)
+{
+	if (&Array == &ReplicatedNodes)
+	{
+		// @todo clients have no idea what kind of changes the server is making...
+		UpdateNodeProxy(Flake, Heart::Net::Tags::Other);
+		return true;
+	}
+
+	if (&Array == &ReplicatedExtensions)
+	{
+		// @todo clients have no idea what kind of changes the server is making...
+		UpdateExtensionProxy(Flake, Heart::Net::Tags::Other);
+		return true;
+	}
+
+	return false;
+}
+
+bool UHeartGraphNetProxy::PreReplicatedRemove(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake)
+{
+	if (&Array == &ReplicatedNodes)
+	{
+		RemoveNodeProxy(Flake.Guid.Get<FHeartNodeGuid>());
+		return true;
+	}
+
+	if (&Array == &ReplicatedExtensions)
+	{
+		RemoveExtensionProxy(Flake.Guid.Get<FHeartExtensionGuid>());
+		return true;
+	}
+
 	return false;
 }

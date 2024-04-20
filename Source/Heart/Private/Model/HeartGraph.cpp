@@ -209,22 +209,51 @@ const UHeartGraphSchema* UHeartGraph::GetSchema() const
 	return UHeartGraphSchema::Get(GetClass());
 }
 
-const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const
+const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema>) const
 {
 	return GetSchema();
+}
+
+UHeartGraphExtension* UHeartGraph::GetExtensionByGuid(const FHeartExtensionGuid ExtensionGuid,
+													  TSubclassOf<UHeartGraphExtension>) const
+{
+	if (auto Extension = Extensions.Find(ExtensionGuid))
+	{
+		if (Extension && IsValid(*Extension))
+		{
+			return *Extension;
+		}
+	}
+
+	return nullptr;
 }
 
 UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExtension> Class) const
 {
 	for (auto&& Extension : Extensions)
 	{
-		if (Extension.Key->IsChildOf(Class))
+		if (Extension.Value->GetClass()->IsChildOf(Class))
 		{
 			return Extension.Value;
 		}
 	}
 
 	return nullptr;
+}
+
+TArray<UHeartGraphExtension*> UHeartGraph::GetExtensions(const TSubclassOf<UHeartGraphExtension> Class) const
+{
+	TArray<UHeartGraphExtension*> Out;
+
+	for (auto&& Extension : Extensions)
+	{
+		if (Extension.Value->GetClass()->IsChildOf(Class))
+		{
+			Out.Add(Extension.Value);
+		}
+	}
+
+	return Out;
 }
 
 UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExtension> Class)
@@ -234,13 +263,9 @@ UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExt
 		return nullptr;
 	}
 
-	if (Extensions.Contains(Class))
-	{
-		return nullptr;
-	}
-
 	UHeartGraphExtension* NewExtension = NewObject<UHeartGraphExtension>(this, Class);
-	Extensions.Add(Class, NewExtension);
+	NewExtension->Guid = FHeartExtensionGuid::New();
+	Extensions.Add(NewExtension->Guid, NewExtension);
 	NewExtension->PostExtensionAdded();
 
 	OnExtensionAdded.Broadcast(NewExtension);
@@ -254,32 +279,48 @@ bool UHeartGraph::AddExtensionInstance(UHeartGraphExtension* Extension)
 	{
 		// Should only add instances that have been created/renamed to us.
 		check(Extension->GetOuter() == this);
+		check(!Extensions.Contains(Extension->Guid));
 
-		if (!Extensions.Contains(Extension->GetClass()))
-		{
-			Extensions.Add(Extension->GetClass(), Extension);
-			Extension->PostExtensionAdded();
+		Extensions.Add(Extension->Guid, Extension);
+		Extension->PostExtensionAdded();
 
-			OnExtensionAdded.Broadcast(Extension);
-		}
+		OnExtensionAdded.Broadcast(Extension);
 	}
 
 	return false;
 }
 
-void UHeartGraph::RemoveExtension(const TSubclassOf<UHeartGraphExtension> Class)
+bool UHeartGraph::RemoveExtension(const FHeartExtensionGuid ExtensionGuid)
 {
-	if (const TObjectPtr<UHeartGraphExtension>* ExtensionPtr = Extensions.Find(Class))
+	if (!Extensions.Contains(ExtensionGuid))
 	{
-		UHeartGraphExtension* Extension = *ExtensionPtr;
+		return false;
+	}
 
-		if (IsValid(Extension))
+	auto&& Extension = Extensions[ExtensionGuid];
+	Extension->PreExtensionRemove();
+	Extensions.Remove(ExtensionGuid);
+	OnExtensionRemoved.Broadcast(Extension);
+	return true;
+}
+
+void UHeartGraph::RemoveExtensionsByClass(const TSubclassOf<UHeartGraphExtension> Class)
+{
+	for (auto ExtensionIt = Extensions.CreateIterator(); ExtensionIt; ++ExtensionIt)
+	{
+		auto&& Extension = ExtensionIt.Value();
+		if (!IsValid(Extension))
+		{
+			ExtensionIt.RemoveCurrent();
+			continue;
+		}
+
+		if (Extension.GetClass()->IsChildOf(Class))
 		{
 			Extension->PreExtensionRemove();
+			ExtensionIt.RemoveCurrent();
+			OnExtensionRemoved.Broadcast(Extension);
 		}
-		Extensions.Remove(Class);
-
-		OnExtensionRemoved.Broadcast(Extension);
 	}
 }
 

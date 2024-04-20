@@ -23,11 +23,11 @@ void UHeartNetClient::OnNodeAdded(UHeartGraphNetProxy* Proxy, UHeartGraphNode* H
 	check(Proxy);
 	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
 
-	FHeartReplicatedNodeData NodeData;
-	NodeData.Data.Guid = HeartGraphNode->GetGuid();
-	NodeData.Data.Flake = Heart::Flakes::CreateFlake(HeartGraphNode);
+	FHeartReplicatedFlake NodeData;
+	NodeData.Guid = HeartGraphNode->GetGuid();
+	NodeData.Flake = Heart::Flakes::CreateFlake(HeartGraphNode);
 	UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
-		*HeartGraphNode->GetName(), NodeData.Data.Flake.Data.Num());
+		*HeartGraphNode->GetName(), NodeData.Flake.Data.Num());
 
 	Server_OnNodeAdded(Proxy, NodeData);
 }
@@ -43,7 +43,7 @@ void UHeartNetClient::OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeM
 		Algo::Transform(NodeMoveEvent.AffectedNodes, Event.AffectedNodes,
 			[](const TObjectPtr<UHeartGraphNode> Node)
 			{
-				FHeartNodeFlake NodeData;
+				FHeartReplicatedFlake NodeData;
 				NodeData.Guid = Node->GetGuid();
 				if (auto&& Node3D = Cast<UHeartGraphNode3D>(Node))
 				{
@@ -88,7 +88,7 @@ void UHeartNetClient::OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy,
 	Algo::Transform(GraphConnectionEvent.AffectedNodes, Event.AffectedNodes,
 		[&ByAffected](const TObjectPtr<UHeartGraphNode> Node)
 		{
-			FHeartNodeFlake NodeData;
+			FHeartReplicatedFlake NodeData;
 			NodeData.Guid = Node->GetGuid();
 
 			FHeartGraphConnectionEvent_Net_PinElement PinElement;
@@ -126,18 +126,18 @@ void UHeartNetClient::Server_RedoGraphAction_Implementation(UHeartGraphNetProxy*
 }
 
 void UHeartNetClient::Server_UpdateGraphNode_Implementation(UHeartGraphNetProxy* Proxy,
-															const FHeartNodeFlake& NodeFlake, const EHeartUpdateNodeType Type)
+															const FHeartReplicatedFlake& NodeFlake, const EHeartUpdateNodeType Type)
 {
 	ensure(IsValid(Proxy));
 	UE_LOG(LogHeartNet, Log, TEXT("Server: Client updated node. (%i bytes) Type '%s'"), NodeFlake.Flake.Data.Num(), *StaticEnum<EHeartUpdateNodeType>()->GetValueAsString(Type))
 	Proxy->UpdateNodeData_Client(NodeFlake, Type == EHeartUpdateNodeType::NodeObject ? Heart::Net::Tags::Node_ClientUpdateNodeObject : Heart::Net::Tags::Other);
 }
 
-void UHeartNetClient::Server_OnNodeAdded_Implementation(UHeartGraphNetProxy* Proxy, const FHeartReplicatedNodeData& HeartGraphNode)
+void UHeartNetClient::Server_OnNodeAdded_Implementation(UHeartGraphNetProxy* Proxy, const FHeartReplicatedFlake& HeartGraphNode)
 {
 	ensure(IsValid(Proxy));
-	UE_LOG(LogHeartNet, Log, TEXT("Server: Client added node. (%i bytes)"), HeartGraphNode.Data.Flake.Data.Num())
-	Proxy->OnNodeAdded_Client(HeartGraphNode.Data);
+	UE_LOG(LogHeartNet, Log, TEXT("Server: Client added node. (%i bytes)"), HeartGraphNode.Flake.Data.Num())
+	Proxy->OnNodeAdded_Client(HeartGraphNode);
 }
 
 void UHeartNetClient::Server_OnNodesMoved_Implementation(UHeartGraphNetProxy* Proxy,

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "HeartGuids.h"
 #include "UObject/Object.h"
 #include "HeartGraphExtension.generated.h"
 
@@ -19,6 +20,10 @@ class HEART_API UHeartGraphExtension : public UObject
 	friend UHeartGraph;
 
 public:
+	virtual void PostLoad() override;
+
+	FHeartExtensionGuid GetGuid() const { return Guid; }
+
 	// Get the owning Heart Graph
 	UFUNCTION(BlueprintCallable, Category = "Heart|Extension")
 	UHeartGraph* GetGraph() const;
@@ -26,4 +31,7 @@ public:
 protected:
 	virtual void PostExtensionAdded() {}
 	virtual void PreExtensionRemove() {}
+
+	UPROPERTY(BlueprintReadOnly, Category = "Extension")
+	FHeartExtensionGuid Guid;
 };

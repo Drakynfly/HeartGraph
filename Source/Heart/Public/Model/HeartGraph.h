@@ -165,7 +165,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
-	/** Find the first extension of the template type. */
+	/** Finds the first extension of the template type. */
 	template <
 		typename TExtensionClass
 		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
@@ -175,9 +175,17 @@ public:
 		return CastChecked<TExtensionClass>(GetExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
 	}
 
-	/** Find the first extension of the requested class. */
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	/** Finds the first extension of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class", DisplayName = "Get Extension (by guid)"))
+	UHeartGraphExtension* GetExtensionByGuid(FHeartExtensionGuid ExtensionGuid, TSubclassOf<UHeartGraphExtension> Class = nullptr) const;
+
+	/** Finds the first extension of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class", DisplayName = "Get Extension (by class)"))
 	UHeartGraphExtension* GetExtension(TSubclassOf<UHeartGraphExtension> Class) const;
+
+	/** Finds all extensions of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	TArray<UHeartGraphExtension*> GetExtensions(TSubclassOf<UHeartGraphExtension> Class) const;
 
 	/** Add the extension of the template class. */
 	template <
@@ -197,18 +205,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	bool AddExtensionInstance(UHeartGraphExtension* Extension);
 
-	/** Remove the extension. */
+	/** Remove the extension with this guid. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
-	void RemoveExtension(TSubclassOf<UHeartGraphExtension> Class);
+	bool RemoveExtension(FHeartExtensionGuid ExtensionGuid);
+
+	/** Remove all extensions of a class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	void RemoveExtensionsByClass(TSubclassOf<UHeartGraphExtension> Class);
 
 	/** Remove the extension of the template class. */
 	template <
 		typename TExtensionClass
 		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
 	>
-	void RemoveExtension()
+	void RemoveExtensionsByClass()
 	{
-		return RemoveExtension(TExtensionClass::StaticClass());
+		return RemoveExtensionsByClass(TExtensionClass::StaticClass());
 	}
 
 
@@ -317,9 +329,8 @@ private:
 	UPROPERTY(Instanced)
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
-	// @todo doesn't need to be a map. Demote to TArray
 	UPROPERTY(Instanced, VisibleAnywhere)
-	TMap<TSubclassOf<UHeartGraphExtension>, TObjectPtr<UHeartGraphExtension>> Extensions;
+	TMap<FHeartExtensionGuid, TObjectPtr<UHeartGraphExtension>> Extensions;
 
 	FHeartGraphNodeEvent OnNodeAdded;
 	FHeartGraphNodeEvent OnNodeRemoved;
