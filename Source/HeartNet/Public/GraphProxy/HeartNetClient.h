@@ -36,11 +36,6 @@ public:
 	UHeartNetClient();
 
 protected:
-	virtual void OnNodeAdded(UHeartGraphNetProxy* Proxy, UHeartGraphNode* HeartGraphNode);
-	virtual void OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeMoveEvent& NodeMoveEvent);
-	virtual void OnNodeRemoved(UHeartGraphNetProxy* Proxy, UHeartGraphNode* HeartGraphNode);
-	virtual void OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy, const FHeartGraphConnectionEvent& GraphConnectionEvent);
-
 	UFUNCTION(Server, Reliable)
 	void Server_OnNodeAdded(UHeartGraphNetProxy* Proxy, const FHeartReplicatedFlake& NodeData);
 

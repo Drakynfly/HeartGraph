@@ -5,8 +5,6 @@
 #include "GraphProxy/HeartGraphNetProxy.h"
 #include "GraphProxy/HeartNetReplicationTypes.h"
 #include "Input/HeartActionBase.h"
-#include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphNode3D.h"
 #include "Model/HeartGraphTypes.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNetClient)
@@ -16,99 +14,6 @@ UHeartNetClient::UHeartNetClient()
 	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
 	bReplicateUsingRegisteredSubObjectList = true;
-}
-
-void UHeartNetClient::OnNodeAdded(UHeartGraphNetProxy* Proxy, UHeartGraphNode* HeartGraphNode)
-{
-	check(Proxy);
-	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
-
-	FHeartReplicatedFlake NodeData;
-	NodeData.Guid = HeartGraphNode->GetGuid();
-	NodeData.Flake = Heart::Flakes::CreateFlake(HeartGraphNode);
-	UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
-		*HeartGraphNode->GetName(), NodeData.Flake.Data.Num());
-
-	Server_OnNodeAdded(Proxy, NodeData);
-}
-
-void UHeartNetClient::OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeMoveEvent& NodeMoveEvent)
-{
-	check(Proxy);
-	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
-
-	if (NodeMoveEvent.MoveFinished)
-	{
-		FHeartNodeMoveEvent_Net Event;
-		Algo::Transform(NodeMoveEvent.AffectedNodes, Event.AffectedNodes,
-			[](const TObjectPtr<UHeartGraphNode> Node)
-			{
-				FHeartReplicatedFlake NodeData;
-				NodeData.Guid = Node->GetGuid();
-				if (auto&& Node3D = Cast<UHeartGraphNode3D>(Node))
-				{
-					NodeData.Flake = Heart::Flakes::CreateFlake<FVector>(Node3D->GetLocation3D());
-				}
-				else
-				{
-					NodeData.Flake = Heart::Flakes::CreateFlake<FVector2D>(Node->GetLocation());
-				}
-
-				UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
-					*Node->GetName(), NodeData.Flake.Data.Num());
-				return NodeData;
-			});
-
-		Event.MoveFinished = NodeMoveEvent.MoveFinished;
-
-		Server_OnNodesMoved(Proxy, Event);
-	}
-}
-
-void UHeartNetClient::OnNodeRemoved(UHeartGraphNetProxy* Proxy, UHeartGraphNode* HeartGraphNode)
-{
-	check(Proxy);
-	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
-
-	Server_OnNodeRemoved(Proxy, HeartGraphNode->GetGuid());
-}
-
-void UHeartNetClient::OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy,
-	const FHeartGraphConnectionEvent& GraphConnectionEvent)
-{
-	check(Proxy);
-	ensure(GetOwnerRole() == ROLE_AutonomousProxy);
-
-	auto ByAffected = [&GraphConnectionEvent](const FHeartPinGuid Pin)
-		{
-			return GraphConnectionEvent.AffectedPins.Contains(Pin);
-		};
-
-	FHeartGraphConnectionEvent_Net Event;
-	Algo::Transform(GraphConnectionEvent.AffectedNodes, Event.AffectedNodes,
-		[&ByAffected](const TObjectPtr<UHeartGraphNode> Node)
-		{
-			FHeartReplicatedFlake NodeData;
-			NodeData.Guid = Node->GetGuid();
-
-			FHeartGraphConnectionEvent_Net_PinElement PinElement;
-			Node->QueryPins()
-				.Filter(ByAffected)
-				.ForEach([Node, &PinElement](const FHeartPinGuid Pin)
-				{
-					auto Connections = Node->GetConnections(Pin);
-					PinElement.PinConnections.Add(Pin, Connections.GetValue());
-				});
-
-			NodeData.Flake = Heart::Flakes::CreateFlake(PinElement);
-
-			UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
-				*Node->GetName(), NodeData.Flake.Data.Num());
-
-			return NodeData;
-		});
-
-	Server_OnNodeConnectionsChanged(Proxy, Event);
 }
 
 void UHeartNetClient::Server_UndoGraphAction_Implementation(UHeartGraphNetProxy* Proxy)
