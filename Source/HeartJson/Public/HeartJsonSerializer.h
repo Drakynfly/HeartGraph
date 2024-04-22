@@ -39,6 +39,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|FlakeLibrary", meta = (WorldContext = "WorldContextObj", DeterminesOutputType = "ExpectedClass"))
 	static AActor* ConstructActorFromFlake_Json(const FJsonObjectWrapper& Flake, UObject* WorldContextObj, const TSubclassOf<AActor> ExpectedClass);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|FlakeLibrary")
+	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary")
 	static FString ToString(const FJsonObjectWrapper& Json, bool bPretty);
 };

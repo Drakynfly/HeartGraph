@@ -170,28 +170,47 @@ namespace Heart::Flakes
 		return TEXT("FRecursiveMemoryReader");
 	}
 
-	FORCEINLINE_DEBUGGABLE void CompressFlake(FHeartFlake& Flake, const TArray<uint8>& Raw,
-		const FOodleDataCompression::ECompressor Compressor,
-		const FOodleDataCompression::ECompressionLevel CompressionLevel)
+	namespace Private
 	{
-#if WITH_EDITOR
-		const auto BeforeCompression = Raw.Num();
-#endif
-
-		FOodleCompressedArray::CompressTArray(Flake.Data, Raw, Compressor, CompressionLevel);
-
-#if WITH_EDITOR
-		const auto AfterCompression = Flake.Data.Num();
-		if (CVarLogCompressionStatistics.GetValueOnGameThread())
+		void CompressFlake(FHeartFlake& Flake, const TArray<uint8>& Raw,
+			const FOodleDataCompression::ECompressor Compressor,
+			const FOodleDataCompression::ECompressionLevel CompressionLevel)
 		{
-			UE_LOG(LogFlakes, Log, TEXT("[Flake Compression Log]: Compressed '%i' bytes to '%i' bytes"), BeforeCompression, AfterCompression);
-		}
+#if WITH_EDITOR
+			const auto BeforeCompression = Raw.Num();
 #endif
-	}
 
-	void DecompressFlake(const FHeartFlake& Flake, TArray<uint8>& Raw)
-	{
-		FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+			FOodleCompressedArray::CompressTArray(Flake.Data, Raw, Compressor, CompressionLevel);
+
+#if WITH_EDITOR
+			const auto AfterCompression = Flake.Data.Num();
+			if (CVarLogCompressionStatistics.GetValueOnGameThread())
+			{
+				UE_LOG(LogFlakes, Log, TEXT("[Flake Compression Log]: Compressed '%i' bytes to '%i' bytes"), BeforeCompression, AfterCompression);
+			}
+#endif
+		}
+
+		void DecompressFlake(const FHeartFlake& Flake, TArray<uint8>& Raw)
+		{
+			FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
+		}
+
+		void PostLoadStruct(FInstancedStruct& Struct)
+		{
+			check(Struct.GetScriptStruct())
+			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMutableMemory());
+		}
+
+		void PostLoadUObject(UObject* Object)
+		{
+			Object->PostLoad();
+			ForEachObjectWithOuter(Object,
+				[](UObject* Subobject)
+				{
+					Subobject->PostLoad();
+				});
+		}
 	}
 
 	FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options)
@@ -262,45 +281,6 @@ namespace Heart::Flakes
 		return BinarySerializationProvider;
 	}
 
-	void FSerializationProvider_Binary::ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
-	{
-		Static_ReadData(Struct, OutData);
-	}
-
-	void FSerializationProvider_Binary::ReadData(const UObject* Object, TArray<uint8>& OutData)
-	{
-		Static_ReadData(Object, OutData);
-	}
-
-	void FSerializationProvider_Binary::WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
-	{
-		Static_WriteData(Struct, Data);
-	}
-
-	void FSerializationProvider_Binary::WriteData(UObject* Object, const TArray<uint8>& Data)
-	{
-		Static_WriteData(Object, Data);
-	}
-
-	namespace Private
-	{
-		void PostLoadStruct(FInstancedStruct& Struct)
-		{
-			check(Struct.GetScriptStruct())
-			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMutableMemory());
-		}
-
-		void PostLoadUObject(UObject* Object)
-		{
-			Object->PostLoad();
-			ForEachObjectWithOuter(Object,
-				[](UObject* Subobject)
-				{
-					Subobject->PostLoad();
-				});
-		}
-	}
-
 	FHeartFlake CreateFlake(const FName Serializer, const FInstancedStruct& Struct, const FReadOptions Options)
 	{
 		TArray<uint8> Raw;
@@ -317,7 +297,7 @@ namespace Heart::Flakes
 		FHeartFlake Flake;
 		Flake.Struct = Struct.GetScriptStruct();
 
-		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
+		Private::CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
 
 		return Flake;
 	}
@@ -337,7 +317,7 @@ namespace Heart::Flakes
 				Provider->ReadData(Object, Raw);
 			});
 
-		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
+		Private::CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
 
 		return Flake;
 	}
@@ -345,7 +325,7 @@ namespace Heart::Flakes
 	void WriteStruct(const FName Serializer, FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
 		TArray<uint8> Raw;
-		DecompressFlake(Flake, Raw);
+		Private::DecompressFlake(Flake, Raw);
 
 		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
 			[&](ISerializationProvider* Provider)
@@ -362,7 +342,7 @@ namespace Heart::Flakes
 	void WriteObject(const FName Serializer, UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
 		TArray<uint8> Raw;
-		DecompressFlake(Flake, Raw);
+		Private::DecompressFlake(Flake, Raw);
 
 		FHeartCoreModule::Get().UseSerializationProvider(Serializer,
 			[&](ISerializationProvider* Provider)
@@ -506,4 +486,9 @@ AActor* UHeartFlakeLibrary::ConstructActorFromFlake(const FHeartFlake_Actor& Fla
 	}
 
 	return nullptr;
+}
+
+int32 UHeartFlakeLibrary::GetNumBytes(const FHeartFlake& Flake)
+{
+	return Flake.Data.Num();
 }

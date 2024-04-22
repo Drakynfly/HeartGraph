@@ -137,26 +137,6 @@ namespace Heart::Flakes
 		static const FLazyName JsonSerializationProvider("JSON");
 		return JsonSerializationProvider;
 	}
-
-	void FSerializationProvider_Json::ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
-	{
-		Static_ReadData(Struct, OutData);
-	}
-
-	void FSerializationProvider_Json::ReadData(const UObject* Object, TArray<uint8>& OutData)
-	{
-		Static_ReadData(Object, OutData);
-	}
-
-	void FSerializationProvider_Json::WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
-	{
-		Static_WriteData(Struct, Data);
-	}
-
-	void FSerializationProvider_Json::WriteData(UObject* Object, const TArray<uint8>& Data)
-	{
-		Static_WriteData(Object, Data);
-	}
 }
 
 FJsonObjectWrapper UHeartJsonLibrary::CreateFlake_Struct_Json(const FInstancedStruct& Struct)

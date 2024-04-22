@@ -117,11 +117,17 @@ namespace Heart::Flakes
 		uint8 ExecPostLoadOrPostScriptConstruct : 1;
 	};
 
-	void CompressFlake(FHeartFlake& Flake, const TArray<uint8>& Raw,
+	namespace Private
+	{
+		HEARTCORE_API void CompressFlake(FHeartFlake& Flake, const TArray<uint8>& Raw,
 			const FOodleDataCompression::ECompressor Compressor,
 			const FOodleDataCompression::ECompressionLevel CompressionLevel);
 
-	void DecompressFlake(const FHeartFlake& Flake, TArray<uint8>& Raw);
+		HEARTCORE_API void DecompressFlake(const FHeartFlake& Flake, TArray<uint8>& Raw);
+
+		HEARTCORE_API void PostLoadStruct(FInstancedStruct& Struct);
+		HEARTCORE_API void PostLoadUObject(UObject* Object);
+	}
 
 	// Low-level binary-only flake API
 	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options = {});
@@ -171,27 +177,38 @@ namespace Heart::Flakes
 		virtual void WriteData(UObject* Object, const TArray<uint8>& Data) = 0;
 	};
 
+	template <typename Impl>
+	struct TSerializationProvider : ISerializationProvider
+	{
+		virtual void ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData) override final
+		{
+			Impl::Static_ReadData(Struct, OutData);
+		}
+		virtual void ReadData(const UObject* Object, TArray<uint8>& OutData) override final
+		{
+			Impl::Static_ReadData(Object, OutData);
+		}
+		virtual void WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data) override final
+		{
+			Impl::Static_WriteData(Struct, Data);
+		}
+		virtual void WriteData(UObject* Object, const TArray<uint8>& Data) override final
+		{
+			Impl::Static_WriteData(Object, Data);
+		}
+	};
+
 #define SERIALIZATION_PROVIDER_HEADER(Name)\
-	struct FSerializationProvider_##Name final : ISerializationProvider\
+	struct FSerializationProvider_##Name final : TSerializationProvider<FSerializationProvider_##Name>\
 	{\
 		virtual FName GetProviderName() override;\
 		static void Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData);\
 		static void Static_ReadData(const UObject* Object, TArray<uint8>& OutData);\
 		static void Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data);\
 		static void Static_WriteData(UObject* Object, const TArray<uint8>& Data);\
-		virtual void ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData) override;\
-		virtual void ReadData(const UObject* Object, TArray<uint8>& OutData) override;\
-		virtual void WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data) override;\
-		virtual void WriteData(UObject* Object, const TArray<uint8>& Data) override;\
 	};
 
 	SERIALIZATION_PROVIDER_HEADER(Binary)
-
-	namespace Private
-	{
-		void PostLoadStruct(FInstancedStruct& Struct);
-		void PostLoadUObject(UObject* Object);
-	}
 
 	// Low-level non-template flake API
 	HEARTCORE_API FHeartFlake CreateFlake(FName Serializer, const FInstancedStruct& Struct, FReadOptions Options = {});
@@ -202,8 +219,11 @@ namespace Heart::Flakes
 	HEARTCORE_API UObject* CreateObject(FName Serializer, const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
 
 	// Low-level templated flake API
-	template <typename TSerializationProvider>
-	FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options = {})
+	template <
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
+	static FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options = {})
 	{
 		check(Struct.IsValid())
 
@@ -212,13 +232,16 @@ namespace Heart::Flakes
 
 		TArray<uint8> Raw;
 		TSerializationProvider::Static_ReadData(Struct, Raw);
-		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
+		Private::CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
 
 		return Flake;
 	}
 
-	template <typename TSerializationProvider>
-	FHeartFlake CreateFlake(const UObject* Object, const FReadOptions Options = {})
+	template <
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
+	static FHeartFlake CreateFlake(const UObject* Object, const FReadOptions Options = {})
 	{
 		check(Object && !Object->IsA<AActor>());
 
@@ -227,16 +250,19 @@ namespace Heart::Flakes
 
 		TArray<uint8> Raw;
 		TSerializationProvider::Static_ReadData(Object, Raw);
-		CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
+		Private::CompressFlake(Flake, Raw, Options.Compressor, Options.CompressionLevel);
 
 		return Flake;
 	}
 
-	template <typename TSerializationProvider>
-	void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options = {})
+	template <
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
+	static void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options = {})
 	{
 		TArray<uint8> Raw;
-		DecompressFlake(Flake, Raw);
+		Private::DecompressFlake(Flake, Raw);
 
 		TSerializationProvider::Static_WriteData(Struct, Raw);
 
@@ -246,11 +272,14 @@ namespace Heart::Flakes
 		}
 	}
 
-	template <typename TSerializationProvider>
+	template <
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
 	void WriteObject(UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options = {})
 	{
 		TArray<uint8> Raw;
-		DecompressFlake(Flake, Raw);
+		Private::DecompressFlake(Flake, Raw);
 
 		TSerializationProvider::Static_WriteData(Object, Raw);
 
@@ -260,7 +289,10 @@ namespace Heart::Flakes
 		}
 	}
 
-	template <typename TSerializationProvider>
+	template <
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
 	FInstancedStruct CreateStruct(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct)
 	{
 		if (!IsValid(ExpectedStruct))
@@ -291,7 +323,10 @@ namespace Heart::Flakes
 		return CreatedStruct;
 	}
 
-	template <typename TSerializationProvider>
+	template <
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
 	UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
 	{
 		if (!IsValid(ExpectedClass) || ExpectedClass->IsChildOf<AActor>())
@@ -319,6 +354,16 @@ namespace Heart::Flakes
 		WriteObject<TSerializationProvider>(LoadedObject, Flake, Options);
 
 		return LoadedObject;
+	}
+
+	template <
+		typename T,
+		typename TSerializationProvider
+		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
+	>
+	T* CreateObject(const FHeartFlake& Flake, UObject* Outer = GetTransientPackage())
+	{
+		return Cast<T>(CreateObject<TSerializationProvider>(Flake, Outer, T::StaticClass()));
 	}
 }
 
@@ -371,4 +416,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|FlakeLibrary", meta = (WorldContext = "WorldContextObj", DeterminesOutputType = "ExpectedClass"))
 	static AActor* ConstructActorFromFlake(const FHeartFlake_Actor& Flake, UObject* WorldContextObj, const TSubclassOf<AActor> ExpectedClass,
 		UPARAM(meta=(GetOptions="HeartCore.HeartFlakeLibrary.GetAllProviders")) FName Serializer = FName("Binary"));
+
+	/** Get the size of the data payload in a flake */
+	UFUNCTION(BlueprintPure, Category = "Heart|FlakeLibrary")
+	static int32 GetNumBytes(const FHeartFlake& Flake);
 };
