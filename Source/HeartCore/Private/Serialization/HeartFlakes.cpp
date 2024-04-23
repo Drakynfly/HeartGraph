@@ -2,6 +2,7 @@
 
 #include "Serialization/HeartFlakes.h"
 #include "HeartCoreModule.h"
+#include "StructView.h"
 
 #include "Compression/OodleDataCompressionUtil.h"
 
@@ -196,10 +197,10 @@ namespace Heart::Flakes
 			FOodleCompressedArray::DecompressToTArray(Raw, Flake.Data);
 		}
 
-		void PostLoadStruct(FInstancedStruct& Struct)
+		void PostLoadStruct(const FStructView& Struct)
 		{
 			check(Struct.GetScriptStruct())
-			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMutableMemory());
+			Struct.GetScriptStruct()->GetCppStructOps()->PostScriptConstruct(Struct.GetMemory());
 		}
 
 		void PostLoadUObject(UObject* Object)
@@ -213,7 +214,7 @@ namespace Heart::Flakes
 		}
 	}
 
-	FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options)
+	FHeartFlake CreateFlake(const FConstStructView& Struct, const FReadOptions Options)
 	{
 		return CreateFlake<FSerializationProvider_Binary>(Struct, Options);
 	}
@@ -223,7 +224,7 @@ namespace Heart::Flakes
 		return CreateFlake<FSerializationProvider_Binary>(Object, Options);
 	}
 
-	void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake)
+	void WriteStruct(const FStructView& Struct, const FHeartFlake& Flake)
 	{
 		WriteStruct<FSerializationProvider_Binary>(Struct, Flake);
 	}
@@ -243,10 +244,14 @@ namespace Heart::Flakes
 		return CreateObject<FSerializationProvider_Binary>(Flake, Outer, ExpectedClass);
 	}
 
-	void FSerializationProvider_Binary::Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	void FSerializationProvider_Binary::Static_ReadData(const FConstStructView& Struct, TArray<uint8>& OutData)
 	{
 		FRecursiveMemoryWriter MemoryWriter(OutData, nullptr);
-		const_cast<FInstancedStruct&>(Struct).Serialize(MemoryWriter);
+		// For some reason, SerializeItem is not const, so we have to const_cast the ScriptStruct
+		// We also have to const_cast the memory because *we* know that this function only reads from it, but
+		// SerializeItem is a bidirectional serializer, so it doesn't.
+		const_cast<UScriptStruct*>(Struct.GetScriptStruct())->SerializeItem(MemoryWriter,
+			const_cast<uint8*>(Struct.GetMemory()), nullptr);
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
 	}
@@ -259,10 +264,11 @@ namespace Heart::Flakes
 		MemoryWriter.Close();
 	}
 
-	void FSerializationProvider_Binary::Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
+	void FSerializationProvider_Binary::Static_WriteData(const FStructView& Struct, const TArray<uint8>& Data)
 	{
 		FRecursiveMemoryReader MemoryReader(Data, true, nullptr);
-		Struct.Serialize(MemoryReader);
+		// For some reason, SerializeItem is not const, so we have to const_cast the ScriptStruct
+		const_cast<UScriptStruct*>(Struct.GetScriptStruct())->SerializeItem(MemoryReader, Struct.GetMemory(), nullptr);
 		MemoryReader.FlushCache();
 		MemoryReader.Close();
 	}
@@ -281,7 +287,7 @@ namespace Heart::Flakes
 		return BinarySerializationProvider;
 	}
 
-	FHeartFlake CreateFlake(const FName Serializer, const FInstancedStruct& Struct, const FReadOptions Options)
+	FHeartFlake CreateFlake(const FName Serializer, const FConstStructView& Struct, const FReadOptions Options)
 	{
 		TArray<uint8> Raw;
 
@@ -322,7 +328,7 @@ namespace Heart::Flakes
 		return Flake;
 	}
 
-	void WriteStruct(const FName Serializer, FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
+	void WriteStruct(const FName Serializer, const FStructView& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
 		TArray<uint8> Raw;
 		Private::DecompressFlake(Flake, Raw);

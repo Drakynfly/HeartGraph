@@ -46,7 +46,7 @@ static const FJsonObjectConverter::CustomExportCallback HeartJsonCustomExporter 
 
 namespace Heart::Flakes
 {
-	void FSerializationProvider_Json::Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	void FSerializationProvider_Json::Static_ReadData(const FConstStructView& Struct, TArray<uint8>& OutData)
 	{
 		FString StringData;
 		FJsonObjectConverter::UStructToJsonObjectString(Struct.GetScriptStruct(), Struct.GetMemory(),
@@ -76,7 +76,7 @@ namespace Heart::Flakes
 		StringToBytes(StringData, OutData.GetData(), StringData.Len());
 	}
 
-	void FSerializationProvider_Json::Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
+	void FSerializationProvider_Json::Static_WriteData(const FStructView& Struct, const TArray<uint8>& Data)
 	{
 		if (!ensure(Struct.IsValid()))
 		{
@@ -98,7 +98,7 @@ namespace Heart::Flakes
 		FJsonObjectConverter::JsonObjectToUStruct(
 			JsonObject.ToSharedRef(),
 			Struct.GetScriptStruct(),
-			Struct.GetMutableMemory(),
+			Struct.GetMemory(),
 			CheckFlags,
 			SkipFlags,
 			bStrictMode);

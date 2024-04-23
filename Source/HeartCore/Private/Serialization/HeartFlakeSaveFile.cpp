@@ -11,7 +11,7 @@ void UHeartFlakeSaveFile::SetObjectToSave(UObject* Obj)
 
 void UHeartFlakeSaveFile::SetStructToSave(const FInstancedStruct& Data)
 {
-	Flake = Heart::Flakes::CreateFlake(Data);
+	Flake = Heart::Flakes::CreateFlake(FConstStructView(Data));
 }
 
 UObject* UHeartFlakeSaveFile::LoadObjectFromData(UObject* Outer) const

@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartFlakeNetSerializer.h"
+#include "StructView.h"
 
 namespace Heart::Flakes
 {
@@ -13,12 +14,15 @@ namespace Heart::Flakes
 		Ar.SetUseUnversionedPropertySerialization(true);
 	}
 
-	void FSerializationProvider_NetBinary::Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData)
+	void FSerializationProvider_NetBinary::Static_ReadData(const FConstStructView& Struct, TArray<uint8>& OutData)
 	{
 		FRecursiveMemoryWriter MemoryWriter(OutData, nullptr);
 		ConfigureNetArchive(MemoryWriter);
-		bool Success;
-		const_cast<FInstancedStruct&>(Struct).NetSerialize(MemoryWriter, nullptr, Success);
+		// For some reason, SerializeItem is not const, so we have to const_cast the ScriptStruct
+		// We also have to const_cast the memory because *we* know that this function only reads from it, but
+		// SerializeItem is a bidirectional serializer, so it doesn't.
+		const_cast<UScriptStruct*>(Struct.GetScriptStruct())->SerializeItem(MemoryWriter,
+			const_cast<uint8*>(Struct.GetMemory()), nullptr);
 		MemoryWriter.FlushCache();
 		MemoryWriter.Close();
 	}
@@ -32,12 +36,12 @@ namespace Heart::Flakes
 		MemoryWriter.Close();
 	}
 
-	void FSerializationProvider_NetBinary::Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data)
+	void FSerializationProvider_NetBinary::Static_WriteData(const FStructView& Struct, const TArray<uint8>& Data)
 	{
 		FRecursiveMemoryReader MemoryReader(Data, false, nullptr);
 		ConfigureNetArchive(MemoryReader);
-		bool Success;
-		Struct.NetSerialize(MemoryReader, nullptr, Success);
+		// For some reason, SerializeItem is not const, so we have to const_cast the ScriptStruct
+		const_cast<UScriptStruct*>(Struct.GetScriptStruct())->SerializeItem(MemoryReader, Struct.GetMemory(), nullptr);
 		MemoryReader.FlushCache();
 		MemoryReader.Close();
 	}
@@ -59,7 +63,7 @@ namespace Heart::Flakes
 
 #define ENABLE_NET_SERIALIZER 1
 
-	FHeartFlake Net_CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options)
+	FHeartFlake Net_CreateFlake(const FConstStructView& Struct, const FReadOptions Options)
 	{
 #if ENABLE_NET_SERIALIZER
 		return CreateFlake<FSerializationProvider_NetBinary>(Struct, Options);
@@ -77,7 +81,7 @@ namespace Heart::Flakes
 #endif
 	}
 
-	void Net_WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
+	void Net_WriteStruct(const FStructView& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
 	{
 #if ENABLE_NET_SERIALIZER
 		WriteStruct<FSerializationProvider_NetBinary>(Struct, Flake, Options);

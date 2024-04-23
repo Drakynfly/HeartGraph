@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "InstancedStruct.h"
+#include "StructView.h"
 #include "Concepts/BaseStructureProvider.h"
 
 #include "HeartFlakes.generated.h"
@@ -125,14 +125,14 @@ namespace Heart::Flakes
 
 		HEARTCORE_API void DecompressFlake(const FHeartFlake& Flake, TArray<uint8>& Raw);
 
-		HEARTCORE_API void PostLoadStruct(FInstancedStruct& Struct);
+		HEARTCORE_API void PostLoadStruct(const FStructView& Struct);
 		HEARTCORE_API void PostLoadUObject(UObject* Object);
 	}
 
 	// Low-level binary-only flake API
-	HEARTCORE_API FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options = {});
+	HEARTCORE_API FHeartFlake CreateFlake(const FConstStructView& Struct, const FReadOptions Options = {});
 	HEARTCORE_API FHeartFlake CreateFlake(const UObject* Object, const FReadOptions Options = {});
-	HEARTCORE_API void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake);
+	HEARTCORE_API void WriteStruct(const FStructView& Struct, const FHeartFlake& Flake);
 	HEARTCORE_API void WriteObject(UObject* Object, const FHeartFlake& Flake);
 	HEARTCORE_API FInstancedStruct CreateStruct(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct);
 	HEARTCORE_API UObject* CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
@@ -157,9 +157,7 @@ namespace Heart::Flakes
 			return;
 		}
 
-		FInstancedStruct InstancedStruct;
-		WriteStruct(InstancedStruct, Flake);
-		Struct = InstancedStruct.Get<T>();
+		WriteStruct(FStructView::Make(Struct), Flake);
 	}
 
 	template <typename T>
@@ -171,16 +169,16 @@ namespace Heart::Flakes
 	struct ISerializationProvider : FVirtualDestructor, FNoncopyable
 	{
 		virtual FName GetProviderName() = 0;
-		virtual void ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData) = 0;
+		virtual void ReadData(const FConstStructView& Struct, TArray<uint8>& OutData) = 0;
 		virtual void ReadData(const UObject* Object, TArray<uint8>& OutData) = 0;
-		virtual void WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data) = 0;
+		virtual void WriteData(const FStructView& Struct, const TArray<uint8>& Data) = 0;
 		virtual void WriteData(UObject* Object, const TArray<uint8>& Data) = 0;
 	};
 
 	template <typename Impl>
 	struct TSerializationProvider : ISerializationProvider
 	{
-		virtual void ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData) override final
+		virtual void ReadData(const FConstStructView& Struct, TArray<uint8>& OutData) override final
 		{
 			Impl::Static_ReadData(Struct, OutData);
 		}
@@ -188,7 +186,7 @@ namespace Heart::Flakes
 		{
 			Impl::Static_ReadData(Object, OutData);
 		}
-		virtual void WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data) override final
+		virtual void WriteData(const FStructView& Struct, const TArray<uint8>& Data) override final
 		{
 			Impl::Static_WriteData(Struct, Data);
 		}
@@ -202,18 +200,18 @@ namespace Heart::Flakes
 	struct FSerializationProvider_##Name final : TSerializationProvider<FSerializationProvider_##Name>\
 	{\
 		virtual FName GetProviderName() override;\
-		static void Static_ReadData(const FInstancedStruct& Struct, TArray<uint8>& OutData);\
+		static void Static_ReadData(const FConstStructView& Struct, TArray<uint8>& OutData);\
 		static void Static_ReadData(const UObject* Object, TArray<uint8>& OutData);\
-		static void Static_WriteData(FInstancedStruct& Struct, const TArray<uint8>& Data);\
+		static void Static_WriteData(const FStructView& Struct, const TArray<uint8>& Data);\
 		static void Static_WriteData(UObject* Object, const TArray<uint8>& Data);\
 	};
 
 	SERIALIZATION_PROVIDER_HEADER(Binary)
 
 	// Low-level non-template flake API
-	HEARTCORE_API FHeartFlake CreateFlake(FName Serializer, const FInstancedStruct& Struct, FReadOptions Options = {});
+	HEARTCORE_API FHeartFlake CreateFlake(FName Serializer, const FConstStructView& Struct, FReadOptions Options = {});
 	HEARTCORE_API FHeartFlake CreateFlake(FName Serializer, const UObject* Object, FReadOptions Options = {});
-	HEARTCORE_API void WriteStruct(FName Serializer, FInstancedStruct& Struct, const FHeartFlake& Flake, FWriteOptions Options = {});
+	HEARTCORE_API void WriteStruct(FName Serializer, const FStructView& Struct, const FHeartFlake& Flake, FWriteOptions Options = {});
 	HEARTCORE_API void WriteObject(FName Serializer, UObject* Object, const FHeartFlake& Flake, FWriteOptions Options = {});
 	HEARTCORE_API FInstancedStruct CreateStruct(FName Serializer, const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct);
 	HEARTCORE_API UObject* CreateObject(FName Serializer, const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
@@ -223,7 +221,7 @@ namespace Heart::Flakes
 		typename TSerializationProvider
 		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
 	>
-	static FHeartFlake CreateFlake(const FInstancedStruct& Struct, const FReadOptions Options = {})
+	static FHeartFlake CreateFlake(const FConstStructView& Struct, const FReadOptions Options = {})
 	{
 		check(Struct.IsValid())
 
@@ -259,7 +257,7 @@ namespace Heart::Flakes
 		typename TSerializationProvider
 		UE_REQUIRES(TIsDerivedFrom<TSerializationProvider, ISerializationProvider>::Value)
 	>
-	static void WriteStruct(FInstancedStruct& Struct, const FHeartFlake& Flake, const FWriteOptions Options = {})
+	static void WriteStruct(const FStructView& Struct, const FHeartFlake& Flake, const FWriteOptions Options = {})
 	{
 		TArray<uint8> Raw;
 		Private::DecompressFlake(Flake, Raw);
