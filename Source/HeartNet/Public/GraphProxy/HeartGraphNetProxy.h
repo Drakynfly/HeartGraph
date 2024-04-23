@@ -136,6 +136,10 @@ protected:
 	/**-------------------------*/
 
 public:
+	// Is this graph a net-proxy?
+	UFUNCTION(BlueprintPure, Category = "Heart|NetProxy")
+	static bool IsProxyGraph(const UHeartGraph* Graph);
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
 	UHeartGraph* GetProxiedGraph() const;
 
