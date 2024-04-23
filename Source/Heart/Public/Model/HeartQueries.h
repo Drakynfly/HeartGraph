@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Containers/Array.h"
-#include "Templates/ChooseClass.h"
 #include "Templates/UnrealTypeTraits.h"
 
 namespace Heart::Query
@@ -67,9 +66,9 @@ namespace Heart::Query
 			};
 		};
 
-		// If Key or Value type is larger than 8 bytes, pass-by-ref, otherwise, pass-by-value
-		using PassedKey = typename TChooseClass<TLargerThan<KeyType, 8>::Value || FImplFeatures::PassKeyByRef, const KeyType&, KeyType>::Result;
-		using PassedValue = typename TChooseClass<TLargerThan<ValueType, 8>::Value || FImplFeatures::PassValueByRef, const ValueType&, ValueType>::Result;
+		// If the Key or Value type is larger than 8 bytes, pass-by-ref, otherwise, pass-by-value
+		using PassedKey = std::conditional_t<TLargerThan<KeyType, 8>::Value || FImplFeatures::PassKeyByRef, const KeyType&, KeyType>;
+		using PassedValue = std::conditional_t<TLargerThan<ValueType, 8>::Value || FImplFeatures::PassValueByRef, const ValueType&, ValueType>;
 		using FStorage = TArray<KeyType>;
 
 		template <typename Predicate, typename RetVal = void>
