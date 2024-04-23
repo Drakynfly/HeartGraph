@@ -283,7 +283,8 @@ TOptional<FHeartGraphPinDesc> UHeartGraphUtils::ResolvePinDesc(const TScriptInte
 }
 
 void UHeartGraphUtils::BreakHeartActionRecord(const FHeartActionRecord& Record, TSubclassOf<UHeartActionBase>& Action,
-UObject*& Target, FHeartInputActivation& Activation, UObject*& Payload, FBloodContainer& UndoData)
+											  UObject*& Target, FHeartInputActivation& Activation, UObject*& Payload,
+											  FBloodContainer& UndoData)
 {
 	Action = Record.Action;
 	Target = Record.Arguments.Target;

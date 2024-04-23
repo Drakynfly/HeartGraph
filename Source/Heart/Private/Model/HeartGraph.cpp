@@ -230,6 +230,11 @@ UHeartGraphExtension* UHeartGraph::GetExtensionByGuid(const FHeartExtensionGuid 
 
 UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExtension> Class) const
 {
+	if (!Class || Class == UHeartGraphExtension::StaticClass())
+	{
+		return nullptr;
+	}
+
 	for (auto&& Extension : Extensions)
 	{
 		if (Extension.Value->GetClass()->IsChildOf(Class))

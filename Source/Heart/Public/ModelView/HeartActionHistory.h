@@ -145,10 +145,10 @@ protected:
 	FHeartActionHistoryRecordUpdate OnRecordsUpdatedNative;
 	FHeartActionHistoryPointerChanged OnPointerChangedNative;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartActionHistoryRecordUpdate_BP OnRecordsUpdated;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartActionHistoryPointerChanged_BP OnPointerChanged;
 
 	// Are we currently running an undoable action?
