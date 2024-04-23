@@ -169,14 +169,14 @@ protected:
 
 	// These functions are callbacks for when the proxy graph is editing locally on the client machine.
 	virtual void OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode);
-	virtual void OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent);
 
 	// These functions are called on the server via RPC when a client wants to edit things.
 	virtual void OnNodeAdded_Client(const FHeartReplicatedFlake& NodeData);
-	virtual void OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent);
 	virtual void OnNodeRemoved_Client(FHeartNodeGuid NodeGuid);
+	virtual void OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent);
 	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 
 	virtual void UpdateNodeData_Client(const FHeartReplicatedFlake& NodeData, FGameplayTag EventType);
@@ -256,5 +256,14 @@ protected:
 	UPROPERTY(Replicated)
 	FHeartReplicatedData ReplicatedExtensions;
 
-	bool RecursionGuard = false;
+private:
+	enum ERecursiveCheck
+	{
+		NodeAdd,
+		NodeDelete,
+		ExtAdd,
+		ExtDelete,
+		MAX
+	};
+	bool RecursionGuards[ERecursiveCheck::MAX] = {};
 };

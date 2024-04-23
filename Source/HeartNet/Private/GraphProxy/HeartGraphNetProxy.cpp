@@ -543,7 +543,7 @@ bool UHeartGraphNetProxy::CanClientPerformEvent(const FGameplayTag RequestedEven
 
 void UHeartGraphNetProxy::OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode)
 {
-	if (RecursionGuard) return;
+	if (RecursionGuards[NodeAdd]) return;
 
 	if (!IsValid(LocalClient))
 	{
@@ -561,6 +561,21 @@ void UHeartGraphNetProxy::OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode)
 		*HeartGraphNode->GetName(), NodeData.Flake.Data.Num());
 
 	LocalClient->Server_OnNodeAdded(this, NodeData);
+}
+
+void UHeartGraphNetProxy::OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode)
+{
+	if (RecursionGuards[NodeDelete]) return;
+
+	if (!IsValid(LocalClient))
+	{
+		return;
+	}
+
+	UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeRemoved"))
+	ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
+
+	LocalClient->Server_OnNodeRemoved(this, HeartGraphNode->GetGuid());
 }
 
 void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent)
@@ -601,19 +616,6 @@ void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMove
 	}
 }
 
-void UHeartGraphNetProxy::OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode)
-{
-	if (!IsValid(LocalClient))
-	{
-		return;
-	}
-
-	UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeRemoved"))
-	ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
-
-	LocalClient->Server_OnNodeRemoved(this, HeartGraphNode->GetGuid());
-}
-
 void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent)
 {
 	if (!IsValid(LocalClient))
@@ -625,9 +627,9 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 	ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
 
 	auto ByAffected = [&GraphConnectionEvent](const FHeartPinGuid Pin)
-	{
-		return GraphConnectionEvent.AffectedPins.Contains(Pin);
-	};
+		{
+			return GraphConnectionEvent.AffectedPins.Contains(Pin);
+		};
 
 	FHeartGraphConnectionEvent_Net Event;
 	Algo::Transform(GraphConnectionEvent.AffectedNodes, Event.AffectedNodes,
@@ -641,8 +643,15 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 				.Filter(ByAffected)
 				.ForEach([Node, &PinElement](const FHeartPinGuid Pin)
 				{
-					auto Connections = Node->GetConnections(Pin);
-					PinElement.PinConnections.Add(Pin, Connections.GetValue());
+					if (auto&& Connections = Node->GetConnections(Pin);
+						Connections.IsSet())
+					{
+						PinElement.PinConnections.Add(Pin, Connections.GetValue());
+					}
+					else
+					{
+						PinElement.PinConnections.Add(Pin,  FHeartGraphPinConnections{});
+					}
 				});
 
 			NodeData.Flake = Heart::Flakes::Net_CreateFlake(PinElement);
@@ -669,21 +678,6 @@ void UHeartGraphNetProxy::OnNodeAdded_Client(const FHeartReplicatedFlake& NodeDa
 	EditReplicatedNodeData(NodeData, Heart::Net::Tags::Node_Added);
 }
 
-void UHeartGraphNetProxy::OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent)
-{
-	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Moved))
-	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s'"),
-			*Heart::Net::Tags::Node_Moved.GetTag().ToString())
-		return;
-	}
-
-	for (auto&& Element : NodeMoveEvent.AffectedNodes)
-	{
-		EditReplicatedNodeData(Element, Heart::Net::Tags::Node_Moved);
-	}
-}
-
 void UHeartGraphNetProxy::OnNodeRemoved_Client(const FHeartNodeGuid NodeGuid)
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Removed))
@@ -701,6 +695,21 @@ void UHeartGraphNetProxy::OnNodeRemoved_Client(const FHeartNodeGuid NodeGuid)
 			UE_LOG(LogHeartNet, Warning, TEXT("Client attempt to perform remove node failed: '%s'"),
 				*NodeGuid.ToString())
 		}
+	}
+}
+
+void UHeartGraphNetProxy::OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent)
+{
+	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Moved))
+	{
+		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s'"),
+			*Heart::Net::Tags::Node_Moved.GetTag().ToString())
+		return;
+	}
+
+	for (auto&& Element : NodeMoveEvent.AffectedNodes)
+	{
+		EditReplicatedNodeData(Element, Heart::Net::Tags::Node_Moved);
 	}
 }
 
@@ -808,7 +817,7 @@ bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, con
 
 			{
 				// Prevent OnNodeAdded_Proxy from pinging this back to the server
-				TGuardValue<bool> bRecursionGuard(RecursionGuard, true);
+				TGuardValue<bool> bRecursionGuard(RecursionGuards[NodeAdd], true);
 				ProxyGraph->AddNode(NewNode);
 			}
 
@@ -824,8 +833,20 @@ bool UHeartGraphNetProxy::RemoveNodeProxy(const FHeartNodeGuid& Guid)
 {
 	if (IsValid(ProxyGraph))
 	{
+		// No Node to delete for some reason, maybe this is just a ping-back from a node we locally deleted.
+		if (!ProxyGraph->GetNode(Guid))
+		{
+			return false;
+		}
+
 		OnNodeProxyUpdated.Broadcast(ProxyGraph->GetNode(Guid), Heart::Net::Tags::Node_Removed);
-		return ProxyGraph->RemoveNode(Guid);
+		bool Result;
+		{
+			// Prevent OnNodeRemoved_Proxy from pinging this back to the server
+			TGuardValue<bool> bRecursionGuard(RecursionGuards[NodeDelete], true);
+			Result = ProxyGraph->RemoveNode(Guid);
+		}
+		return Result;
 	}
 	return false;
 }
@@ -847,7 +868,7 @@ bool UHeartGraphNetProxy::UpdateExtensionProxy(const FHeartReplicatedFlake& Data
 
 			{
 				// Prevent OnExtensionAdded_Proxy from pinging this back to the server
-				TGuardValue<bool> bRecursionGuard(RecursionGuard, true);
+				TGuardValue<bool> bRecursionGuard(RecursionGuards[ExtAdd], true);
 				ProxyGraph->AddExtensionInstance(NewExtension);
 			}
 
@@ -864,7 +885,13 @@ bool UHeartGraphNetProxy::RemoveExtensionProxy(const FHeartExtensionGuid& Guid)
 	if (IsValid(ProxyGraph))
 	{
 		OnExtensionProxyUpdated.Broadcast(ProxyGraph->GetExtensionByGuid(Guid), Heart::Net::Tags::Extension_Removed);
-		return ProxyGraph->RemoveExtension(Guid);
+		bool Result;
+		{
+			// Prevent OnExtensionRemoved_Proxy from pinging this back to the server
+			TGuardValue<bool> bRecursionGuard(RecursionGuards[ExtDelete], true);
+			Result = ProxyGraph->RemoveExtension(Guid);
+		}
+		return Result;
 	}
 	return false;
 }
