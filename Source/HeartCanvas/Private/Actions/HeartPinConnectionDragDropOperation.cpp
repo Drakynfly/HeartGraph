@@ -60,7 +60,7 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 			if (Graph->GetSchema()->TryConnectPins(Graph, FromPin, ToPin))
 			{
 				{
-					Heart::Connections::FEdit Edit = Graph->EditConnections();
+					Heart::Connections::FEdit Edit(Graph);
 					for (auto&& Element : MementoData.Original)
 					{
 						Edit.CreateAllMementos(Element.Key, MementoData.New);

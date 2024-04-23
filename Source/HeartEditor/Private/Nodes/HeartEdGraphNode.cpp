@@ -196,7 +196,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	TArray<FHeartGraphPinDesc> LinkedPins;
 
-	Heart::Connections::FEdit ConnectionEditor = HeartGraph->EditConnections();
+	Heart::Connections::FEdit ConnectionEditor(HeartGraph);
 
 	// Resolve all linked pins
 	if (TOptional<FHeartGraphPinConnections> PinConnections = HeartGraphNode->GetConnections(HeartPin);

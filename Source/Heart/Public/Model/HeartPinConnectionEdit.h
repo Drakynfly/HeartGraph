@@ -28,6 +28,8 @@ namespace Heart::Connections
 		FEdit(UHeartGraph* Graph)
 		  : Graph(Graph) {}
 
+		FEdit(UHeartGraphNode* Node);
+
 		~FEdit();
 
 		FEdit& Connect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);

@@ -359,7 +359,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 		FHeartGraphConnectionEvent_Net_PinElement PinElement;
 		Heart::Flakes::Net_WriteStruct<FHeartGraphConnectionEvent_Net_PinElement>(PinElement, NodeData.Flake);
 
-		Heart::Connections::FEdit Edit = ExistingNode->GetGraph()->EditConnections();
+		Heart::Connections::FEdit Edit(ExistingNode);
 
 		for (auto&& Element : PinElement.PinConnections)
 		{

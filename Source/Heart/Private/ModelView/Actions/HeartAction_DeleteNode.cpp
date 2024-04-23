@@ -52,7 +52,7 @@ FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const 
 		FHeartDeleteNodeUndoData Data;
 		Data.DeletedNode = Node;
 
-		Node->GetGraph()->EditConnections().CreateAllMementos(Node->GetGuid(), Data.Mementos);
+		Heart::Connections::FEdit(Node).CreateAllMementos(Node->GetGuid(), Data.Mementos);
 
 		UndoData.Add(DeletedNodeStorage, Data);
 	}
@@ -81,7 +81,7 @@ bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoD
 	Graph->AddNode(Data.DeletedNode);
 
 	// Relink broken connections
-	Graph->EditConnections().RestoreMementos(Data.Mementos);
+	Heart::Connections::FEdit(Graph).RestoreMementos(Data.Mementos);
 
 	return true;
 }

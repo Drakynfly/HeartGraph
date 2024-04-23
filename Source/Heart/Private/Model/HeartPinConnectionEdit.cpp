@@ -6,6 +6,9 @@
 
 namespace Heart::Connections
 {
+	FEdit::FEdit(UHeartGraphNode* Node)
+	  : Graph(Node->GetGraph()) {}
+
 	FEdit::~FEdit()
 	{
 		if (!Modified())
