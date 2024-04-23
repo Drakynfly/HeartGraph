@@ -31,6 +31,8 @@ namespace Heart::Query
 	};
 	ENUM_CLASS_FLAGS(EFlags)
 
+	enum EInvert { No, Invert };
+
 	/**
 	 * Map Queries are classes that can filter/sort/iterate keys of a TMap or map-like data structure.
 	 * They *never* mutate the underlying data.
@@ -143,6 +145,20 @@ namespace Heart::Query
 			}
 		}
 
+		// Function to flip logic when Invert is enabled at compile time
+		template <EInvert Invert>
+		static constexpr bool Eval(const bool Value)
+		{
+			if constexpr (Invert == EInvert::Invert)
+			{
+				return !Value;
+			}
+			else
+			{
+				return Value;
+			}
+		};
+
 	public:
 		// Enable query features
 		QueryType& Enable(const EFlags InFlags)
@@ -162,6 +178,7 @@ namespace Heart::Query
 		 * Removes all results from the query that fail a predicate.
 		 */
 		template <
+			EInvert Invert = No,
 			typename Predicate
 			UE_REQUIRES(TIsPredicate<Predicate, bool>::IsIterationPredicate)
 		>
@@ -173,7 +190,7 @@ namespace Heart::Query
 			{
 				if constexpr (TIsPredicate<Predicate, bool>::IsKeyPredicate)
 				{
-					if (!Pred(*It))
+					if (!Eval<Invert>(Pred(*It)))
 					{
 						It.RemoveCurrentSwap();
 					}
@@ -181,7 +198,7 @@ namespace Heart::Query
 
 				if constexpr (TIsPredicate<Predicate, bool>::IsValuePredicate)
 				{
-					if (!Pred(Lookup(*It)))
+					if (!Eval<Invert>(Pred(Lookup(*It))))
 					{
 						It.RemoveCurrentSwap();
 					}
@@ -189,7 +206,7 @@ namespace Heart::Query
 
 				if constexpr (TIsPredicate<Predicate, bool>::IsKeyValuePredicate)
 				{
-					if (!Pred(*It, Lookup(*It)))
+					if (!Eval<Invert>(Pred(*It, Lookup(*It))))
 					{
 						It.RemoveCurrentSwap();
 					}
@@ -204,7 +221,10 @@ namespace Heart::Query
 		/**
 		 * Removes all results from the query that fail a delegate.
 		 */
-		template <typename UserClass, typename... VarTypes>
+		template <
+			EInvert Invert = No,
+			typename UserClass,
+			typename... VarTypes>
 		QueryType& Filter_UObject(UserClass* InUserObject,
 			typename FFilter::template TMethodPtr<UserClass, VarTypes...> InFunc, VarTypes... Vars)
 		{
@@ -214,7 +234,7 @@ namespace Heart::Query
 
 			for (auto It = Results.GetValue().CreateIterator(); It; ++It)
 			{
-				if (!Delegate.Execute(Lookup(*It)))
+				if (!Eval<Invert>(Delegate.Execute(Lookup(*It))))
 				{
 					It.RemoveCurrentSwap();
 				}
@@ -226,7 +246,10 @@ namespace Heart::Query
 		/**
 		 * Removes all results from the query that fail a delegate.
 		 */
-		template <typename UserClass, typename... VarTypes>
+		template <
+			EInvert Invert = No,
+			typename UserClass,
+			typename... VarTypes>
 		QueryType& Filter_UObject(UserClass* InUserObject,
 			typename FFilter::template TConstMethodPtr<UserClass, VarTypes...> InFunc, VarTypes... Vars)
 		{
@@ -236,10 +259,58 @@ namespace Heart::Query
 
 			for (auto It = Results.GetValue().CreateIterator(); It; ++It)
 			{
-				if (!Delegate.Execute(Lookup(*It)))
+				if (!Eval<Invert>(Delegate.Execute(Lookup(*It))))
 				{
 					It.RemoveCurrentSwap();
 				}
+			}
+
+			return AsType();
+		}
+
+		/**
+		 * Inverts the current data filtered.
+		 * Usually, it would be preferred to pass Query::Invert through the filter calls directly, as a template parameter,
+		 * but if choosing to invert at runtime, this is the alternative.
+		 */
+		QueryType& Invert(const EInvert InInvert = EInvert::Invert)
+		{
+			if (InInvert == EInvert::Invert)
+			{
+				// Results not being set is implicitly equal to the entire dataset, so the inversion is empty.
+				// Likewise, if the Num in both arrays match, then they contain the same data as well.
+				if (!Results.IsSet() || Results->Num() == RefNum())
+				{
+					Results = FStorage();
+					return AsType();
+				}
+
+				// If Results is set, but empty, the inversion is all the data, so clear it to the implicit dataset.
+				if (Results->Num() == 0)
+				{
+					Results.Reset();
+					return AsType();
+				}
+
+				// Otherwise, manually flip the values.
+
+				// Create a new array from source data...
+				FStorage NewResults;
+				NewResults.Reserve(RefNum());
+				for (auto&& Element : FQueryRange(this))
+				{
+					NewResults.Emplace(Element.Key);
+				}
+
+				// ... remove all elements currently in the result...
+				ForEach([&NewResults](const PassedKey Key)
+					{
+						NewResults.RemoveSingleSwap(Key);
+					});
+				NewResults.Shrink();
+
+				// ...and assign.
+				Results = NewResults;
 			}
 
 			return AsType();
@@ -463,37 +534,6 @@ namespace Heart::Query
 		QueryType& SortByIf(const bool bShouldSort, Args... InArgs)
 		{
 			return bShouldSort ? SortBy(Forward<Args>(InArgs)...) : AsType();
-		}
-
-		QueryType& Invert()
-		{
-			// If Results is not initialized, or equal to the reference data, set to an empty array.
-			if (!Results.IsSet() || Results->Num() == RefNum())
-			{
-				Results = FStorage();
-				return AsType();
-			}
-
-			// Create array from source data
-			FStorage NewResults;
-			NewResults.SetNum(RefNum());
-			for (auto&& Element : FQueryRange(this))
-			{
-				NewResults.Emplace(Element.Key);
-			}
-
-			// Remove all elements currently in the result
-			ForEach([&NewResults](const PassedKey Key)
-				{
-					NewResults.Remove(Key);
-				});
-
-			NewResults.Shrink();
-
-			// Apply
-			Results = NewResults;
-
-			return AsType();
 		}
 
 		const FStorage& Get()
