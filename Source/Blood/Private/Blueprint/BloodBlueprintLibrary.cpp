@@ -4,6 +4,12 @@
 #include "BloodContainer.h"
 #include "BloodFProperty.h"
 
+#include "Misc/EngineVersionComparison.h"
+
+#if UE_VERSION_NEWER_THAN(5, 4, -1)
+#include "Blueprint/BlueprintExceptionInfo.h"
+#endif
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BloodBlueprintLibrary)
 
 #define LOCTEXT_NAMESPACE "BloodBlueprintLibrary"
