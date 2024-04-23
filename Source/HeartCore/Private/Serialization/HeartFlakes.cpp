@@ -2,7 +2,6 @@
 
 #include "Serialization/HeartFlakes.h"
 #include "HeartCoreModule.h"
-#include "StructView.h"
 
 #include "Compression/OodleDataCompressionUtil.h"
 
