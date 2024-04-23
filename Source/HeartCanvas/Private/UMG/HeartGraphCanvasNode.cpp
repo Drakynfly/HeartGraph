@@ -92,7 +92,7 @@ void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 		if (ConnectionWidget && ConnectionWidget->FromPin.PinGuid == Pin)
 		{
 			ConnectionWidget->RemoveFromParent();
-			RebuildPool.Add(ConnectionWidget);
+			//RebuildPool.Add(ConnectionWidget); // @todo pooler is broken, fix this
 			It.RemoveCurrent();
 		}
 	}
