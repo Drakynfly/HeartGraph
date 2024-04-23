@@ -6,8 +6,6 @@ public class Blood : ModuleRules
 {
     public Blood(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
         ApplySharedModuleSetup(this, Target);
 
         // IDK, something about this module is broken, and if Unity is enabled it blows up :?
@@ -32,6 +30,10 @@ public class Blood : ModuleRules
 
     public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)
     {
+        Module.PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        Module.DefaultBuildSettings = BuildSettingsVersion.Latest;
+        Module.IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+
         // This is to emulate engine installation and verify includes during development
         if (Target.Configuration == UnrealTargetConfiguration.DebugGame
             || Target.Configuration == UnrealTargetConfiguration.Debug)

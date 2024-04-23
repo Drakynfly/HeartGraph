@@ -6,8 +6,6 @@ public class HeartNet : ModuleRules
 {
     public HeartNet(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
         HeartCore.ApplySharedModuleSetup(this, Target);
 
         // Engine dependencies

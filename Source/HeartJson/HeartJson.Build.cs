@@ -6,8 +6,6 @@ public class HeartJson : ModuleRules
 {
     public HeartJson(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
         PublicDependencyModuleNames.AddRange(
             new []
             {

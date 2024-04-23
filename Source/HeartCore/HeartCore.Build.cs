@@ -6,8 +6,6 @@ public class HeartCore : ModuleRules
 {
     public HeartCore(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
         ApplySharedModuleSetup(this, Target);
 
         // Engine dependencies
@@ -39,6 +37,10 @@ public class HeartCore : ModuleRules
 
     public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)
     {
+        Module.PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        Module.DefaultBuildSettings = BuildSettingsVersion.Latest;
+        Module.IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+
         // This is to emulate engine installation and verify includes during development
         if (Target.Configuration == UnrealTargetConfiguration.DebugGame
             || Target.Configuration == UnrealTargetConfiguration.Debug)

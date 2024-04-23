@@ -6,8 +6,6 @@ public class HeartCanvasEditor : ModuleRules
 {
     public HeartCanvasEditor(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
         HeartCore.ApplySharedModuleSetup(this, Target);
 
         PublicDependencyModuleNames.AddRange(

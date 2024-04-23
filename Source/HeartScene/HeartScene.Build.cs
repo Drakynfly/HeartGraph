@@ -6,8 +6,6 @@ public class HeartScene : ModuleRules
 {
     public HeartScene(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
         HeartCore.ApplySharedModuleSetup(this, Target);
 
         PublicDependencyModuleNames.AddRange(
