@@ -11,27 +11,57 @@ namespace CopiedFromJsonObjectConverter
 	const FString ObjectClassNameKey = "_ClassName";
 }
 
+//@ todo UE has no equivalent Import Callback, so this is severely limited currently
+// we either need to wait for unreal to merge this PR: https://github.com/EpicGames/UnrealEngine/pull/11170,
+// or implement a solution ourselves, if we want to use this callback for anything beyond minor tweaks that can be auto-imported.
 static const FJsonObjectConverter::CustomExportCallback HeartJsonCustomExporter =
 	FJsonObjectConverter::CustomExportCallback::CreateLambda(
 		[](FProperty* Property, const void* Value) -> TSharedPtr<FJsonValue>
 		{
-			if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+			// @todo Uncomment this once the above has been resolved one way or the other
+			/*
+			if (const FStructProperty* StructProperty = CastField<FStructProperty>(Property))
 			{
+				static const TArray<FName> GuidStructs {
+					FHeartGuid::StaticStruct()->GetFName(),
+					FHeartGraphGuid::StaticStruct()->GetFName(),
+					FHeartExtensionGuid::StaticStruct()->GetFName(),
+					FHeartNodeGuid::StaticStruct()->GetFName(),
+					FHeartPinGuid::StaticStruct()->GetFName(), };
+
+				// Export our guid types a little more neatly then unreal does by default.
+				if (StructProperty->Struct && GuidStructs.Contains(StructProperty->Struct->GetFName()))
+				{
+					FGuid* GuidValue;
+					StructProperty->GetValue_InContainer(Value, &GuidValue);
+					if (GuidValue)
+					{
+						return MakeShared<FJsonValueString>(GuidValue->ToString(EGuidFormats::Short));
+					}
+				}
+			}
+			else */if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+			{
+				// Custom handler for UHeartGraphNode::NodeObject, because we want to switch between treating it as a reference
+				// and a subobject to recurse depending on ownership.
 				if (ObjectProperty->GetName() == TEXT("NodeObject"))
 				{
-					UObject* Object = ObjectProperty->GetObjectPropertyValue(Value);
-					if (Object && Object->GetOuter()->IsA<UHeartGraphNode>())
+					UObject* NodeObject = ObjectProperty->GetObjectPropertyValue(Value);
+
+					// If we own the NodeObject, export by recursing over its data, e.g., export the full object data.
+					if (NodeObject && NodeObject->GetOuter()->IsA<UHeartGraphNode>())
 					{
 						TSharedRef<FJsonObject> Out = MakeShared<FJsonObject>();
 
-						Out->SetStringField(CopiedFromJsonObjectConverter::ObjectClassNameKey, Object->GetClass()->GetPathName());
-						if (FJsonObjectConverter::UStructToJsonObject(ObjectProperty->GetObjectPropertyValue(Value)->GetClass(), Object, Out, 0, 0, &HeartJsonCustomExporter))
+						Out->SetStringField(CopiedFromJsonObjectConverter::ObjectClassNameKey, NodeObject->GetClass()->GetPathName());
+						if (FJsonObjectConverter::UStructToJsonObject(ObjectProperty->GetObjectPropertyValue(Value)->GetClass(), NodeObject, Out, 0, 0, &HeartJsonCustomExporter))
 						{
 							TSharedRef<FJsonValueObject> JsonObject = MakeShared<FJsonValueObject>(Out);
 							JsonObject->Type = EJson::Object;
 							return JsonObject;
 						}
 					}
+					// If it's a reference, export the object path.
 					else
 					{
 						FString StringValue;
