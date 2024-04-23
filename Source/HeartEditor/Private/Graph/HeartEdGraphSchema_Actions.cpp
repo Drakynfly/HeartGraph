@@ -52,7 +52,7 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 
 	UHeartGraphNode* NewGraphNode;
 
-	// @todo this would not work, in the rare edge case of making a node with a UClass as an reference source
+	// @todo this would not work, in the rare edge case of making a node with a UClass as a referenced source
 	if (const UClass* AsClass = Archetype.Source.As<UClass>())
 	{
 		NewGraphNode = HeartGraph->CreateNode_Instanced(Archetype.GraphNode, AsClass, Location);

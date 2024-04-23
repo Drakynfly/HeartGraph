@@ -47,7 +47,7 @@ namespace Heart::Query
 		{
 			using FSimpleData = TMap<KeyType, ValueType>;
 
-			// A function that return a TMap of the data to query. This is usually all that is required to implement for simple query types
+			// A function that returns a TMap of the data to query. This is usually all that is required to implement for simple query types
 			GENERATE_MEMBER_FUNCTION_CHECK(SimpleData, const FSimpleData&, const, );
 
 			// Replaces the fallback Algo::Sort function with a custom one.
