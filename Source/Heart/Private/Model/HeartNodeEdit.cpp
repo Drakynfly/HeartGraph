@@ -111,14 +111,14 @@ namespace Heart::API
 			for (auto&& It = PendingDeletes.CreateIterator(); It; ++It)
 			{
 				// Remove any guids that aren't valid for some reason
-				if (!ensure(It->Guid.IsValid()) || !Graph->Nodes.Contains(It->Guid))
+				if (!ensure(It->IsValid()) || !Graph->Nodes.Contains(*It))
 				{
-					It.RemoveCurrentSwap();
+					It.RemoveCurrent();
 					continue;
 				}
 
 				// Remove all connections that will be orphaned by removing this node
-				ConnectionsEdit.DisconnectAll(It->Guid);
+				ConnectionsEdit.DisconnectAll(*It);
 			}
 			// Out-of-scope for ConnectionsEdit, connections changed event is broadcast
 		}
@@ -127,7 +127,7 @@ namespace Heart::API
 		for (auto&& PendingDelete : PendingDeletes)
 		{
 			UHeartGraphNode* NodeBeingRemoved;
-			Graph->Nodes.RemoveAndCopyValue(PendingDelete.Guid, ObjectPtrWrap(NodeBeingRemoved));
+			Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
 
 			if (IsValid(NodeBeingRemoved))
 			{

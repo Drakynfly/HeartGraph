@@ -91,6 +91,9 @@ namespace Heart::API
 		// This node will *not* have a HeartGraph yet; GetOwningGraph/GetGraph/GetGraphTyped will all fail
 		[[nodiscard]] UHeartGraphNode* GetGraphNode(FNewNodeId Id) const;
 
+		int32 GetNumPendingCreates() const { return PendingCreates.Num(); }
+		int32 GetNumPendingDeletes() const { return PendingDeletes.Num(); }
+
 		/**
 		 * Queues a node for deletion.
 		 */
@@ -113,12 +116,10 @@ namespace Heart::API
 			TObjectPtr<UHeartGraphNode> Node;
 		};
 
-		struct FPendingDelete
-		{
-			FHeartNodeGuid Guid;
-		};
+		using FPendingDelete = FHeartNodeGuid;
 
+		// @todo if FNodeEdit *is* kept around for multiple frames, what keeps the PendingCreates alive?
 		TArray<FPendingCreate> PendingCreates;
-		TArray<FPendingDelete> PendingDeletes;
+		TSet<FPendingDelete> PendingDeletes;
 	};
 }
