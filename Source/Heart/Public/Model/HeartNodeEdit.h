@@ -111,11 +111,7 @@ namespace Heart::API
 		// The graph we are editing
 		TObjectPtr<UHeartGraph> Graph;
 
-		struct FPendingCreate
-		{
-			TObjectPtr<UHeartGraphNode> Node;
-		};
-
+		using FPendingCreate = TObjectPtr<UHeartGraphNode>;
 		using FPendingDelete = FHeartNodeGuid;
 
 		// @todo if FNodeEdit *is* kept around for multiple frames, what keeps the PendingCreates alive?

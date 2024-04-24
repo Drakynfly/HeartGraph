@@ -88,7 +88,7 @@ namespace Heart::API
 
 	UHeartGraphNode* FNodeEdit::GetGraphNode(const FNewNodeId Id) const
 	{
-		return PendingCreates[Id].Node;
+		return PendingCreates[Id];
 	}
 
 	void FNodeEdit::Delete(const FHeartNodeGuid& NodeGuid)
@@ -138,19 +138,19 @@ namespace Heart::API
 		// Pending create pass
 		for (auto&& Element : PendingCreates)
 		{
-			if (!ensure(IsValid(Element.Node)))
+			if (!ensure(IsValid(Element)))
 			{
 				UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
 				continue;
 			}
 
-			if (!ensure(IsValid(Element.Node->GetNodeObject())))
+			if (!ensure(IsValid(Element->GetNodeObject())))
 			{
 				UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
 				continue;
 			}
 
-			const FHeartNodeGuid NodeGuid = Element.Node->GetGuid();
+			const FHeartNodeGuid NodeGuid = Element->GetGuid();
 
 			if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
 			{
@@ -158,8 +158,8 @@ namespace Heart::API
 				continue;
 			}
 
-			Graph->Nodes.Add(NodeGuid, Element.Node);
-			Graph->OnNodeAdded.Broadcast(Element.Node);
+			Graph->Nodes.Add(NodeGuid, Element);
+			Graph->OnNodeAdded.Broadcast(Element);
 		}
 	}
 }
