@@ -61,7 +61,7 @@ namespace Heart::API
 		FNewNodeId CreateFromObject(UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext = nullptr)
 		{
 			checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
-			return Cast<THeartGraphNode>(Create_Reference(THeartGraphNode::StaticClass(), NodeObject, Location, NodeSpawningContext));
+			return Create_Reference(THeartGraphNode::StaticClass(), NodeObject, Location, NodeSpawningContext);
 		}
 
 		// Create from template node class and attempt to cast the return to the template graph class
@@ -84,7 +84,7 @@ namespace Heart::API
 		FNewNodeId CreateFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location, UObject* NodeSpawningContext = nullptr)
 		{
 			checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
-			return Cast<THeartGraphNode>(Create_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location, NodeSpawningContext));
+			return Create_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location, NodeSpawningContext);
 		}
 
 		// Retrieve the GraphNode for a pending creation.
