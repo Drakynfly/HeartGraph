@@ -91,7 +91,7 @@ public:
 class UHeartGraphNode;
 
 /**
- * A Node Archetype is all the data required to create a new node instance in a graph.
+ * A Node Archetype is the minimum data required to create a new node instance in a graph.
  */
 USTRUCT(BlueprintType)
 struct FHeartNodeArchetype

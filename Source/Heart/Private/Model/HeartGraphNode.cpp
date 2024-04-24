@@ -433,12 +433,17 @@ void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
 
 void UHeartGraphNode::OnCreate()
 {
+	OnCreate(nullptr);
+}
+
+void UHeartGraphNode::OnCreate(UObject* NodeSpawningContext)
+{
 	InstancedInputs = GetDefaultInstancedInputs();
 	InstancedOutputs = GetDefaultInstancedOutputs();
 
 	ReconstructPins();
 
-	BP_OnCreate();
+	BP_OnCreate(NodeSpawningContext);
 }
 
 void UHeartGraphNode::ReconstructPins()

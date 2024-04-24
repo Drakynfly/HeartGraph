@@ -17,6 +17,11 @@
 
 #include "HeartGraphNode.generated.h"
 
+namespace Heart::API
+{
+	class FNodeCreator;
+}
+
 struct FHeartGraphNodeMessage;
 class UHeartGraph;
 class UHeartGraphNode;
@@ -99,6 +104,7 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 
 	friend class UHeartGraph;
 	friend class UHeartEdGraphNode;
+	friend class Heart::API::FNodeCreator;
 	friend class Heart::Connections::FEdit;
 
 public:
@@ -318,14 +324,19 @@ public:
 protected:
 	virtual void NotifyPinConnectionsChanged(const FHeartPinGuid& Pin);
 
-	// Called by the owning graph when we are created.
+private:
+	UE_DEPRECATED(5.3, "Use OnCreate(UObject*) instead. This new api allows for an optional context object")
 	virtual void OnCreate();
+
+protected:
+	// Called by the owning graph when we are created.
+	virtual void OnCreate(UObject* NodeSpawningContext);
 
 	void ReconstructPins();
 
 	// Called by the owning graph when we are created.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Create")
-	void BP_OnCreate();
+	void BP_OnCreate(UObject* NodeSpawningContext);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Connections Changed")
 	void BP_OnConnectionsChanged(FHeartPinGuid Pin);

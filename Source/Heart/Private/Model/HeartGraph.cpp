@@ -346,7 +346,7 @@ UHeartGraphNode* UHeartGraph::Internal_CreateNode_Instanced(const TSubclassOf<UH
 	NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeObjectClass);
 	NewGraphNode->Location = Location;
 
-	NewGraphNode->OnCreate();
+	NewGraphNode->OnCreate(nullptr);
 
 	return NewGraphNode;
 }
@@ -361,7 +361,7 @@ UHeartGraphNode* UHeartGraph::Internal_CreateNode_Reference(const TSubclassOf<UH
 	NewGraphNode->NodeObject = const_cast<UObject*>(NodeObject); // @todo temp const_cast in lieu of proper const safety enforcement
 	NewGraphNode->Location = Location;
 
-	NewGraphNode->OnCreate();
+	NewGraphNode->OnCreate(nullptr);
 
 	return NewGraphNode;
 }
@@ -473,16 +473,20 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 		return false;
 	}
 
-	// Remove all connections that will be orphaned by removing this node
-	EditConnections().DisconnectAll(NodeGuid);
+	if (!Nodes.Contains(NodeGuid))
+	{
+		return false;
+	}
 
-	auto&& NodeBeingRemoved = Nodes.Find(NodeGuid);
+	// Remove all connections that will be orphaned by removing this node
+	Heart::Connections::FEdit(this).DisconnectAll(NodeGuid);
+
+	auto&& NodeBeingRemoved = Nodes[NodeGuid];
 	const int32 Removed = Nodes.Remove(NodeGuid);
 
-	if (const TObjectPtr<UHeartGraphNode> Node = NodeBeingRemoved ? *NodeBeingRemoved : nullptr;
-		IsValid(Node))
+	if (IsValid(NodeBeingRemoved))
 	{
-		OnNodeRemoved.Broadcast(Node);
+		OnNodeRemoved.Broadcast(NodeBeingRemoved);
 	}
 
 	return !!Removed;

@@ -10,6 +10,11 @@
 #include "HeartPinConnectionEdit.h"
 #include "HeartGraph.generated.h"
 
+namespace Heart::API
+{
+	class FNodeEdit;
+}
+
 class UHeartGraph;
 class UHeartGraphExtension;
 class UHeartGraphNode;
@@ -60,6 +65,7 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 
 	friend class UHeartEdGraph;
 	friend class UHeartGraphSchema;
+	friend class Heart::API::FNodeEdit;
 	friend class Heart::Connections::FEdit;
 
 public:
