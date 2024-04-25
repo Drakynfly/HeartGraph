@@ -51,13 +51,14 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	auto&& HeartGraph = HeartEdGraph->GetHeartGraph();
 	HeartGraph->Modify();
 
-	Heart::API::FNodeEdit NodeEdit(HeartGraph);
-	NodeEdit.Create(Archetype, Location, nullptr);
-	UHeartGraphNode* NewGraphNode = NodeEdit.Get();
+	UHeartGraphNode* NewGraphNode;
+	{
+		// Add runtime node to graph, this will trigger the EdGraphNode to be created by in UHeartEdGraph::CreateEdGraphNode
+		Heart::API::FNodeEdit NodeEdit(HeartGraph);
+		NodeEdit.Create(Archetype, Location, nullptr);
+		NewGraphNode = NodeEdit.Get();
+	}
 	check(NewGraphNode)
-
-	// Add runtime node to graph, this will trigger the EdGraphNode to be created by in UHeartEdGraph::CreateEdGraphNode
-	HeartGraph->AddNode(NewGraphNode);
 
 	auto&& HeartEdGraphNode = HeartEdGraph->FindEdGraphNodeForNode(NewGraphNode);
 	if (!IsValid(HeartEdGraphNode))
