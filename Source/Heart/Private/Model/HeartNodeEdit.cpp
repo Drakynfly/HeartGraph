@@ -8,7 +8,7 @@
 namespace Heart::API
 {
 	UHeartGraphNode* FNodeCreator::CreateNode_Instanced(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-		const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext)
+														const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
 		checkSlow(IsValid(NodeObject));
@@ -23,8 +23,24 @@ namespace Heart::API
 		return NewGraphNode;
 	}
 
+	UHeartGraphNode* FNodeCreator::CreateNode_Duplicate(UHeartGraph* Graph,	const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
+														const UObject* NodeTemplate, const FVector2D& Location,	UObject* NodeSpawningContext)
+	{
+		checkSlow(IsValid(GraphNodeClass));
+		checkSlow(IsValid(NodeTemplate));
+
+		UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(Graph, GraphNodeClass);
+		NewGraphNode->Guid = FHeartNodeGuid::New();
+		NewGraphNode->NodeObject = DuplicateObject(NodeTemplate, Graph);
+		NewGraphNode->Location = Location;
+
+		NewGraphNode->OnCreate(NodeSpawningContext);
+
+		return NewGraphNode;
+	}
+
 	UHeartGraphNode* FNodeCreator::CreateNode_Reference(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-		const UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext)
+														const UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
 		checkSlow(IsValid(NodeObject));
@@ -54,7 +70,7 @@ namespace Heart::API
 	}
 
 	FNodeEdit::FNewNodeId FNodeEdit::Create(const FHeartNodeArchetype& Archetype, const FVector2D& Location,
-												UObject* NodeSpawningContext)
+											UObject* NodeSpawningContext)
 	{
 		UHeartGraphNode* NewGraphNode;
 
@@ -73,15 +89,21 @@ namespace Heart::API
 	}
 
 	FNodeEdit::FNewNodeId FNodeEdit::Create_Instanced(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
-														  const UClass* NodeObjectClass, const FVector2D& Location,
-														  UObject* NodeSpawningContext)
+													  const UClass* NodeObjectClass, const FVector2D& Location,
+													  UObject* NodeSpawningContext)
 	{
 		return PendingCreates.Emplace(FNodeCreator::CreateNode_Instanced(Graph, GraphNodeClass, NodeObjectClass, Location, NodeSpawningContext));
 	}
 
+	FNodeEdit::FNewNodeId FNodeEdit::Create_Duplicate(const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
+		const UObject* NodeTemplate, const FVector2D& Location, UObject* NodeSpawningContext)
+	{
+		return PendingCreates.Emplace(FNodeCreator::CreateNode_Duplicate(Graph, GraphNodeClass, NodeTemplate, Location, NodeSpawningContext));
+	}
+
 	FNodeEdit::FNewNodeId FNodeEdit::Create_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
-														  const UObject* NodeObject, const FVector2D& Location,
-														  UObject* NodeSpawningContext)
+													  const UObject* NodeObject, const FVector2D& Location,
+													  UObject* NodeSpawningContext)
 	{
 		return PendingCreates.Emplace(FNodeCreator::CreateNode_Reference(Graph, GraphNodeClass, NodeObject, Location, NodeSpawningContext));
 	}
@@ -89,6 +111,11 @@ namespace Heart::API
 	UHeartGraphNode* FNodeEdit::GetGraphNode(const FNewNodeId Id) const
 	{
 		return PendingCreates[Id];
+	}
+
+	UHeartGraphNode* FNodeEdit::Get() const
+	{
+		return PendingCreates.Last();
 	}
 
 	void FNodeEdit::Delete(const FHeartNodeGuid& NodeGuid)

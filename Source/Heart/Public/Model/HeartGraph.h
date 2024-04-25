@@ -239,40 +239,6 @@ public:
 			NODE EDITING
 	----------------------------*/
 public:
-	// Create from template graph class and node object
-	template <
-		typename THeartGraphNode
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-	>
-	THeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
-	{
-		checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNode_Reference(THeartGraphNode::StaticClass(), NodeObject, Location));
-	}
-
-	// Create from template node class and attempt to cast the return to the template graph class
-	template <
-		typename THeartGraphNode,
-		typename TNodeObject
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value &&
-					!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::Value)
-	>
-	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
-	{
-		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location));
-	}
-
-	// Create from node class and attempt to cast the return to the template graph class
-	template <
-		typename THeartGraphNode
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-	>
-	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
-	{
-		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location));
-	}
-
 	// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (instanced)"))
 	UHeartGraphNode* CreateNode_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location);
@@ -280,20 +246,6 @@ public:
 	// Create a HeartGraphNode whose NodeObject is a reference to an external object.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (reference)"))
 	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
-
-	/**
-	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
-	 */
-	UE_DEPRECATED(5.3, "Use CreateNode_Instanced instead")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphNode* CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location);
-
-	/**
-	 * Create a new node, using the provided NodeObject
-	 */
-	UE_DEPRECATED(5.3, "Use CreateNode_Reference instead")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void AddNode(UHeartGraphNode* Node);
@@ -319,14 +271,16 @@ public:
 	bool DisconnectAllPins(const FHeartGraphPinReference& Pin);
 
 
-#if WITH_EDITORONLY_DATA
+	/*----------------------------
+			PRIVATE STATE
+	----------------------------*/
 private:
+#if WITH_EDITORONLY_DATA
 	// Always castable to UHeartEdGraph. Only valid for HeartGraphs created by the editor.
 	UPROPERTY()
 	TObjectPtr<UEdGraph> HeartEdGraph;
 #endif
 
-private:
 	UPROPERTY()
 	FHeartGraphGuid Guid;
 
@@ -343,4 +297,58 @@ private:
 
 	FHeartGraphExtensionEvent OnExtensionAdded;
 	FHeartGraphExtensionEvent OnExtensionRemoved;
+
+
+	/*----------------------------
+			DEPRECATED API
+	----------------------------*/
+
+public:
+	template <
+		typename THeartGraphNode
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
+	>
+	UE_DEPRECATED(5.3, "Use Heart::API::FNodeEdit instead")
+	THeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
+	{
+		checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
+		return Cast<THeartGraphNode>(CreateNode_Reference(THeartGraphNode::StaticClass(), NodeObject, Location));
+	}
+
+	template <
+		typename THeartGraphNode,
+		typename TNodeObject
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value &&
+					!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::Value)
+	>
+	UE_DEPRECATED(5.3, "Use Heart::API::FNodeEdit instead")
+	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
+	{
+		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location));
+	}
+
+	template <
+		typename THeartGraphNode
+		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
+	>
+	UE_DEPRECATED(5.3, "Use Heart::API::FNodeEdit instead")
+	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
+	{
+		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
+		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location));
+	}
+
+	/**
+	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
+	 */
+	UE_DEPRECATED(5.3, "Use CreateNode_Instanced instead")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UHeartGraphNode* CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location);
+
+	/**
+	 * Create a new node, using the provided NodeObject
+	 */
+	UE_DEPRECATED(5.3, "Use CreateNode_Reference instead")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
 };

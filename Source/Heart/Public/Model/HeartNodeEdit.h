@@ -31,7 +31,7 @@ namespace Heart::API
 	 * run in the dtor. This allows us to batch connection rewiring, and broadcast fewer events in a single frame.
 	 * Alternatively, FNodeEdit may be kept alive over several frames, and accumulate multiple edits to make in one shot.
 	 */
-	class FNodeEdit
+	class HEART_API FNodeEdit
 	{
 	public:
 		FNodeEdit(IHeartGraphInterface* GraphInterface);
@@ -52,10 +52,16 @@ namespace Heart::API
 		FNewNodeId Create(const FHeartNodeArchetype& Archetype, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
 
 		// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
-		FNewNodeId Create_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+		FNewNodeId Create_Instanced(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UClass* NodeObjectClass,
+			const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+
+		// Create a HeartGraphNode that is the outer of its own instanced NodeObject, duplicated from the NodeTemplate.
+		FNewNodeId Create_Duplicate(const TSubclassOf<UHeartGraphNode>& GraphNodeClass,	const UObject* NodeTemplate,
+			const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
 
 		// Create a HeartGraphNode whose NodeObject is a reference to an external object.
-		FNewNodeId Create_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+		FNewNodeId Create_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject,
+			const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
 
 		// Create from template graph class and node object
 		template <
@@ -94,6 +100,9 @@ namespace Heart::API
 		// Retrieve the GraphNode for a pending creation.
 		// This node will *not* have a HeartGraph yet; GetOwningGraph/GetGraph/GetGraphTyped will all fail
 		[[nodiscard]] UHeartGraphNode* GetGraphNode(FNewNodeId Id) const;
+
+		// Retrieves the most recently made pending creation.
+		[[nodiscard]] UHeartGraphNode* Get() const;
 
 		int32 GetNumPendingCreates() const { return PendingCreates.Num(); }
 		int32 GetNumPendingDeletes() const { return PendingDeletes.Num(); }

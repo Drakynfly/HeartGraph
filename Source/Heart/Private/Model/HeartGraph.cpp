@@ -363,50 +363,6 @@ UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraph
 	return Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject, Location);
 }
 
-UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location)
-{
-	if (!ensure(IsValid(NodeClass)))
-	{
-		return nullptr;
-	}
-
-	TSubclassOf<UHeartGraphNode> GraphNodeClass;
-
-	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
-	{
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeClass));
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	}
-
-	if (!IsValid(GraphNodeClass))
-	{
-		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeClass->GetName())
-		return nullptr;
-	}
-
-	return Heart::API::FNodeCreator::CreateNode_Instanced(this, GraphNodeClass, NodeClass, Location);
-}
-
-UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
-{
-	if (!ensure(IsValid(NodeObject)))
-	{
-		return nullptr;
-	}
-
-	TSubclassOf<UHeartGraphNode> GraphNodeClass;
-
-	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
-	{
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-		GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	}
-
-	return Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject, Location);
-}
-
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
 	checkSlow(Node->GetOuter() == this);
@@ -486,3 +442,52 @@ bool UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
 }
 
 #undef LOCTEXT_NAMESPACE
+
+
+	/*----------------------------
+			DEPRECATED API
+	----------------------------*/
+
+UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location)
+{
+	if (!ensure(IsValid(NodeClass)))
+	{
+		return nullptr;
+	}
+
+	TSubclassOf<UHeartGraphNode> GraphNodeClass;
+
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+				GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeClass));
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	}
+
+	if (!IsValid(GraphNodeClass))
+	{
+		UE_LOG(LogHeartGraph, Error, TEXT("GetGraphNodeClassForNode returned nullptr when trying to spawn node of class '%s'!"), *NodeClass->GetName())
+		return nullptr;
+	}
+
+	return Heart::API::FNodeCreator::CreateNode_Instanced(this, GraphNodeClass, NodeClass, Location);
+}
+
+UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
+{
+	if (!ensure(IsValid(NodeObject)))
+	{
+		return nullptr;
+	}
+
+	TSubclassOf<UHeartGraphNode> GraphNodeClass;
+
+	if (auto&& RegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>())
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+				GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	}
+
+	return Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject, Location);
+}

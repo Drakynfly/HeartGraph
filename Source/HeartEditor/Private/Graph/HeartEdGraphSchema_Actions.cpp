@@ -15,6 +15,7 @@
 #include "ScopedTransaction.h"
 #include "Input/EdGraphPointerWrappers.h"
 #include "Input/HeartSlateInputLinker.h"
+#include "Model/HeartNodeEdit.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema_Actions)
 
@@ -50,17 +51,9 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	auto&& HeartGraph = HeartEdGraph->GetHeartGraph();
 	HeartGraph->Modify();
 
-	UHeartGraphNode* NewGraphNode;
-
-	// @todo this would not work, in the rare edge case of making a node with a UClass as a referenced source
-	if (const UClass* AsClass = Archetype.Source.As<UClass>())
-	{
-		NewGraphNode = HeartGraph->CreateNode_Instanced(Archetype.GraphNode, AsClass, Location);
-	}
-	else
-	{
-		NewGraphNode = HeartGraph->CreateNode_Reference(Archetype.GraphNode, Archetype.Source.As<UObject>(), Location);
-	}
+	Heart::API::FNodeEdit NodeEdit(HeartGraph);
+	NodeEdit.Create(Archetype, Location, nullptr);
+	UHeartGraphNode* NewGraphNode = NodeEdit.Get();
 	check(NewGraphNode)
 
 	// Add runtime node to graph, this will trigger the EdGraphNode to be created by in UHeartEdGraph::CreateEdGraphNode
