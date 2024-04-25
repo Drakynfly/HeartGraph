@@ -17,6 +17,10 @@ namespace Heart::API
 		static UHeartGraphNode* CreateNode_Instanced(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
 			const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
 
+		// Create a HeartGraphNode that is the outer of its own instanced NodeObject, duplicated from the NodeTemplate.
+		static UHeartGraphNode* CreateNode_Duplicate(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
+			const UObject* NodeTemplate, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+
 		// Create a HeartGraphNode whose NodeObject is a reference to an external object.
 		static UHeartGraphNode* CreateNode_Reference(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
 			const UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);

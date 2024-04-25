@@ -102,7 +102,6 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 {
 	GENERATED_BODY()
 
-	friend class UHeartGraph;
 	friend class UHeartEdGraphNode;
 	friend class Heart::API::FNodeCreator;
 	friend class Heart::Connections::FEdit;
