@@ -12,7 +12,7 @@ UHeartGraphNode::UHeartGraphNode()
 #if WITH_EDITOR
 	// Unless specified otherwise, use the graph's Schema default style.
 	if (auto SparseNodeData = GetHeartGraphNodeSparseClassData();
-		SparseNodeData->EditorSlateStyle.IsNone())
+		SparseNodeData && SparseNodeData->EditorSlateStyle.IsNone())
 	{
 		SparseNodeData->EditorSlateStyle = "GraphDefault";
 	}
