@@ -13,9 +13,8 @@
 
 #include "UObject/ObjectSaveContext.h"
 
-#include "Developer/ToolMenus/Public/ToolMenus.h"
+#include "ToolMenus.h"
 #include "EdGraph/EdGraphSchema.h"
-#include "Editor.h"
 #include "Editor/EditorEngine.h"
 #include "Framework/Commands/GenericCommands.h"
 #include "GraphEditorActions.h"
