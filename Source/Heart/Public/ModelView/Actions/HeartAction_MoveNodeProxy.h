@@ -12,10 +12,10 @@ struct FHeartMoveNodeProxyLocationPair
 	GENERATED_BODY()
 
 	UPROPERTY()
-	FVector2D Original;
+	FVector2D Original = FVector2D::ZeroVector;
 
 	UPROPERTY()
-	FVector2D New;
+	FVector2D New = FVector2D::ZeroVector;
 };
 
 USTRUCT()
