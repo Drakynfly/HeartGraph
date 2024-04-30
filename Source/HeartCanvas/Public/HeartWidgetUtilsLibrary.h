@@ -39,13 +39,25 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
 	static FVector2D GetWidgetCenterAbsolute(const UWidget* Widget);
 
+	/** Shortcut function to turn a boolean into a SlateVisibility */
+	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
+	static ESlateVisibility VisibleOrCollapsed(bool Value);
+
+	/** Shortcut function to turn a boolean into a SlateVisibility */
+	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
+	static ESlateVisibility VisibleOrHidden(bool Value);
+
 	//@todo really, these should be custom K2Nodes, so that they can have expose on spawn pins, but im too lazy to do that rn
 
 	/** Creates a UUserWidget, using any widget as an outer. */
-	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary", meta = (DeterminesOutputType = "Class"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary", meta = (DefaultToSelf = "Outer", DeterminesOutputType = "Class"))
 	static UUserWidget* CreateWidgetWithWidgetOuter(UWidget* Outer, TSubclassOf<UUserWidget> Class);
 
 	/** Creates a UUserWidget, using the game instance as an outer. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary", meta = (DeterminesOutputType = "Class"))
 	static UUserWidget* CreateWidgetWithGameInstanceOuter(UGameInstance* Outer, TSubclassOf<UUserWidget> Class);
+
+	/** Creates a UUserWidget, and assigns it to another widget as a tooltip */
+	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary", meta = (DefaultToSelf = "Target", DeterminesOutputType = "Class"))
+	static UUserWidget* CreateWidgetAsTooltip(UWidget* Target, TSubclassOf<UUserWidget> Class);
 };

@@ -93,6 +93,16 @@ FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(const UWidget* Widge
 	return Geometry.LocalToAbsolute(GetGeometryCenter(Geometry));
 }
 
+ESlateVisibility UHeartWidgetUtilsLibrary::VisibleOrCollapsed(const bool Value)
+{
+	return Value ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
+}
+
+ESlateVisibility UHeartWidgetUtilsLibrary::VisibleOrHidden(const bool Value)
+{
+	return Value ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+}
+
 UUserWidget* UHeartWidgetUtilsLibrary::CreateWidgetWithWidgetOuter(UWidget* Outer, const TSubclassOf<UUserWidget> Class)
 {
 	if (!ensure(IsValid(Outer)))
@@ -122,4 +132,11 @@ UUserWidget* UHeartWidgetUtilsLibrary::CreateWidgetWithGameInstanceOuter(UGameIn
 	}
 
 	return CreateWidget(Outer, Class);
+}
+
+UUserWidget* UHeartWidgetUtilsLibrary::CreateWidgetAsTooltip(UWidget* Target, const TSubclassOf<UUserWidget> Class)
+{
+	UUserWidget* Tooltip = CreateWidget(Target, Class);
+	Target->SetToolTip(Tooltip);
+	return Tooltip;
 }
