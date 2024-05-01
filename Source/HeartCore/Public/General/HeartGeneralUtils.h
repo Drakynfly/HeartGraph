@@ -76,14 +76,4 @@ public:
 	 */
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math")
 	static double LevenshteinScore(const FString& A, const FString& B);
-
-
-	/*------------------------
-			FONT UTILS
-	------------------------*/
-
-	static bool FontSupportsChar(const UFont* Font, TCHAR Char);
-
-	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Math")
-	static bool FontSupportsString(const UFont* Font, const FString& String);
 };
