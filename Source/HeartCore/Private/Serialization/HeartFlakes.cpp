@@ -205,11 +205,19 @@ namespace Heart::Flakes
 		void PostLoadUObject(UObject* Object)
 		{
 			Object->PostLoad();
+			TArray<UObject*> SubObjects;
 			ForEachObjectWithOuter(Object,
-				[](UObject* Subobject)
+				[&SubObjects](UObject* Subobject)
 				{
-					Subobject->PostLoad();
+					SubObjects.Add(Subobject);
 				});
+
+			// Cannot call PostLoad from inside ForEachObjectWithOuter, since if PostLoad calls NewObject, it will trip
+			// a check that prevents creation of new objects while iterating over the UObject table.
+			for (UObject* SubObject : SubObjects)
+			{
+				SubObject->PostLoad();
+			}
 		}
 	}
 
