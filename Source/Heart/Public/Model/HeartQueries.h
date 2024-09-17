@@ -448,7 +448,7 @@ namespace Heart::Query
 				}
 			}
 
-			return {};
+			return NullOpt;
 		}
 
 		// Sort the results by their default order

@@ -59,6 +59,6 @@ namespace Blood
 			return BloodValue.GetValue<T>();
 		}
 
-		return {};
+		return NullOpt;
 	}
 }

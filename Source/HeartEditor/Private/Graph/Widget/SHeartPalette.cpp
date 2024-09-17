@@ -247,7 +247,7 @@ TOptional<FStringView> SHeartPalette::GetFilterCategoryName() const
 		return MakeStringView(*CategoryComboBox->GetSelectedItem());
 	}
 
-	return {};
+	return NullOpt;
 }
 
 void SHeartPalette::CategorySelectionChanged(TSharedPtr<FString> NewSelection, ESelectInfo::Type SelectInfo)

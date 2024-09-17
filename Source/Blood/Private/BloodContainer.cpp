@@ -93,7 +93,7 @@ TOptional<FBloodValue> FBloodContainer::GetBloodValue(const FName Name) const
 		}
 	}
 
-	return {};
+	return NullOpt;
 }
 
 bool FBloodContainer::Contains(const FName Name) const

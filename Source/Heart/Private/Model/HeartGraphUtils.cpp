@@ -102,13 +102,13 @@ namespace Heart::Utils
 	{
 		if (!IsValid(Graph))
 		{
-			return {};
+			return NullOpt;
 		}
 
 		auto&& Node = Graph->GetNode(Reference.NodeGuid);
 		if (!IsValid(Node))
 		{
-			return {};
+			return NullOpt;
 		}
 
 		return Node->GetPinDesc(Reference.PinGuid);

@@ -183,7 +183,7 @@ FHeartPinGuid UHeartGraphNode::GetPinByName(const FName& Name) const
 			{
 				return Desc.Key;
 			}
-			return {};
+			return NullOpt;
 		});
 
 	if (RetVal.IsSet())
@@ -243,7 +243,7 @@ TOptional<FHeartGraphPinConnections> UHeartGraphNode::GetConnections(const FHear
 	{
 		return Links.Get();
 	}
-	return {};
+	return NullOpt;
 }
 
 TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin, bool) const

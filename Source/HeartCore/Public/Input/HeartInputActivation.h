@@ -106,7 +106,7 @@ struct HEARTCORE_API FHeartInputActivation
 				return EventStruct.Get<T>();
 			}
 		}
-		return {};
+		return NullOpt;
 	}
 
 	template <

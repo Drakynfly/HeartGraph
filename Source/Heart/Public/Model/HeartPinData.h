@@ -77,7 +77,7 @@ protected:
 				return Result.GetValue();
 			}
 		}
-		return {};
+		return NullOpt;
 	}
 
 	// Maps pins to their Pin Description, which carries all unique instance data about

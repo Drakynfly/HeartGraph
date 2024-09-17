@@ -97,7 +97,7 @@ public:
 				return Details.Get<T>();
 			}
 		}
-		return {};
+		return NullOpt;
 	}
 
 	const UScriptStruct* GetScriptStruct() const { return Details.GetScriptStruct(); }
