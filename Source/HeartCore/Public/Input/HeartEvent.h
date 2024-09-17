@@ -66,7 +66,7 @@ public:
 		typename... TArgs
 		UE_REQUIRES(TIsHeartEventType<T>::Value)
 	>
-	FHeartEvent& Detail(TArgs... Args)
+	FHeartEvent& Detail(const TArgs&... Args)
 	{
 		Details.InitializeAs<T>(Args...);
 		return *this;
@@ -77,7 +77,7 @@ public:
 		typename... TArgs
 		UE_REQUIRES(TIsHeartEventType<T>::Value)
 	>
-	FHeartEvent Detail(TArgs... Args) const
+	FHeartEvent Detail(const TArgs&... Args) const
 	{
 		FHeartEvent Event = *this;
 		Event.Details.InitializeAs<T>(Args...);
