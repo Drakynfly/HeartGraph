@@ -75,7 +75,7 @@ namespace Heart::Input
 		    ModifierMask(ModifierKeysFromState(FSlateApplication::Get().GetModifierKeys()))
 		{}
 
-		FInputTrip(const FName& ManualEvent)
+		FInputTrip(FName ManualEvent)
 		  : Type(Manual),
 			CustomKey(ManualEvent)
 		{}

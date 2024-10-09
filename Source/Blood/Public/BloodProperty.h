@@ -59,12 +59,12 @@ struct BLOOD_API FBloodProperty
 		return PropName != Other.PropName;
 	}
 
-	FORCEINLINE bool operator==(const FName& Other) const
+	FORCEINLINE bool operator==(FName Other) const
 	{
 		return PropName == Other;
 	}
 
-	FORCEINLINE bool operator!=(const FName& Other) const
+	FORCEINLINE bool operator!=(FName Other) const
 	{
 		return PropName != Other;
 	}
@@ -97,7 +97,7 @@ namespace Blood
 	struct FBloodPropertyFactory
 	{
 		// Constructor that has the minimum required parameters to create an FBloodProperty
-		FBloodPropertyFactory(const FName& InPropName, UStruct* Struct, EContainerType ContainerType)
+		FBloodPropertyFactory(FName InPropName, UStruct* Struct, EContainerType ContainerType)
 		{
 			Type.PropName = InPropName;
 

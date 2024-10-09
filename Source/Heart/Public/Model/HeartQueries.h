@@ -24,7 +24,7 @@ namespace Heart::Query
 		NoFlags = 0,
 
 		// This is a potential optimization when calling Sort/SortBy with a potentially expensive callback.
-		// Instead of making redundantly calls, the projection results will be cached in a map, so each key is only ran
+		// Instead of making redundant calls, the projection results will be cached in a map, so each key is only ran
 		// through the callback once.
 		ProjectionCache = 1 << 0,
 	};
@@ -554,7 +554,7 @@ namespace Heart::Query
 		}
 
 	private:
-		// This function makes a copy of the reference data, and stores it in Results, where is can be pruned down by
+		// This function makes a copy of the reference data, and stores it in Results, where it can be pruned down by
 		// filters, or re-ordered by sorting.
 		void InitResults()
 		{

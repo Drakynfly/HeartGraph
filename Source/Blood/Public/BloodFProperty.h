@@ -51,7 +51,7 @@ namespace Blood
 
 	// Read the value of the UPROPERTY by its name from an object. Works for both Blueprint Properties and Native UPROPS
 	template <typename T>
-	static TOptional<T> ReadUProperty(UObject* Container, const FName& PropName)
+	static TOptional<T> ReadUProperty(UObject* Container, FName PropName)
 	{
 		if (const FProperty* Property = Container->GetClass()->FindPropertyByName(PropName))
 		{

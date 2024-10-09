@@ -92,7 +92,7 @@ struct BLOOD_API FBloodName
 	GENERATED_BODY()
 
 	FBloodName() {}
-	FBloodName(const FName& Value) : Value(Value) {}
+	FBloodName(FName Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
 	FName Value = NAME_None;

@@ -211,7 +211,7 @@ public:
 
 	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (AutoCreateRefTerm = "Name"))
-	FHeartPinGuid GetPinByName(const FName& Name) const;
+	FHeartPinGuid GetPinByName(FName Name) const;
 
 	// @todo non-virtual non-trivial accessors should be moved to a Library
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")

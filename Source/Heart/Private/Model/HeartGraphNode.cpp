@@ -172,7 +172,7 @@ FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid& Pi
 	return PinData.Contains(Pin) ? FHeartGraphPinReference{Guid, Pin} : FHeartGraphPinReference();
 }
 
-FHeartPinGuid UHeartGraphNode::GetPinByName(const FName& Name) const
+FHeartPinGuid UHeartGraphNode::GetPinByName(FName Name) const
 {
 	// @todo make TOptional the return type here
 
