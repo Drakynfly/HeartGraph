@@ -166,7 +166,7 @@ namespace Heart::Action::History
 	bool TryUndo(UHeartActionHistory* History)
 	{
 		auto RecordView = History->RetrieveRecordPtr();
-		if (!RecordView.IsValid() || !IsValid(RecordView->Action))
+		if (!RecordView.IsValid() || !IsValid(RecordView.Get().Action))
 		{
 			return false;
 		}
@@ -194,7 +194,7 @@ namespace Heart::Action::History
 	FHeartEvent TryRedo(UHeartActionHistory* History)
 	{
 		auto RecordView = History->AdvanceRecordPtr();
-		if (!RecordView.IsValid() || !IsValid(RecordView->Action))
+		if (!RecordView.IsValid() || !IsValid(RecordView.Get().Action))
 		{
 			return FHeartEvent::Failed;
 		}
@@ -211,7 +211,7 @@ void UHeartActionHistory::AddRecord(const FHeartActionRecord& Record)
 	// Remove the element at index 0, but don't shrink, because we are just going to add another element
 	if (Actions.Num() == MaxRecordedActions)
 	{
-		Actions.RemoveAt(0, 1, false);
+		Actions.RemoveAt(0, 1, EAllowShrinking::No);
 	}
 
 	// Add action to record, and reassign Pointer to new index

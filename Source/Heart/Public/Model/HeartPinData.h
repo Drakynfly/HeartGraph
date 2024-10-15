@@ -7,8 +7,8 @@
 #include "HeartGuids.h"
 
 #include "Containers/Map.h"
-#include "General/TStructViewTemp.h"
 #include "Misc/Optional.h"
+#include "StructUtils/StructView.h"
 
 #include "HeartPinData.generated.h"
 

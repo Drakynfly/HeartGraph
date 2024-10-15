@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "StructView.h"
 #include "Concepts/BaseStructureProvider.h"
+#include "StructUtils/InstancedStruct.h"
+#include "StructUtils/StructView.h"
 
 #include "HeartFlakes.generated.h"
 

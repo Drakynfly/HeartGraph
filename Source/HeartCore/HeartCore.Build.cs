@@ -14,8 +14,7 @@ public class HeartCore : ModuleRules
             {
                 "Core",
                 "GameplayTags",
-                "InputCore",
-                "StructUtils"
+                "InputCore"
             });
 
         // Project dependencies

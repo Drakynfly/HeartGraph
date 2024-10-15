@@ -230,7 +230,7 @@ bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGra
 	if (auto Links = PinData.ViewConnections(Pin);
 		Links.IsValid())
 	{
-		Connections = Links->GetLinks();
+		Connections = Links.Get().GetLinks();
 		return true;
 	}
 	return false;
@@ -251,7 +251,7 @@ TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGui
 	if (auto Links = PinData.ViewConnections(Pin);
 		Links.IsValid())
 	{
-		return TSet<FHeartGraphPinReference>(TArray<FHeartGraphPinReference>(Links->GetLinks()));
+		return TSet<FHeartGraphPinReference>(TArray<FHeartGraphPinReference>(Links.Get().GetLinks()));
 	}
 	return {};
 }

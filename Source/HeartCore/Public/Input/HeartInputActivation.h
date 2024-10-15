@@ -3,7 +3,7 @@
 #pragma once
 
 #include "InputCoreTypes.h"
-#include "InstancedStruct.h"
+#include "StructUtils/InstancedStruct.h"
 #include "Concepts/BaseStructureProvider.h"
 #include "GameFramework/PlayerInput.h"
 #include "HeartInputActivation.generated.h"

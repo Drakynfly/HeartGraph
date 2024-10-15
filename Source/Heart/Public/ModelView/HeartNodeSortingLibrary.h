@@ -4,7 +4,7 @@
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Model/HeartGuids.h"
-#include "InstancedStruct.h"
+#include "StructUtils/InstancedStruct.h"
 #include "Model/HeartPinDirection.h"
 #include "HeartNodeSortingLibrary.generated.h"
 

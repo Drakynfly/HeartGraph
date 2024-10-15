@@ -58,6 +58,8 @@ FCallbackQuery& FCallbackQuery::ForEachWithBreak(const UObject* Target, const TF
 
 void UHeartInputLinkerBase::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)
 {
+	Super::AddReferencedObjects(InThis, Collector);
+
 	const UHeartInputLinkerBase* This = CastChecked<UHeartInputLinkerBase>(InThis);
 
 	for (auto&& Element : This->InputCallbackMappings)

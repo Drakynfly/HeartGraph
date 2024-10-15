@@ -48,14 +48,16 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 			break;
 		}
 
-		if (RecordView->Action == UHeartAction_MultiUndoStart::StaticClass())
+		auto&& Record = RecordView.Get();
+
+		if (Record.Action == UHeartAction_MultiUndoStart::StaticClass())
 		{
 			// We hit another Start marker, so we will re-do everything in that scope as well.
 			ScopeCounter++;
 			continue;
 		}
 
-		if (RecordView->Action == UHeartAction_MultiUndoEnd::StaticClass())
+		if (Record.Action == UHeartAction_MultiUndoEnd::StaticClass())
 		{
 			// We hit an End marker, so we have re-done everything in this scope.
 			ScopeCounter--;
@@ -63,7 +65,7 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 		}
 
 		// If not a scope marker, redo the action.
-		Heart::Action::History::RedoRecord(RecordView.Get());
+		Heart::Action::History::RedoRecord(Record);
 	}
 	while (0 < ScopeCounter);
 

@@ -45,9 +45,6 @@ This is only used by the SceneModule to link input, but I may add support for In
 ### GameplayTagsEditor
 A "plugin dependency" by a technicality. I don't know why the main module is part of the core engine, but this module isn't. Anyway.
 
-### StructUtils
-`FInstancedStruct` is used for implementing FBloodValue.
-
 
 ## Planned Dependencies
 

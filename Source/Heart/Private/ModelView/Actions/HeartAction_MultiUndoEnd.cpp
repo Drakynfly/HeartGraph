@@ -45,14 +45,16 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 			break;
 		}
 
-		if (RecordView->Action == UHeartAction_MultiUndoEnd::StaticClass())
+		auto&& Record = RecordView.Get();
+
+		if (Record.Action == UHeartAction_MultiUndoEnd::StaticClass())
 		{
 			// We hit another End marker, so we will undo everything in that scope as well.
 			ScopeCounter++;
 			continue;
 		}
 
-		if (RecordView->Action == UHeartAction_MultiUndoStart::StaticClass())
+		if (Record.Action == UHeartAction_MultiUndoStart::StaticClass())
 		{
 			// We hit a Start marker, so we have undone everything in this scope.
 			ScopeCounter--;
@@ -60,7 +62,7 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 		}
 
 		// If not a scope marker, undo the action.
-		Heart::Action::History::UndoRecord(RecordView.Get(), History);
+		Heart::Action::History::UndoRecord(Record, History);
 	}
 	while (0 < ScopeCounter);
 

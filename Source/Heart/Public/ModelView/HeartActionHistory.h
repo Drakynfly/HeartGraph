@@ -3,9 +3,9 @@
 #pragma once
 
 #include "BloodContainer.h"
-#include "General/TStructViewTemp.h"
 #include "Input/HeartActionBase.h"
 #include "Model/HeartGraphExtension.h"
+#include "StructUtils/StructView.h"
 #include "HeartActionHistory.generated.h"
 
 class UHeartActionHistory;

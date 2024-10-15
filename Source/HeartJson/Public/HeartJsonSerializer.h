@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "InstancedStruct.h"
+#include "StructUtils/InstancedStruct.h"
 #include "JsonObjectWrapper.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Serialization/HeartFlakes.h"

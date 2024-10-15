@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "InstancedStruct.h"
+#include "StructUtils/InstancedStruct.h"
 #include "Engine/DataAsset.h"
 #include "HeartInputBindingAsset.generated.h"
 

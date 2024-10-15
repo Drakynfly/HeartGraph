@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "InstancedStruct.h"
 #include "Concepts/BaseStructureProvider.h"
+#include "StructUtils/InstancedStruct.h"
 #include "HeartEvent.generated.h"
 
 UINTERFACE(MinimalAPI)
