@@ -48,7 +48,7 @@ protected:
 	void BroadcastChange();
 
 public:
-	FHeartGraphNodeRegistryEventNative& GetOnRegistryChangedNative() { return OnRegistryChangedNative; }
+	FHeartGraphNodeRegistryEventNative::RegistrationType& GetOnRegistryChangedNative() { return OnRegistryChangedNative; }
 
 	Heart::Query::FRegistryQueryResult QueryRegistry() const;
 

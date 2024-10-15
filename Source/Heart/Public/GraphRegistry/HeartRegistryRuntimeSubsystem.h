@@ -37,9 +37,9 @@ public:
 
 	void LoadFallbackRegistrar();
 
-	FHeartRegistryEventNative& GetPostRegistryAddedNative() { return PostRegistryAddedNative; }
-	FHeartRegistryEventNative& GetPreRegistryRemovedNative() { return PreRegistryRemovedNative; }
-	FHeartRegistryEventNative& GetOnAnyRegistryChangedNative() { return OnAnyRegistryChangedNative; }
+	FHeartRegistryEventNative::RegistrationType& GetPostRegistryAddedNative() { return PostRegistryAddedNative; }
+	FHeartRegistryEventNative::RegistrationType& GetPreRegistryRemovedNative() { return PreRegistryRemovedNative; }
+	FHeartRegistryEventNative::RegistrationType& GetOnAnyRegistryChangedNative() { return OnAnyRegistryChangedNative; }
 
 protected:
 	void OnFilesLoaded();

@@ -119,8 +119,8 @@ public:
 	// Grab the most recent N records without changing the ActionPointer.
 	TConstArrayView<FHeartActionRecord> ViewRecords(int32 Count) const;
 
-	FHeartActionHistoryRecordUpdate& GetOnRecordsUpdated() { return OnRecordsUpdatedNative; }
-	FHeartActionHistoryPointerChanged& GetOnPointerChanged() { return OnPointerChangedNative; }
+	FHeartActionHistoryRecordUpdate::RegistrationType& GetOnRecordsUpdated() { return OnRecordsUpdatedNative; }
+	FHeartActionHistoryPointerChanged::RegistrationType& GetOnPointerChanged() { return OnPointerChangedNative; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
 	int32 GetActionPointer() const { return ActionPointer; }

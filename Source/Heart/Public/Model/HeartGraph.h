@@ -112,13 +112,13 @@ public:
 	UEdGraph* GetEdGraph() const { return HeartEdGraph; }
 #endif
 
-	FHeartGraphNodeEvent& GetOnNodeAdded() { return OnNodeAdded; }
-	FHeartGraphNodeEvent& GetOnNodeRemoved() { return OnNodeRemoved; }
-	FHeartGraphNodeMovedEvent& GetOnNodeMoved() { return OnNodeMoved; }
-	FHeartGraphNodeConnectionEvent& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
+	FHeartGraphNodeEvent::RegistrationType& GetOnNodeAdded() { return OnNodeAdded; }
+	FHeartGraphNodeEvent::RegistrationType& GetOnNodeRemoved() { return OnNodeRemoved; }
+	FHeartGraphNodeMovedEvent::RegistrationType& GetOnNodeMoved() { return OnNodeMoved; }
+	FHeartGraphNodeConnectionEvent::RegistrationType& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
 
-	FHeartGraphExtensionEvent& GetOnExtensionAdded() { return OnExtensionAdded; }
-	FHeartGraphExtensionEvent& GetOnExtensionRemoved() { return OnExtensionRemoved; }
+	FHeartGraphExtensionEvent::RegistrationType& GetOnExtensionAdded() { return OnExtensionAdded; }
+	FHeartGraphExtensionEvent::RegistrationType& GetOnExtensionRemoved() { return OnExtensionRemoved; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
