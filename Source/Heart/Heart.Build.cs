@@ -15,8 +15,7 @@ public class Heart : ModuleRules
 				"Core",
 				"DeveloperSettings",
 				"GameplayTags",
-				"InputCore",
-				"StructUtils"
+				"InputCore"
 			});
 
         // Plugin dependencies

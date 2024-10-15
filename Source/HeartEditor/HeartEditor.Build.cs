@@ -44,7 +44,6 @@ public class HeartEditor : ModuleRules
                 "Slate",
                 "SlateCore",
                 "SourceControl",    // For Diffing utils
-                "StructUtils",
                 "ToolMenus",
                 "UnrealEd"
             });

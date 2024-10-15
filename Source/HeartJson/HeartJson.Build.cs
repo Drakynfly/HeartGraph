@@ -14,8 +14,7 @@ public class HeartJson : ModuleRules
                 "Heart",
                 "HeartCore",
                 "Json",
-                "JsonUtilities",
-                "StructUtils"
+                "JsonUtilities"
             }
         );
 

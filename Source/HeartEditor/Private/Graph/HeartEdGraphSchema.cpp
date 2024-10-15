@@ -72,23 +72,18 @@ void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& Conte
 	auto&& Linker = HeartEdGraph->GetEditorLinker();
 	if (IsValid(Linker))
 	{
-		TArray<TSharedPtr<FEdGraphSchemaAction>> LinkerActions;
-
 		TArray<FHeartManualInputQueryResult> QueryResults = Linker->QueryManualTriggers(HeartEdGraph);
 
 		for (auto&& QueryResult : QueryResults)
 		{
-			LinkerActions.Add(MakeShared<FHeartGraphSchemaAction_LinkerBinding>(
-				FText::GetEmpty(),
+			auto NewAction = MakeShared<FHeartGraphSchemaAction_LinkerBinding>(
+				LOCTEXT("LinkerActions", "Linker Actions"),
 				QueryResult.Description,
 				FText::GetEmpty(),
 				11,
-				QueryResult.Key));
-		}
+				QueryResult.Key);
 
-		if (!LinkerActions.IsEmpty())
-		{
-			ContextMenuBuilder.AddActionList(LinkerActions, TEXT("Linker Actions"));
+			ContextMenuBuilder.AddAction(NewAction);
 		}
 	}
 }

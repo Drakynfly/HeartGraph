@@ -14,8 +14,7 @@ public class Blood : ModuleRules
         PublicDependencyModuleNames.AddRange(
             new []
             {
-                "Core",
-                "StructUtils"
+                "Core"
             });
 
         PrivateDependencyModuleNames.AddRange(

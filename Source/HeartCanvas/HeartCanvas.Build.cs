@@ -33,8 +33,7 @@ public class HeartCanvas : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "Slate",
-                "SlateCore",
-                "StructUtils"
+                "SlateCore"
             }
         );
     }

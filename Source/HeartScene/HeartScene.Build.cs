@@ -25,8 +25,7 @@ public class HeartScene : ModuleRules
                 "Engine",
                 "GameplayTags",
                 "Slate",
-                "SlateCore",
-                "StructUtils"
+                "SlateCore"
             }
         );
     }
