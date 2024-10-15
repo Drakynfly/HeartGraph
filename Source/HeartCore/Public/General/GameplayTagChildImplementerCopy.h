@@ -71,16 +71,15 @@ class TTypedTagStaticImplCopy
 	TTypedTagStaticImplCopy()
 	{
 		checkfSlow(!GEngine->IsInitialized(), TEXT("These should only be statically init during startup!"))
-		StaticImpl.RootTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagT::GetRootTagStr());
+		//StaticImpl.RootTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagT::GetRootTagStr());
 
 		/*
 		LLM_SCOPE(ELLMTag::UI);
-
+		*/
 		UGameplayTagsManager::OnLastChanceToAddNativeTags().AddLambda([this]()
 			{
 				StaticImpl.RootTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagT::GetRootTagStr());
 			});
-		*/
 	}
 	TagT RootTag;
 	static TTypedTagStaticImplCopy StaticImpl;
