@@ -137,11 +137,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
 	FHeartEvent Redo();
 
+	// Get if we automatically create records for any node movement?
+	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
+	bool GetRecordAllMoves() const { return RecordAllMoves; }
+
+	// Get if we automatically create records for any pin connection?
+	UFUNCTION(BlueprintCallable, Category = "Heart|ActionHistory")
+	bool GetRecordAllConnections() const { return RecordAllConnections; }
+
 private:
 	void BroadcastPointer();
 	void BroadcastUpdate(int32 Index, int32 Count);
 
 protected:
+	/**		EVENTS		**/
 	FHeartActionHistoryRecordUpdate OnRecordsUpdatedNative;
 	FHeartActionHistoryPointerChanged OnPointerChangedNative;
 
@@ -150,6 +159,9 @@ protected:
 
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FHeartActionHistoryPointerChanged_BP OnPointerChanged;
+
+
+	/**		BLUEPRINT API	**/
 
 	// Are we currently running an undoable action?
 	UFUNCTION(BlueprintPure, Category = "Heart|ActionHistory")
@@ -161,6 +173,14 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Heart|ActionHistory")
 	int32 MaxRecordedActions = 50;
 
+	// Should we automatically create records for any node movement?
+	// This should be disabled if node positions change frequently, or do not matter for stateful-ness.
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|ActionHistory")
+	bool RecordAllMoves = true;
+
+	// Should we automatically create records for any pin connection?
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Heart|ActionHistory")
+	bool RecordAllConnections = true;
 
 	/**		STATE		**/
 private:

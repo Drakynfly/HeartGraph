@@ -49,7 +49,9 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 		auto&& FromPin = DraggedPin->GetPinReference();
 		auto&& ToPin = HoveredPin->GetPinReference();
 
-		if (auto&& History = Graph->GetExtension<UHeartActionHistory>())
+		// If there is a History extension that is recording connections, make the TryConnectPins call within a record
+		if (auto&& History = Graph->GetExtension<UHeartActionHistory>();
+			IsValid(History) && History->GetRecordAllConnections())
 		{
 			// Stash the state of the pins prior to running TryConnectPins
 			FHeartPinsEditProxyUndoData MementoData;
@@ -76,6 +78,7 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 				History->AddRecord(Record);
 			}
 		}
+		// Otherwise, call TryConnectPins normally
 		else
 		{
 			if (Graph->GetSchema()->TryConnectPins(Graph, FromPin, ToPin))

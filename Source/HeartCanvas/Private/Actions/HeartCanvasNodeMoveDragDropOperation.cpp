@@ -93,7 +93,8 @@ void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEv
 		// Final call to notify graph that the movement in no longer in-progress
 		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, false);
 
-		if (auto&& History = Canvas->GetHeartGraph()->GetExtension<UHeartActionHistory>())
+		if (auto&& History = Canvas->GetHeartGraph()->GetExtension<UHeartActionHistory>();
+			IsValid(History) && History->GetRecordAllMoves())
 		{
 			FHeartMoveNodeProxyUndoData LocationData;
 			LocationData.Locations.Add(Node->GetGraphNode()->GetGuid(),
