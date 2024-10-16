@@ -79,16 +79,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From);
 
-	UPROPERTY(BlueprintAssignable, Category = "Heart|RuntimeRegistry|Events")
+protected:
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartRegistryEvent PostRegistryAdded;
 
-	UPROPERTY(BlueprintAssignable, Category = "Heart|RuntimeRegistry|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartRegistryEvent PreRegistryRemoved;
 
-	UPROPERTY(BlueprintAssignable, Category = "Heart|RuntimeRegistry|Events")
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FHeartRegistryEvent OnAnyRegistryChanged;
 
-protected:
 	FHeartRegistryEventNative PostRegistryAddedNative;
 	FHeartRegistryEventNative PreRegistryRemovedNative; // Future-proofing: Currently, Registries are never removed, but if they are, use this.
 	FHeartRegistryEventNative OnAnyRegistryChangedNative;

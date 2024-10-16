@@ -65,10 +65,10 @@ struct FHeartRegistrationClasses
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heart|RegistrationClasses")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeartRegistrationClasses")
 	TMap<TSubclassOf<UHeartGraphNode>, FHeartNodeClassList> GraphNodeLists;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Heart|RegistrationClasses", meta = (ForceInlineRow))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeartRegistrationClasses", meta = (ForceInlineRow))
 	TMap<FHeartGraphPinTag, FHeartPinClassList> GraphPinLists;
 
 	UE_DEPRECATED(5.3, "Use GraphNodeLists.Objects instead")

@@ -29,7 +29,7 @@ public:
 	void SetCommentText(const FText& Text);
 
 protected:
-	UPROPERTY(EditInstanceOnly, Category = "Heart|TextComment")
+	UPROPERTY(EditInstanceOnly, Category = "TextComment")
 	FText CommentText;
 };
 
@@ -50,6 +50,6 @@ public:
 	void SetCommentImage(const TSoftObjectPtr<UTexture2D>& Image);
 
 protected:
-	UPROPERTY(EditInstanceOnly, Category = "Heart|ImageComment")
+	UPROPERTY(EditInstanceOnly, Category = "ImageComment")
 	TSoftObjectPtr<UTexture2D> CommentImage;
 };
