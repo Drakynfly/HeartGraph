@@ -237,8 +237,18 @@ void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid& Node, const FVecto
 {
 	if (ensure(IsValid(LocationModifiers)))
 	{
-		UHeartGraphNode* GraphNode = DisplayedGraph->GetNode(Node);
-		GraphNode->SetLocation(LocationModifiers->LocationToProxy(Location));
+		const FVector2D ProxiedLocation = LocationModifiers->LocationToProxy(Location);
+
+		if (SyncNodeLocationsWithGraph)
+		{
+			UHeartGraphNode* GraphNode = DisplayedGraph->GetNode(Node);
+			GraphNode->SetLocation(ProxiedLocation);
+		}
+		else
+		{
+			NodeLocations.FindOrAdd(Node) = ProxiedLocation;
+			InvalidateNodeDisplay(Node, EHeartGraphCanvasInvalidateType::NodeLocation);
+		}
 	}
 }
 
@@ -292,7 +302,17 @@ void UHeartGraphCanvas::UpdateAllPositionsOnCanvas()
 void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* CanvasNode)
 {
 	auto&& Node = CanvasNode->GetGraphNode();
-	auto&& NodeLocation = Node->GetLocation();
+
+	FVector2D NodeLocation;
+
+	if (!SyncNodeLocationsWithGraph && NodeLocations.Contains(Node->GetGuid()))
+	{
+		NodeLocation = NodeLocations[Node->GetGuid()];
+	}
+	else
+	{
+		NodeLocation = Node->GetLocation();
+	}
 
 	if (UNLIKELY(NodeLocation.ContainsNaN()))
 	{
@@ -413,7 +433,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, const bool InitN
 			Widget->PostInitNode();
 		}
 
-		if (!IsDesignTime())
+		if (!IsDesignTime() && SyncNodeLocationsWithGraph)
 		{
 			Node->GetOnNodeLocationChanged().AddUObject(this, &ThisClass::OnNodeLocationChanged);
 		}
@@ -680,13 +700,13 @@ FVector2D UHeartGraphCanvas::UnscalePositionToCanvasZoom(const FVector2D& Positi
 
 void UHeartGraphCanvas::InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid, const EHeartGraphCanvasInvalidateType Type)
 {
-	UHeartGraphNode* GraphNode = GetGraph()->GetNode(NodeGuid);
-
 	switch (Type)
 	{
 	case EHeartGraphCanvasInvalidateType::Full:
 		{
 			const bool Selected = SelectedNodes.Contains(NodeGuid);
+
+			UHeartGraphNode* GraphNode = GetGraph()->GetNode(NodeGuid);
 
 			OnNodeRemovedFromGraph(GraphNode);
 			OnNodeAddedToGraph(GraphNode);

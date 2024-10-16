@@ -326,6 +326,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Input")
 	FHeartGraphPinReference PreviewConnectionPin;
 
+	// Node locations used when SyncNodeLocationsWithGraph is disabled
+	TMap<FHeartNodeGuid, FVector2D> NodeLocations;
+
 
 	/*----------------------------
 			 VISUAL CONFIG
@@ -355,6 +358,11 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	FHeartPanToSelectionSettings PanToSelectionSettings;
+
+	// Changes to Canvas Nodes will edit the original location in the source graph. Enabled by default.
+	// Disable to have separate visual locations that can be changed without affecting the source graph.
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
+	bool SyncNodeLocationsWithGraph = true;
 
 	// @todo temp until everything is moved over to use connection widgets
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
