@@ -300,6 +300,7 @@ bool UHeartGraphNode::CanCreate_Editor() const
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
 {
 	Location = NewLocation;
+	OnNodeLocationChanged_Native.Broadcast(this, Location);
 	OnNodeLocationChanged.Broadcast(this, Location);
 }
 
@@ -353,6 +354,7 @@ FHeartPinGuid UHeartGraphNode::AddPin(const FHeartGraphPinDesc& Desc)
 
 	PinData.AddPin(NewKey, Desc);
 
+	OnNodePinsChanged_Native.Broadcast(this);
 	OnNodePinsChanged.Broadcast(this);
 
 	return NewKey;
@@ -367,6 +369,7 @@ bool UHeartGraphNode::RemovePin(const FHeartPinGuid& Pin)
 
 	if (PinData.RemovePin(Pin))
 	{
+		OnNodePinsChanged_Native.Broadcast(this);
 		OnNodePinsChanged.Broadcast(this);
 		return true;
 	}
@@ -491,6 +494,7 @@ void UHeartGraphNode::NotifyPinConnectionsChanged(const FHeartPinGuid& Pin)
 #endif
 		BP_OnConnectionsChanged(Pin);
 	}
+	OnPinConnectionsChanged_Native.Broadcast(Pin);
 	OnPinConnectionsChanged.Broadcast(Pin);
 }
 

@@ -26,6 +26,9 @@ struct FHeartGraphNodeMessage;
 class UHeartGraph;
 class UHeartGraphNode;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged_Native, const FHeartPinGuid&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged_Native, UHeartGraphNode*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged_Native, UHeartGraphNode*, const FVector2D&);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, const FHeartPinGuid&, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
@@ -161,6 +164,10 @@ public:
 	/*----------------------------
 				GETTERS
 	----------------------------*/
+
+	FOnPinConnectionsChanged_Native::RegistrationType& GetOnPinConnectionsChanged() { return OnPinConnectionsChanged_Native; }
+	FOnGraphNodePinChanged_Native::RegistrationType& GetOnNodePinsChanged() { return OnNodePinsChanged_Native; }
+	FOnGraphNodeLocationChanged_Native::RegistrationType& GetOnNodeLocationChanged() { return OnNodeLocationChanged_Native; }
 
 	template <typename TNodeClass>
 	TNodeClass* GetNodeObject() const
@@ -340,7 +347,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Connections Changed")
 	void BP_OnConnectionsChanged(FHeartPinGuid Pin);
 
-public:
+	FOnPinConnectionsChanged_Native OnPinConnectionsChanged_Native;
+	FOnGraphNodePinChanged_Native OnNodePinsChanged_Native;
+	FOnGraphNodeLocationChanged_Native OnNodeLocationChanged_Native;
+
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnPinConnectionsChanged OnPinConnectionsChanged;
 

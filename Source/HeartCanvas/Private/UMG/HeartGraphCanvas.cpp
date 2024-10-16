@@ -248,7 +248,7 @@ void UHeartGraphCanvas::Reset()
 
 	for (auto&& DisplayedNode : DisplayedNodes)
 	{
-		DisplayedNode.Value->GraphNode->OnNodeLocationChanged.RemoveAll(this);
+		DisplayedNode.Value->GraphNode->GetOnNodeLocationChanged().RemoveAll(this);
 		DisplayedNode.Value->RemoveFromParent();
 	}
 
@@ -415,7 +415,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, const bool InitN
 
 		if (!IsDesignTime())
 		{
-			Node->OnNodeLocationChanged.AddDynamic(this, &ThisClass::OnNodeLocationChanged);
+			Node->GetOnNodeLocationChanged().AddUObject(this, &ThisClass::OnNodeLocationChanged);
 		}
 	}
 	else
@@ -628,7 +628,7 @@ void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 		return;
 	}
 
-	Node->OnNodeLocationChanged.RemoveAll(this);
+	Node->GetOnNodeLocationChanged().RemoveAll(this);
 
 	const FHeartNodeGuid NodeGuid = Node->GetGuid();
 
@@ -643,7 +643,7 @@ void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 
 		if (Value->GraphNode.IsValid())
 		{
-			Value->GraphNode->OnNodeLocationChanged.RemoveAll(this);
+			Value->GraphNode->GetOnNodeLocationChanged().RemoveAll(this);
 		}
 
 		Value->RemoveFromParent();

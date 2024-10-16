@@ -24,7 +24,7 @@ void UHeartGraphCanvasNode::NativeDestruct()
 
 	if (GraphNode.IsValid())
 	{
-		GraphNode->OnPinConnectionsChanged.RemoveAll(this);
+		GraphNode->GetOnPinConnectionsChanged().RemoveAll(this);
 	}
 
 	Super::NativeDestruct();
@@ -45,7 +45,7 @@ void UHeartGraphCanvasNode::PostInitNode()
 	if (GraphNode.IsValid())
 	{
 		RebuildAllPinConnections();
-		GraphNode->OnPinConnectionsChanged.AddDynamic(this, &ThisClass::RebuildPinConnections);
+		GraphNode->GetOnPinConnectionsChanged().AddUObject(this, &ThisClass::RebuildPinConnections);
 	}
 }
 
