@@ -163,10 +163,10 @@ public:
 	void ExecuteRedoOnServer();
 
 protected:
-	UFUNCTION()
+	UFUNCTION(/*  Replication UFunction  */)
 	virtual void OnRep_GraphClass();
 
-	UFUNCTION()
+	UFUNCTION(/*  Replication UFunction  */)
 	virtual void OnRep_ClientPermissions(const FGameplayTagContainer& OldPermissions);
 
 	virtual bool CanClientPerformEvent(FGameplayTag RequestedEventType) const;

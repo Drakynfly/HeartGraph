@@ -60,7 +60,6 @@ private:
 	void OnBlueprintPreCompile(UBlueprint* Blueprint);
 	void OnBlueprintCompiled();
 
-	UFUNCTION()
 	void OnNodeRequestReconstruction();
 
 

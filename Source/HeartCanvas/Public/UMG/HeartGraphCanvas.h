@@ -174,13 +174,8 @@ protected:
 	void SetZoom(float Value);
 	void AddToZoom(float Value);
 
-	UFUNCTION()
 	void OnNodeAddedToGraph(UHeartGraphNode* Node);
-
-	UFUNCTION()
 	void OnNodeRemovedFromGraph(UHeartGraphNode* Node);
-
-	UFUNCTION()
 	void OnNodeLocationChanged(UHeartGraphNode* Node, const FVector2D& Location);
 
 

@@ -47,7 +47,6 @@ public:
 
 	void RebuildAllPinConnections();
 
-	UFUNCTION()
 	void RebuildPinConnections(const FHeartPinGuid& Pin);
 
 	UFUNCTION(BlueprintCallable, meta = (DeterminesOutputType = Class, DeprecatedFunction))

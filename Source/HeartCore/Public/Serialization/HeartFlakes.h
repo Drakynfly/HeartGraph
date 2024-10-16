@@ -377,7 +377,7 @@ class HEARTCORE_API UHeartFlakeLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
-	UFUNCTION()
+	UFUNCTION(/*  GetOptions UFunction  */)
 	static TArray<FString> GetAllProviders();
 
 public:
