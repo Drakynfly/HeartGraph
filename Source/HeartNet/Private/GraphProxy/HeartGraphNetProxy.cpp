@@ -408,7 +408,7 @@ void UHeartGraphNetProxy::SetPermissions(const FGameplayTagContainer& Permission
 	MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ClientPermissions, this);
 }
 
-void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid NodeGuid, const EHeartUpdateNodeType Type)
+void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid& NodeGuid, const EHeartUpdateNodeType Type)
 {
 	if (!ensure(NodeGuid.IsValid()))
 	{
@@ -705,7 +705,7 @@ void UHeartGraphNetProxy::OnNodeAdded_Client(const FHeartReplicatedFlake& NodeDa
 	EditReplicatedNodeData(NodeData, Heart::Net::Tags::Node_Added);
 }
 
-void UHeartGraphNetProxy::OnNodeRemoved_Client(const FHeartNodeGuid NodeGuid)
+void UHeartGraphNetProxy::OnNodeRemoved_Client(const FHeartNodeGuid& NodeGuid)
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Removed))
 	{

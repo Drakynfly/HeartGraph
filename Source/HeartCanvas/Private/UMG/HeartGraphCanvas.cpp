@@ -650,7 +650,7 @@ void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
 
 	Node->GetOnNodeLocationChanged().RemoveAll(this);
 
-	const FHeartNodeGuid NodeGuid = Node->GetGuid();
+	auto&& NodeGuid = Node->GetGuid();
 
 	if (SelectedNodes.Contains(NodeGuid))
 	{

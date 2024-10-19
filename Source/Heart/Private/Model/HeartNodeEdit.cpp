@@ -177,7 +177,7 @@ namespace Heart::API
 				continue;
 			}
 
-			const FHeartNodeGuid NodeGuid = Element->GetGuid();
+			const FHeartNodeGuid& NodeGuid = Element->GetGuid();
 
 			if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
 			{

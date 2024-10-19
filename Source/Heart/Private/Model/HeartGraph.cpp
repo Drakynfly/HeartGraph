@@ -382,7 +382,7 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 	}
 	*/
 
-	const FHeartNodeGuid NodeGuid = Node->GetGuid();
+	const FHeartNodeGuid& NodeGuid = Node->GetGuid();
 
 	if (!ensure(!Nodes.Contains(NodeGuid)))
 	{

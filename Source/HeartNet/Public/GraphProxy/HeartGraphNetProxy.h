@@ -148,7 +148,7 @@ public:
 
 	// A generic update function to send local node state to the server.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
-	void RequestUpdateNode_OnServer(FHeartNodeGuid NodeGuid, EHeartUpdateNodeType Type = EHeartUpdateNodeType::HeartNode);
+	void RequestUpdateNode_OnServer(const FHeartNodeGuid& NodeGuid, EHeartUpdateNodeType Type = EHeartUpdateNodeType::HeartNode);
 
 	// Use this to RPC graph actions on the server, to make changes to the source graph.
 	UFUNCTION(BlueprintCallable, Category = "Heart|NetProxy")
@@ -179,7 +179,7 @@ protected:
 
 	// These functions are called on the server via RPC when a client wants to edit things.
 	virtual void OnNodeAdded_Client(const FHeartReplicatedFlake& NodeData);
-	virtual void OnNodeRemoved_Client(FHeartNodeGuid NodeGuid);
+	virtual void OnNodeRemoved_Client(const FHeartNodeGuid& NodeGuid);
 	virtual void OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& NodeMoveEvent);
 	virtual void OnNodeConnectionsChanged_Client(const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
 

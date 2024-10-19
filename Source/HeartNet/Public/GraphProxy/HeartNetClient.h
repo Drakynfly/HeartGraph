@@ -43,7 +43,7 @@ protected:
 	void Server_OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeMoveEvent_Net& NodeMoveEvent);
 
 	UFUNCTION(Server, Reliable)
-	void Server_OnNodeRemoved(UHeartGraphNetProxy* Proxy, FHeartNodeGuid HeartGraphNode);
+	void Server_OnNodeRemoved(UHeartGraphNetProxy* Proxy, const FHeartNodeGuid& HeartGraphNode);
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy, const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);

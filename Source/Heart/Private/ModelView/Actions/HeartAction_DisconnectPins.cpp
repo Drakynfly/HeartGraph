@@ -54,7 +54,7 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHe
 FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
 													   UObject* ContextObject, FBloodContainer& UndoData) const
 {
-	const FHeartNodeGuid Guid = Node->GetGuid();
+	const FHeartNodeGuid& Guid = Node->GetGuid();
 
 	if (Heart::Action::History::IsUndoable())
 	{

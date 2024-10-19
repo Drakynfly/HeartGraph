@@ -58,7 +58,7 @@ void UHeartNetClient::Server_OnNodesMoved_Implementation(UHeartGraphNetProxy* Pr
 	UE_LOG(LogHeartNet, Log, TEXT("Server: Client moved node"))
 }
 
-void UHeartNetClient::Server_OnNodeRemoved_Implementation(UHeartGraphNetProxy* Proxy, const FHeartNodeGuid HeartGraphNode)
+void UHeartNetClient::Server_OnNodeRemoved_Implementation(UHeartGraphNetProxy* Proxy, const FHeartNodeGuid& HeartGraphNode)
 {
 	ensure(IsValid(Proxy));
 	UE_LOG(LogHeartNet, Log, TEXT("Server: Client removing node"))
