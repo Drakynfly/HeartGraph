@@ -4,28 +4,28 @@
 
 namespace Nodesoup
 {
-    FruchtermanReingold::FruchtermanReingold(const FGraphView InGraph, const double InStrength)
+    FruchtermanReingold::FruchtermanReingold(FGraphView InGraph, const double InStrength)
         : Graph(InGraph)
         , Strength(InStrength)
         , StrengthSqr(Strength * Strength)
-        , Temp(10 * sqrt(Graph.Num()))
+        , Temperature(10 * FMath::Sqrt(static_cast<double>(Graph.Num())))
     {
         Movements.SetNumZeroed(Graph.Num());
     }
 
     void FruchtermanReingold::operator()(TArray<FVector2D>& Positions)
     {
-        // Repulsion force between vertex pairs
-        for (int32 i = 0; i < Graph.Num(); i++)
+        for (int32 Node = 0; Node < Graph.Num(); Node++)
         {
-            for (int32 j = i + 1; j < Graph.Num(); j++)
+            // Repulsion force between vertex pairs
+            for (int32 Adj = Node + 1; Adj < Graph.Num(); Adj++)
             {
-                if (i == j)
+                if (Node == Adj)
                 {
                     continue;
                 }
 
-                FVector2D Delta = Positions[i] - Positions[j];
+                FVector2D Delta = Positions[Node] - Positions[Adj];
                 const double Distance = Delta.Size();
                 // TODO: handle distance == 0.0
 
@@ -37,55 +37,57 @@ namespace Nodesoup
 
                 const double Repulsion = StrengthSqr / Distance;
 
-                Movements[i] += Delta / Distance * Repulsion;
-                Movements[j] -= Delta / Distance * Repulsion;
+                const FVector2D Movement = Delta / Distance * Repulsion;
+                Movements[Node] += Movement;
+                Movements[Adj] -= Movement;
             }
 
             // Attraction force between edges
-            for (const int32 adj_id : Graph[i])
+            for (const int32 Adj : Graph[Node])
             {
-                if (adj_id > i)
+                if (Adj > Node)
                 {
                     continue;
                 }
 
-                FVector2D Delta = Positions[i] - Positions[adj_id];
+                FVector2D Delta = Positions[Node] - Positions[Adj];
                 const double Distance = Delta.Size();
-                if (Distance == 0.0)
+                if (FMath::IsNearlyZero(Distance))
                 {
                     continue;
                 }
 
                 const double Attraction = Distance * Distance / Strength;
 
-                Movements[i] -= Delta / Distance * Attraction;
-                Movements[adj_id] += Delta / Distance * Attraction;
+                const FVector2D Movement = Delta / Distance * Attraction;
+                Movements[Node] -= Movement;
+                Movements[Adj] += Movement;
             }
         }
 
         // Max movement capped by current temperature
-        for (int32 i = 0; i < Graph.Num(); i++)
+        for (int32 Node = 0; Node < Graph.Num(); Node++)
         {
-            double mvmt_norm = Movements[i].Size();
+            const double MovementSize = Movements[Node].Size();
             // < 1.0: not worth computing
-            if (mvmt_norm < 1.0)
+            if (MovementSize < 1.0)
             {
                 continue;
             }
-            const double capped_mvmt_norm = FMath::Min(mvmt_norm, Temp);
-            const FVector2D capped_mvmt = Movements[i] / mvmt_norm * capped_mvmt_norm;
+            const double CappedMovementSize = FMath::Min(MovementSize, Temperature);
+            const FVector2D CappedMovement = Movements[Node] / MovementSize * CappedMovementSize;
 
-            Positions[i] += capped_mvmt;
+            Positions[Node] += CappedMovement;
         }
 
         // Cool down fast until we reach 1.5, then stay at low temperature
-        if (Temp > 1.5)
+        if (Temperature > 1.5)
         {
-            Temp *= 0.85;
+            Temperature *= 0.85;
         }
         else
         {
-            Temp = 1.5;
+            Temperature = 1.5;
         }
     }
 }

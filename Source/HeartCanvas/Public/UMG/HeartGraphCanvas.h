@@ -13,6 +13,7 @@
 
 #include "HeartGraphCanvas.generated.h"
 
+class UHeartLayoutHelper;
 class UCanvasPanelSlot;
 
 class UHeartGraph;
@@ -317,6 +318,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Instanced, Category = "Widgets", NoClear, meta = (ShowInnerProperties))
 	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
 
+	UPROPERTY(EditAnywhere, Instanced, Category = "Widgets")
+	TObjectPtr<UHeartLayoutHelper> Layout;
+
 	UPROPERTY(EditAnywhere, Category = "Input", meta = (ShowOnlyInnerProperties))
 	FHeartWidgetInputBindingContainer BindingContainer;
 
@@ -363,6 +367,10 @@ protected:
 	// Disable to have separate visual locations that can be changed without affecting the source graph.
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
 	bool SyncNodeLocationsWithGraph = true;
+
+	// Some Layouts need to be run on tick to update nodes each frame. This may not be very performant.
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")
+	bool RunLayoutOnTick = false;
 
 	// @todo temp until everything is moved over to use connection widgets
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")

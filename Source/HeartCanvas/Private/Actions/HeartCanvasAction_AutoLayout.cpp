@@ -13,14 +13,14 @@ static const FLazyName OriginalLocationsStorage("oldlocs");
 FReply UHeartCanvasAction_AutoLayout::ExecuteOnGraph(UHeartGraphCanvas* CanvasGraph, const FHeartInputActivation& Activation,
 														  UObject* ContextObject, FBloodContainer& UndoData) const
 {
-	const UHeartLayoutHelper* LayoutHelper = Cast<UHeartLayoutHelper>(ContextObject);
+	UHeartLayoutHelper* LayoutHelper = Cast<UHeartLayoutHelper>(ContextObject);
 
 	if (!IsValid(LayoutHelper))
 	{
 		if (const TSubclassOf<UHeartLayoutHelper> LayoutClass = Cast<UClass>(ContextObject);
 			IsValid(LayoutClass) && !LayoutClass->HasAnyClassFlags(CLASS_Abstract))
 		{
-			LayoutHelper = GetDefault<UHeartLayoutHelper>(LayoutClass);
+			LayoutHelper = NewObject<UHeartLayoutHelper>(GetTransientPackage(), LayoutClass);
 		}
 	}
 

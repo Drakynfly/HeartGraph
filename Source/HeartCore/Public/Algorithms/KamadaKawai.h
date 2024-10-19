@@ -21,7 +21,7 @@ namespace Nodesoup
             double Strength = 0.0;
         };
 
-        const FGraphView Graph;
+        FGraphView Graph;
         const double EnergyThreshold;
         TArray<TArray<FSpring>> Springs;
 

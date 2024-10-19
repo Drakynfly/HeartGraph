@@ -6,7 +6,7 @@
 
 namespace Nodesoup
 {
-    class FruchtermanReingold
+    class HEARTCORE_API FruchtermanReingold
     {
     public:
         FruchtermanReingold(FGraphView InGraph, double InStrength = 15.0);
@@ -14,10 +14,10 @@ namespace Nodesoup
         void operator()(TArray<FVector2D>& Positions);
 
     private:
-        const FGraphView Graph;
+        FGraphView Graph;
         const double Strength;
         const double StrengthSqr;
-        double Temp;
+        double Temperature;
         TArray<FVector2D> Movements;
     };
 }

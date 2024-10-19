@@ -8,7 +8,7 @@
 namespace Nodesoup
 {
     TArray<FVector2D> fruchterman_reingold(
-        const FGraphView Graph,
+        FGraphView Graph,
         const FGraphIterationCallback& Callback,
         const uint32 Width,
         const uint32 Height,
@@ -36,7 +36,7 @@ namespace Nodesoup
     }
 
     TArray<FVector2D> kamada_kawai(
-        const FGraphView Graph,
+        FGraphView Graph,
         const uint32 Width,
         const uint32 Height,
         const double Strength,
@@ -53,7 +53,7 @@ namespace Nodesoup
         return Positions;
     }
 
-    TArray<double> SizeRadii(const FGraphView Graph, const double MinRadius, const double Strength)
+    TArray<double> SizeRadii(FGraphView Graph, const double MinRadius, const double Strength)
     {
         TArray<double> Radii;
         Radii.Reserve(Graph.Num());

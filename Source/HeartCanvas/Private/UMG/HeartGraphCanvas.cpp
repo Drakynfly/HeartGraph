@@ -18,6 +18,7 @@
 
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "ModelView/HeartLayoutHelper.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvas)
 
@@ -75,6 +76,11 @@ void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDe
 	if (TargetView != View)
 	{
 		SetViewOffset(Vector2fInterpTo(FVector2f(View), FVector2f(TargetView), InDeltaTime, DraggingInterpSpeed));
+	}
+
+	if (RunLayoutOnTick && IsValid(Layout))
+	{
+		Layout->Layout(this, InDeltaTime);
 	}
 
 	if (NeedsToUpdatePositions)
@@ -227,7 +233,18 @@ FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
 	if (ensure(IsValid(LocationModifiers)))
 	{
-		return LocationModifiers->ProxyToLocation(DisplayedGraph->GetNode(Node)->GetLocation());
+		FVector2D Location;
+
+		if (SyncNodeLocationsWithGraph || !NodeLocations.Contains(Node))
+		{
+			Location = DisplayedGraph->GetNode(Node)->GetLocation();
+		}
+		else
+		{
+			Location = NodeLocations[Node];
+		}
+
+		return LocationModifiers->ProxyToLocation(Location);
 	}
 
 	return FVector2D();

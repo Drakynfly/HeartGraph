@@ -8,7 +8,7 @@ namespace Nodesoup
 
     using FTwoDimIntArray = TArray<TArray<int32>>;
 
-    using FGraphView = TConstArrayView<TConstArrayView<int32>>;
+    using FGraphView = const FTwoDimIntArray&;
 
     /** Main library functions */
 

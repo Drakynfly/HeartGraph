@@ -4,7 +4,7 @@
 
 namespace Nodesoup
 {
-    KamadaKawai::KamadaKawai(const FGraphView InGraph, const double Strength, const double InEnergyThreshold)
+    KamadaKawai::KamadaKawai(FGraphView InGraph, const double Strength, const double InEnergyThreshold)
         : Graph(InGraph)
         , EnergyThreshold(InEnergyThreshold)
     {
@@ -47,7 +47,7 @@ namespace Nodesoup
         }
     }
 
-    FTwoDimIntArray KamadaKawai::FloydWarshall(const FGraphView Graph)
+    FTwoDimIntArray KamadaKawai::FloydWarshall(FGraphView Graph)
     {
         // build adjacency matrix (infinity = no edge, 1 = edge)
         constexpr uint32 Infinity = TNumericLimits<uint32>::Max() / 2;
@@ -153,10 +153,10 @@ namespace Nodesoup
                 continue;
             }
 
-            FVector2D Delta = Positions[Vertex] - Positions[i];
+            const FVector2D Delta = Positions[Vertex] - Positions[i];
             const double Distance = Delta.Size();
 
-            const FSpring Spring = Springs[Vertex][i];
+            const FSpring& Spring = Springs[Vertex][i];
             Energy += Delta * (Spring.Strength * (1.0 - Spring.Length / Distance));
         }
 
@@ -182,11 +182,11 @@ namespace Nodesoup
                 continue;
             }
 
-            FVector2D Delta = Positions[Vertex] - Positions[i];
+            const FVector2D Delta = Positions[Vertex] - Positions[i];
             const double Distance = Delta.Size();
             const double CubedDistance = FMath::Cube(Distance);
 
-            const FSpring Spring = Springs[Vertex][i];
+            const FSpring& Spring = Springs[Vertex][i];
 
             Energy += Delta * (Spring.Strength * (1.0 - Spring.Length / Distance));
             XEnergy.Y += Spring.Strength * Spring.Length * Delta.X * Delta.Y / CubedDistance;
