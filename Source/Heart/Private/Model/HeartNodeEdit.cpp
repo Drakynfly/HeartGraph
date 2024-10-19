@@ -132,33 +132,36 @@ namespace Heart::API
 
 	void FNodeEdit::HandlePending()
 	{
-		// Pending delete pass 1: Remove all connections
+		if (!PendingDeletes.IsEmpty())
 		{
-			Connections::FEdit ConnectionsEdit(Graph);
-			for (auto&& It = PendingDeletes.CreateIterator(); It; ++It)
+			// Pending delete pass 1: Remove all connections
 			{
-				// Remove any guids that aren't valid for some reason
-				if (!ensure(It->IsValid()) || !Graph->Nodes.Contains(*It))
+				Connections::FEdit ConnectionsEdit(Graph);
+				for (auto&& It = PendingDeletes.CreateIterator(); It; ++It)
 				{
-					It.RemoveCurrent();
-					continue;
+					// Remove any guids that aren't valid for some reason
+					if (!ensure(It->IsValid()) || !Graph->Nodes.Contains(*It))
+					{
+						It.RemoveCurrent();
+						continue;
+					}
+
+					// Remove all connections that will be orphaned by removing this node
+					ConnectionsEdit.DisconnectAll(*It);
 				}
-
-				// Remove all connections that will be orphaned by removing this node
-				ConnectionsEdit.DisconnectAll(*It);
+				// Out-of-scope for ConnectionsEdit, connections changed event is broadcast
 			}
-			// Out-of-scope for ConnectionsEdit, connections changed event is broadcast
-		}
 
-		// Pending delete pass 2: Remove the nodes
-		for (auto&& PendingDelete : PendingDeletes)
-		{
-			UHeartGraphNode* NodeBeingRemoved;
-			Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
-
-			if (IsValid(NodeBeingRemoved))
+			// Pending delete pass 2: Remove the nodes
+			for (auto&& PendingDelete : PendingDeletes)
 			{
-				Graph->OnNodeRemoved.Broadcast(NodeBeingRemoved);
+				UHeartGraphNode* NodeBeingRemoved;
+				Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
+
+				if (IsValid(NodeBeingRemoved))
+				{
+					Graph->OnNodeRemoved.Broadcast(NodeBeingRemoved);
+				}
 			}
 		}
 
