@@ -8,7 +8,7 @@
 /**
  * Base class for per-pin instanced metadata.
  */
-UCLASS(Blueprintable, Abstract, DefaultToInstanced)
+UCLASS(Blueprintable, BlueprintType, Abstract, DefaultToInstanced)
 class HEART_API UHeartGraphPinMetadata : public UObject
 {
 	GENERATED_BODY()
