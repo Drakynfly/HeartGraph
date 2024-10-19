@@ -6,7 +6,7 @@
 #include "HeartLayoutHelper.generated.h"
 
 struct FHeartNodeGuid;
-class IHeartNodeLocationAccessor;
+class IHeartGraphInterface;
 class UHeartGraphNode;
 
 USTRUCT()
@@ -27,24 +27,24 @@ class HEART_API UHeartLayoutHelper : public UObject
 
 public:
 	// Required to override to implement logic. Returns false if no node locations were changed.
-	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<FHeartNodeGuid>& Nodes)
+	virtual bool Layout(IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes)
 		PURE_VIRTUAL(UHeartLayoutHelper::Layout, return false; )
 
 	// Overload that consumes a DeltaTime, for layouts that handle being run on tick
-	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<FHeartNodeGuid>& Nodes, float DeltaTime)
+	virtual bool Layout(IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes, float DeltaTime)
 	{
-		return Layout(Accessor, Nodes);
+		return Layout(Interface, Nodes);
 	}
 
 	// Overload that calls Layout on all Nodes in the Graph.
-	bool Layout(IHeartNodeLocationAccessor* Accessor);
-	bool Layout(IHeartNodeLocationAccessor* Accessor, float DeltaTime);
+	bool Layout(IHeartGraphInterface* Interface);
+	bool Layout(IHeartGraphInterface* Interface, float DeltaTime);
 
 protected:
-	FHeartGraphAdjacencyList GetGraphAdjacencyList(const IHeartNodeLocationAccessor* Accessor, const TArray<FHeartNodeGuid>& Nodes) const;
+	FHeartGraphAdjacencyList GetGraphAdjacencyList(const IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|LayoutHelper")
-	void ApplyNewPositions(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, const TArray<FHeartNodeGuid>& Nodes, const TArray<FVector2D>& NewPositions) const;
+	void ApplyNewPositions(const TScriptInterface<IHeartGraphInterface>& Interface, const TArray<FHeartNodeGuid>& Nodes, const TArray<FVector2D>& NewPositions) const;
 };
 
 UCLASS(Abstract, Blueprintable, MinimalAPI)
@@ -53,8 +53,8 @@ class UHeartLayoutHelper_BlueprintBase final : public UHeartLayoutHelper
 	GENERATED_BODY()
 
 protected:
-	virtual bool Layout(IHeartNodeLocationAccessor* Accessor, const TArray<FHeartNodeGuid>& Nodes) override;
+	virtual bool Layout(IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes) override;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (ScriptName = "Layout"))
-	bool Layout_BP(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor, const TArray<FHeartNodeGuid>& Nodes);
+	bool Layout_BP(const TScriptInterface<IHeartGraphInterface>& Interface, const TArray<FHeartNodeGuid>& Nodes);
 };

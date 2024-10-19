@@ -6,7 +6,9 @@
 #include "HeartGraphAction.generated.h"
 
 class UHeartGraph;
+class IHeartGraphInterface;
 class UHeartGraphNode;
+class IHeartGraphNodeInterface;
 class IHeartGraphPinInterface;
 
 /**
@@ -22,9 +24,12 @@ protected:
 	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) const override final;
 	//~ UHeartActionBase
 
+	virtual FHeartEvent ExecuteOnGraph(IHeartGraphInterface* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+	virtual FHeartEvent ExecuteOnNode(IHeartGraphNodeInterface* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+
 	virtual FHeartEvent ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 	virtual FHeartEvent ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
-	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 };
 
 

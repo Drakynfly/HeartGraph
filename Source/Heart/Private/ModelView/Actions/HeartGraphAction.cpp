@@ -21,11 +21,11 @@ FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Argument
 
 			if (auto&& GraphInterface = Cast<IHeartGraphInterface>(Arguments.Target))
 			{
-				return ExecuteOnGraph(GraphInterface->GetHeartGraph(), Arguments.Activation, Arguments.Payload, UndoData);
+				return ExecuteOnGraph(GraphInterface, Arguments.Activation, Arguments.Payload, UndoData);
 			}
 			if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
 			{
-				return ExecuteOnNode(NodeInterface->GetHeartGraphNode(), Arguments.Activation, Arguments.Payload, UndoData);
+				return ExecuteOnNode(NodeInterface, Arguments.Activation, Arguments.Payload, UndoData);
 			}
 			if (Arguments.Target->Implements<UHeartGraphPinInterface>())
 			{
@@ -36,8 +36,20 @@ FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Argument
 		});
 }
 
-FHeartEvent UHeartGraphAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartGraphAction::ExecuteOnGraph(IHeartGraphInterface* Graph, const FHeartInputActivation& Activation,
 	UObject* ContextObject, FBloodContainer& UndoData) const
+{
+	return ExecuteOnGraph(Graph->GetHeartGraph(), Activation, ContextObject, UndoData);
+}
+
+FHeartEvent UHeartGraphAction::ExecuteOnNode(IHeartGraphNodeInterface* Node, const FHeartInputActivation& Activation,
+	UObject* ContextObject, FBloodContainer& UndoData) const
+{
+	return ExecuteOnNode(Node, Activation, ContextObject, UndoData);
+}
+
+FHeartEvent UHeartGraphAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+											  UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	return FHeartEvent::Ignored;
 }

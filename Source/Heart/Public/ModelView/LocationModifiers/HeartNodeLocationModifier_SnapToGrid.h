@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ModelView/HeartNodeLocationAccessor.h"
+#include "ModelView/HeartNodeLocationModifier.h"
 #include "HeartNodeLocationModifier_SnapToGrid.generated.h"
 
 /**

@@ -86,7 +86,9 @@ ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
  *
  * Any non-abstract child must implement `CanExecute` and `Execute` unless a parent does it for them.
  * Override GetDescription for a custom FText label used in user-facing UI.
- * Optionally, `CanUndo` & `Undo` may be implemented to support Undo/Redo behavior.
+ * Optionally, `CanUndo` & `Undo` may be implemented to support Undo/Redo behavior. If Undo is supported, then Redo is
+ * implied to be supported as well. In the case of a Redo being run, Execute is called with valid UndoData.
+ * This can be verified by calling `Activation.IsRedoAction()`
  */
 UCLASS(Abstract, Const, meta = (DontUseGenericSpawnObject = "True"))
 class HEARTCORE_API UHeartActionBase : public UObject
@@ -111,10 +113,10 @@ protected:
 	UFUNCTION(BlueprintPure, Category = "Heart|GraphActionBase")
 	static bool CanExecute(TSubclassOf<UHeartActionBase> Class, const UObject* Target);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (AutoCreateRefTerm = "Activation"))
 	static FHeartEvent ExecuteGraphAction(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphActionBase", meta = (AutoCreateRefTerm = "Activation"))
 	static FHeartEvent ExecuteGraphActionWithPayload(TSubclassOf<UHeartActionBase> Class, UObject* Target, const FHeartManualEvent& Activation, UObject* Payload);
 
 

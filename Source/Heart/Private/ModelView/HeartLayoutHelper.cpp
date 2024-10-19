@@ -1,43 +1,42 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "ModelView/HeartLayoutHelper.h"
-#include "ModelView/HeartNodeLocationAccessor.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayoutHelper)
 
-bool UHeartLayoutHelper::Layout(IHeartNodeLocationAccessor* Accessor)
+bool UHeartLayoutHelper::Layout(IHeartGraphInterface* Interface)
 {
-	const UHeartGraph* Graph = Accessor->GetHeartGraph();
+	const UHeartGraph* Graph = Interface->GetHeartGraph();
 	if (IsValid(Graph))
 	{
 		TArray<FHeartNodeGuid> AllNodes;
 		Graph->GetNodeGuids(AllNodes);
-		return Layout(Accessor, AllNodes);
+		return Layout(Interface, AllNodes);
 	}
 
 	return false;
 }
 
-bool UHeartLayoutHelper::Layout(IHeartNodeLocationAccessor* Accessor, const float DeltaTime)
+bool UHeartLayoutHelper::Layout(IHeartGraphInterface* Interface, const float DeltaTime)
 {
-	const UHeartGraph* Graph = Accessor->GetHeartGraph();
+	const UHeartGraph* Graph = Interface->GetHeartGraph();
 	if (IsValid(Graph))
 	{
 		TArray<FHeartNodeGuid> AllNodes;
 		Graph->GetNodeGuids(AllNodes);
-		return Layout(Accessor, AllNodes, DeltaTime);
+		return Layout(Interface, AllNodes, DeltaTime);
 	}
 
 	return false;
 }
 
-FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const IHeartNodeLocationAccessor* Accessor, const TArray<FHeartNodeGuid>& Nodes) const
+FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes) const
 {
 	FHeartGraphAdjacencyList Result;
 
-	auto Graph = Accessor->GetHeartGraph();
+	auto Graph = Interface->GetHeartGraph();
 
 	for (int32 i = 0; i < Nodes.Num(); ++i)
 	{
@@ -68,13 +67,13 @@ FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const IHeartN
 	return Result;
 }
 
-void UHeartLayoutHelper::ApplyNewPositions(const TScriptInterface<IHeartNodeLocationAccessor>& Accessor,
+void UHeartLayoutHelper::ApplyNewPositions(const TScriptInterface<IHeartGraphInterface>& Interface,
 										   const TArray<FHeartNodeGuid>& Nodes,
 										   const TArray<FVector2D>& NewPositions) const
 {
     for (int32 i = 0; i < NewPositions.Num(); ++i)
     {
-    	Accessor->SetNodeLocation(Nodes[i], NewPositions[i], false);
+    	Interface->SetNodeLocation(Nodes[i], NewPositions[i], false);
     }
 
 	// @todo fix
@@ -82,11 +81,11 @@ void UHeartLayoutHelper::ApplyNewPositions(const TScriptInterface<IHeartNodeLoca
 
 	TSet<FHeartNodeGuid> Touched;
 	Touched.Append(Nodes);
-    Accessor->GetHeartGraph()->NotifyNodeLocationsChanged(Touched, TempInProgressToPreventNetReplication);
+    Interface->GetHeartGraph()->NotifyNodeLocationsChanged(Touched, TempInProgressToPreventNetReplication);
 }
 
-bool UHeartLayoutHelper_BlueprintBase::Layout(IHeartNodeLocationAccessor* Accessor,
+bool UHeartLayoutHelper_BlueprintBase::Layout(IHeartGraphInterface* Interface,
 											  const TArray<FHeartNodeGuid>& Nodes)
 {
-	return Layout_BP(Accessor->_getUObject(), Nodes);
+	return Layout_BP(Interface->_getUObject(), Nodes);
 }
