@@ -88,6 +88,9 @@ class HEART_API UHeartNodeSortingLibrary : public UBlueprintFunctionLibrary
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
+	static TArray<UHeartGraphNode*> ResolveNodes(const UHeartGraph* Graph, const TArray<FHeartNodeGuid>& Nodes);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")
 	static TArray<UHeartGraphNode*> SortNodes(const TArray<UHeartGraphNode*>& Nodes, const FHeartNodeComparePredicate& Predicate);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|NodeSortingLibrary")

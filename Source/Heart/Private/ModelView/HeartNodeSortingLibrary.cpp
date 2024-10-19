@@ -8,8 +8,22 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeSortingLibrary)
 
+TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::ResolveNodes(const UHeartGraph* Graph, const TArray<FHeartNodeGuid>& Nodes)
+{
+	TArray<UHeartGraphNode*> Out;
+	Out.Reserve(Nodes.Num());
+	for (auto&& Guid : Nodes)
+	{
+		if (UHeartGraphNode* Node = Graph->GetNode(Guid))
+		{
+			Out.Add(Node);
+		}
+	}
+	return Out;
+}
+
 TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::SortNodes(const TArray<UHeartGraphNode*>& Nodes,
-	const FHeartNodeComparePredicate& Predicate)
+															 const FHeartNodeComparePredicate& Predicate)
 {
 	if (!ensure(Predicate.IsBound()))
 	{
