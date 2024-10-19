@@ -120,7 +120,7 @@ void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 {
 #if WITH_EDITOR
 	// The HeartEdGraph doesn't need to persist for graphs duplicated during gameplay
-	if (GetWorld()->IsGameWorld())
+	if (GetWorld() && GetWorld()->IsGameWorld())
 	{
 		HeartEdGraph = nullptr;
 	}
