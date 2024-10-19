@@ -56,6 +56,8 @@ void UHeartCanvasNodeMoveDragDropOperation::Dragged_Implementation(const FPointe
 
 		auto&& DIVSettings = Canvas->GetDragIntoViewSettings();
 
+		auto&& Guid = Node->GetGraphNode()->GetGuid();
+
 		if (DIVSettings.EnableDragIntoView)
 		{
 			FVector2f Diff = ClampedPosition - UnclampedPosition;
@@ -63,14 +65,14 @@ void UHeartCanvasNodeMoveDragDropOperation::Dragged_Implementation(const FPointe
 			Diff *= DIVSettings.DragMultiplier;
 
 			Canvas->AddToViewCorner(Diff, DIVSettings.InterpDragIntoView);
-			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), FVector2D(Canvas->UnscalePositionToCanvasZoom_2f(UnclampedPosition)), true);
+			Canvas->SetNodeLocation(Guid, FVector2D(Canvas->UnscalePositionToCanvasZoom_2f(UnclampedPosition)), true);
 		}
 		else
 		{
-			Canvas->SetNodeLocation(Node->GetGraphNode()->GetGuid(), FVector2D(Canvas->UnscalePositionToCanvasZoom_2f(ClampedPosition)), true);
+			Canvas->SetNodeLocation(Guid, FVector2D(Canvas->UnscalePositionToCanvasZoom_2f(ClampedPosition)), true);
 		}
 
-		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, true);
+		Canvas->GetHeartGraph()->NotifyNodeLocationChanged(Guid, true);
 	}
 }
 
@@ -89,16 +91,16 @@ void UHeartCanvasNodeMoveDragDropOperation::Drop_Implementation(const FPointerEv
 		!OriginalLocation.GetValue().Equals(NodeLocation))
 	{
 		auto&& Canvas = Node->GetCanvas();
+		auto&& Guid = Node->GetGraphNode()->GetGuid();
 
 		// Final call to notify graph that the movement in no longer in-progress
-		Canvas->GetHeartGraph()->NotifyNodeLocationsChanged({Node->GetGraphNode()}, false);
+		Canvas->GetHeartGraph()->NotifyNodeLocationChanged(Guid, false);
 
 		if (auto&& History = Canvas->GetHeartGraph()->GetExtension<UHeartActionHistory>();
 			IsValid(History) && History->GetRecordAllMoves())
 		{
 			FHeartMoveNodeProxyUndoData LocationData;
-			LocationData.Locations.Add(Node->GetGraphNode()->GetGuid(),
-				{ OriginalLocation.GetValue(), NodeLocation });
+			LocationData.Locations.Add(Guid, { OriginalLocation.GetValue(), NodeLocation });
 
 			// Manually record an action
 			FHeartActionRecord Record;

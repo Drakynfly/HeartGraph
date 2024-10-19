@@ -56,19 +56,17 @@ bool UHeartCanvasAction_AutoLayout::Undo(UObject* Target, const FBloodContainer&
 		return false;
 	}
 
-	UHeartGraph* Graph = GraphCanvas->GetHeartGraph();
-
-	TSet<UHeartGraphNode*> Touched;
+	TSet<FHeartNodeGuid> Touched;
 
 	auto&& Data = UndoData.Get<TMap<FHeartNodeGuid, FVector2D>>(OriginalLocationsStorage);
 
 	for (auto&& OriginalLocation : Data)
 	{
-		Touched.Add(Graph->GetNode(OriginalLocation.Key));
+		Touched.Add(OriginalLocation.Key);
 		GraphCanvas->SetNodeLocation(OriginalLocation.Key, OriginalLocation.Value, false);
 	}
 
-	Graph->NotifyNodeLocationsChanged(Touched, false);
+	GraphCanvas->GetHeartGraph()->NotifyNodeLocationsChanged(Touched, false);
 
 	return true;
 }

@@ -138,7 +138,7 @@ void UHeartEdGraphNode::PreSave(const FObjectPreSaveContext SaveContext)
 		NewLocation.X = NodePosX;
 		NewLocation.Y = NodePosY;
 		HeartGraphNode->SetLocation(NewLocation);
-		HeartGraphNode->GetGraph()->NotifyNodeLocationsChanged({HeartGraphNode}, false);
+		HeartGraphNode->GetGraph()->NotifyNodeLocationChanged(HeartGraphNode->Guid, false);
 	}
 }
 

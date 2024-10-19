@@ -12,6 +12,7 @@ struct FHeartGraphConnectionEvent
 {
 	GENERATED_BODY()
 
+	// @todo REFACTOR this should be FHeartNodeGuids
 	UPROPERTY(BlueprintReadOnly, Category = "ConnectionEvent")
 	TSet<TObjectPtr<UHeartGraphNode>> AffectedNodes;
 
@@ -25,6 +26,7 @@ struct FHeartNodeMoveEvent
 	GENERATED_BODY()
 
 	// Nodes being moved. Usually just one, but mass node movement might be enabled in graph using a marquee tool.
+	// @todo REFACTOR this should be FHeartNodeGuids
 	UPROPERTY(BlueprintReadOnly, Category = "ConnectionEvent")
 	TSet<TObjectPtr<UHeartGraphNode>> AffectedNodes;
 

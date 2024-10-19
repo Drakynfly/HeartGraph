@@ -137,6 +137,37 @@ void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 	Super::PostDuplicate(DuplicateMode);
 }
 
+UHeartGraph* UHeartGraph::GetHeartGraph() const
+{
+	return const_cast<ThisClass*>(this);
+}
+
+void UHeartGraph::NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, const bool InProgress)
+{
+	if (!AffectedNode.IsValid()) return;
+
+	FHeartNodeMoveEvent Event;
+	Event.AffectedNodes.Add(GetNode(AffectedNode));
+	Event.MoveFinished = !InProgress;
+	OnNodeMoved.Broadcast(Event);
+}
+
+void UHeartGraph::NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, const bool InProgress)
+{
+	if (AffectedNodes.IsEmpty()) return;
+
+	FHeartNodeMoveEvent Event;
+	for (auto&& Element : AffectedNodes)
+	{
+		if (Element.IsValid())
+		{
+			Event.AffectedNodes.Add(GetNode(Element));
+		}
+	}
+	Event.MoveFinished = !InProgress;
+	OnNodeMoved.Broadcast(Event);
+}
+
 void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const bool InProgress)
 {
 	FHeartNodeMoveEvent Event;
@@ -154,11 +185,6 @@ void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent&
 		BP_OnNodeConnectionsChanged(Event);
 	}
 	OnNodeConnectionsChanged.Broadcast(Event);
-}
-
-UHeartGraph* UHeartGraph::GetHeartGraph() const
-{
-	return const_cast<ThisClass*>(this);
 }
 
 void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const

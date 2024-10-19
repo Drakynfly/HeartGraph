@@ -23,14 +23,18 @@ FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(UHeartGraph* Graph, const
 
 	auto&& LocationData = UndoData.Get<FHeartMoveNodeProxyUndoData>(LocationStorage);
 
-	for (auto NodeLocations : LocationData.Locations)
+	TSet<FHeartNodeGuid> Touched;
+
+	for (auto&& NodeLocations : LocationData.Locations)
 	{
+		Touched.Add(NodeLocations.Key);
 		if (auto&& Node = Graph->GetNode(NodeLocations.Key))
 		{
 			Node->SetLocation(NodeLocations.Value.New);
-			Node->GetGraph()->NotifyNodeLocationsChanged({Node}, false);
 		}
 	}
+
+	Graph->NotifyNodeLocationsChanged(Touched, false);
 
 	return FHeartEvent::Handled;
 }
@@ -41,14 +45,18 @@ bool UHeartAction_MoveNodeProxy::Undo(UObject* Target, const FBloodContainer& Un
 
 	auto&& LocationData = UndoData.Get<FHeartMoveNodeProxyUndoData>(LocationStorage);
 
-	for (auto NodeLocations : LocationData.Locations)
+	TSet<FHeartNodeGuid> Touched;
+
+	for (auto&& NodeLocations : LocationData.Locations)
 	{
+		Touched.Add(NodeLocations.Key);
 		if (auto&& Node = Graph->GetNode(NodeLocations.Key))
 		{
 			Node->SetLocation(NodeLocations.Value.Original);
-			Node->GetGraph()->NotifyNodeLocationsChanged({Node}, false);
 		}
 	}
+
+	Graph->NotifyNodeLocationsChanged(Touched, false);
 
 	return true;
 }

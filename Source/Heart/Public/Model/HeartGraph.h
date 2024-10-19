@@ -91,6 +91,10 @@ private:
 
 public:
 	// Called after node locations have changed.
+	virtual void NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, bool InProgress);
+	virtual void NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, bool InProgress);
+
+	UE_DEPRECATED(5.5, "Please use the overload that takes FHeartNodeGuids")
 	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
 
 	// Return true in Iter to continue iterating
