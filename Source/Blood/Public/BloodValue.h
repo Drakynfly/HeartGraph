@@ -29,6 +29,10 @@ struct BLOOD_API FBloodValue
 	// @todo only works for structs right now (using BloodWrappers doesn't work)
 	explicit FBloodValue(const UScriptStruct* Type, const uint8* Memory);
 
+	// Ctor from a type and memory array
+	// @todo only works for structs right now (using BloodWrappers doesn't work)
+	explicit FBloodValue(const UScriptStruct* Type, TConstArrayView<const uint8*> Memory);
+
 	// Ctor from single value
 	explicit FBloodValue(const UEnum* Type, const uint8* Memory);
 
@@ -43,6 +47,9 @@ struct BLOOD_API FBloodValue
 	bool IsValid() const { return PropertyBag.IsValid(); }
 
 	const uint8* GetMemory() const { return PropertyBag.GetValue().GetMemory(); }
+
+	// @todo really awkward. GetValue should handle this
+	FInstancedStruct GetStruct() const;
 
 	template <typename TBloodData>
 	bool Is() const;
@@ -161,7 +168,7 @@ template <typename TBloodData> bool FBloodValue::Is() const
 			const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 			return Desc.ContainerTypes.IsEmpty() &&
 			   Desc.ValueType == Blood::TDataConverter<TBloodData>::PropertyBagType() &&
-			   Desc.ValueTypeObject == Blood::TDataConverter<TBloodData>::PropertyBagTypeObject();;
+			   Desc.ValueTypeObject == Blood::TDataConverter<TBloodData>::PropertyBagTypeObject();
 		}
 	}
 }

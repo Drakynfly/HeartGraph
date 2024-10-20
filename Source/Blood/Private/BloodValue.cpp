@@ -11,11 +11,33 @@ FBloodValue::FBloodValue(const UScriptStruct* Type, const uint8* Memory)
 	PropertyBag.AddProperty(
 		Blood::Private::V0,
 		EPropertyBagPropertyType::Struct,
-		const_cast<UScriptStruct*>(Type));
+		Type);
 
 	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 
 	Desc.CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+}
+
+FBloodValue::FBloodValue(const UScriptStruct* Type, const TConstArrayView<const uint8*> Memory)
+{
+	// Init property
+	PropertyBag.AddContainerProperty(
+		Blood::Private::V0,
+		EPropertyBagContainerType::Array,
+		EPropertyBagPropertyType::Struct,
+		Type);
+
+	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+	auto&& BetterBeArray = PropertyBag.GetMutableArrayRef(Blood::Private::V0);
+	check(BetterBeArray.HasValue());
+
+	FPropertyBagArrayRef& ArrayRef = BetterBeArray.GetValue();
+
+	ArrayRef.AddValues(Memory.Num());
+	for (int32 i = 0; i < Memory.Num(); ++i)
+	{
+		Desc.CachedProperty->CopyCompleteValue(ArrayRef.GetRawPtr(i), Memory[i]);
+	}
 }
 
 FBloodValue::FBloodValue(const UEnum* Type, const uint8* Memory)
@@ -24,11 +46,21 @@ FBloodValue::FBloodValue(const UEnum* Type, const uint8* Memory)
 	PropertyBag.AddProperty(
 		Blood::Private::V0,
 		EPropertyBagPropertyType::Enum,
-		const_cast<UEnum*>(Type));
+		Type);
 
 	const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 
 	Desc.CachedProperty->CopyCompleteValue_InContainer(PropertyBag.GetMutableValue().GetMemory(), Memory);
+}
+
+FInstancedStruct FBloodValue::GetStruct() const
+{
+	auto Res = PropertyBag.GetValueStruct(Blood::Private::V0);
+	if (Res.HasValue())
+	{
+		return FInstancedStruct(Res.GetValue());
+	}
+	return FInstancedStruct();
 }
 
 bool FBloodValue::Is(const UField* Type) const
