@@ -214,6 +214,12 @@ public:
 	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	bool IsPinOnNode(const FHeartPinGuid& Pin) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	int32 GetPinCount() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartGraphPinReference GetPinReference(const FHeartPinGuid& Pin) const;
 
 	// @todo non-virtual non-trivial accessors should be moved to a Library

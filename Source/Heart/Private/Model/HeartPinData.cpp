@@ -30,6 +30,11 @@ bool FHeartNodePinData::RemovePin(const FHeartPinGuid Key)
 	return !!PinOrder.Remove(Key);
 }
 
+int32 FHeartNodePinData::Num() const
+{
+	return PinDescriptions.Num();
+}
+
 bool FHeartNodePinData::Contains(const FHeartPinGuid Key) const
 {
 	return PinDescriptions.Contains(Key);

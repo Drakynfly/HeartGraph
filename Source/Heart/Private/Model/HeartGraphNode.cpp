@@ -167,6 +167,16 @@ FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin, bool) c
 	return GetPinDescChecked(Pin);
 }
 
+bool UHeartGraphNode::IsPinOnNode(const FHeartPinGuid& Pin) const
+{
+	return PinData.Contains(Pin);
+}
+
+int32 UHeartGraphNode::GetPinCount() const
+{
+	return PinData.Num();
+}
+
 FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid& Pin) const
 {
 	return PinData.Contains(Pin) ? FHeartGraphPinReference{Guid, Pin} : FHeartGraphPinReference();

@@ -45,6 +45,7 @@ protected:
 	void AddPin(FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc);
 	bool RemovePin(FHeartPinGuid Key);
 
+	int32 Num() const;
 	bool Contains(FHeartPinGuid Key) const;
 	int32 GetPinIndex(FHeartPinGuid Key) const;
 	bool HasConnections(FHeartPinGuid Key) const;
