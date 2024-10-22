@@ -43,8 +43,10 @@ namespace Blood
 			return A.ValueTypeObject == B.ValueTypeObject;
 		}
 
-		// Objects should be castable.
-		if (A.ValueType == EPropertyBagPropertyType::Object)
+		// Objects and structs should be castable.
+		if ((A.ValueType == B.PropertyType) &&
+			(A.ValueType == EPropertyBagPropertyType::Object ||
+			A.ValueType == EPropertyBagPropertyType::Struct))
 		{
 			const UStruct* ObjectStruct = Cast<const UStruct>(A.ValueTypeObject);
 			const UStruct* OtherObjectStruct = Cast<const UStruct>(B.ValueTypeObject);

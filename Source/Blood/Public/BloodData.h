@@ -251,7 +251,7 @@ namespace Blood
 			}
 		}
 
-		FORCEINLINE static UObject* PropertyBagTypeObject()
+		FORCEINLINE static const UField* PropertyBagTypeObject()
 		{
 			return Type();
 		}
@@ -323,7 +323,7 @@ namespace Blood
 				return EPropertyBagPropertyType::TypeInBag;\
 			}\
 			\
-			FORCEINLINE static UObject* PropertyBagTypeObject()\
+			FORCEINLINE static const UField* PropertyBagTypeObject()\
 			{\
 				return nullptr;\
 			}\
@@ -361,7 +361,7 @@ namespace Blood
 				return EPropertyBagPropertyType::TypeInBag;\
 			}\
 			\
-			FORCEINLINE static UObject* PropertyBagTypeObject()\
+			FORCEINLINE static const UField* PropertyBagTypeObject()\
 			{\
 				return T::StaticClass();\
 			}\

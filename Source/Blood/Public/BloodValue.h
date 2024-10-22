@@ -12,15 +12,14 @@ namespace Blood
 	// Minimum data about a type for determining cast-ability
 	struct FMinimalType
 	{
-		const UStruct* ValueTypeObject;
+		const UField* ValueTypeObject;
 		EPropertyBagPropertyType PropertyType;
 		FPropertyBagContainerTypes ContainerTypes;
 
 		bool IsNumericType() const;
 	};
 
-
-	static bool IsCastableType(const FPropertyBagPropertyDesc& A, const FMinimalType& B);
+	bool IsCastableType(const FPropertyBagPropertyDesc& A, const FMinimalType& B);
 }
 
 USTRUCT(BlueprintType)
