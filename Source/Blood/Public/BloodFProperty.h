@@ -12,13 +12,13 @@ namespace Blood
 		class BLOOD_API FPropertyHelpers
 		{
 		public:
-			static TObjectPtr<UField> GetFPropertyFieldType(const FProperty* Prop);
+			static TObjectPtr<const UField> GetFPropertyFieldType(const FProperty* Prop);
 			static bool WriteToFPropertyValuePtr(const FProperty* ValueProp, uint8* ValuePtr, const FBloodValue& Value);
 			static FBloodValue ReadFromFPropertyValuePtr(const FProperty* ValueProp, const uint8* ValuePtr);
 		};
 	}
 
-	static TObjectPtr<UField> GetFPropertyFieldType(const FProperty* Prop)
+	static TObjectPtr<const UField> GetFPropertyFieldType(const FProperty* Prop)
 	{
 		return Impl::FPropertyHelpers::GetFPropertyFieldType(Prop);
 	}

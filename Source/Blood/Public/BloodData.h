@@ -35,7 +35,7 @@ struct BLOOD_API FBloodUI8
 	FBloodUI8(const uint8 Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	uint8 Value = false;
+	uint8 Value = 0;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer"))
@@ -47,7 +47,7 @@ struct BLOOD_API FBloodI32
 	FBloodI32(const int32 Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 Value = false;
+	int32 Value = 0;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Integer (64)"))
@@ -59,7 +59,7 @@ struct BLOOD_API FBloodI64
 	FBloodI64(const int64 Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	int64 Value = false;
+	int64 Value = 0;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Float"))
@@ -71,7 +71,7 @@ struct BLOOD_API FBloodFloat
 	FBloodFloat(const float Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	float Value = false;
+	float Value = 0.f;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Double"))
@@ -83,7 +83,7 @@ struct BLOOD_API FBloodDouble
 	FBloodDouble(const double Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
-	double Value = false;
+	double Value = 0.0;
 };
 
 USTRUCT(BlueprintType, meta = (DisplayName = "Name"))
@@ -317,7 +317,7 @@ namespace Blood
 		{\
 			using BloodType = StructType;\
 			using ActualType = type;\
-			FORCEINLINE static UScriptStruct* Type() { return BloodType::StaticStruct(); }\
+			FORCEINLINE static const UScriptStruct* Type() { return BloodType::StaticStruct(); }\
 			FORCEINLINE static EPropertyBagPropertyType PropertyBagType()\
 			{\
 				return EPropertyBagPropertyType::TypeInBag;\
@@ -355,7 +355,7 @@ namespace Blood
 		{\
 			using BloodType = StructType;\
 			using ActualType = Wrapper<T>;\
-			FORCEINLINE static UScriptStruct* Type() { return BloodType::StaticStruct(); }\
+			FORCEINLINE static const UScriptStruct* Type() { return BloodType::StaticStruct(); }\
 			FORCEINLINE static EPropertyBagPropertyType PropertyBagType()\
 			{\
 				return EPropertyBagPropertyType::TypeInBag;\

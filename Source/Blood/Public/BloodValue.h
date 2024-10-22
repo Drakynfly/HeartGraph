@@ -7,6 +7,22 @@
 
 #include "BloodValue.generated.h"
 
+namespace Blood
+{
+	// Minimum data about a type for determining cast-ability
+	struct FMinimalType
+	{
+		const UStruct* ValueTypeObject;
+		EPropertyBagPropertyType PropertyType;
+		FPropertyBagContainerTypes ContainerTypes;
+
+		bool IsNumericType() const;
+	};
+
+
+	static bool IsCastableType(const FPropertyBagPropertyDesc& A, const FMinimalType& B);
+}
+
 USTRUCT(BlueprintType)
 struct BLOOD_API FBloodValue
 {
@@ -56,6 +72,9 @@ struct BLOOD_API FBloodValue
 
 	// @todo this should really also work with wrapped types
 	bool Is(const UField* Type) const;
+
+	template <typename TBloodData>
+	bool CanCastTo() const;
 
 	// Is this a single value?
 	bool IsSingle() const;
@@ -154,21 +173,71 @@ template <typename TBloodData> bool FBloodValue::Is() const
 	}
 	else
 	{
+		if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+		const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
+
 		if constexpr (Blood::TIsPoDWrapperStruct<TBloodData>::Value)
 		{
-			if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
-			const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 			return Desc.ContainerTypes.GetFirstContainerType() == EPropertyBagContainerType::None &&
 			   Desc.ValueType == Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagType() &&
 			   Desc.ValueTypeObject == Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagTypeObject();
 		}
 		else
 		{
-			if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
-			const FPropertyBagPropertyDesc& Desc = PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0];
 			return Desc.ContainerTypes.IsEmpty() &&
 			   Desc.ValueType == Blood::TDataConverter<TBloodData>::PropertyBagType() &&
 			   Desc.ValueTypeObject == Blood::TDataConverter<TBloodData>::PropertyBagTypeObject();
+		}
+	}
+}
+
+template <typename TBloodData> bool FBloodValue::CanCastTo() const
+{
+	Blood::FMinimalType ConverterType;
+
+	if constexpr (TIsTMap<TBloodData>::Value)
+	{
+		if (PropertyBag.GetNumPropertiesInBag() != 2) return false;
+
+		ConverterType.ContainerTypes.Add(EPropertyBagContainerType::Array);
+
+		ConverterType.PropertyType = Blood::TDataConverter<typename TBloodData::KeyType>::PropertyBagType();
+		ConverterType.ValueTypeObject = Blood::TDataConverter<typename TBloodData::KeyType>::PropertyBagTypeObject();
+
+		if (!Blood::IsCastableType(PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0], ConverterType)) return false;
+
+		ConverterType.PropertyType = Blood::TDataConverter<typename TBloodData::ValueType>::PropertyBagType();
+		ConverterType.ValueTypeObject = Blood::TDataConverter<typename TBloodData::ValueType>::PropertyBagTypeObject();
+
+		return Blood::IsCastableType(PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[1], ConverterType);
+	}
+	else if constexpr (TIsTArray<TBloodData>::Value || TIsTSet<TBloodData>::Value)
+	{
+		if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+
+		ConverterType.ContainerTypes.Add(EPropertyBagContainerType::Array);
+		ConverterType.PropertyType = Blood::TDataConverter<typename TBloodData::ElementType>::PropertyBagType();
+		ConverterType.ValueTypeObject = Blood::TDataConverter<typename TBloodData::ElementType>::PropertyBagTypeObject();
+
+		return Blood::IsCastableType(PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0], ConverterType);
+	}
+	else
+	{
+		if (PropertyBag.GetNumPropertiesInBag() != 1) return false;
+
+		if constexpr (Blood::TIsPoDWrapperStruct<TBloodData>::Value)
+		{
+			ConverterType.PropertyType = Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagType();
+			ConverterType.ValueTypeObject = Blood::TDataConverter<decltype(TBloodData::Value)>::PropertyBagTypeObject();
+
+			return Blood::IsCastableType(PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0], ConverterType);
+		}
+		else
+		{
+			ConverterType.PropertyType = Blood::TDataConverter<TBloodData>::PropertyBagType();
+			ConverterType.ValueTypeObject = Blood::TDataConverter<TBloodData>::PropertyBagTypeObject();
+
+			return Blood::IsCastableType(PropertyBag.GetPropertyBagStruct()->GetPropertyDescs()[0], ConverterType);
 		}
 	}
 }

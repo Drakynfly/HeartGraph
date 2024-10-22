@@ -7,12 +7,26 @@
 
 namespace Blood::Impl
 {
-	TObjectPtr<UField> FPropertyHelpers::GetFPropertyFieldType(const FProperty* Prop)
+	template <typename TPropType>
+	static bool TryBindType_POD(const FProperty* ValueProp, uint8* ValuePtr, const FBloodValue& Value)
 	{
-	#define TRY_BIND_VALUE(type, actual)\
-		if (auto&& type##Prop = CastField<F##type##Property>(Prop))\
+		if (const TPropType* CastProp = CastField<TPropType>(ValueProp))
+		{
+			if (Value.CanCastTo<typename TDataConverter<typename TPropType::TCppType>::BloodType>())
+			{
+				CastProp->SetPropertyValue(ValuePtr, Value.GetValue<typename TPropType::TCppType>());
+				return true;
+			}
+		}
+		return false;
+	};
+
+	TObjectPtr<const UField> FPropertyHelpers::GetFPropertyFieldType(const FProperty* Prop)
+	{
+	#define TRY_BIND_VALUE(type)\
+		if (Prop->IsA<F##type##Property>())\
 		{\
-			return TDataConverter<actual>::Type();\
+			return TDataConverter<F##type##Property::TCppType>::Type();\
 		}
 
 	#define TRY_BIND_VALUE_CLASS(type, InnerProp)\
@@ -21,15 +35,15 @@ namespace Blood::Impl
 			return type##Prop->InnerProp;\
 		}
 
-		TRY_BIND_VALUE(Bool, bool)
-		TRY_BIND_VALUE(Byte, uint8)
-		TRY_BIND_VALUE(Int, int32)
-		TRY_BIND_VALUE(Int64, int64)
-		TRY_BIND_VALUE(Float, float)
-		TRY_BIND_VALUE(Double, double)
-		TRY_BIND_VALUE(Name, FName)
-		TRY_BIND_VALUE(Str, FString)
-		TRY_BIND_VALUE(Text, FText)
+		TRY_BIND_VALUE(Bool)
+		TRY_BIND_VALUE(Byte)
+		TRY_BIND_VALUE(Int)
+		TRY_BIND_VALUE(Int64)
+		TRY_BIND_VALUE(Float)
+		TRY_BIND_VALUE(Double)
+		TRY_BIND_VALUE(Name)
+		TRY_BIND_VALUE(Str)
+		TRY_BIND_VALUE(Text)
 		TRY_BIND_VALUE_CLASS(Class, MetaClass)
 		TRY_BIND_VALUE_CLASS(SoftClass, MetaClass)
 		TRY_BIND_VALUE_CLASS(Object, PropertyClass)
@@ -66,44 +80,55 @@ namespace Blood::Impl
 			return false;
 		}
 
-		// Macro for binding to most FProperty types
-	#define TRY_BIND_TYPE(TypeName)\
-		if (auto&& TypeName##Prop = CastField<F##TypeName##Property>(ValueProp))\
-		{\
-			if (Value.Is<F##TypeName##Property::TCppType>())\
-			{\
-				TypeName##Prop->SetPropertyValue(ValuePtr, Value.GetValue<F##TypeName##Property::TCppType>());\
-				return true;\
-			}\
-			return false;\
-		}
+		if (TryBindType_POD<FBoolProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FByteProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FFloatProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FDoubleProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FIntProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FInt64Property>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FNameProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FStrProperty>(ValueProp, ValuePtr, Value)) return true;
+		if (TryBindType_POD<FTextProperty>(ValueProp, ValuePtr, Value)) return true;
 
-		// Macro for binding to Class FProperty types
-	#define TRY_BIND_TYPE_CLASS(TypeName, Transformation)\
-		if (auto&& TypeName##Prop = CastField<F##TypeName##Property>(ValueProp))\
-		{\
-			if (Value.Is<TDataConverter<F##TypeName##Property::TCppType>::BloodType>())\
-			{\
-				TypeName##Prop->SetPropertyValue(ValuePtr, Transformation);\
-				return true;\
-			}\
-			return false;\
-		}
+		if (auto&& SoftClassProp = CastField<FSoftClassProperty>(ValueProp))
+		{
+			if (Value.CanCastTo<FBloodSoftObject>())
+			{
+				SoftClassProp->SetPropertyValue(ValuePtr, FSoftObjectPtr(Value.GetValue<TSoftClassPtr<>>().ToSoftObjectPath()));
+				return true;
+			}
+			return false;
+		};
 
-		TRY_BIND_TYPE(Bool)
-		TRY_BIND_TYPE(Byte)
-		TRY_BIND_TYPE(Float)
-		TRY_BIND_TYPE(Double)
-		TRY_BIND_TYPE(Int)
-		TRY_BIND_TYPE(Int64)
-		TRY_BIND_TYPE(Name)
-		TRY_BIND_TYPE(Str)
-		TRY_BIND_TYPE(Text)
+		if (auto&& ClassProp = CastField<FClassProperty>(ValueProp))
+		{
+			if (Value.CanCastTo<FBloodObject>())
+			{
+				ClassProp->SetPropertyValue(ValuePtr, Value.GetValue<TObjectPtr<UObject>>());
+				return true;
+			}
+			return false;
+		};
 
-		TRY_BIND_TYPE_CLASS(SoftClass, FSoftObjectPtr(Value.GetValue<TSoftClassPtr<>>().ToSoftObjectPath()));
-		TRY_BIND_TYPE_CLASS(Class, Value.GetValue<FClassProperty::TCppType>());
-		TRY_BIND_TYPE_CLASS(SoftObject, FSoftObjectPtr(Value.GetValue<TSoftObjectPtr<>>().ToSoftObjectPath()));
-		TRY_BIND_TYPE_CLASS(Object, Value.GetValue<TObjectPtr<UObject>>());
+		if (auto&& SoftObjectProp = CastField<FSoftObjectProperty>(ValueProp))
+		{
+			if (Value.CanCastTo<FBloodSoftObject>())
+			{
+				SoftObjectProp->SetPropertyValue(ValuePtr, FSoftObjectPtr(Value.GetValue<TSoftObjectPtr<>>().ToSoftObjectPath()));
+				return true;
+			}
+			return false;
+		};
+
+		if (auto&& ObjectProp = CastField<FObjectProperty>(ValueProp))
+		{
+			if (Value.CanCastTo<FBloodObject>())
+			{
+				ObjectProp->SetPropertyValue(ValuePtr, Value.GetValue<TObjectPtr<UObject>>());
+				return true;
+			}
+			return false;
+		};
 
 		// Special handling for the unique way enums are initialized
 		if (auto&& EnumProp = CastField<FEnumProperty>(ValueProp))
@@ -126,9 +151,6 @@ namespace Blood::Impl
 			}
 			return false;
 		}
-
-	#undef TRY_BIND_TYPE
-	#undef TRY_BIND_TYPE_CLASS
 
 		return false;
 	}

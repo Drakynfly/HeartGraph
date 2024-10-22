@@ -27,11 +27,11 @@ struct BLOOD_API FBloodProperty
 
 	// The UClass or UStruct that this type represents
 	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
-	TObjectPtr<UField> FieldType = nullptr;
+	TObjectPtr<const UField> FieldType = nullptr;
 
 	// Type of the Value when this is a map
 	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty", meta = (EditCondition = "ContainerType == EPinContainerType::Map", EditConditionHides))
-	TObjectPtr<UField> MapValueFieldType = nullptr;
+	TObjectPtr<const UField> MapValueFieldType = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	bool Const = false;
@@ -40,7 +40,7 @@ struct BLOOD_API FBloodProperty
 	// @todo move this somewhere else. I think only Plato is using it anyway
 	FEdGraphPinType ToEdGraphPin() const
 	{
-		return FEdGraphPinType("struct", NAME_None, FieldType, ContainerType, false, FEdGraphTerminalType());
+		return FEdGraphPinType("struct", NAME_None, ConstCast(FieldType), ContainerType, false, FEdGraphTerminalType());
 	}
 #endif
 

@@ -5,6 +5,56 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BloodValue)
 
+namespace Blood
+{
+	bool FMinimalType::IsNumericType() const
+	{
+		switch (PropertyType)
+		{
+		case EPropertyBagPropertyType::Bool: return true;
+		case EPropertyBagPropertyType::Byte: return true;
+		case EPropertyBagPropertyType::Int32: return true;
+		case EPropertyBagPropertyType::UInt32: return true;
+		case EPropertyBagPropertyType::Int64: return true;
+		case EPropertyBagPropertyType::UInt64: return true;
+		case EPropertyBagPropertyType::Float: return true;
+		case EPropertyBagPropertyType::Double: return true;
+		default: return false;
+		}
+	}
+
+	bool IsCastableType(const FPropertyBagPropertyDesc& A, const FMinimalType& B)
+	{
+		// Containers must match
+		if (A.ContainerTypes != B.ContainerTypes)
+		{
+			return false;
+		}
+
+		// Numerics can all be interpreted as each other.
+		if (A.IsNumericType() && B.IsNumericType())
+		{
+			return true;
+		}
+
+		// Enums must have the same value type class
+		if (A.ValueType == EPropertyBagPropertyType::Enum)
+		{
+			return A.ValueTypeObject == B.ValueTypeObject;
+		}
+
+		// Objects should be castable.
+		if (A.ValueType == EPropertyBagPropertyType::Object)
+		{
+			const UStruct* ObjectStruct = Cast<const UStruct>(A.ValueTypeObject);
+			const UStruct* OtherObjectStruct = Cast<const UStruct>(B.ValueTypeObject);
+			return OtherObjectStruct != nullptr && ObjectStruct != nullptr && OtherObjectStruct->IsChildOf(ObjectStruct);
+		}
+
+		return true;
+	}
+}
+
 FBloodValue::FBloodValue(const UScriptStruct* Type, const uint8* Memory)
 {
 	// Init property
