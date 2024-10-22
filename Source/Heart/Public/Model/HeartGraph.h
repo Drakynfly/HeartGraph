@@ -90,12 +90,9 @@ private:
 	/* IHeartGraphInterface */
 
 public:
-	// Called after node locations have changed.
-	virtual void NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, bool InProgress);
-	virtual void NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, bool InProgress);
-
-	UE_DEPRECATED(5.5, "Please use the overload that takes FHeartNodeGuids")
-	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
+	// @tode make these protected, gated behind an API (and rename to Handle...)
+	void NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, bool InProgress);
+	void NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, bool InProgress);
 
 	// Return true in Iter to continue iterating
 	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
@@ -104,8 +101,17 @@ public:
 	void ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const;
 
 protected:
+	// Called after nodes have been added.
+	virtual void HandleNodeAddEvent(const FHeartNodeAddEvent& Event);
+
+	// Called before nodes have been removed (nodes are still valid at the time of call).
+	virtual void HandleNodeRemoveEvent(const FHeartNodeRemoveEvent& Event);
+
+	// Called after node locations have changed.
+	virtual void HandleNodeMoveEvent(const FHeartNodeMoveEvent& Event);
+
 	// Called after a pin connection change has been made. Called by Heart::Connections::~FEdit
-	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
+	virtual void HandleGraphConnectionEvent(const FHeartGraphConnectionEvent& Event);
 
 
 	/*-----------------------
@@ -141,14 +147,15 @@ public:
 
 	const auto& GetNodes() const { return Nodes; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "GetNodes"))
-	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return reinterpret_cast<const TMap<FHeartNodeGuid, UHeartGraphNode*>&>(Nodes); }
-
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
 	void GetNodeGuids(TArray<FHeartNodeGuid>& OutGuids) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
 	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const;
+
+protected:
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "GetNodes"))
+	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return reinterpret_cast<const TMap<FHeartNodeGuid, UHeartGraphNode*>&>(Nodes); }
 
 
 	/*----------------------------
@@ -355,4 +362,11 @@ public:
 	UE_DEPRECATED(5.3, "Use CreateNode_Reference instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
+
+	UE_DEPRECATED(5.5, "Please use NotifyNodeLocationChangedNotifyNodeLocationChanged instead")
+	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
+
+protected:
+	UE_DEPRECATED(5.5, "Please use HandleGraphConnectionEvent instead")
+	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
 };

@@ -153,43 +153,55 @@ namespace Heart::API
 			}
 
 			// Pending delete pass 2: Remove the nodes
-			for (auto&& PendingDelete : PendingDeletes)
 			{
-				UHeartGraphNode* NodeBeingRemoved;
-				Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
+				FHeartNodeRemoveEvent Event;
 
-				if (IsValid(NodeBeingRemoved))
+				for (auto&& PendingDelete : PendingDeletes)
 				{
-					Graph->OnNodeRemoved.Broadcast(NodeBeingRemoved);
+					UHeartGraphNode* NodeBeingRemoved;
+					Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
+					if (IsValid(NodeBeingRemoved))
+					{
+						Event.AffectedNodes.Add(NodeBeingRemoved);
+					}
 				}
+
+				Graph->HandleNodeRemoveEvent(Event);
 			}
 		}
 
-		// Pending create pass
-		for (auto&& Element : PendingCreates)
+		if (!PendingCreates.IsEmpty())
 		{
-			if (!ensure(IsValid(Element)))
+			FHeartNodeAddEvent Event;
+
+			// Pending create pass
+			for (auto&& Element : PendingCreates)
 			{
-				UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
-				continue;
+				if (!ensure(IsValid(Element)))
+				{
+					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
+					continue;
+				}
+
+				if (!ensure(IsValid(Element->GetNodeObject())))
+				{
+					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
+					continue;
+				}
+
+				const FHeartNodeGuid& NodeGuid = Element->GetGuid();
+
+				if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
+				{
+					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
+					continue;
+				}
+
+				Graph->Nodes.Add(NodeGuid, Element);
+				Event.NewNodes.Add(NodeGuid);
 			}
 
-			if (!ensure(IsValid(Element->GetNodeObject())))
-			{
-				UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
-				continue;
-			}
-
-			const FHeartNodeGuid& NodeGuid = Element->GetGuid();
-
-			if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
-			{
-				UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
-				continue;
-			}
-
-			Graph->Nodes.Add(NodeGuid, Element);
-			Graph->OnNodeAdded.Broadcast(Element);
+			Graph->HandleNodeAddEvent(Event);
 		}
 	}
 }

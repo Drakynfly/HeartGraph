@@ -67,9 +67,9 @@ void UHeartEdGraph::PostInitProperties()
 	{
 		UHeartGraph* HeartGraph = GetHeartGraph();
 
-		HeartGraph->OnNodeAdded.AddUObject(this, &ThisClass::OnNodeAdded);
-		HeartGraph->OnNodeRemoved.AddUObject(this, &ThisClass::OnNodeRemoved);
-		HeartGraph->OnNodeConnectionsChanged.AddUObject(this, &ThisClass::OnNodeConnectionsChanged);
+		HeartGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAdded);
+		HeartGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemoved);
+		HeartGraph->GetOnNodeConnectionsChanged().AddUObject(this, &ThisClass::OnNodeConnectionsChanged);
 	}
 }
 

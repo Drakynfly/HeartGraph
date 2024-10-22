@@ -149,7 +149,7 @@ void UHeartGraph::NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, 
 	FHeartNodeMoveEvent Event;
 	Event.AffectedNodes.Add(GetNode(AffectedNode));
 	Event.MoveFinished = !InProgress;
-	OnNodeMoved.Broadcast(Event);
+	HandleNodeMoveEvent(Event);
 }
 
 void UHeartGraph::NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, const bool InProgress)
@@ -165,26 +165,7 @@ void UHeartGraph::NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& Affecte
 		}
 	}
 	Event.MoveFinished = !InProgress;
-	OnNodeMoved.Broadcast(Event);
-}
-
-void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const bool InProgress)
-{
-	FHeartNodeMoveEvent Event;
-	Event.AffectedNodes = AffectedNodes;
-	Event.MoveFinished = !InProgress;
-	OnNodeMoved.Broadcast(Event);
-}
-
-void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event)
-{
-	{
-#if WITH_EDITOR
-		FEditorScriptExecutionGuard ScriptExecutionGuard;
-#endif
-		BP_OnNodeConnectionsChanged(Event);
-	}
-	OnNodeConnectionsChanged.Broadcast(Event);
+	HandleNodeMoveEvent(Event);
 }
 
 void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const
@@ -210,6 +191,44 @@ void UHeartGraph::ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*
 			if (Iter(Element.Value)) return;
 		}
 	}
+}
+
+void UHeartGraph::HandleNodeAddEvent(const FHeartNodeAddEvent& Event)
+{
+	// @todo batch this as well?
+	for (const FHeartNodeGuid& NodeGuid : Event.NewNodes)
+	{
+		if (UHeartGraphNode* Node = GetNode(NodeGuid);
+			ensure(IsValid(Node)))
+		{
+			OnNodeAdded.Broadcast(Node);
+		}
+	}
+}
+
+void UHeartGraph::HandleNodeRemoveEvent(const FHeartNodeRemoveEvent& Event)
+{
+	// @todo batch this as well?
+	for (UHeartGraphNode* Node : Event.AffectedNodes)
+	{
+		OnNodeRemoved.Broadcast(Node);
+	}
+}
+
+void UHeartGraph::HandleNodeMoveEvent(const FHeartNodeMoveEvent& Event)
+{
+	OnNodeMoved.Broadcast(Event);
+}
+
+void UHeartGraph::HandleGraphConnectionEvent(const FHeartGraphConnectionEvent& Event)
+{
+	{
+#if WITH_EDITOR
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		BP_OnNodeConnectionsChanged(Event);
+	}
+	OnNodeConnectionsChanged.Broadcast(Event);
 }
 
 UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
@@ -417,8 +436,9 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 	}
 
 	Nodes.Add(NodeGuid, Node);
-
-	OnNodeAdded.Broadcast(Node);
+	FHeartNodeAddEvent Event;
+	Event.NewNodes.Add(NodeGuid);
+	HandleNodeAddEvent(Event);
 }
 
 bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
@@ -439,10 +459,9 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	auto&& NodeBeingRemoved = Nodes[NodeGuid];
 	const int32 Removed = Nodes.Remove(NodeGuid);
 
-	if (IsValid(NodeBeingRemoved))
-	{
-		OnNodeRemoved.Broadcast(NodeBeingRemoved);
-	}
+	FHeartNodeRemoveEvent Event;
+	Event.AffectedNodes.Add(NodeBeingRemoved);
+	HandleNodeRemoveEvent(Event);
 
 	return !!Removed;
 }
@@ -516,4 +535,17 @@ UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FV
 	}
 
 	return Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject, Location);
+}
+
+void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const bool InProgress)
+{
+	FHeartNodeMoveEvent Event;
+	Event.AffectedNodes = AffectedNodes;
+	Event.MoveFinished = !InProgress;
+	HandleNodeMoveEvent(Event);
+}
+
+void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event)
+{
+	HandleGraphConnectionEvent(Event);
 }

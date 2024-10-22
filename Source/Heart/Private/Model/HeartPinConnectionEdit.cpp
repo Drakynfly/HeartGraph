@@ -25,7 +25,7 @@ namespace Heart::Connections
 			Element.Key->NotifyPinConnectionsChanged(Element.Value);
 		}
 
-		Graph->NotifyNodeConnectionsChanged(Event);
+		Graph->HandleGraphConnectionEvent(Event);
 	}
 
 	FEdit& FEdit::Connect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
