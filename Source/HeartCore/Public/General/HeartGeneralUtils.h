@@ -29,6 +29,10 @@ public:
 			CLASS UTILS
 	------------------------*/
 
+	/* Returns the UObject::StaticClass(), because its not selectable in class pickers for some reason! */
+	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class")
+	static UClass* UObjectClass();
+
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class")
 	static UClass* GetParentClass(const UClass* Class);
 

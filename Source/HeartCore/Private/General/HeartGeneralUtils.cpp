@@ -16,6 +16,11 @@ UObject* UHeartGeneralUtils::K2_DuplicateObject(UObject* Outer, UObject* Source)
 	return DuplicateObject(Source, Outer);
 }
 
+UClass* UHeartGeneralUtils::UObjectClass()
+{
+	return UObject::StaticClass();
+}
+
 UClass* UHeartGeneralUtils::GetParentClass(const UClass* Class)
 {
 	return IsValid(Class) ? Class->GetSuperClass() : nullptr;
