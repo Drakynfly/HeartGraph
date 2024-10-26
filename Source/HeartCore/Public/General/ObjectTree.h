@@ -6,18 +6,14 @@
 
 namespace Heart
 {
-	struct FObjectNodeBase : TSharedFromThis<FObjectNodeBase>
+	struct FObjectNode : TSharedFromThis<FObjectNode>
 	{
 		using FKeyType = TWeakObjectPtr<const UClass>;
 
-		TSharedPtr<FObjectNodeBase> FindChildNode(FKeyType Class) const;
-		TSharedRef<FObjectNodeBase> FindOrAddChildNode(FKeyType Class);
+		TSharedPtr<FObjectNode> FindChildNode(FKeyType Class) const;
+		TSharedRef<FObjectNode> FindOrAddChildNode(FKeyType Class);
 
-		TMap<FKeyType, TSharedRef<FObjectNodeBase>> Children;
-	};
-
-	struct FObjectNode : FObjectNodeBase
-	{
+		TMap<FKeyType, TSharedRef<FObjectNode>> Children;
 		TArray<TWeakObjectPtr<UObject>> ObjectList;
 	};
 
@@ -26,7 +22,7 @@ namespace Heart
 	 * Only the objects added by calling AddObject will exist in the tree.
 	 * This type can be used to build custom asset filters that only display from a list of manually authored objects.
 	 */
-	struct HEARTCORE_API FObjectTree : FObjectNodeBase
+	struct HEARTCORE_API FObjectTree : FObjectNode
 	{
 		static TSharedRef<FObjectTree> MakeTree();
 
@@ -35,7 +31,6 @@ namespace Heart
 		void RemoveNode(const UClass* Class);
 
 		TArray<TWeakObjectPtr<UObject>> GetObjects(TWeakObjectPtr<const UClass> Class) const;
-		TArray<TWeakObjectPtr<UObject>> GetObjectsRecursive(TWeakObjectPtr<const UClass> Class) const;
 	};
 }
 

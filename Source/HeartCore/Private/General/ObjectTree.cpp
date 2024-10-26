@@ -4,7 +4,7 @@
 
 namespace Heart
 {
-	TSharedPtr<FObjectNodeBase> FObjectNodeBase::FindChildNode(const TWeakObjectPtr<const UClass> Class) const
+	TSharedPtr<FObjectNode> FObjectNode::FindChildNode(const TWeakObjectPtr<const UClass> Class) const
 	{
 		if (auto&& Child = Children.Find(Class))
 		{
@@ -13,17 +13,11 @@ namespace Heart
 		return nullptr;
 	}
 
-	TSharedRef<FObjectNodeBase> FObjectNodeBase::FindOrAddChildNode(const FKeyType Class)
+	TSharedRef<FObjectNode> FObjectNode::FindOrAddChildNode(const FKeyType Class)
 	{
 		if (auto&& Child = Children.Find(Class))
 		{
 			return *Child;
-		}
-
-		if (Class->HasAnyClassFlags(CLASS_Abstract))
-		{
-			// Abstract classes don't need to store an object array.
-			return Children.Add(Class, MakeShared<FObjectNodeBase>());
 		}
 
 		return Children.Add(Class, MakeShared<FObjectNode>());
@@ -45,16 +39,13 @@ namespace Heart
 			Classes.Add(Class);
 		}
 
-		TSharedRef<FObjectNodeBase> Node = SharedThis(this);
+		TSharedRef<FObjectNode> Node = SharedThis(this);
 		for (int32 i = Classes.Num() - 1; i >= 0; --i)
 		{
 			Node = Node->FindOrAddChildNode(Classes[i]);
 		}
 
-		if (const TSharedPtr<FObjectNode> NodeWithList = StaticCastSharedPtr<FObjectNode>(Node.ToSharedPtr()))
-		{
-			NodeWithList->ObjectList.AddUnique(Obj);
-		}
+		Node->ObjectList.AddUnique(Obj);
 	}
 
 	void FObjectTree::RemoveObject(const UObject* Obj)
@@ -68,7 +59,7 @@ namespace Heart
 			Classes.Add(Class);
 		}
 
-		TSharedPtr<FObjectNodeBase> Node = SharedThis(this);
+		TSharedPtr<FObjectNode> Node = SharedThis(this);
 		for (int32 i = Classes.Num() - 1; i >= 0; --i)
 		{
 			Node = Node->FindChildNode(Classes[i]);
@@ -78,9 +69,9 @@ namespace Heart
 			}
 		}
 
-		if (const TSharedPtr<FObjectNode> NodeWithList = StaticCastSharedPtr<FObjectNode>(Node))
+		if (Node.IsValid())
 		{
-			NodeWithList->ObjectList.Remove(ConstCast(ObjectPtrWrap(Obj)));
+			Node->ObjectList.Remove(ConstCast(ObjectPtrWrap(Obj)));
 		}
 	}
 
@@ -95,8 +86,8 @@ namespace Heart
 			Classes.Add(Class);
 		}
 
-		TSharedPtr<FObjectNodeBase> Parent = nullptr;
-		TSharedPtr<FObjectNodeBase> Node = SharedThis(this);
+		TSharedPtr<FObjectNode> Parent = nullptr;
+		TSharedPtr<FObjectNode> Node = SharedThis(this);
 		for (int32 i = Classes.Num() - 1; i >= 0; --i)
 		{
 			Parent = Node;
@@ -113,19 +104,7 @@ namespace Heart
 
 	TArray<TWeakObjectPtr<UObject>> FObjectTree::GetObjects(const TWeakObjectPtr<const UClass> Class) const
 	{
-		if (auto&& Child = FindChildNode(Class))
-		{
-			if (const TSharedPtr<FObjectNode> NodeWithList = StaticCastSharedPtr<FObjectNode>(Child))
-			{
-				return NodeWithList->ObjectList;
-			}
-		}
-		return {};
-	}
-
-	TArray<TWeakObjectPtr<UObject>> FObjectTree::GetObjectsRecursive(const TWeakObjectPtr<const UClass> Class) const
-	{
-		TArray<TSharedRef<FObjectNodeBase>> Nodes;
+		TArray<TSharedRef<FObjectNode>> Nodes;
 		if (Class == UObject::StaticClass())
 		{
 			Children.GenerateValueArray(Nodes);
@@ -140,10 +119,8 @@ namespace Heart
 		while (!Nodes.IsEmpty())
 		{
 			auto&& Node = Nodes.Pop(EAllowShrinking::No);
-			if (const TSharedPtr<FObjectNode> NodeWithList = StaticCastSharedPtr<FObjectNode>(Node.ToSharedPtr()))
-			{
-				OutObjects.Append(NodeWithList->ObjectList);
-			}
+			OutObjects.Append(Node->ObjectList);
+
 			for (auto&& Child : Node->Children)
 			{
 				Nodes.Add(Child.Value);
@@ -171,7 +148,7 @@ TArray<UObject*> UHeartObjectTree::GetObjectsInTree(const UClass* Class) const
 {
 	if (!Tree.IsValid()) return {};
 
-	TArray<TWeakObjectPtr<UObject>> Options = Tree->GetObjectsRecursive(Class);
+	TArray<TWeakObjectPtr<UObject>> Options = Tree->GetObjects(Class);
 
 	TArray<UObject*> SortedOptions;
 	SortedOptions.Reserve(Options.Num());
