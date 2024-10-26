@@ -45,7 +45,7 @@ FHeartEvent UHeartGraphAction::ExecuteOnGraph(IHeartGraphInterface* Graph, const
 FHeartEvent UHeartGraphAction::ExecuteOnNode(IHeartGraphNodeInterface* Node, const FHeartInputActivation& Activation,
 	UObject* ContextObject, FBloodContainer& UndoData) const
 {
-	return ExecuteOnNode(Node, Activation, ContextObject, UndoData);
+	return ExecuteOnNode(Node->GetHeartGraphNode(), Activation, ContextObject, UndoData);
 }
 
 FHeartEvent UHeartGraphAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
