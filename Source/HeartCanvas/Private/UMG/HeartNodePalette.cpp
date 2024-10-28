@@ -99,12 +99,9 @@ void UHeartNodePalette::Display(const TArray<FHeartNodeArchetype>& Classes)
 
 UHeartNodePaletteCategory* UHeartNodePalette::FindOrCreateCategory(const FText& Category)
 {
-	if (Category.IsEmpty())
-	{
-		return nullptr;
-	}
+	static const FString BlankCategory{TEXTVIEW("   ")};
 
-	const FString CategoryStr = Category.ToString();
+	const FString CategoryStr = Category.IsEmpty() ? BlankCategory : Category.ToString();
 
 	if (auto&& ExistingCategory = Categories.Find(CategoryStr))
 	{
