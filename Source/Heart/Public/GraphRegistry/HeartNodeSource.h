@@ -33,7 +33,7 @@ struct FHeartNodeSource
 		return NodeObj.IsA(Class);
 	}
 
-	// Returns either the NodeObj if its a UClass, or the Class of the NodeObj otherwise
+	// Returns either the NodeObj if it's a UClass, or the Class of the NodeObj otherwise
 	const UClass* ThisClass() const
 	{
 		if (const UClass* AsClass = As<UClass>())

@@ -114,7 +114,7 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 
 void UHeartRegistryRuntimeSubsystem::FetchNativeRegistrars()
 {
-	static constexpr EClassFlags BannedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists;
+	static constexpr EClassFlags BannedClassFlags = CLASS_Deprecated | CLASS_NewerVersionExists | CLASS_Abstract;
 
 	TArray<UClass*> Classes;
 	GetDerivedClasses(UGraphNodeRegistrar::StaticClass(), Classes);
