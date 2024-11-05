@@ -111,6 +111,10 @@ struct TStructOpsTypeTraits<TagType> : public TStructOpsTypeTraitsBase2<TagType>
 {	\
 	enum	\
 	{	\
+		WithNetSerializer = true,	\
+		WithNetSharedSerialization = true,	\
+		WithPostSerialize = true,	\
+		WithStructuredSerializeFromMismatchedTag = true,	\
 		WithExportTextItem = true,	\
 		WithImportTextItem = true	\
 	};
