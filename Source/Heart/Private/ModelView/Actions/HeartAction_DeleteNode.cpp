@@ -5,7 +5,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNodeInterface.h"
 #include "ModelView/HeartActionHistory.h"
-#include "Serialization/HeartFlakes.h"
+#include "FlakesStructs.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_DeleteNode)
 
@@ -13,12 +13,12 @@ static const FLazyName DeletedNodeStorage("delnode");
 
 bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 {
-	FHeartFlake NodeData;
+	FFlake NodeData;
 
 	if (Ar.IsSaving())
 	{
 		// Scrunch the node into binary
-		NodeData = Heart::Flakes::CreateFlake(DeletedNode);
+		NodeData = Flakes::CreateFlake(DeletedNode);
 	}
 
 	Ar << NodeData;
@@ -26,7 +26,7 @@ bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 	if (Ar.IsLoading())
 	{
 		// Restore the node from binary; outer is temporarily the TransientPackage, until it's renamed by ::Undo
-		DeletedNode = Heart::Flakes::CreateObject<UHeartGraphNode>(NodeData);
+		DeletedNode = Flakes::CreateObject<UHeartGraphNode>(NodeData);
 	}
 
 	Ar << Mementos;

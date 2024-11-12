@@ -23,6 +23,7 @@ public class Heart : ModuleRules
 			new []
 			{
 				"Blood",
+				"Flakes",
 				"HeartCore"
 			});
 

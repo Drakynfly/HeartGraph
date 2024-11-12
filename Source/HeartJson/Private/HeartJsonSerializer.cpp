@@ -42,6 +42,8 @@ static const FJsonObjectConverter::CustomExportCallback HeartJsonCustomExporter 
 			}
 			else */if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
 			{
+				// @todo make this generic for any Object, the move this module to Flakes plugin wholesale!
+
 				// Custom handler for UHeartGraphNode::NodeObject, because we want to switch between treating it as a reference
 				// and a subobject to recurse depending on ownership.
 				if (ObjectProperty->GetName() == TEXT("NodeObject"))
@@ -74,7 +76,7 @@ static const FJsonObjectConverter::CustomExportCallback HeartJsonCustomExporter 
 			return {};
 		});
 
-namespace Heart::Flakes
+namespace Flakes
 {
 	void FSerializationProvider_Json::Static_ReadData(const FConstStructView& Struct, TArray<uint8>& OutData)
 	{

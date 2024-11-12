@@ -7,7 +7,7 @@
 #include "HeartNetClient.generated.h"
 
 enum class EHeartUpdateNodeType : uint8;
-struct FHeartFlake;
+struct FFlake;
 struct FHeartGraphConnectionEvent;
 struct FHeartGraphConnectionEvent_Net;
 struct FHeartNodeMoveEvent;

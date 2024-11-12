@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Serialization/HeartFlakes.h"
+#include "FlakesStructs.h"
 #include "Model/HeartGuids.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "HeartReplicatedData.generated.h"
@@ -23,7 +23,7 @@ struct FHeartReplicatedFlake : public FFastArraySerializerItem
 
 	// Data for this extension. Can be anything; up to code-path to interpret correctly
 	UPROPERTY()
-	FHeartFlake Flake;
+	FFlake Flake;
 
 	void PostReplicatedAdd(const FHeartReplicatedData& Array);
 	void PostReplicatedChange(const FHeartReplicatedData& Array);

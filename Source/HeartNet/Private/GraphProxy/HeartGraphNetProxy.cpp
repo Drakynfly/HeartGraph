@@ -279,7 +279,7 @@ void UHeartGraphNetProxy::UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> N
 	ReplicatedNodes.Operate(Node->GetGuid(),
 		[Node](FHeartReplicatedFlake& Data)
 		{
-			Data.Flake = Heart::Flakes::Net_CreateFlake(Node);
+			Data.Flake = Flakes::Net_CreateFlake(Node);
 			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated node '%s' (%i bytes)"),
 				*Node->GetName(), Data.Flake.Data.Num());
 		});
@@ -292,7 +292,7 @@ void UHeartGraphNetProxy::UpdateReplicatedExtensionData(TObjectPtr<UHeartGraphEx
 	ReplicatedExtensions.Operate(Extension->GetGuid(),
 		[Extension](FHeartReplicatedFlake& Data)
 		{
-			Data.Flake = Heart::Flakes::Net_CreateFlake(Extension);
+			Data.Flake = Flakes::Net_CreateFlake(Extension);
 			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated extension '%s' (%i bytes)"),
 				*Extension->GetName(), Data.Flake.Data.Num());
 		});
@@ -319,7 +319,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 			return;
 		}
 
-		if (UHeartGraphNode* NewNode = Heart::Flakes::Net_CreateObject<UHeartGraphNode>(NodeData.Flake, SourceGraph))
+		if (UHeartGraphNode* NewNode = Flakes::Net_CreateObject<UHeartGraphNode>(NodeData.Flake, SourceGraph))
 		{
 			SourceGraph->AddNode(NewNode);
 			OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Node_Added);
@@ -339,13 +339,13 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 		if (UHeartGraphNode3D* Node3D = Cast<UHeartGraphNode3D>(ExistingNode))
 		{
 			FVector Location;
-			Heart::Flakes::Net_WriteStruct<FVector>(Location, NodeData.Flake);
+			Flakes::Net_WriteStruct<FVector>(Location, NodeData.Flake);
 			Node3D->SetLocation3D(Location);
 		}
 		else
 		{
 			FVector2D Location;
-			Heart::Flakes::Net_WriteStruct<FVector2D>(Location, NodeData.Flake);
+			Flakes::Net_WriteStruct<FVector2D>(Location, NodeData.Flake);
 			ExistingNode->SetLocation(Location);
 		}
 
@@ -357,7 +357,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 	if (EventType == Heart::Net::Tags::Node_ConnectionsChanged)
 	{
 		FHeartGraphConnectionEvent_Net_PinElement PinElement;
-		Heart::Flakes::Net_WriteStruct<FHeartGraphConnectionEvent_Net_PinElement>(PinElement, NodeData.Flake);
+		Flakes::Net_WriteStruct<FHeartGraphConnectionEvent_Net_PinElement>(PinElement, NodeData.Flake);
 
 		Heart::Connections::FEdit Edit(ExistingNode);
 
@@ -377,14 +377,14 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 			UE_LOG(LogHeartNet, Warning, TEXT("Attempted to write to a non-instanced NodeObject!"))
 			return;
 		}
-		Heart::Flakes::Net_WriteObject(ExistingNode->GetNodeObject(), NodeData.Flake);
+		Flakes::Net_WriteObject(ExistingNode->GetNodeObject(), NodeData.Flake);
 		OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Node_ClientUpdateNodeObject);
 		return;
 	}
 
 	if (EventType == Heart::Net::Tags::Other)
 	{
-		Heart::Flakes::Net_WriteObject(ExistingNode, NodeData.Flake);
+		Flakes::Net_WriteObject(ExistingNode, NodeData.Flake);
 		OnNodeSourceEdited.Broadcast(ExistingNode, Heart::Net::Tags::Other);
 		return;
 	}
@@ -423,10 +423,10 @@ void UHeartGraphNetProxy::RequestUpdateNode_OnServer(const FHeartNodeGuid& NodeG
 	case EHeartUpdateNodeType::None:
 		break;
 	case EHeartUpdateNodeType::HeartNode:
-		NodeFlake.Flake = Heart::Flakes::Net_CreateFlake(ProxyGraph->GetNode(NodeGuid));
+		NodeFlake.Flake = Flakes::Net_CreateFlake(ProxyGraph->GetNode(NodeGuid));
 		break;
 	case EHeartUpdateNodeType::NodeObject:
-		NodeFlake.Flake = Heart::Flakes::Net_CreateFlake(ProxyGraph->GetNode(NodeGuid)->GetNodeObject());
+		NodeFlake.Flake = Flakes::Net_CreateFlake(ProxyGraph->GetNode(NodeGuid)->GetNodeObject());
 		break;
 	}
 
@@ -583,7 +583,7 @@ void UHeartGraphNetProxy::OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode)
 
 	FHeartReplicatedFlake NodeData;
 	NodeData.Guid = HeartGraphNode->GetGuid();
-	NodeData.Flake = Heart::Flakes::Net_CreateFlake(HeartGraphNode);
+	NodeData.Flake = Flakes::Net_CreateFlake(HeartGraphNode);
 	UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
 		*HeartGraphNode->GetName(), NodeData.Flake.Data.Num());
 
@@ -625,11 +625,11 @@ void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMove
 				NodeData.Guid = Node->GetGuid();
 				if (auto&& Node3D = Cast<UHeartGraphNode3D>(Node))
 				{
-					NodeData.Flake = Heart::Flakes::Net_CreateFlake<FVector>(Node3D->GetLocation3D());
+					NodeData.Flake = Flakes::Net_CreateFlake<FVector>(Node3D->GetLocation3D());
 				}
 				else
 				{
-					NodeData.Flake = Heart::Flakes::Net_CreateFlake<FVector2D>(Node->GetLocation());
+					NodeData.Flake = Flakes::Net_CreateFlake<FVector2D>(Node->GetLocation());
 				}
 
 				UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
@@ -681,7 +681,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 					}
 				});
 
-			NodeData.Flake = Heart::Flakes::Net_CreateFlake(PinElement);
+			NodeData.Flake = Flakes::Net_CreateFlake(PinElement);
 
 			UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
 				*Node->GetName(), NodeData.Flake.Data.Num());
@@ -833,12 +833,12 @@ bool UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, con
 	{
 		if (UHeartGraphNode* ExistingNode = ProxyGraph->GetNode(Data.Guid.Get<FHeartNodeGuid>()))
 		{
-			Heart::Flakes::Net_WriteObject(ExistingNode, Data.Flake);
+			Flakes::Net_WriteObject(ExistingNode, Data.Flake);
 			OnNodeProxyUpdated.Broadcast(ExistingNode, EventType);
 			return true;
 		}
 
-		if (UHeartGraphNode* NewNode = Heart::Flakes::Net_CreateObject<UHeartGraphNode>(Data.Flake, ProxyGraph))
+		if (UHeartGraphNode* NewNode = Flakes::Net_CreateObject<UHeartGraphNode>(Data.Flake, ProxyGraph))
 		{
 			ensure(EventType == Heart::Net::Tags::Node_Added);
 
@@ -884,12 +884,12 @@ bool UHeartGraphNetProxy::UpdateExtensionProxy(const FHeartReplicatedFlake& Data
 	{
 		if (UHeartGraphExtension* ExistingExtension = ProxyGraph->GetExtensionByGuid(Data.Guid.Get<FHeartExtensionGuid>()))
 		{
-			Heart::Flakes::Net_WriteObject(ExistingExtension, Data.Flake);
+			Flakes::Net_WriteObject(ExistingExtension, Data.Flake);
 			OnExtensionProxyUpdated.Broadcast(ExistingExtension, EventType);
 			return true;
 		}
 
-		if (UHeartGraphExtension* NewExtension = Heart::Flakes::Net_CreateObject<UHeartGraphExtension>(Data.Flake, ProxyGraph))
+		if (UHeartGraphExtension* NewExtension = Flakes::Net_CreateObject<UHeartGraphExtension>(Data.Flake, ProxyGraph))
 		{
 			ensure(EventType == Heart::Net::Tags::Extension_Added);
 

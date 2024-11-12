@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Serialization/HeartFlakes.h"
+#include "FlakesStructs.h"
 
-namespace Heart::Flakes
+namespace Flakes
 {
 	/*
 	 * A binary serialization provider optimized for sending data over the network. This provider assumes that the data
@@ -12,18 +12,18 @@ namespace Heart::Flakes
 	 */
 	SERIALIZATION_PROVIDER_HEADER(NetBinary)
 
-	FHeartFlake Net_CreateFlake(const FConstStructView& Struct, FReadOptions Options = {});
-	FHeartFlake Net_CreateFlake(const UObject* Object, FReadOptions Options = {});
-	void Net_WriteStruct(const FStructView& Struct, const FHeartFlake& Flake, FWriteOptions Options = {});
-	void Net_WriteObject(UObject* Object, const FHeartFlake& Flake, FWriteOptions Options = {});
-	FInstancedStruct Net_CreateStruct(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct);
-	UObject* Net_CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
+	FFlake Net_CreateFlake(const FConstStructView& Struct, FReadOptions Options = {});
+	FFlake Net_CreateFlake(const UObject* Object, FReadOptions Options = {});
+	void Net_WriteStruct(const FStructView& Struct, const FFlake& Flake, FWriteOptions Options = {});
+	void Net_WriteObject(UObject* Object, const FFlake& Flake, FWriteOptions Options = {});
+	FInstancedStruct Net_CreateStruct(const FFlake& Flake, const UScriptStruct* ExpectedStruct);
+	UObject* Net_CreateObject(const FFlake& Flake, UObject* Outer, const UClass* ExpectedClass);
 
 	template <
 		typename T
 		UE_REQUIRES(TModels_V<CBaseStructureProvider, T>)
 	>
-	FHeartFlake Net_CreateFlake(const T& Struct)
+	FFlake Net_CreateFlake(const T& Struct)
 	{
 		return Net_CreateFlake(FConstStructView::Make(Struct));
 	}
@@ -32,7 +32,7 @@ namespace Heart::Flakes
 		typename T
 		UE_REQUIRES(TModels_V<CBaseStructureProvider, T>)
 	>
-	void Net_WriteStruct(T& Struct, const FHeartFlake& Flake)
+	void Net_WriteStruct(T& Struct, const FFlake& Flake)
 	{
 		if (Flake.Struct != TBaseStructure<T>::Get())
 		{
@@ -43,7 +43,7 @@ namespace Heart::Flakes
 	}
 
 	template <typename T>
-	T* Net_CreateObject(const FHeartFlake& Flake, UObject* Outer = GetTransientPackage())
+	T* Net_CreateObject(const FFlake& Flake, UObject* Outer = GetTransientPackage())
 	{
 		return Cast<T>(Net_CreateObject(Flake, Outer, T::StaticClass()));
 	}

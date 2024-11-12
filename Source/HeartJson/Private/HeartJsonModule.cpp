@@ -1,19 +1,19 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartJsonModule.h"
-#include "HeartCoreModule.h"
+#include "FlakesModule.h"
 #include "HeartJsonSerializer.h"
 
-#define LOCTEXT_NAMESPACE "FHeartJsonModule"
+#define LOCTEXT_NAMESPACE "HeartJsonModule"
 
 void FHeartJsonModule::StartupModule()
 {
-	FHeartCoreModule::Get().AddSerializationProvider(MakeUnique<Heart::Flakes::FSerializationProvider_Json>());
+	FFlakesModule::Get().AddSerializationProvider(MakeUnique<Flakes::FSerializationProvider_Json>());
 }
 
 void FHeartJsonModule::ShutdownModule()
 {
-	FHeartCoreModule::Get().RemoveSerializationProvider(Heart::Flakes::FSerializationProvider_Json().GetProviderName());
+	FFlakesModule::Get().RemoveSerializationProvider(Flakes::FSerializationProvider_Json().GetProviderName());
 }
 
 #undef LOCTEXT_NAMESPACE

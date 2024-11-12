@@ -88,6 +88,10 @@
 		{
 			"Name": "GameplayTagsEditor",
 			"Enabled": true
+		},
+		{
+			"Name": "Flakes",
+			"Enabled": true
 		}
 	]
 }

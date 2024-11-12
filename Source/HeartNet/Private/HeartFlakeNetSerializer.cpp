@@ -1,9 +1,10 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartFlakeNetSerializer.h"
+#include "FlakesMemory.h"
 #include "StructView.h"
 
-namespace Heart::Flakes
+namespace Flakes
 {
 	// Configures an archive to be optimized for sending data over the network.
 	void ConfigureNetArchive(FArchive& Ar)
@@ -63,7 +64,7 @@ namespace Heart::Flakes
 
 #define ENABLE_NET_SERIALIZER 1
 
-	FHeartFlake Net_CreateFlake(const FConstStructView& Struct, const FReadOptions Options)
+	FFlake Net_CreateFlake(const FConstStructView& Struct, const FReadOptions Options)
 	{
 #if ENABLE_NET_SERIALIZER
 		return CreateFlake<FSerializationProvider_NetBinary>(Struct, Options);
@@ -72,7 +73,7 @@ namespace Heart::Flakes
 #endif
 	}
 
-	FHeartFlake Net_CreateFlake(const UObject* Object, const FReadOptions Options)
+	FFlake Net_CreateFlake(const UObject* Object, const FReadOptions Options)
 	{
 #if ENABLE_NET_SERIALIZER
 		return CreateFlake<FSerializationProvider_NetBinary>(Object, Options);
@@ -81,7 +82,7 @@ namespace Heart::Flakes
 #endif
 	}
 
-	void Net_WriteStruct(const FStructView& Struct, const FHeartFlake& Flake, const FWriteOptions Options)
+	void Net_WriteStruct(const FStructView& Struct, const FFlake& Flake, const FWriteOptions Options)
 	{
 #if ENABLE_NET_SERIALIZER
 		WriteStruct<FSerializationProvider_NetBinary>(Struct, Flake, Options);
@@ -90,7 +91,7 @@ namespace Heart::Flakes
 #endif
 	}
 
-	void Net_WriteObject(UObject* Object, const FHeartFlake& Flake, const FWriteOptions Options)
+	void Net_WriteObject(UObject* Object, const FFlake& Flake, const FWriteOptions Options)
 	{
 #if ENABLE_NET_SERIALIZER
 		WriteObject<FSerializationProvider_NetBinary>(Object, Flake, Options);
@@ -99,7 +100,7 @@ namespace Heart::Flakes
 #endif
 	}
 
-	FInstancedStruct Net_CreateStruct(const FHeartFlake& Flake, const UScriptStruct* ExpectedStruct)
+	FInstancedStruct Net_CreateStruct(const FFlake& Flake, const UScriptStruct* ExpectedStruct)
 	{
 #if ENABLE_NET_SERIALIZER
 		return CreateStruct<FSerializationProvider_NetBinary>(Flake, ExpectedStruct);
@@ -108,7 +109,7 @@ namespace Heart::Flakes
 #endif
 	}
 
-	UObject* Net_CreateObject(const FHeartFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
+	UObject* Net_CreateObject(const FFlake& Flake, UObject* Outer, const UClass* ExpectedClass)
 	{
 #if ENABLE_NET_SERIALIZER
 		return CreateObject<FSerializationProvider_NetBinary>(Flake, Outer, ExpectedClass);

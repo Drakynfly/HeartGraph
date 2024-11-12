@@ -147,6 +147,7 @@ void UHeartObjectTree::AddObjectToTree(UObject* Object)
 TArray<UObject*> UHeartObjectTree::GetObjectsInTree(const UClass* Class) const
 {
 	if (!Tree.IsValid()) return {};
+	if (!IsValid(Class)) return {};
 
 	TArray<TWeakObjectPtr<UObject>> Options = Tree->GetObjects(Class);
 

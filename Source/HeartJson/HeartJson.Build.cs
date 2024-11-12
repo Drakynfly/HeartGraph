@@ -11,10 +11,10 @@ public class HeartJson : ModuleRules
             {
                 "Core",
                 "GameplayTags",
-                "Heart",
-                "HeartCore",
+                "Flakes",
                 "Json",
-                "JsonUtilities"
+                "JsonUtilities",
+                "Heart"
             }
         );
 
@@ -22,7 +22,7 @@ public class HeartJson : ModuleRules
             new []
             {
                 "CoreUObject",
-                "Engine"
+                "Engine",
             }
         );
     }

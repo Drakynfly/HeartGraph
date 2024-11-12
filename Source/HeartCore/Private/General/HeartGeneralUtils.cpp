@@ -5,9 +5,6 @@
 #include "General/Vector2DBounds.h"
 
 #include "Algo/LevenshteinDistance.h"
-#include "EngineFontServices.h"
-#include "Engine/Font.h"
-#include "Fonts/FontCache.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGeneralUtils)
 

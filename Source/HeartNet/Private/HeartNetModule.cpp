@@ -1,20 +1,19 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartNetModule.h"
-#include "HeartCoreModule.h"
+#include "FlakesModule.h"
 #include "HeartFlakeNetSerializer.h"
 
 #define LOCTEXT_NAMESPACE "HeartNetModule"
 
 void FHeartNetModule::StartupModule()
 {
-	FHeartCoreModule::Get().AddSerializationProvider(MakeUnique<Heart::Flakes::FSerializationProvider_NetBinary>());
+	FFlakesModule::Get().AddSerializationProvider(MakeUnique<Flakes::FSerializationProvider_NetBinary>());
 }
 
 void FHeartNetModule::ShutdownModule()
 {
-	FHeartCoreModule::Get().RemoveSerializationProvider(Heart::Flakes::FSerializationProvider_NetBinary().GetProviderName());
-\
+	FFlakesModule::Get().RemoveSerializationProvider(Flakes::FSerializationProvider_NetBinary().GetProviderName());
 }
 
 #undef LOCTEXT_NAMESPACE

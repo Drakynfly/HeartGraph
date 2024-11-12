@@ -23,6 +23,7 @@ public class HeartNet : ModuleRules
             new []
             {
                 "Blood",
+                "Flakes",
                 "Heart",
                 "HeartCore"
             });
