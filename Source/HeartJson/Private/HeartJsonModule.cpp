@@ -8,12 +8,12 @@
 
 void FHeartJsonModule::StartupModule()
 {
-	FFlakesModule::Get().AddSerializationProvider(MakeUnique<Flakes::FSerializationProvider_Json>());
+	FFlakesModule::Get().AddSerializationProvider(MakeUnique<Flakes::Json::Type>());
 }
 
 void FHeartJsonModule::ShutdownModule()
 {
-	FFlakesModule::Get().RemoveSerializationProvider(Flakes::FSerializationProvider_Json().GetProviderName());
+	FFlakesModule::Get().RemoveSerializationProvider(Flakes::Json::Type().GetProviderName());
 }
 
 #undef LOCTEXT_NAMESPACE

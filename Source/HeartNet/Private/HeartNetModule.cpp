@@ -8,12 +8,12 @@
 
 void FHeartNetModule::StartupModule()
 {
-	FFlakesModule::Get().AddSerializationProvider(MakeUnique<Flakes::FSerializationProvider_NetBinary>());
+	FFlakesModule::Get().AddSerializationProvider(MakeUnique<Flakes::NetBinary::Type>());
 }
 
 void FHeartNetModule::ShutdownModule()
 {
-	FFlakesModule::Get().RemoveSerializationProvider(Flakes::FSerializationProvider_NetBinary().GetProviderName());
+	FFlakesModule::Get().RemoveSerializationProvider(Flakes::NetBinary::Type().GetProviderName());
 }
 
 #undef LOCTEXT_NAMESPACE

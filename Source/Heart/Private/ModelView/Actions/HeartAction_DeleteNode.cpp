@@ -18,7 +18,7 @@ bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 	if (Ar.IsSaving())
 	{
 		// Scrunch the node into binary
-		NodeData = Flakes::CreateFlake(DeletedNode);
+		NodeData = Flakes::MakeFlake(DeletedNode);
 	}
 
 	Ar << NodeData;

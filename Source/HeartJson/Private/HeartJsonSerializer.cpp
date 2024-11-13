@@ -76,9 +76,9 @@ static const FJsonObjectConverter::CustomExportCallback HeartJsonCustomExporter 
 			return {};
 		});
 
-namespace Flakes
+namespace Flakes::Json
 {
-	void FSerializationProvider_Json::Static_ReadData(const FConstStructView& Struct, TArray<uint8>& OutData)
+	void FSerializationProvider_Json::ReadData(const FConstStructView& Struct, TArray<uint8>& OutData, const UObject* Outer)
 	{
 		FString StringData;
 		FJsonObjectConverter::UStructToJsonObjectString(Struct.GetScriptStruct(), Struct.GetMemory(),
@@ -93,7 +93,7 @@ namespace Flakes
 		StringToBytes(StringData, OutData.GetData(), StringData.Len());
 	}
 
-	void FSerializationProvider_Json::Static_ReadData(const UObject* Object, TArray<uint8>& OutData)
+	void FSerializationProvider_Json::ReadData(const UObject* Object, TArray<uint8>& OutData)
 	{
 		FString StringData;
 		FJsonObjectConverter::UStructToJsonObjectString(Object->GetClass(), Object,
@@ -108,7 +108,7 @@ namespace Flakes
 		StringToBytes(StringData, OutData.GetData(), StringData.Len());
 	}
 
-	void FSerializationProvider_Json::Static_WriteData(const FStructView& Struct, const TArray<uint8>& Data)
+	void FSerializationProvider_Json::WriteData(const FStructView& Struct, const TArray<uint8>& Data, UObject* Outer)
 	{
 		if (!ensure(Struct.IsValid()))
 		{
@@ -136,7 +136,7 @@ namespace Flakes
 			bStrictMode);
 	}
 
-	void FSerializationProvider_Json::Static_WriteData(UObject* Object, const TArray<uint8>& Data)
+	void FSerializationProvider_Json::WriteData(UObject* Object, const TArray<uint8>& Data)
 	{
 		if (!ensure(IsValid(Object)))
 		{
@@ -162,12 +162,6 @@ namespace Flakes
 			CheckFlags,
 			SkipFlags,
 			bStrictMode);
-	}
-
-	FName FSerializationProvider_Json::GetProviderName()
-	{
-		static const FLazyName JsonSerializationProvider("JSON");
-		return JsonSerializationProvider;
 	}
 }
 

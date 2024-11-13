@@ -8,9 +8,9 @@
 #include "FlakesStructs.h"
 #include "HeartJsonSerializer.generated.h"
 
-namespace Flakes
+namespace Flakes::Json
 {
-	SERIALIZATION_PROVIDER_HEADER(Json)
+	SERIALIZATION_PROVIDER_HEADER(HEARTJSON_API, Json)
 }
 
 
