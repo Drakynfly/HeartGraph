@@ -22,8 +22,8 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvas)
 
-DECLARE_CYCLE_STAT(TEXT("CanvasTick"),	STAT_CanvasTick, STATGROUP_HeartCanvas);
-DECLARE_CYCLE_STAT(TEXT("CanvasPaint"),	STAT_CanvasPaint, STATGROUP_HeartCanvas);
+DECLARE_CYCLE_STAT(TEXT("CanvasTick"), STAT_CanvasTick, STATGROUP_HeartCanvas);
+DECLARE_CYCLE_STAT(TEXT("CanvasPaint"), STAT_CanvasPaint, STATGROUP_HeartCanvas);
 
 DEFINE_LOG_CATEGORY(LogHeartGraphCanvas)
 
@@ -58,7 +58,14 @@ void UHeartGraphCanvas::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//SetViewCenter(GetStartingView());
+	Refresh();
+}
+
+void UHeartGraphCanvas::NativeDestruct()
+{
+	Reset();
+
+	Super::NativeDestruct();
 }
 
 void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDeltaTime)
@@ -292,8 +299,14 @@ void UHeartGraphCanvas::Refresh()
 		return;
 	}
 
+	if (!DisplayedGraph.IsValid())
+	{
+		return;
+	}
+
 	TArray<UHeartGraphNode*> GraphNodes;
 	DisplayedGraph->GetNodeArray(GraphNodes);
+	DisplayedNodes.Reserve(GraphNodes.Num());
 	for (auto&& GraphNode : GraphNodes)
 	{
 		if (IsValid(GraphNode))
