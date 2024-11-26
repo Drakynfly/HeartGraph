@@ -4,6 +4,8 @@
 #include "Model/HeartGraphInterface.h"
 #include "Model/HeartGuids.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayout_TestSpinner)
+
 bool UHeartLayout_TestSpinner::Layout(IHeartGraphInterface* Interface,
 									  const TArray<FHeartNodeGuid>& Nodes, const float DeltaTime)
 {

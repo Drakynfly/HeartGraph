@@ -5,6 +5,8 @@
 #include "Model/HeartGuids.h"
 #include "Algorithms/FruchtermanReingold.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayout_FruchtermanReingold)
+
 bool UHeartLayout_FruchtermanReingold::Layout(IHeartGraphInterface* Interface,
 											  const TArray<FHeartNodeGuid>& Nodes, const float DeltaTime)
 {

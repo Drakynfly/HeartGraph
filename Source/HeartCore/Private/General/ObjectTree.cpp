@@ -2,6 +2,8 @@
 
 #include "General/ObjectTree.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(ObjectTree)
+
 namespace Heart
 {
 	TSharedPtr<FObjectNode> FObjectNode::FindChildNode(const TWeakObjectPtr<const UClass> Class) const
