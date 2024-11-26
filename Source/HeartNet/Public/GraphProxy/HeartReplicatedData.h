@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "FlakesStructs.h"
+#include "FlakesInterface.h"
 #include "Model/HeartGuids.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "HeartReplicatedData.generated.h"

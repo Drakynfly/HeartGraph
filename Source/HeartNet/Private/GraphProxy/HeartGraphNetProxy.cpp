@@ -5,9 +5,6 @@
 #include "GraphProxy/HeartNetExtensionInterface.h"
 #include "GraphProxy/HeartNetNodeInterface.h"
 #include "GraphProxy/HeartNetReplicationTypes.h"
-#include "LogHeartNet.h"
-#include "HeartFlakeNetSerializer.h"
-#include "Actions/HeartRemoteActionLog.h"
 #include "Input/HeartActionBase.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
@@ -15,9 +12,13 @@
 #include "Model/HeartNodeQuery.h"
 #include "Model/HeartExtensionQuery.h"
 #include "ModelView/HeartActionHistory.h"
+#include "View/HeartVisualizerInterfaces.h"
+
+#include "Actions/HeartRemoteActionLog.h"
+#include "LogHeartNet.h"
+#include "Providers/FlakesNetBinarySerializer.h"
 
 #include "Net/UnrealNetwork.h"
-#include "View/HeartVisualizerInterfaces.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNetProxy)
 
@@ -658,7 +659,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 
 	FHeartGraphConnectionEvent_Net Event;
 	Algo::Transform(GraphConnectionEvent.AffectedNodes, Event.AffectedNodes,
-		[&ByAffected](const TObjectPtr<UHeartGraphNode> Node)
+		[&ByAffected](const TObjectPtr<UHeartGraphNode>& Node)
 		{
 			FHeartReplicatedFlake NodeData;
 			NodeData.Guid = Node->GetGuid();

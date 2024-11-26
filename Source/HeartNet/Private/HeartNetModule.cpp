@@ -2,7 +2,7 @@
 
 #include "HeartNetModule.h"
 #include "FlakesModule.h"
-#include "HeartFlakeNetSerializer.h"
+#include "Providers/FlakesNetBinarySerializer.h"
 
 #define LOCTEXT_NAMESPACE "HeartNetModule"
 
@@ -13,7 +13,7 @@ void FHeartNetModule::StartupModule()
 
 void FHeartNetModule::ShutdownModule()
 {
-	FFlakesModule::Get().RemoveSerializationProvider(Flakes::NetBinary::Type().GetProviderName());
+	FFlakesModule::Get().RemoveSerializationProvider(Flakes::NetBinary::ProviderName);
 }
 
 #undef LOCTEXT_NAMESPACE

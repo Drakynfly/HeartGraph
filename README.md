@@ -25,11 +25,12 @@ An alternative visualization method using `AActor` and `UActorComponent` classes
 ### HeartEditor (WIP)
 An asset authoring tool for Heart graphs using Unreal's native UEdGraph toolset. Such a workflow allows for creating a graph inside the Unreal Engine Editor, and viewing it using HeartCanvas at runtime (such as a perk tree).
 
-### HeartJson (WIP)
-Adds a Json Serializer to the Flakes API from HeartCore
-
 ### HeartNet (WIP)
 An addition to Heart that enables replication support of a HeartGraph.
+
+## Plugin Dependencies
+- This plugin depends on another free plugin I've made, which can be found here:
+    - Flakes - A serialization backend: https://github.com/Drakynfly/Flakes
 
 ## Engine Plugin Dependencies
 

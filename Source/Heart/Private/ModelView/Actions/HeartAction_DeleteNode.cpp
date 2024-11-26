@@ -5,7 +5,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNodeInterface.h"
 #include "ModelView/HeartActionHistory.h"
-#include "FlakesStructs.h"
+#include "Providers/FlakesBinarySerializer.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_DeleteNode)
 
