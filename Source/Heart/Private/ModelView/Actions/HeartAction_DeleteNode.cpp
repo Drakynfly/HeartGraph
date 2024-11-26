@@ -18,7 +18,7 @@ bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 	if (Ar.IsSaving())
 	{
 		// Scrunch the node into binary
-		NodeData = Flakes::MakeFlake(DeletedNode);
+		NodeData = Flakes::MakeFlake<Flakes::Binary::Type>(DeletedNode);
 	}
 
 	Ar << NodeData;
@@ -26,7 +26,7 @@ bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 	if (Ar.IsLoading())
 	{
 		// Restore the node from binary; outer is temporarily the TransientPackage, until it's renamed by ::Undo
-		DeletedNode = Flakes::CreateObject<UHeartGraphNode>(NodeData);
+		DeletedNode = Flakes::CreateObject<UHeartGraphNode, Flakes::Binary::Type>(NodeData);
 	}
 
 	Ar << Mementos;
