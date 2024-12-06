@@ -1,35 +1,34 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
-
-#include "Model/HeartGraph.h"
 #include "Model/HeartGraphBlueprint.h"
-#include "Graph/HeartGraphBlueprintFactory.h"
+#include "HeartEditorShared.h"
 
-#include "HeartEditorModule.h"
+#define LOCTEXT_NAMESPACE "AssetDefinition_HeartGraphBlueprint"
 
-#define LOCTEXT_NAMESPACE "AssetTypeActions_HeartGraphBlueprint"
-
-FText FAssetTypeActions_HeartGraphBlueprint::GetName() const
+FText UAssetDefinition_HeartGraphBlueprint::GetAssetDisplayName() const
 {
-	return LOCTEXT("AssetTypeActions_HeartGraphBlueprint", "Heart Graph Blueprint");
+	return LOCTEXT("DisplayName", "Heart Graph Blueprint");
 }
 
-uint32 FAssetTypeActions_HeartGraphBlueprint::GetCategories()
+FText UAssetDefinition_HeartGraphBlueprint::GetAssetDescription(const FAssetData& AssetData) const
 {
-	return FHeartEditorModule::HeartAssetCategory_TEMP;
+	return LOCTEXT("Description", "New Blueprint for a Heart Graph class");
 }
 
-UClass* FAssetTypeActions_HeartGraphBlueprint::GetSupportedClass() const
+FLinearColor UAssetDefinition_HeartGraphBlueprint::GetAssetColor() const
+{
+	return Heart::EditorShared::HeartColorDark;
+}
+
+TSoftClassPtr<UObject> UAssetDefinition_HeartGraphBlueprint::GetAssetClass() const
 {
 	return UHeartGraphBlueprint::StaticClass();
 }
 
-UFactory* FAssetTypeActions_HeartGraphBlueprint::GetFactoryForBlueprintType(UBlueprint* InBlueprint) const
+TConstArrayView<FAssetCategoryPath> UAssetDefinition_HeartGraphBlueprint::GetAssetCategories() const
 {
-	auto&& HeartGraphNodeBlueprintFactory = NewObject<UHeartGraphBlueprintFactory>();
-	HeartGraphNodeBlueprintFactory->ParentClass = TSubclassOf<UHeartGraph>(*InBlueprint->GeneratedClass);
-	return HeartGraphNodeBlueprintFactory;
+	return Heart::EditorShared::GetAssetCategories();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -24,21 +24,14 @@
 #include "Graph/Widgets/Nodes/SHeartGraphNode_Horizontal.h"
 #include "Graph/Widgets/Nodes/SHeartGraphNode_Vertical.h"
 
-#include "Nodes/AssetTypeActions_HeartGraphNodeBlueprint.h"
-
 #include "Customizations/ItemsArrayCustomization.h"
 #include "Nodes/HeartGraphNodeCustomization.h"
 #include "Graph/HeartGraphSchemaCustomization.h"
 
 #include "Customizations/HeartGuidCustomization.h"
 
-// @todo temp includes
-#include "AssetToolsModule.h"
 #include "AssetEditor/ApplicationMode_Editor.h"
-#include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
 #include "Input/HeartInputBindingAsset.h"
-#include "Model/HeartGraph.h"
-
 
 static const FLazyName PropertyEditorModuleName("PropertyEditor");
 static const FLazyName AssetSearchModuleName("AssetSearch");
@@ -46,9 +39,6 @@ static const FLazyName AssetSearchModuleName("AssetSearch");
 DEFINE_LOG_CATEGORY(LogHeartEditor);
 
 #define LOCTEXT_NAMESPACE "HeartEditorModule"
-
-// @TODO TEMP
-EAssetTypeCategories::Type FHeartEditorModule::HeartAssetCategory_TEMP = static_cast<EAssetTypeCategories::Type>(0);
 
 void FHeartEditorModule::StartupModule()
 {
@@ -58,30 +48,6 @@ void FHeartEditorModule::StartupModule()
 
 	MenuExtensibilityManager = MakeShared<FExtensibilityManager>();
 	ToolBarExtensibilityManager = MakeShared<FExtensibilityManager>();
-
-	// @TODO BEGIN TEMP STUFF
-	{
-		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-
-		FText AssetCategoryText = LOCTEXT("HeartAssetCategory", "Heart");
-
-		if (!AssetCategoryText.IsEmpty())
-		{
-			if (HeartAssetCategory_TEMP == EAssetTypeCategories::None)
-			{
-				HeartAssetCategory_TEMP = AssetTools.RegisterAdvancedAssetCategory(FName("Heart"), AssetCategoryText);
-			}
-		}
-
-		RegisteredAssetActions.Add(MakeShared<FAssetTypeActions_HeartGraphBlueprint>());
-		RegisteredAssetActions.Add(MakeShared<FAssetTypeActions_HeartGraphNodeBlueprint>());
-
-		for (auto&& TypeActions : RegisteredAssetActions)
-		{
-			AssetTools.RegisterAssetTypeActions(TypeActions);
-		}
-	}
-	// @TODO END TEMP STUFF
 
 	RegisterPropertyCustomizations();
 
@@ -135,21 +101,6 @@ void FHeartEditorModule::StartupModule()
 void FHeartEditorModule::ShutdownModule()
 {
 	FHeartEditorStyle::Shutdown();
-
-	// @TODO BEGIN TEMP STUFF
-	{
-		if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
-		{
-			IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
-			for (auto&& TypeActions : RegisteredAssetActions)
-			{
-				AssetTools.UnregisterAssetTypeActions(TypeActions);
-			}
-		}
-
-		RegisteredAssetActions.Empty();
-	}
-	// @TODO END TEMP STUFF
 
 	// Unregister customizations
 	if (FModuleManager::Get().IsModuleLoaded(PropertyEditorModuleName))

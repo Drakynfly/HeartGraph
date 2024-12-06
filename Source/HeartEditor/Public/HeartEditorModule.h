@@ -5,9 +5,6 @@
 #include "Modules/ModuleInterface.h"
 #include "Toolkits/IToolkit.h"
 
-// @todo this include is temp
-#include "AssetTypeCategories.h"
-
 class UHeartGraph;
 class UHeartGraphNode;
 class UHeartEdGraphNode;
@@ -89,10 +86,4 @@ private:
 
     TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;
     TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;
-
-    // @todo TEMP STUFF:
-public:
-    static EAssetTypeCategories::Type HeartAssetCategory_TEMP;
-private:
-    TArray<TSharedRef<class IAssetTypeActions>> RegisteredAssetActions;
 };
