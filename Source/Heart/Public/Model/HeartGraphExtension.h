@@ -20,7 +20,7 @@ class HEART_API UHeartGraphExtension : public UObject
 	friend UHeartGraph;
 
 public:
-	virtual void PostLoad() override;
+	virtual void PostInitProperties() override;
 
 	FHeartExtensionGuid GetGuid() const { return Guid; }
 

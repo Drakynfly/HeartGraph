@@ -263,7 +263,7 @@ void FHeartEditorModule::OnAssetManagerCreated()
 				LOCTEXT("AddRuleForGraphNodeRegistrar", "Add entry to PrimaryAssetTypesToScan?"), FText::GetEmpty(),
 				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::AddRegistrarPrimaryAssetRule), true))
 			->AddToken(FActionToken::Create(
-				LOCTEXT("DisableGraphNodeRegistrarError", "Disable this error, "), FText::GetEmpty(),
+				LOCTEXT("DisableGraphNodeRegistrarError", "Disable this error!"), FText::GetEmpty(),
 				FOnActionTokenExecuted::CreateRaw(this, &FHeartEditorModule::DisableGraphNodeRegistrarError), true));
 	}
 }

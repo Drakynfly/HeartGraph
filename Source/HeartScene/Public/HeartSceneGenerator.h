@@ -59,7 +59,7 @@ protected:
 	UPROPERTY()
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartSceneNode>> SceneNodes;
 
-	UPROPERTY(VisibleAnywhere, Instanced, Category = "Visualization", NoClear, meta = (ShowInnerProperties))
+	UPROPERTY(VisibleAnywhere, Instanced, Category = "Visualization", NoClear)
 	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
 
 	// Should the LocationModifiers work with world space vectors, instead of relative?

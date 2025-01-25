@@ -3,8 +3,6 @@
 #pragma once
 
 #include "UObject/Object.h"
-#include "Model/HeartGraphInterface.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartNodeLocationModifier.generated.h"
 
 
@@ -22,7 +20,7 @@ public:
 };
 
 
-UCLASS(NotEditInlineNew, CollapseCategories)
+UCLASS(NotEditInlineNew)
 class HEART_API UHeartNodeLocationModifierStack : public UHeartNodeLocationModifier
 {
 	GENERATED_BODY()
@@ -35,6 +33,6 @@ public:
 	virtual FVector ProxyToLocation3D(const FVector& Proxy) const override final;
 
 protected:
-	UPROPERTY(Instanced, EditInstanceOnly, Category = "Config", NoClear)
+	UPROPERTY(Instanced, EditInstanceOnly, Category = "Config", NoClear, meta = (ShowInnerProperties))
 	TArray<TObjectPtr<UHeartNodeLocationModifier>> Modifiers;
 };

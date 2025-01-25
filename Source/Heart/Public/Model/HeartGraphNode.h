@@ -273,6 +273,9 @@ public:
 #if WITH_EDITOR
 	// @todo move this to EdGraphNode class
 	virtual bool CanCreate_Editor() const;
+
+	// @todo bypass regular node creation rules and set a new guid because I know what im doing
+	void SetGuid_Editor(FGuid InGuid);
 #endif
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
@@ -368,10 +371,10 @@ protected:
 
 protected:
 	// The object that this graph node represents. Contains the data and functionality of a spawned instance.
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Category = "GraphNode")
 	TObjectPtr<UObject> NodeObject;
 
-	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "GraphNode")
 	FHeartNodeGuid Guid;
 
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
@@ -388,6 +391,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "GraphNode")
 	FHeartNodePinData PinData;
 
+	// @todo move these to a node component thing...
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	uint8 InstancedInputs = 0;
 

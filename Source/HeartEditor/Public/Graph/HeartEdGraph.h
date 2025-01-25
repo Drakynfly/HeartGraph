@@ -9,6 +9,11 @@
 
 #include "HeartEdGraph.generated.h"
 
+namespace Heart::AssetEditor
+{
+	class FHeartGraphEditor;
+}
+
 class UHeartSlateInputLinker;
 class UHeartEdGraphNode;
 class UHeartGraph;
@@ -35,6 +40,8 @@ UCLASS()
 class HEARTEDITOR_API UHeartEdGraph : public UEdGraph, public IHeartGraphInterface
 {
 	GENERATED_BODY()
+
+	friend Heart::AssetEditor::FHeartGraphEditor;
 
 public:
 	UHeartEdGraph(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());

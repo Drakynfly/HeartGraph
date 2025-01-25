@@ -4,9 +4,9 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphExtension)
 
-void UHeartGraphExtension::PostLoad()
+void UHeartGraphExtension::PostInitProperties()
 {
-	Super::PostLoad();
+	Super::PostInitProperties();
 	if (!Guid.IsValid())
 	{
 		Guid = FHeartExtensionGuid::New();

@@ -305,6 +305,11 @@ bool UHeartGraphNode::CanCreate_Editor() const
 
 	return CanCreate();
 }
+
+void UHeartGraphNode::SetGuid_Editor(const FGuid InGuid)
+{
+	Guid = *((FHeartNodeGuid*)&InGuid); // :(
+}
 #endif
 
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)

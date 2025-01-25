@@ -194,6 +194,9 @@ namespace Heart::AssetEditor
 		AddToolbarExtender(HeartEditorModule.GetToolBarExtensibilityManager()->GetAllExtenders(GetToolkitCommands(), GetEditingObjects()));
 
 		RegenerateMenusAndToolbars();
+
+		// Run refresh asset once to perform any cleanup to restore the EdGraph to a correct state.
+		RefreshAsset();
 	}
 
 	bool FHeartGraphEditor::CanActivateMode(FName NewMode) const
@@ -233,6 +236,40 @@ namespace Heart::AssetEditor
 
 	void FHeartGraphEditor::RefreshAsset()
 	{
+		UHeartEdGraph* EdGraph = Cast<UHeartEdGraph>(HeartGraph->GetEdGraph());
+
+		TSet<UHeartGraphNode*> GraphNodes;
+		TArray<UHeartEdGraphNode*> DupesToRemove;
+
+		for (auto&& EdNode : EdGraph->Nodes)
+		{
+			UHeartEdGraphNode* HeartEdGraphNode = Cast<UHeartEdGraphNode>(EdNode);
+
+			if (GraphNodes.Contains(HeartEdGraphNode->GetHeartGraphNode()))
+			{
+				DupesToRemove.Add(HeartEdGraphNode);
+			}
+			else
+			{
+				GraphNodes.Add(HeartEdGraphNode->GetHeartGraphNode());
+			}
+		}
+
+		for (auto&& GraphNode : DupesToRemove)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Removing duplicate EdGraphNode. (Drakynfly: Please track down how these are created!)"))
+			EdGraph->RemoveNode(GraphNode);
+		}
+
+		auto AllNodes = HeartGraph->GetNodes();
+		for (auto&& GraphNode : AllNodes)
+		{
+			if (!EdGraph->FindEdGraphNodeForNode(GraphNode.Value))
+			{
+				EdGraph->CreateEdGraphNode(GraphNode.Value);
+			}
+		}
+
 		/*
 		TArray<UHeartGraphNode*> HeartGraphNodes;
 		HeartGraph->GetNodeArray(HeartGraphNodes);
@@ -800,7 +837,9 @@ namespace Heart::AssetEditor
 
 			if (auto&& EdGraphNode = Cast<UHeartEdGraphNode>(Node))
 			{
-				HeartGraph->AddNode(EdGraphNode->GetHeartGraphNode());
+				UHeartGraphNode* GraphNode = EdGraphNode->GetHeartGraphNode();
+				GraphNode->SetGuid_Editor(Node->NodeGuid);
+				HeartGraph->AddNode(GraphNode);
 			}
 
 			// Select the newly pasted stuff

@@ -2,10 +2,6 @@
 
 #include "ModelView/HeartNodeLocationModifier.h"
 
-#include "Model/HeartGraph.h"
-#include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphNode3D.h"
-
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodeLocationModifier)
 
 FVector2D UHeartNodeLocationModifierStack::LocationToProxy(const FVector2D& Location) const

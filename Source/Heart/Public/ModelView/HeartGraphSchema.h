@@ -162,7 +162,8 @@ protected:
 
 	// These extension classes are used to add extensions to each asset instance. These instances are uniquely
 	// customizable per instance, as only the existence of these classes is validated against.
-	UPROPERTY(EditAnywhere, Category = "Extensions")
+	UE_DEPRECATED(5.5, TEXT("This property is no longer supported, please use DefaultExtensions"))
+	UPROPERTY(VisibleAnywhere, Category = "Extensions")
 	TArray<TSubclassOf<UHeartGraphExtension>> AdditionalExtensionClasses;
 
 #if WITH_EDITORONLY_DATA

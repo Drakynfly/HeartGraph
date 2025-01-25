@@ -5,8 +5,10 @@
 #include "HeartGraphWidgetBase.h"
 
 #include "Input/HeartWidgetInputBindingContainer.h"
-#include "Model/HeartGraphPinReference.h"
+
+#include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphPinReference.h"
 #include "ModelView/HeartNodeLocationModifier.h"
 
 #include "General/VectorBounds.h"
@@ -312,7 +314,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
 	TObjectPtr<UHeartGraphCanvasConnection> PreviewConnection;
 
-	UPROPERTY(VisibleAnywhere, Instanced, Category = "Widgets", NoClear, meta = (ShowInnerProperties))
+	UPROPERTY(VisibleAnywhere, Instanced, Category = "Widgets", NoClear)
 	TObjectPtr<UHeartNodeLocationModifierStack> LocationModifiers;
 
 	UPROPERTY(EditAnywhere, Instanced, Category = "Widgets")

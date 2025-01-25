@@ -219,11 +219,11 @@ public:
 		return CastChecked<TExtensionClass>(AddExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
 	}
 
-	/** Add the extension of the requested class. */
+	/** Adds a new extension of the requested class. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
 	UHeartGraphExtension* AddExtension(UPARAM(meta = (AllowAbstract = "false")) TSubclassOf<UHeartGraphExtension> Class);
 
-	/** Adds an extension to the Extensions list. Fails if an extension of this class already exists. */
+	/** Adds an extension to the Extensions list. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	bool AddExtensionInstance(UHeartGraphExtension* Extension);
 
@@ -292,14 +292,19 @@ private:
 	TObjectPtr<UEdGraph> HeartEdGraph;
 #endif
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = "Graph")
 	FHeartGraphGuid Guid;
 
-	UPROPERTY(Instanced)
+	UPROPERTY(Instanced, VisibleAnywhere, Category = "Graph")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
-	UPROPERTY(Instanced, VisibleAnywhere)
+	// All extensions, including those added by the schema
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TMap<FHeartExtensionGuid, TObjectPtr<UHeartGraphExtension>> Extensions;
+
+	// Extensions instanced for this asset
+	UPROPERTY(Instanced, EditAnywhere, Category = "Components")
+	TArray<TObjectPtr<UHeartGraphExtension>> InstancedExtensions;
 
 	FHeartGraphNodeEvent OnNodeAdded;
 	FHeartGraphNodeEvent OnNodeRemoved;
