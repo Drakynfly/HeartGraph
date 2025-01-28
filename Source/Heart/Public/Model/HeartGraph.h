@@ -7,12 +7,12 @@
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
-#include "HeartPinConnectionEdit.h"
 #include "HeartGraph.generated.h"
 
 namespace Heart::API
 {
 	class FNodeEdit;
+	class FPinEdit;
 }
 
 class UHeartGraph;
@@ -65,8 +65,8 @@ class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
 
 	friend class UHeartEdGraph;
 	friend class UHeartGraphSchema;
-	friend class Heart::API::FNodeEdit;
-	friend class Heart::Connections::FEdit;
+	friend Heart::API::FNodeEdit;
+	friend Heart::API::FPinEdit;
 
 public:
 	UHeartGraph();
@@ -273,7 +273,7 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	Heart::Connections::FEdit EditConnections();
+	Heart::API::FPinEdit EditConnections();
 
 	bool ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 

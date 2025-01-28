@@ -136,7 +136,7 @@ namespace Heart::API
 		{
 			// Pending delete pass 1: Remove all connections
 			{
-				Connections::FEdit ConnectionsEdit(Graph);
+				FPinEdit ConnectionsEdit(Graph);
 				for (auto&& It = PendingDeletes.CreateIterator(); It; ++It)
 				{
 					// Remove any guids that aren't valid for some reason

@@ -358,7 +358,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 		FHeartGraphConnectionEvent_Net_PinElement PinElement;
 		Flakes::WriteStruct<Flakes::NetBinary::Type>(FStructView::Make(PinElement), NodeData.Flake);
 
-		Heart::Connections::FEdit Edit(ExistingNode);
+		Heart::API::FPinEdit Edit(ExistingNode);
 
 		for (auto&& Element : PinElement.PinConnections)
 		{

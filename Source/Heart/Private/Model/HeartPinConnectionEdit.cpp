@@ -4,12 +4,12 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
-namespace Heart::Connections
+namespace Heart::API
 {
-	FEdit::FEdit(UHeartGraphNode* Node)
+	FPinEdit::FPinEdit(UHeartGraphNode* Node)
 	  : Graph(Node->GetGraph()) {}
 
-	FEdit::~FEdit()
+	FPinEdit::~FPinEdit()
 	{
 		if (!Modified())
 		{
@@ -28,7 +28,7 @@ namespace Heart::Connections
 		Graph->HandleGraphConnectionEvent(Event);
 	}
 
-	FEdit& FEdit::Connect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
+	FPinEdit& FPinEdit::Connect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
 	{
 		UHeartGraphNode* ANode = Graph->GetNode(PinA.NodeGuid);
 		UHeartGraphNode* BNode = Graph->GetNode(PinB.NodeGuid);
@@ -48,7 +48,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::Disconnect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
+	FPinEdit& FPinEdit::Disconnect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
 	{
 		UHeartGraphNode* ANode = Graph->GetNode(PinA.NodeGuid);
 		UHeartGraphNode* BNode = Graph->GetNode(PinB.NodeGuid);
@@ -58,7 +58,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::DisconnectAll(const FHeartGraphPinReference& Pin)
+	FPinEdit& FPinEdit::DisconnectAll(const FHeartGraphPinReference& Pin)
 	{
 		UHeartGraphNode* Node = Graph->GetNode(Pin.NodeGuid);
 		if (!ensure(IsValid(Node)))
@@ -80,7 +80,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::DisconnectAll(const FHeartNodeGuid& NodeGuid)
+	FPinEdit& FPinEdit::DisconnectAll(const FHeartNodeGuid& NodeGuid)
 	{
 		UHeartGraphNode* Node = Graph->GetNode(NodeGuid);
 		if (!ensure(IsValid(Node)))
@@ -102,7 +102,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::Override(const FHeartGraphPinReference& Pin, const FHeartGraphPinConnections& Connections)
+	FPinEdit& FPinEdit::Override(const FHeartGraphPinReference& Pin, const FHeartGraphPinConnections& Connections)
 	{
 		UHeartGraphNode* ANode = Graph->GetNode(Pin.NodeGuid);
 		if (!ensure(IsValid(ANode)))
@@ -117,7 +117,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::CreateMementos(const FHeartGraphPinReference& Pin, TMap<FHeartNodeGuid, FMemento>& OutMementos)
+	FPinEdit& FPinEdit::CreateMementos(const FHeartGraphPinReference& Pin, TMap<FHeartNodeGuid, FMemento>& OutMementos)
 	{
 		const UHeartGraphNode* Node = Graph->GetNode(Pin.NodeGuid);
 		if (!ensure(IsValid(Node)))
@@ -141,7 +141,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::CreateAllMementos(const FHeartNodeGuid& NodeGuid, TMap<FHeartNodeGuid, FMemento>& OutMementos)
+	FPinEdit& FPinEdit::CreateAllMementos(const FHeartNodeGuid& NodeGuid, TMap<FHeartNodeGuid, FMemento>& OutMementos)
 	{
 		const UHeartGraphNode* Node = Graph->GetNode(NodeGuid);
 		if (!ensure(IsValid(Node)))
@@ -165,7 +165,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	FEdit& FEdit::RestoreMementos(const TMap<FHeartNodeGuid, FMemento>& Mementos)
+	FPinEdit& FPinEdit::RestoreMementos(const TMap<FHeartNodeGuid, FMemento>& Mementos)
 	{
 		for (auto&& PinAndMemento : Mementos)
 		{
@@ -192,7 +192,7 @@ namespace Heart::Connections
 		return *this;
 	}
 
-	void FEdit::Internal_Disconnect(UHeartGraphNode* NodeA, const FHeartGraphPinReference& PinA,
+	void FPinEdit::Internal_Disconnect(UHeartGraphNode* NodeA, const FHeartGraphPinReference& PinA,
 									UHeartGraphNode* NodeB, const FHeartGraphPinReference& PinB)
 	{
 		if (IsValid(NodeA))

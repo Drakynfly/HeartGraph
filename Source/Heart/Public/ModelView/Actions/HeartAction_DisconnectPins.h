@@ -14,7 +14,7 @@ struct FHeartDisconnectPinsUndoData
 	GENERATED_BODY()
 
 	TSoftObjectPtr<UHeartGraphNode> TargetNode;
-	TMap<FHeartNodeGuid, Heart::Connections::FEdit::FMemento> Mementos;
+	TMap<FHeartNodeGuid, Heart::API::FPinEdit::FMemento> Mementos;
 
 	bool Serialize(FArchive& Ar);
 };

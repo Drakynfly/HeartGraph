@@ -454,7 +454,7 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	}
 
 	// Remove all connections that will be orphaned by removing this node
-	Heart::Connections::FEdit(this).DisconnectAll(NodeGuid);
+	Heart::API::FPinEdit(this).DisconnectAll(NodeGuid);
 
 	auto&& NodeBeingRemoved = Nodes[NodeGuid];
 	const int32 Removed = Nodes.Remove(NodeGuid);
@@ -466,9 +466,9 @@ bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 	return !!Removed;
 }
 
-Heart::Connections::FEdit UHeartGraph::EditConnections()
+Heart::API::FPinEdit UHeartGraph::EditConnections()
 {
-	return Heart::Connections::FEdit(this);
+	return Heart::API::FPinEdit(this);
 }
 
 bool UHeartGraph::ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)

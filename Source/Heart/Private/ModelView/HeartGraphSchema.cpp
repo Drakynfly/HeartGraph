@@ -5,6 +5,7 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphExtension.h"
+#include "Model/HeartPinConnectionEdit.h"
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "UObject/ObjectSaveContext.h"
 

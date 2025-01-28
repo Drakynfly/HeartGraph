@@ -19,9 +19,9 @@ namespace Heart
 		class FPinQueryResult;
 	}
 
-	namespace Connections
+	namespace API
 	{
-		class FEdit;
+		class FPinEdit;
 	}
 }
 
@@ -39,7 +39,7 @@ struct FHeartNodePinData
 
 	friend class UHeartGraphNode;
 	friend Heart::Query::FPinQueryResult;
-	friend Heart::Connections::FEdit;
+	friend Heart::API::FPinEdit;
 
 protected:
 	void AddPin(FHeartPinGuid NewKey, const FHeartGraphPinDesc& Desc);

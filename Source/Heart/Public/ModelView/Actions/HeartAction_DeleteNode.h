@@ -14,7 +14,7 @@ struct FHeartDeleteNodeUndoData
 	UPROPERTY()
 	TObjectPtr<UHeartGraphNode> DeletedNode;
 
-	TMap<FHeartNodeGuid, Heart::Connections::FEdit::FMemento> Mementos;
+	TMap<FHeartNodeGuid, Heart::API::FPinEdit::FMemento> Mementos;
 
 	bool Serialize(FArchive& Ar);
 };

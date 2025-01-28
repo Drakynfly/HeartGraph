@@ -107,7 +107,7 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 
 	friend class UHeartEdGraphNode;
 	friend class Heart::API::FNodeCreator;
-	friend class Heart::Connections::FEdit;
+	friend class Heart::API::FPinEdit;
 
 public:
 	UHeartGraphNode();

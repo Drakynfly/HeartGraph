@@ -11,8 +11,8 @@ struct FHeartPinsEditProxyUndoData
 {
 	GENERATED_BODY()
 
-	TMap<FHeartNodeGuid, Heart::Connections::FEdit::FMemento> Original;
-	TMap<FHeartNodeGuid, Heart::Connections::FEdit::FMemento> New;
+	TMap<FHeartNodeGuid, Heart::API::FPinEdit::FMemento> Original;
+	TMap<FHeartNodeGuid, Heart::API::FPinEdit::FMemento> New;
 
 	bool Serialize(FArchive& Ar)
 	{

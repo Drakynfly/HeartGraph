@@ -8,15 +8,15 @@
 class UHeartGraph;
 class UHeartGraphNode;
 
-namespace Heart::Connections
+namespace Heart::API
 {
 	// Container for batching pin connection edits.
-	class HEART_API FEdit
+	class HEART_API FPinEdit
 	{
 	public:
 		class HEART_API FMemento
 		{
-			friend FEdit;
+			friend FPinEdit;
 			TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
 
 			friend FArchive& operator<<(FArchive& Ar, FMemento& V)
@@ -25,34 +25,34 @@ namespace Heart::Connections
 			}
 		};
 
-		FEdit(UHeartGraph* Graph)
+		FPinEdit(UHeartGraph* Graph)
 		  : Graph(Graph) {}
 
-		FEdit(UHeartGraphNode* Node);
+		FPinEdit(UHeartGraphNode* Node);
 
-		~FEdit();
+		~FPinEdit();
 
-		FEdit& Connect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
+		FPinEdit& Connect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 
-		FEdit& Disconnect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
+		FPinEdit& Disconnect(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB);
 
 		// Remove all connections from a specific pin
-		FEdit& DisconnectAll(const FHeartGraphPinReference& Pin);
+		FPinEdit& DisconnectAll(const FHeartGraphPinReference& Pin);
 
 		// Remove all connections from every pin on a node
-		FEdit& DisconnectAll(const FHeartNodeGuid& NodeGuid);
+		FPinEdit& DisconnectAll(const FHeartNodeGuid& NodeGuid);
 
 		// Manually set the connections on for a pin. WARNING: this is a very dangerous function as it does not check
 		// for cross-node validity. It is up to the callsite to ensure that both nodes linked get updated.
-		FEdit& Override(const FHeartGraphPinReference& Pin, const FHeartGraphPinConnections& Connections);
+		FPinEdit& Override(const FHeartGraphPinReference& Pin, const FHeartGraphPinConnections& Connections);
 
 		// Create a memento for each pin connected to this pin, as well as itself
-		FEdit& CreateMementos(const FHeartGraphPinReference& Pin, TMap<FHeartNodeGuid, FMemento>& OutMementos);
+		FPinEdit& CreateMementos(const FHeartGraphPinReference& Pin, TMap<FHeartNodeGuid, FMemento>& OutMementos);
 
 		// Create a memento for each pin on this node, as well as all connected pins
-		FEdit& CreateAllMementos(const FHeartNodeGuid& NodeGuid, TMap<FHeartNodeGuid, FMemento>& OutMementos);
+		FPinEdit& CreateAllMementos(const FHeartNodeGuid& NodeGuid, TMap<FHeartNodeGuid, FMemento>& OutMementos);
 
-		FEdit& RestoreMementos(const TMap<FHeartNodeGuid, FMemento>& Mementos);
+		FPinEdit& RestoreMementos(const TMap<FHeartNodeGuid, FMemento>& Mementos);
 
 		[[nodiscard]] bool Modified() const { return !ChangedPins.IsEmpty(); }
 
@@ -62,4 +62,9 @@ namespace Heart::Connections
 		UHeartGraph* Graph;
 		TMultiMap<UHeartGraphNode*, FHeartPinGuid> ChangedPins;
 	};
+}
+
+namespace Heart::Connections
+{
+	using FEdit UE_DEPRECATED(5.5, "Class renamed and moved to Heart::API::FPinEdit") = Heart::API::FPinEdit;
 }
