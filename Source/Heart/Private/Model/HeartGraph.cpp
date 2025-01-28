@@ -506,7 +506,7 @@ UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const
 	{
 		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 				GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeClass));
-		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	}
 
 	if (!IsValid(GraphNodeClass))
@@ -531,7 +531,7 @@ UHeartGraphNode* UHeartGraph::CreateNodeFromObject(UObject* NodeObject, const FV
 	{
 		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 				GraphNodeClass = RegistrySubsystem->GetRegistry(GetClass())->GetGraphNodeClassForNode(FHeartNodeSource(NodeObject));
-		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	}
 
 	return Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject, Location);

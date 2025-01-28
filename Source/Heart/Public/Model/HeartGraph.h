@@ -90,7 +90,7 @@ private:
 	/* IHeartGraphInterface */
 
 public:
-	// @tode make these protected, gated behind an API (and rename to Handle...)
+	// @todo make these protected, gated behind an API (and rename to Handle...)
 	void NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, bool InProgress);
 	void NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, bool InProgress);
 

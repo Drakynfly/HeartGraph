@@ -178,7 +178,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UObject* GetNodeObject() const { return NodeObject; }
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeprecationMessage = "Function moved to library: UHeartGraphUtils::GetNodeObjectTyped", DeterminesOutputType = Class))
 	UObject* GetNodeObjectTyped(TSubclassOf<UObject> Class) const { return NodeObject; }
 
 	template <
@@ -193,7 +193,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	UHeartGraph* GetGraph() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DeprecatedFunction))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeprecationMessage = "Function moved to library: UHeartGraphUtils::GetGraphTyped", DeterminesOutputType = Class))
 	UHeartGraph* GetGraphTyped(TSubclassOf<UHeartGraph> Class) const { return GetGraph(); }
 
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Heart|GraphNode")
