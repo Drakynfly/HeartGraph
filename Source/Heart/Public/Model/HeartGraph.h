@@ -155,7 +155,7 @@ public:
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "GetNodes"))
-	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return reinterpret_cast<const TMap<FHeartNodeGuid, UHeartGraphNode*>&>(Nodes); }
+	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return ObjectPtrDecay(Nodes); }
 
 
 	/*----------------------------
