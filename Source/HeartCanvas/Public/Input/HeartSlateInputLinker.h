@@ -35,7 +35,6 @@ namespace Heart::Input
 	{
 		static constexpr bool Supported = true;
 
-		using FReplyType = FReply;
 		using FValueType = const TSharedRef<SWidget>&;
 
 		template <typename T>

@@ -43,7 +43,6 @@ namespace Heart::Input
 	{
 		static constexpr bool Supported = true;
 
-		using FReplyType = FReply;
 		using FValueType = UWidget*;
 
 		template <typename T>
