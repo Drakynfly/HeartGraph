@@ -101,17 +101,26 @@ void UHeartGraph::PostLoad()
 		}
 	}
 
+	TArray<FHeartNodeGuid> CleanedUpNodes;
+
 	for (auto It = Nodes.CreateIterator(); It; ++It)
 	{
 		auto&& Node = *It;
 
 		if (!IsValid(Node.Value))
 		{
+			CleanedUpNodes.Add(Node.Key);
 			It.RemoveCurrent();
 			continue;
 		}
 
 		UObject* NodeObject = Node.Value->GetNodeObject();
+		if (!IsValid(NodeObject))
+		{
+			CleanedUpNodes.Add(Node.Key);
+			It.RemoveCurrent();
+			continue;
+		}
 
 		if (NodeObject->GetOuter() == this)
 		{
@@ -132,17 +141,21 @@ void UHeartGraph::PostLoad()
 		{
 			auto&& Component = *SubIt;
 			if (!Component.Key.IsValid() ||
-				!IsValid(Component.Value))
+				!IsValid(Component.Value) ||
+				CleanedUpNodes.Contains(Component.Key))
 			{
 				It.RemoveCurrent();
 			}
 		}
 	}
 
+	// Cannot do this without also running the presave action
+	/*
 	if (!IsTemplate())
 	{
 		GetSchema()->RefreshGraphExtensions(this);
 	}
+	*/
 #endif
 }
 

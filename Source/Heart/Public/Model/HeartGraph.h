@@ -366,7 +366,7 @@ private:
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
 	// All extensions, including those added by the schema
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(Instanced, VisibleAnywhere, Category = "Components")
 	TMap<FHeartExtensionGuid, TObjectPtr<UHeartGraphExtension>> Extensions;
 
 	// Extensions instanced for this asset
