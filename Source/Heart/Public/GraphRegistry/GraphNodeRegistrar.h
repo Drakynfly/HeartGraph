@@ -47,6 +47,12 @@ protected:
 
 	// Classes to register this registrar for automatically. If this is empty, it must be manually added to the Registry
 	// with UHeartGraphNodeRegistry::AddRegistrar
+	UE_DEPRECATED(5.5, "use AutoRegisterTo instead (per Schema registration)")
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MetaClass = "/Script/Heart.HeartGraph"))
 	TArray<FSoftClassPath> AutoRegisterWith;
+
+	// Schemas to register this registrar for automatically. If this is empty, it must be manually added to the Registry
+	// with UHeartGraphNodeRegistry::AddRegistrar
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MetaClass = "/Script/Heart.HeartGraphSchema"))
+	TArray<FSoftClassPath> AutoRegisterTo;
 };

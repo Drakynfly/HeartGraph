@@ -23,8 +23,8 @@ namespace Heart::API
 		return NewGraphNode;
 	}
 
-	UHeartGraphNode* FNodeCreator::CreateNode_Duplicate(UHeartGraph* Graph,	const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-														const UObject* NodeTemplate, const FVector2D& Location,	UObject* NodeSpawningContext)
+	UHeartGraphNode* FNodeCreator::CreateNode_Duplicate(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
+														const UObject* NodeTemplate, const FVector2D& Location, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
 		checkSlow(IsValid(NodeTemplate));
@@ -67,6 +67,38 @@ namespace Heart::API
 	FNodeEdit::~FNodeEdit()
 	{
 		HandlePending();
+	}
+
+	bool FNodeEdit::DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node)
+	{
+		UHeartGraph* GraphPtr = GraphInterface->GetHeartGraph();
+		checkSlow(IsValid(Graph))
+
+		if (!ensure(Node.IsValid()))
+		{
+			return false;
+		}
+
+		if (!GraphPtr->Nodes.Contains(Node))
+		{
+			return false;
+		}
+
+		GraphPtr->RemoveComponentsForNode(Node);
+
+		FPinEdit(GraphPtr).DisconnectAll(Node);
+
+		UHeartGraphNode* NodeBeingRemoved = nullptr;
+		GraphPtr->Nodes.RemoveAndCopyValue(Node, ObjectPtrWrap(NodeBeingRemoved));
+		if (IsValid(NodeBeingRemoved))
+		{
+			FHeartNodeRemoveEvent Event;
+			Event.AffectedNodes.Add(NodeBeingRemoved);
+			GraphPtr->HandleNodeRemoveEvent(Event);
+			return true;
+		}
+
+		return true;
 	}
 
 	FNodeEdit::FNewNodeId FNodeEdit::Create(const FHeartNodeArchetype& Archetype, const FVector2D& Location,
@@ -120,7 +152,7 @@ namespace Heart::API
 
 	void FNodeEdit::Delete(const FHeartNodeGuid& NodeGuid)
 	{
-		PendingDeletes.Emplace(NodeGuid);
+		PendingDeletes.AddUnique(NodeGuid);
 	}
 
 	void FNodeEdit::RunNow()
@@ -134,25 +166,31 @@ namespace Heart::API
 	{
 		if (!PendingDeletes.IsEmpty())
 		{
-			// Pending delete pass 1: Remove all connections
+			// Pending delete pass 0: Verify and clean
+			for (auto&& It = PendingDeletes.CreateIterator(); It; ++It)
+			{
+				// Remove any guids that aren't valid for some reason
+				if (!ensure(It->IsValid()) || !Graph->Nodes.Contains(*It))
+				{
+					It.RemoveCurrent();
+				}
+			}
+
+			// Pending delete pass 1: Remove node components
+			Graph->RemoveComponentsForNodes(PendingDeletes);
+
+			// Pending delete pass 2: Remove all connections
 			{
 				FPinEdit ConnectionsEdit(Graph);
-				for (auto&& It = PendingDeletes.CreateIterator(); It; ++It)
+				for (auto&& PendingDelete : PendingDeletes)
 				{
-					// Remove any guids that aren't valid for some reason
-					if (!ensure(It->IsValid()) || !Graph->Nodes.Contains(*It))
-					{
-						It.RemoveCurrent();
-						continue;
-					}
-
 					// Remove all connections that will be orphaned by removing this node
-					ConnectionsEdit.DisconnectAll(*It);
+					ConnectionsEdit.DisconnectAll(PendingDelete);
 				}
 				// Out-of-scope for ConnectionsEdit, connections changed event is broadcast
 			}
 
-			// Pending delete pass 2: Remove the nodes
+			// Pending delete pass 3: Remove the nodes
 			{
 				FHeartNodeRemoveEvent Event;
 

@@ -34,6 +34,8 @@ public:
 	void Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> InHeartGraphAssetEditor);
 	virtual ~SHeartPalette() override;
 
+	void RequestRefresh();
+
 protected:
 	// SGraphPalette
 	virtual TSharedRef<SWidget> OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData) override;

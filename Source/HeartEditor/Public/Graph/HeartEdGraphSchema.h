@@ -14,7 +14,7 @@ class HEARTEDITOR_API UHeartEdGraphSchema : public UEdGraphSchema
 	GENERATED_BODY()
 
 public:
-	static void GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const TOptional<FStringView>& CategoryName);
+	static void GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* GraphAsset, const TOptional<FStringView>& CategoryName);
 
 	//~ EdGraphSchema
 	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
@@ -35,12 +35,13 @@ public:
 	virtual void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
 	//~ EdGraphSchema
 
-	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(TSubclassOf<UHeartGraph> HeartGraphClass);
+	static TArray<TSharedPtr<FString>> GetHeartGraphNodeCategories(const UHeartGraph* GraphAsset);
 
 private:
-	static void GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const TOptional<FStringView>& CategoryName);
+	static void GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* GraphAsset, const TOptional<FStringView>& CategoryName);
 	static void GetCommentAction(FGraphActionMenuBuilder& ActionMenuBuilder, const UEdGraph* CurrentGraph = nullptr);
 
 public:
+	static const UHeartGraph* GetAssetFromEdGraph(const UEdGraph* Graph);
 	static const UHeartGraph* GetAssetClassDefaults(const UEdGraph* Graph);
 };

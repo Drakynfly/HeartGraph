@@ -154,9 +154,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FText GetInstanceTitle() const;
 
+	// @todo move to node component
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	uint8 GetInstancedInputNum() const;
 
+	// @todo move to node component
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	uint8 GetInstancedOutputNum() const;
 
@@ -202,16 +204,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Heart|GraphNode")
 	FVector2D GetLocation() const { return Location; }
 
-	// @todo enable UFUNCTION in whenever UE supports TOptional pins
-	//UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
+	TConstStructView<FHeartGraphPinDesc> ViewPin(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartGraphPinDesc GetPinDescChecked(const FHeartPinGuid& Pin) const;
-
-	UE_DEPRECATED(5.3, "Replace with either GetPinDescChecked or (after 5.4) GetPinDesc")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool IsPinOnNode(const FHeartPinGuid& Pin) const;
@@ -238,32 +234,25 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetOutputPins(bool bSorted = false) const;
 
+	// @todo move to node component
 	virtual TArray<FHeartGraphPinDesc> CreateDynamicPins();
 
+	// @todo move to node component
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", meta = (DisplayName = "Get Dynamic Pins"))
 	TArray<FHeartGraphPinDesc> BP_GetDynamicPins() const;
 
 	// Declare the pin typed used for instanced pins. Overriding this is required for User Input/Output to work.
+	// @todo move to node component
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
 	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool HasConnections(const FHeartPinGuid& Pin) const;
 
-	// @todo enable UFUNCTION in whenever UE supports TOptional pins
-	//UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TOptional<FHeartGraphPinConnections> GetConnections(const FHeartPinGuid& Pin) const;
+	TConstStructView<FHeartGraphPinConnections> ViewConnections(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	bool FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGraphPinReference>& Connections) const;
-
-	UE_DEPRECATED(5.4, "Please use FindConnections or native GetConnections instead")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin, bool Deprecated) const;
-
-	// @todo non-virtual non-trivial accessors should be moved to a Library
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 
 
 	/*----------------------------
@@ -304,9 +293,6 @@ public:
 			PIN EDITING
 	----------------------------*/
 
-	UE_DEPRECATED(5.4, "Use Get/Find Connections instead")
-	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
-
 	Heart::Query::FPinQueryResult QueryPins() const { return Heart::Query::FPinQueryResult(PinData); }
 
 	// Get all pins that match the direction.
@@ -328,6 +314,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool RemovePin(const FHeartPinGuid& Pin);
 
+	FHeartGraphPinDesc MakeInstancedPin(EHeartPinDirection Direction);
+
 	// Add a numbered instance pin
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FHeartPinGuid AddInstancePin(EHeartPinDirection Direction);
@@ -339,15 +327,11 @@ public:
 protected:
 	virtual void NotifyPinConnectionsChanged(const FHeartPinGuid& Pin);
 
-private:
-	UE_DEPRECATED(5.3, "Use OnCreate(UObject*) instead. This new api allows for an optional context object")
-	virtual void OnCreate();
-
-protected:
 	// Called by the owning graph when we are created.
 	virtual void OnCreate(UObject* NodeSpawningContext);
 
-	void ReconstructPins();
+	// Returns true if pins were modified
+	bool ReconstructPins(bool IsCreation = false);
 
 	// Called by the owning graph when we are created.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", DisplayName = "On Create")
@@ -397,6 +381,32 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	uint8 InstancedOutputs = 0;
+
+public:
+	UE_DEPRECATED(5.4, "Use Get/Find Connections instead")
+	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
+
+    UE_DEPRECATED(5.3, "Use OnCreate(UObject*) instead. This new api allows for an optional context object")
+    virtual void OnCreate();
+
+	UE_DEPRECATED(5.3, "Replace with ViewConnections. Options create copies, so views are better")
+	TOptional<FHeartGraphPinConnections> GetConnections(const FHeartPinGuid& Pin) const;
+
+	UE_DEPRECATED(5.5, "Replace with either GetPinDescChecked or ViewPin")
+	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
+
+	UE_DEPRECATED(5.3, "Replace with either GetPinDescChecked or ViewPin")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
+
+	UE_DEPRECATED(5.4, "Replace with FindConnections or native ViewConnections instead")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin, bool Deprecated) const;
+
+protected:
+	UE_DEPRECATED(5.4, "Replace with UHeartGraphUtils::GetConnectedNodes")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 };
 
 

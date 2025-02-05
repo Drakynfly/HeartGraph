@@ -5,11 +5,11 @@
 #include "Input/HeartActionBase.h"
 #include "HeartGraphAction.generated.h"
 
-class UHeartGraph;
 class IHeartGraphInterface;
-class UHeartGraphNode;
 class IHeartGraphNodeInterface;
 class IHeartGraphPinInterface;
+class UHeartGraph;
+class UHeartGraphNode;
 
 /**
  *

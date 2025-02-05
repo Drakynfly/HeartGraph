@@ -7,6 +7,7 @@
 #include "GraphRegistry/HeartRegistryQuery.h"
 #include "Model/HeartGraphNode.h"
 #include "General/HeartContextObject.h"
+#include "ModelView/HeartGraphSchema.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNodePalette)
 
@@ -32,6 +33,11 @@ bool UHeartNodePalette::Initialize()
 	auto Super = Super::Initialize();
 
 	BindingContainer.SetupLinker(this);
+
+	if (!IsValid(DisplayedRegistrySchema))
+	{
+		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("DisplayedRegistrySchema is invalid, Node Palette will not display anything. (%s)"), *GetName())
+	}
 
 	return Super;
 }
@@ -152,7 +158,7 @@ void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
 	TArray<FHeartNodeArchetype> NodeClasses;
-	Query->Run(DisplayedRegistryGraph, NodeClasses);
+	Query->Run(DisplayedRegistrySchema, NodeClasses);
 	Display(NodeClasses);
 }
 

@@ -9,6 +9,7 @@
 #include "HeartRegistryEditorSubsystem.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "Kismet2/SClassPickerDialog.h"
+#include "ModelView/HeartGraphSchema.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphFactory)
 
@@ -62,6 +63,8 @@ UHeartGraphFactory::UHeartGraphFactory(const FObjectInitializer& ObjectInitializ
 	bCreateNew = true;
 	bEditorImport = false;
 	bEditAfterNew = true;
+
+	SchemaClass = UHeartGraphSchema::StaticClass();
 }
 
 bool UHeartGraphFactory::ConfigureProperties()
@@ -105,6 +108,8 @@ UObject* UHeartGraphFactory::FactoryCreateNew(UClass* Class, UObject* InParent, 
 		// if we have no asset class, use the passed-in class instead
 		NewHeartGraph = NewObject<UHeartGraph>(InParent, Class, Name, Flags | RF_Transactional, Context);
 	}
+
+	SchemaClass.GetDefaultObject()->InitializeNewGraph(NewHeartGraph);
 
 	UHeartEdGraph::CreateGraph(NewHeartGraph);
 	return NewHeartGraph;

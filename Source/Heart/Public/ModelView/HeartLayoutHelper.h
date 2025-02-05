@@ -41,7 +41,7 @@ public:
 	bool Layout(IHeartGraphInterface* Interface, float DeltaTime);
 
 protected:
-	FHeartGraphAdjacencyList GetGraphAdjacencyList(const IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes) const;
+	static FHeartGraphAdjacencyList GetGraphAdjacencyList(const IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|LayoutHelper")
 	void ApplyNewPositions(const TScriptInterface<IHeartGraphInterface>& Interface, const TArray<FHeartNodeGuid>& Nodes, const TArray<FVector2D>& NewPositions) const;

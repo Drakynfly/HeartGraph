@@ -8,7 +8,7 @@
 #include "Model/HeartQueryObject.h"
 #include "HeartRegistryQuery.generated.h"
 
-class UHeartGraph;
+class UHeartGraphSchema;
 template <typename T> class TSubclassOf;
 
 namespace Heart::Query
@@ -60,7 +60,7 @@ namespace Heart::Query
 		{
 		public:
 			explicit FIterator(const UHeartGraphNodeRegistry* Registry)
-			  :	Registry(Registry)
+			  : Registry(Registry)
 			{
 				if (IsValid(Registry))
 				{
@@ -207,7 +207,7 @@ class HEART_API UHeartRegistryQuery : public UHeartQueryObject
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
-	void Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray<FHeartNodeArchetype>& Results);
+	void Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass, TArray<FHeartNodeArchetype>& Results);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void AddFilter(const FHeartRegistryBlueprintFilter& Predicate);

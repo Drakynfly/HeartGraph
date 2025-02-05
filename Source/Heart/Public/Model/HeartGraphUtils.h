@@ -37,7 +37,9 @@ namespace Heart::Utils
 
 	[[nodiscard]] HEART_API Query::FPinQueryResult FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
 
-	[[nodiscard]] HEART_API TOptional<FHeartGraphPinDesc> ResolvePinDesc(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
+	[[nodiscard]] HEART_API TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
+
+	[[nodiscard]] HEART_API TConstStructView<FHeartGraphPinDesc> ResolvePinReference(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
 }
 
 DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, const UHeartGraphNode*, Node);
@@ -83,6 +85,9 @@ public:
 	// Get all pins that match the tag.
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	static TArray<FHeartPinGuid> FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	static TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
 
 
 	/**			NODE MISC UTILS			*/

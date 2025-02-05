@@ -11,7 +11,7 @@ class UHeartGraphNode;
 namespace Heart::API
 {
 	// Container for batching pin connection edits.
-	class HEART_API FPinEdit
+	class HEART_API FPinEdit : FNoncopyable
 	{
 	public:
 		class HEART_API FMemento

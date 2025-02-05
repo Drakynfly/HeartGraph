@@ -669,10 +669,10 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 				.Filter(ByAffected)
 				.ForEach([Node, &PinElement](const FHeartPinGuid Pin)
 				{
-					if (auto&& Connections = Node->GetConnections(Pin);
-						Connections.IsSet())
+					if (auto&& Connections = Node->ViewConnections(Pin);
+						Connections.IsValid())
 					{
-						PinElement.PinConnections.Add(Pin, Connections.GetValue());
+						PinElement.PinConnections.Add(Pin, Connections.Get());
 					}
 					else
 					{

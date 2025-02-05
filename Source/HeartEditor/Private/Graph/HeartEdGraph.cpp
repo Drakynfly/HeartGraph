@@ -109,8 +109,6 @@ UEdGraph* UHeartEdGraph::CreateGraph(UHeartGraph* InHeartGraph)
 		}
 	}
 
-	NewEdGraph->GetSchema()->CreateDefaultNodesForGraph(*NewEdGraph);
-
 	NewEdGraph->CreateSlateInputLinker();
 
 	return NewEdGraph;
@@ -266,8 +264,12 @@ void UHeartEdGraph::OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& H
 
 		if (EdGraphPinA && EdGraphPinB)
 		{
-			if (NodeA->GetConnections(PinAGuid, true).Contains(NodeB->GetPinReference(PinBGuid)) &&
-				NodeB->GetConnections(PinBGuid, true).Contains(NodeA->GetPinReference(PinAGuid)))
+			auto NodeAView = NodeA->ViewConnections(PinAGuid);
+			auto NodeBView = NodeB->ViewConnections(PinBGuid);
+
+			if (NodeAView.IsValid() && NodeBView.IsValid() &&
+				NodeAView.Get().GetLinks().Contains(NodeB->GetPinReference(PinBGuid)) &&
+				NodeBView.Get().GetLinks().Contains(NodeA->GetPinReference(PinAGuid)))
 			{
 				EdGraphPinA->MakeLinkTo(EdGraphPinB);
 			}

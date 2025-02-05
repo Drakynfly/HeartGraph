@@ -44,7 +44,8 @@ public:
 };
 
 
-// Identifier for Heart Graph Extensions
+// @todo eventually this will be renamed to FHeartComponentGuid
+// Identifier for Heart Graph Extensions (and Heart Graph Node Components)
 USTRUCT(BlueprintType)
 struct HEART_API FHeartExtensionGuid : public FHeartGuid
 {

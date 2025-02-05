@@ -45,7 +45,7 @@ public:
 	virtual void PrepareForCopying() override;
 	virtual void PostPasteNode() override;
 	virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
-    // --
+	// --
 
 private:
 	void OnHeartGraphNodePropertyChanged(UObject* Obj, FPropertyChangedEvent& PropertyChangedEvent);
@@ -117,6 +117,8 @@ public:
 
 // Pins
 public:
+	void RefreshPins();
+
 	void CreateInputPin(const FHeartGraphPinDesc& PinDesc);
 	void CreateOutputPin(const FHeartGraphPinDesc& PinDesc);
 

@@ -12,6 +12,7 @@ class UHeartGraphPinMetadata;
 /**
  * Complete description of a Heart Graph Pin.
  */
+// @todo eventually rename to remove Desc
 USTRUCT(BlueprintType)
 struct FHeartGraphPinDesc
 {

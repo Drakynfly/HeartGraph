@@ -3,6 +3,7 @@
 #include "ModelView/HeartLayoutHelper.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
+#include "Model/HeartGraphUtils.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayoutHelper)
 
@@ -32,36 +33,27 @@ bool UHeartLayoutHelper::Layout(IHeartGraphInterface* Interface, const float Del
 	return false;
 }
 
-FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes) const
+FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const IHeartGraphInterface* Interface, const TArray<FHeartNodeGuid>& Nodes)
 {
 	FHeartGraphAdjacencyList Result;
 
-	auto Graph = Interface->GetHeartGraph();
+	const UHeartGraph* Graph = Interface->GetHeartGraph();
 
 	for (int32 i = 0; i < Nodes.Num(); ++i)
 	{
-		auto&& NodeGuid = Nodes[i];
-		auto&& Node = Graph->GetNode(NodeGuid);
+		const TArray<FHeartNodeGuid> OutputLinks = Heart::Utils::GetConnectedNodes(Graph, Nodes[i], EHeartPinDirection::Output);
 
 		TArray<int32>& NodeAdjacency = Result.AdjacencyList.AddDefaulted_GetRef();
-		Node->FindPinsByDirection(EHeartPinDirection::Output)
-			.ForEach([Node, &NodeAdjacency, &Nodes](const FHeartPinGuid Pin)
-			{
-				auto&& Connections = Node->GetConnections(Pin);
-				if (!Connections.IsSet())
-				{
-					return;
-				}
+		NodeAdjacency.Reserve(OutputLinks.Num());
 
-				for (auto&& Connection : Connections.GetValue())
-				{
-					if (const int32 NodeIndex = Nodes.Find(Connection.NodeGuid);
-						NodeIndex != INDEX_NONE)
-					{
-						NodeAdjacency.Add(NodeIndex);
-					}
-				}
-			});
+		for (auto&& OutputLink : OutputLinks)
+		{
+			if (const int32 NodeIndex = Nodes.Find(OutputLink);
+				NodeIndex != INDEX_NONE)
+			{
+				NodeAdjacency.Add(NodeIndex);
+			}
+		}
 	}
 
 	return Result;

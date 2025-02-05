@@ -56,6 +56,13 @@ TSubclassOf<UHeartGraphNodeRegistry> UHeartGraphSchema::GetRegistryClass_Impleme
 	return UHeartGraphNodeRegistry::StaticClass();
 }
 
+void UHeartGraphSchema::InitializeNewGraph(UHeartGraph* HeartGraph) const
+{
+	HeartGraph->SchemaClass = GetClass();
+	RefreshGraphExtensions(HeartGraph);
+	CreateDefaultNodesForGraph(HeartGraph);
+}
+
 void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPreSaveContext& SaveContext) const
 {
 	if (!ensure(HeartGraph)) return;

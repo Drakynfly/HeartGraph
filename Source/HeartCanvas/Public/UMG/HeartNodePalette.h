@@ -9,6 +9,8 @@
 #include "HeartNodePalette.generated.h"
 
 
+class UHeartGraphSchema;
+
 UCLASS(Abstract)
 class UHeartNodePaletteCategory : public UHeartGraphWidgetBase
 {
@@ -91,7 +93,7 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NodePalette")
-	TSubclassOf<UHeartGraph> DisplayedRegistryGraph;
+	TSubclassOf<UHeartGraphSchema> DisplayedRegistrySchema;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NodePalette")
 	TSubclassOf<UHeartNodePaletteCategory> CategoryClass;

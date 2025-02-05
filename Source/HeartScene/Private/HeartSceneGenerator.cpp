@@ -8,6 +8,7 @@
 
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
+#include "ModelView/HeartGraphSchema.h"
 #include "ModelView/HeartNodeLocationModifier.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneGenerator)
@@ -110,7 +111,7 @@ TSubclassOf<UHeartSceneNode> UHeartSceneGenerator::GetVisualClassForNode(const U
 		return nullptr;
 	}
 
-	return RegistrySubsystem->GetRegistry(Graph->GetClass())
+	return RegistrySubsystem->GetNodeRegistry(Graph->GetSchema()->GetClass())
 								->GetVisualizerClassForGraphNode<UHeartSceneNode>(GraphNode->GetClass());
 }
 

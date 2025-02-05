@@ -16,7 +16,6 @@
 
 #include "AssetToolsModule.h"
 #include "HeartEditorModule.h"
-#include "IAssetTypeActions.h"
 #include "IDocumentation.h"
 #include "ISourceControlModule.h"
 #include "ISourceControlProvider.h"

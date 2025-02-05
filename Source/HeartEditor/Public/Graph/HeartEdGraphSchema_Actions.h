@@ -15,7 +15,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 
 	FHeartGraphSchemaAction_NewNode() {}
 
-	FHeartGraphSchemaAction_NewNode(const FHeartNodeArchetype Archetype)
+	FHeartGraphSchemaAction_NewNode(const FHeartNodeArchetype& Archetype)
 	  : FEdGraphSchemaAction(
 			Archetype.GraphNode.GetDefaultObject()->GetDefaultNodeCategory(Archetype.Source),
 			Archetype.GraphNode.GetDefaultObject()->GetPreviewNodeTitle(Archetype.Source, EHeartPreviewNodeNameContext::Palette),
@@ -37,7 +37,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 
 	static UHeartEdGraphNode* CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin, FHeartNodeArchetype Archetype, const FVector2D Location, const bool bSelectNewNode = true);
 
-	const UClass* GetNodeClass() const { return Archetype.Source.As<UClass>(); }
+	FHeartNodeArchetype GetNodeArchetype() const { return Archetype; }
 
 private:
 	UPROPERTY()

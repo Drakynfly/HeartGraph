@@ -25,7 +25,7 @@ namespace Heart::Query
 	}
 }
 
-void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray<FHeartNodeArchetype>& Results)
+void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass, TArray<FHeartNodeArchetype>& Results)
 {
 	auto&& Subsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 	if (!IsValid(Subsystem))
@@ -33,7 +33,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraph>& GraphClass, TArray
 		return;
 	}
 
-	Heart::Query::FRegistryQueryResult Query(Subsystem->GetRegistry(GraphClass));
+	Heart::Query::FRegistryQueryResult Query(Subsystem->GetNodeRegistry(SchemaClass));
 
 	// Enabling the ProjectionCache is a good idea here because we are jumping into the BP VM, which is
 	// undoubtably less efficient than hashing the results

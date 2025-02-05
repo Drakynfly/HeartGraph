@@ -18,6 +18,7 @@
 
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "ModelView/HeartGraphSchema.h"
 #include "ModelView/HeartLayoutHelper.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvas)
@@ -586,7 +587,7 @@ TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Impl
 		return nullptr;
 	}
 
-	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass());
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetNodeRegistry(DisplayedGraph->GetSchema()->GetClass());
 	if (!IsValid(CanvasGraphRegistry))
 	{
 		return nullptr;
@@ -608,7 +609,7 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForCon
 		return nullptr;
 	}
 
-	auto&& CanvasGraphRegistry = RegistrySubsystem->GetRegistry(DisplayedGraph->GetClass());
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetNodeRegistry(DisplayedGraph->GetSchema()->GetClass());
 	if (!IsValid(CanvasGraphRegistry))
 	{
 		return nullptr;
@@ -625,13 +626,13 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForPre
 		return nullptr;
 	}
 
-	auto&& PreviewDesc = PreviewNode->GetPinDesc(PreviewConnectionPin.PinGuid);
-	if (!PreviewDesc.IsSet())
+	auto&& PinView = PreviewNode->ViewPin(PreviewConnectionPin.PinGuid);
+	if (!PinView.IsValid())
 	{
 		return nullptr;
 	}
 
-	return GetVisualClassForConnection(PreviewDesc.GetValue(), Heart::Graph::InvalidPinDesc);
+	return GetVisualClassForConnection(PinView.Get(), Heart::Graph::InvalidPinDesc);
 }
 
 bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, const FGeometry& Geometry) const

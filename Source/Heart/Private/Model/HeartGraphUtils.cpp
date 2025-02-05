@@ -98,20 +98,53 @@ namespace Heart::Utils
 			});
 	}
 
-	TOptional<FHeartGraphPinDesc> ResolvePinDesc(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference)
+	TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node, const EHeartPinDirection Direction)
+	{
+		if (!ensure(IsValid(Graph) && Node.IsValid())) return {};
+
+		TSet<FHeartNodeGuid> UniqueConnections;
+		const UHeartGraphNode* GraphNode = Graph->GetNode(Node);
+		if (!IsValid(GraphNode))
+		{
+			return {};
+		}
+
+		GraphNode->FindPinsByDirection(Direction)
+			.ForEach(
+			[&](const FHeartPinGuid PinGuid)
+			{
+				auto&& LinksView = GraphNode->ViewConnections(PinGuid);
+				if (!LinksView.IsValid())
+				{
+					return;
+				}
+
+				const TConstArrayView<FHeartGraphPinReference> LinksArrayView = LinksView.Get().GetLinks();
+				UniqueConnections.Reserve(LinksArrayView.Num());
+
+				for (auto&& Link : LinksArrayView)
+				{
+					UniqueConnections.Add(Link.NodeGuid);
+				}
+			});
+
+		return UniqueConnections.Array();
+	}
+
+	TConstStructView<FHeartGraphPinDesc> ResolvePinReference(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference)
 	{
 		if (!IsValid(Graph))
 		{
-			return NullOpt;
+			return TConstStructView<FHeartGraphPinDesc>();
 		}
 
 		auto&& Node = Graph->GetNode(Reference.NodeGuid);
 		if (!IsValid(Node))
 		{
-			return NullOpt;
+			return TConstStructView<FHeartGraphPinDesc>();
 		}
 
-		return Node->GetPinDesc(Reference.PinGuid);
+		return Node->ViewPin(Reference.PinGuid);
 	}
 }
 
@@ -176,6 +209,12 @@ TArray<FHeartPinGuid> UHeartGraphUtils::FindPinsByTag(const UHeartGraphNode* Nod
 	return Heart::Utils::FindPinsByTag(Node, Tag).Get();
 }
 
+TArray<FHeartNodeGuid> UHeartGraphUtils::GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node,
+	const EHeartPinDirection Direction)
+{
+	return Heart::Utils::GetConnectedNodes(Graph, Node, Direction);
+}
+
 bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const UHeartGraphNode* B)
 {
 	// This is based on the engine class FNodeVisitorCycleChecker found in both EdGraphSchema_BehaviorTree.cpp and ConversationGraphSchema.cpp
@@ -186,8 +225,8 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 		/** Check whether a loop in the graph would be caused by linking the passed-in nodes */
 		bool CheckForLoop(const UHeartGraphNode* StartNode, const UHeartGraphNode* EndNode)
 		{
-			VisitedNodes.Add(EndNode);
-			return TraverseInputNodesToRoot(StartNode);
+			VisitedNodes.Add(EndNode->GetGuid());
+			return TraverseInputNodesToRoot(*StartNode->GetGraph(), StartNode->GetGuid());
 		}
 
 	private:
@@ -196,39 +235,26 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 		 * @param	Node	The node to start traversal at
 		 * @return true if we reached a root node (i.e. a node with no input pins), false if we encounter a node we have already seen
 		 */
-		bool TraverseInputNodesToRoot(const UHeartGraphNode* Node)
+		bool TraverseInputNodesToRoot(const UHeartGraph& Graph, const FHeartNodeGuid& Node)
 		{
 			VisitedNodes.Add(Node);
 
-			const UHeartGraph* Graph = Node->GetGraph();
+			TArray<FHeartNodeGuid> LinkedNodes = Heart::Utils::GetConnectedNodes(
+				&Graph, Node, EHeartPinDirection::Input);
 
-			for (auto&& Inputs = Node->GetInputPins();
-				 auto Input : Inputs)
+			for (auto&& LinkedNode : LinkedNodes)
 			{
-				auto&& Connections = Node->GetConnections(Input);
-				if (!Connections.IsSet())
+				if (VisitedNodes.Contains(LinkedNode))
 				{
-					continue;
+					return false;
 				}
-
-				for (auto&& Link : Connections.GetValue())
-				{
-					if (Link.IsValid())
-					{
-						const UHeartGraphNode* OtherNode = Graph->GetNode(Link.NodeGuid);
-						if (VisitedNodes.Contains(OtherNode))
-						{
-							return false;
-						}
-						return TraverseInputNodesToRoot(OtherNode);
-					}
-				}
+				return TraverseInputNodesToRoot(Graph, LinkedNode);
 			}
 
 			return true;
 		}
 
-		TSet<const UHeartGraphNode*> VisitedNodes;
+		TSet<FHeartNodeGuid> VisitedNodes;
 	};
 
 	return !FNodeVisitorCycleChecker().CheckForLoop(A, B);
@@ -279,7 +305,12 @@ FHeartGraphPinReference UHeartGraphUtils::MakeReference(const TScriptInterface<I
 
 TOptional<FHeartGraphPinDesc> UHeartGraphUtils::ResolvePinDesc(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphPinReference& Reference)
 {
-	return Heart::Utils::ResolvePinDesc(Graph->GetHeartGraph(), Reference);
+	auto PinView = Heart::Utils::ResolvePinReference(Graph->GetHeartGraph(), Reference);
+	if (PinView.IsValid())
+	{
+		return PinView.Get();
+	}
+	return NullOpt;
 }
 
 void UHeartGraphUtils::BreakHeartActionRecord(const FHeartActionRecord& Record, TSubclassOf<UHeartActionBase>& Action,

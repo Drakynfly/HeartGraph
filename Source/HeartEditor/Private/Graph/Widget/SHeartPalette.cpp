@@ -39,7 +39,7 @@ void SHeartPaletteItem::Construct(const FArguments& InArgs, FCreateWidgetForActi
 	{
 		if (GraphAction->GetTypeId() == FHeartGraphSchemaAction_NewNode::StaticGetTypeId())
 		{
-			const UClass* HeartGraphNodeClass = StaticCastSharedPtr<FHeartGraphSchemaAction_NewNode>(GraphAction)->GetNodeClass();
+			const UClass* HeartGraphNodeClass = StaticCastSharedPtr<FHeartGraphSchemaAction_NewNode>(GraphAction)->GetNodeArchetype().GraphNode;
 			HotkeyChord = FHeartSpawnNodeCommands::Get().GetChordByClass(HeartGraphNodeClass);
 		}
 		else if (GraphAction->GetTypeId() == FHeartGraphSchemaAction_NewComment::StaticGetTypeId())
@@ -97,9 +97,22 @@ FReply SHeartPaletteItem::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry
 	auto&& Action = StaticCastWeakPtr<FHeartGraphSchemaAction_NewNode>(ActionPtr);
 	if (auto&& NewNodeAction = Action.Pin())
 	{
-		if (Heart::GraphUtils::JumpToClassDefinition(NewNodeAction->GetNodeClass()))
+		const FHeartNodeSource Source = NewNodeAction->GetNodeArchetype().Source;
+
+		if (const UClass* AsClass = Source.As<UClass>())
 		{
-			return FReply::Handled();
+			if (Heart::GraphUtils::JumpToClassDefinition(AsClass))
+			{
+				return FReply::Handled();
+			}
+		}
+		else if (const UObject* AsObject = Source.As<UObject>())
+		{
+			if (AsObject->IsAsset())
+			{
+				GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->OpenEditorForAsset(AsObject);
+				return FReply::Handled();
+			}
 		}
 	}
 
@@ -185,6 +198,11 @@ SHeartPalette::~SHeartPalette()
 	}
 }
 
+void SHeartPalette::RequestRefresh()
+{
+	Refresh();
+}
+
 TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActionData* const InCreateData)
 {
 	return SNew(SHeartPaletteItem, InCreateData);
@@ -192,17 +210,13 @@ TSharedRef<SWidget> SHeartPalette::OnCreateWidgetForAction(FCreateWidgetForActio
 
 void SHeartPalette::CollectAllActions(FGraphActionListBuilderBase& OutAllActions)
 {
-	const UClass* AssetClass = UHeartGraph::StaticClass();
-
 	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
 	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())
 	{
-		AssetClass = HeartGraphAssetEditor->GetHeartGraph()->GetClass();
+		FGraphActionMenuBuilder ActionMenuBuilder;
+		UHeartEdGraphSchema::GetPaletteActions(ActionMenuBuilder, HeartGraphAssetEditor->GetHeartGraph(), GetFilterCategoryName());
+		OutAllActions.Append(ActionMenuBuilder);
 	}
-
-	FGraphActionMenuBuilder ActionMenuBuilder;
-	UHeartEdGraphSchema::GetPaletteActions(ActionMenuBuilder, AssetClass, GetFilterCategoryName());
-	OutAllActions.Append(ActionMenuBuilder);
 }
 
 void SHeartPalette::Refresh()
@@ -236,7 +250,7 @@ void SHeartPalette::UpdateCategoryNames()
 	auto&& HeartGraphAssetEditor = HeartGraphAssetEditorPtr.Pin();
 	if (HeartGraphAssetEditor && HeartGraphAssetEditor->GetHeartGraph())
 	{
-		CategoryNames.Append(UHeartEdGraphSchema::GetHeartGraphNodeCategories(HeartGraphAssetEditor->GetHeartGraph()->GetClass()));
+		CategoryNames.Append(UHeartEdGraphSchema::GetHeartGraphNodeCategories(HeartGraphAssetEditor->GetHeartGraph()));
 	}
 }
 

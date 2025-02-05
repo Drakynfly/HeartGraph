@@ -94,6 +94,7 @@ public:
 	UHeartGraphSchema();
 
 	// Get schema, not checked for the type
+	UE_DEPRECATED(5.5, "Schemas are now asset specific, call GetSchema on a graph asset.")
 	static const UHeartGraphSchema* Get(const TSubclassOf<UHeartGraph>& GraphClass);
 
 	// Get schema, cast to a specific class, or nullptr
@@ -101,6 +102,7 @@ public:
 		typename THeartGraphSchema
 		UE_REQUIRES(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
 	>
+	UE_DEPRECATED(5.5, "Schemas are now asset specific, call GetSchema on a graph asset.")
 	static const THeartGraphSchema* Get(const TSubclassOf<UHeartGraph> GraphClass)
 	{
 		return Cast<THeartGraphSchema>(Get(GraphClass));
@@ -113,10 +115,14 @@ public:
 		UE_REQUIRES(TIsDerivedFrom<THeartGraph,		  UHeartGraph>::Value &&
 					TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
 	>
+	UE_DEPRECATED(5.5, "Schemas are now asset specific, call GetSchema on a graph asset.")
 	static const THeartGraphSchema* Get()
 	{
 		return Cast<THeartGraphSchema>(Get(THeartGraph::StaticClass()));
 	}
+
+	// Called when a graph is created, to run first-time setup.
+	void InitializeNewGraph(UHeartGraph* HeartGraph) const;
 
 protected:
 	// Called by UHeartGraph's PreSave.
@@ -149,6 +155,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")
 	FHeartConnectPinsResponse CanPinsConnect(const UHeartGraph* Graph, FHeartGraphPinReference PinA, FHeartGraphPinReference PinB) const;
 
+protected:
 	// AKA, setup function called on all graphs when they are created.
 	// @todo maybe convert this into a UHeartGraphAction like EditorPreSaveAction
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|Schema")

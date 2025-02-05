@@ -156,13 +156,13 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 		}
 
 		auto ConnectedPins =
-			PinPair.Value.Key->GetCanvasNode()->GetGraphNode()->GetConnections(PinPair.Key);
-		if (!ConnectedPins.IsSet())
+			PinPair.Value.Key->GetCanvasNode()->GetGraphNode()->ViewConnections(PinPair.Key);
+		if (!ConnectedPins.IsValid())
 		{
 			continue;
 		}
 
-		for (const FHeartGraphPinReference& ConnectedPin : ConnectedPins.GetValue())
+		for (const FHeartGraphPinReference& ConnectedPin : ConnectedPins.Get())
 		{
 			auto&& ConnectedPinAndGeo = Pins.Find(ConnectedPin.PinGuid);
 			if (!ConnectedPinAndGeo) continue;

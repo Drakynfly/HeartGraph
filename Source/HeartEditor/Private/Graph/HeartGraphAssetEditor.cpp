@@ -270,15 +270,11 @@ namespace Heart::AssetEditor
 			}
 		}
 
-		/*
-		TArray<UHeartGraphNode*> HeartGraphNodes;
-		HeartGraph->GetNodeArray(HeartGraphNodes);
-
-		for (auto&& GraphNode : HeartGraphNodes)
+		// Refresh pins on all nodes
+		for (auto&& EdNode : EdGraph->Nodes)
 		{
-			Cast<UHeartEdGraphNode>(GraphNode->GetEdGraphNode())->RefreshDynamicPins(true);
+			Cast<UHeartEdGraphNode>(EdNode)->RefreshPins();
 		}
-		*/
 	}
 
 	FGraphAppearanceInfo FHeartGraphEditor::GetGraphAppearanceInfo() const
@@ -448,11 +444,20 @@ namespace Heart::AssetEditor
 	void FHeartGraphEditor::OnDetailsPanelCreated(const TSharedRef<SDetailsPanel, ESPMode::ThreadSafe>& DetailsView)
 	{
 		DetailsPanel = DetailsView;
+		DetailsPanel->DetailsView_Graph->OnFinishedChangingProperties().AddSP(this, &FHeartGraphEditor::OnGraphPropertyChanged);
 	}
 
 	void FHeartGraphEditor::OnNodePaletteCreated(const TSharedRef<SHeartPalette, ESPMode::ThreadSafe>& NodePalette)
 	{
 		Palette = NodePalette;
+	}
+
+	void FHeartGraphEditor::OnGraphPropertyChanged(const FPropertyChangedEvent& PropertyChangedEvent)
+	{
+		if (PropertyChangedEvent.GetPropertyName() == UHeartGraph::GetSchemaClassPropertyName())
+		{
+			Palette->RequestRefresh();
+		}
 	}
 
 	TSharedRef<SGraphEditor> FHeartGraphEditor::CreateGraphWidget(const FWorkflowTabSpawnInfo& Info)

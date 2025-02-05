@@ -95,6 +95,8 @@ namespace Heart::AssetEditor
 		void OnDetailsPanelCreated(const TSharedRef<SDetailsPanel, ESPMode::ThreadSafe>& DetailsView);
 		void OnNodePaletteCreated(const TSharedRef<SHeartPalette, ESPMode::ThreadSafe>& NodePalette);
 
+		void OnGraphPropertyChanged(const FPropertyChangedEvent& PropertyChangedEvent);
+
 		TSharedRef<SGraphEditor> CreateGraphWidget(const FWorkflowTabSpawnInfo& Info);
 
 	private:

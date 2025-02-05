@@ -49,10 +49,13 @@ protected:
 	// Search for Registrars defined in code. This is called once on startup of this subsystem.
 	void FetchNativeRegistrars();
 
-	// Search for Registrars defined as BP assets. This is called occasionally by the editor to reload registrars as they
+	// Search for Registrars defined as BP assets. The editor calls this occasionally to reload registrars as they
 	// are edited.
 	void FetchAssetRegistrars(bool ForceReload = false);
 
+	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraphSchema>& Class);
+
+	UE_DEPRECATED(5.5, "Use the overload that takes a Schema class")
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph>& Class);
 
 	void OnRegistryChanged(UHeartGraphNodeRegistry* Registry);
@@ -71,11 +74,23 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
+	UHeartGraphNodeRegistry* GetNodeRegistry(const TSubclassOf<UHeartGraphSchema> Class);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
+	void AddToRegistry(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraphSchema> To);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
+	void RemoveFromRegistry(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraphSchema> From);
+
+	UE_DEPRECATED(5.5, "Use GetNodeRegistry instead (with schema class)")
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
 
+	UE_DEPRECATED(5.5, "Use AddToRegistry instead (with schema class)")
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void AddRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> To);
 
+	UE_DEPRECATED(5.5, "Use RemoveFromRegistry instead (with schema class)")
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From);
 
@@ -94,7 +109,7 @@ protected:
 	FHeartRegistryEventNative OnAnyRegistryChangedNative;
 
 private:
-	// Maps Classes to the Registry instance we keep for them
+	// Maps Schema Classes to the Registry instance we keep for them
 	UPROPERTY()
 	TMap<FSoftClassPath, TObjectPtr<UHeartGraphNodeRegistry>> Registries;
 

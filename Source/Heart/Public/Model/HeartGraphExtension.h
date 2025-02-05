@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "HeartGuids.h"
-#include "UObject/Object.h"
+#include "HeartGraphComponentBase.h"
 #include "HeartGraphExtension.generated.h"
 
 class UHeartGraph;
@@ -12,26 +11,36 @@ class UHeartGraph;
  * Extensions are the HeartGraph equivalent to 'ActorComponents'. They are added to graphs by their schema, or manually
  * at runtime.
  */
-UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew, Within = HeartGraph)
-class HEART_API UHeartGraphExtension : public UObject
+UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew)
+class HEART_API UHeartGraphExtension : public UHeartGraphComponentBase
 {
 	GENERATED_BODY()
 
 	friend UHeartGraph;
 
 public:
-	virtual void PostInitProperties() override;
-
-	FHeartExtensionGuid GetGuid() const { return Guid; }
-
 	// Get the owning Heart Graph
 	UFUNCTION(BlueprintCallable, Category = "Heart|Extension")
 	UHeartGraph* GetGraph() const;
 
-protected:
-	virtual void PostExtensionAdded() {}
-	virtual void PreExtensionRemove() {}
+	virtual void PostComponentAdded() override
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		PostExtensionAdded();
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+	}
 
-	UPROPERTY(BlueprintReadOnly, Category = "Extension")
-	FHeartExtensionGuid Guid;
+	virtual void PreComponentRemoved() override
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		PreExtensionRemove();
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+	}
+
+protected:
+	UE_DEPRECATED(5.5, "Renamed to PostComponentAdded")
+	virtual void PostExtensionAdded() {}
+
+	UE_DEPRECATED(5.5, "Renamed to PreComponentRemove")
+	virtual void PreExtensionRemove() {}
 };

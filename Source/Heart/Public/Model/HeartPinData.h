@@ -51,7 +51,11 @@ protected:
 	bool HasConnections(FHeartPinGuid Key) const;
 
 	TOptional<FHeartGraphPinDesc> GetPinDesc(FHeartPinGuid Key) const;
-	FHeartGraphPinDesc& GetPinDesc(FHeartPinGuid Key);
+
+	TConstStructView<FHeartGraphPinDesc> ViewPin(const FHeartPinGuid Key) const;
+
+	// Gets a reference to a pin. For a safer function, use ViewPinDesc when possible.
+	FHeartGraphPinDesc& GetPinChecked(FHeartPinGuid Key);
 
 	TConstStructView<FHeartGraphPinConnections> ViewConnections(FHeartPinGuid Key) const;
 	FHeartGraphPinConnections& GetConnectionsMutable(FHeartPinGuid Key);

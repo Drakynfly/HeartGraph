@@ -4,6 +4,7 @@
 
 #include "UObject/Object.h"
 #include "HeartGraphInterface.h"
+#include "HeartGraphNodeComponent.h"
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
@@ -22,11 +23,16 @@ class UHeartGraphSchema;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
-using FHeartGraphNodeEvent = TMulticastDelegate<void(UHeartGraphNode*)>;
-using FHeartGraphNodeMovedEvent = TMulticastDelegate<void(const FHeartNodeMoveEvent&)>;
-using FHeartGraphNodeConnectionEvent = TMulticastDelegate<void(const FHeartGraphConnectionEvent&)>;
+namespace Heart::Events
+{
+	using FNodeAddOrRemove = TMulticastDelegate<void(UHeartGraphNode*)>;
+	using FNodeMoveEventHandler = TMulticastDelegate<void(const FHeartNodeMoveEvent&)>;
+	using FConnectionEventHandler = TMulticastDelegate<void(const FHeartGraphConnectionEvent&)>;
 
-using FHeartGraphExtensionEvent = TMulticastDelegate<void(UHeartGraphExtension*)>;
+	using FGraphExtensionAddOrRemove = TMulticastDelegate<void(UHeartGraphExtension*)>;
+	using FNodeComponentAddOrRemove = TMulticastDelegate<void(FHeartNodeGuid, UHeartGraphNodeComponent*)>;
+}
+
 
 /**
  * Class data for UHeartGraph
@@ -86,7 +92,7 @@ public:
 
 private:
 	/* IHeartGraphInterface */
-	virtual UHeartGraph* GetHeartGraph() const override final;
+	FORCEINLINE virtual UHeartGraph* GetHeartGraph() const override final { return const_cast<ThisClass*>(this); }
 	/* IHeartGraphInterface */
 
 public:
@@ -120,15 +126,19 @@ protected:
 public:
 #if WITH_EDITOR
 	UEdGraph* GetEdGraph() const { return HeartEdGraph; }
+	static FName GetSchemaClassPropertyName() { return GET_MEMBER_NAME_CHECKED(ThisClass, SchemaClass); }
 #endif
 
-	FHeartGraphNodeEvent::RegistrationType& GetOnNodeAdded() { return OnNodeAdded; }
-	FHeartGraphNodeEvent::RegistrationType& GetOnNodeRemoved() { return OnNodeRemoved; }
-	FHeartGraphNodeMovedEvent::RegistrationType& GetOnNodeMoved() { return OnNodeMoved; }
-	FHeartGraphNodeConnectionEvent::RegistrationType& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
+	Heart::Events::FNodeAddOrRemove::RegistrationType& GetOnNodeAdded() { return OnNodeAdded; }
+	Heart::Events::FNodeAddOrRemove::RegistrationType& GetOnNodeRemoved() { return OnNodeRemoved; }
+	Heart::Events::FNodeMoveEventHandler::RegistrationType& GetOnNodeMoved() { return OnNodeMoved; }
+	Heart::Events::FConnectionEventHandler::RegistrationType& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
 
-	FHeartGraphExtensionEvent::RegistrationType& GetOnExtensionAdded() { return OnExtensionAdded; }
-	FHeartGraphExtensionEvent::RegistrationType& GetOnExtensionRemoved() { return OnExtensionRemoved; }
+	Heart::Events::FGraphExtensionAddOrRemove::RegistrationType& GetOnExtensionAdded() { return OnExtensionAdded; }
+	Heart::Events::FGraphExtensionAddOrRemove::RegistrationType& GetOnExtensionRemoved() { return OnExtensionRemoved; }
+
+	Heart::Events::FNodeComponentAddOrRemove::RegistrationType& GetOnNodeComponentAdded() { return OnComponentAdded; }
+	Heart::Events::FNodeComponentAddOrRemove::RegistrationType& GetOnNodeComponentRemoved() { return OnComponentRemoved; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
@@ -154,7 +164,7 @@ public:
 	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const;
 
 protected:
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "GetNodes"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "Get Nodes"))
 	const TMap<FHeartNodeGuid, UHeartGraphNode*>& BP_GetNodes() const { return ObjectPtrDecay(Nodes); }
 
 
@@ -269,6 +279,60 @@ public:
 	void BP_OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& ConnectionEvent);
 
 
+	/** Finds the first component of the template type. */
+	template <
+		typename TComponentClass
+		UE_REQUIRES(TIsDerivedFrom<TComponentClass, UHeartGraphNodeComponent>::Value)
+	>
+	TComponentClass* GetNodeComponent(const FHeartNodeGuid& Node) const
+	{
+		return CastChecked<TComponentClass>(GetNodeComponent(Node, TComponentClass::StaticClass()), ECastCheckedType::NullAllowed);
+	}
+
+	/** Finds the first component of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class", DisplayName = "Get Node Component"))
+	UHeartGraphNodeComponent* GetNodeComponent(const FHeartNodeGuid& Node, TSubclassOf<UHeartGraphNodeComponent> Class) const;
+
+	/** Finds all components for a node. (Iterates over all components; may be slow if graph has many node components!) */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	TArray<UHeartGraphNodeComponent*> GetNodeComponentsForNode(const FHeartNodeGuid& Node) const;
+
+	/** Finds all components of the requested class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	TArray<UHeartGraphNodeComponent*> GetNodeComponentsOfClass(TSubclassOf<UHeartGraphNodeComponent> Class) const;
+
+	/** Adds a new component of the requested class. If there is already a component of this class, the existing one will be returned instead. */
+	template <
+		typename TComponentClass
+		UE_REQUIRES(TIsDerivedFrom<TComponentClass, UHeartGraphNodeComponent>::Value)
+	>
+	TComponentClass* FindOrAddNodeComponent(const FHeartNodeGuid& Node)
+	{
+		return CastChecked<TComponentClass>(FindOrAddNodeComponent(Node, TComponentClass::StaticClass()), ECastCheckedType::NullAllowed);
+	}
+
+	/** Adds a new component of the requested class. If there is already a component of this class, the existing one will be returned instead. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	UHeartGraphNodeComponent* FindOrAddNodeComponent(const FHeartNodeGuid& Node, UPARAM(meta = (AllowAbstract = "false")) TSubclassOf<UHeartGraphNodeComponent> Class);
+
+	/** Remove a node component of a class. */
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	bool RemoveNodeComponent(const FHeartNodeGuid& Node, TSubclassOf<UHeartGraphNodeComponent> Class);
+
+	/** Remove the component of the template class. */
+	template <
+		typename TComponentClass
+		UE_REQUIRES(TIsDerivedFrom<TComponentClass, UHeartGraphNodeComponent>::Value)
+	>
+	bool RemoveNodeComponent(const FHeartNodeGuid& Node)
+	{
+		return RemoveNodeComponent(Node, TComponentClass::StaticClass());
+	}
+
+	void RemoveComponentsForNode(const FHeartNodeGuid& Node);
+	void RemoveComponentsForNodes(TConstArrayView<FHeartNodeGuid> InNodes);
+
+
 	/*----------------------------
 			PIN EDITING
 	----------------------------*/
@@ -295,6 +359,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Graph")
 	FHeartGraphGuid Guid;
 
+	UPROPERTY(EditAnywhere, Category = "Graph", DisplayName = "Schema Override")
+	TSubclassOf<UHeartGraphSchema> SchemaClass;
+
 	UPROPERTY(Instanced, VisibleAnywhere, Category = "Graph")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
 
@@ -306,13 +373,20 @@ private:
 	UPROPERTY(Instanced, EditAnywhere, Category = "Components")
 	TArray<TObjectPtr<UHeartGraphExtension>> InstancedExtensions;
 
-	FHeartGraphNodeEvent OnNodeAdded;
-	FHeartGraphNodeEvent OnNodeRemoved;
-	FHeartGraphNodeMovedEvent OnNodeMoved;
-	FHeartGraphNodeConnectionEvent OnNodeConnectionsChanged;
+	// All graph node components stored by class, and then by node
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	TMap<TSubclassOf<UHeartGraphNodeComponent>, FHeartGraphNodeComponentMap> NodeComponents;
 
-	FHeartGraphExtensionEvent OnExtensionAdded;
-	FHeartGraphExtensionEvent OnExtensionRemoved;
+	Heart::Events::FNodeAddOrRemove OnNodeAdded;
+	Heart::Events::FNodeAddOrRemove OnNodeRemoved;
+	Heart::Events::FNodeMoveEventHandler OnNodeMoved;
+	Heart::Events::FConnectionEventHandler OnNodeConnectionsChanged;
+
+	Heart::Events::FGraphExtensionAddOrRemove OnExtensionAdded;
+	Heart::Events::FGraphExtensionAddOrRemove OnExtensionRemoved;
+
+	Heart::Events::FNodeComponentAddOrRemove OnComponentAdded;
+	Heart::Events::FNodeComponentAddOrRemove OnComponentRemoved;
 
 
 	/*----------------------------

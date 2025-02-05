@@ -36,9 +36,9 @@ namespace Heart::Editor
 	}
 }
 
-void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UClass* AssetClass, const TOptional<FStringView>& CategoryName)
+void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* GraphAsset, const TOptional<FStringView>& CategoryName)
 {
-	GetHeartGraphNodeActions(ActionMenuBuilder, AssetClass->GetDefaultObject<UHeartGraph>(), CategoryName);
+	GetHeartGraphNodeActions(ActionMenuBuilder, GraphAsset, CategoryName);
 
 	if (!CategoryName.IsSet())
 	{
@@ -48,7 +48,7 @@ void UHeartEdGraphSchema::GetPaletteActions(FGraphActionMenuBuilder& ActionMenuB
 
 void UHeartEdGraphSchema::GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
-	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetClassDefaults(ContextMenuBuilder.CurrentGraph), {});
+	GetHeartGraphNodeActions(ContextMenuBuilder, GetAssetFromEdGraph(ContextMenuBuilder.CurrentGraph), {});
 	GetCommentAction(ContextMenuBuilder, ContextMenuBuilder.CurrentGraph);
 
 	auto GraphEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ContextMenuBuilder.CurrentGraph);
@@ -232,20 +232,13 @@ void UHeartEdGraphSchema::OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGra
 
 void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 {
-	Super::CreateDefaultNodesForGraph(Graph);
-
-	const UHeartEdGraph* HeartEdGraph = CastChecked<UHeartEdGraph>(&Graph);
-	UHeartGraph* HeartGraph = HeartEdGraph->GetHeartGraph();
-	check(HeartGraph);
-	const UHeartGraphSchema* HeartSchema = HeartGraph->GetSchema();
-	check(HeartSchema);
-
-	HeartSchema->CreateDefaultNodesForGraph(HeartGraph);
+	// We don't need to create anything here.
+	// Nodes that are supposed to be added on asset creation are handled by InitializeNewGraph, which is called by UHeartGraphFactory::FactoryCreateNew
 }
 
-TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(const TSubclassOf<UHeartGraph> HeartGraphClass)
+TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(const UHeartGraph* GraphAsset)
 {
-	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(HeartGraphClass);
+	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetNodeRegistry(GraphAsset->GetSchema()->GetClass());
 	auto&& SortedCategories = Registry->GetNodeCategories();
 
 	// create list of categories
@@ -259,9 +252,9 @@ TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(con
 	return Result;
 }
 
-void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* AssetClassDefaults, const TOptional<FStringView>& CategoryName)
+void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* GraphAsset, const TOptional<FStringView>& CategoryName)
 {
-	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetRegistry(AssetClassDefaults->GetClass());
+	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetNodeRegistry(GraphAsset->GetSchema()->GetClass());
 
 	Registry->ForEachNodeObjectClass(
 		[&CategoryName, &ActionMenuBuilder](const FHeartNodeArchetype& Archetype)
@@ -297,6 +290,19 @@ void UHeartEdGraphSchema::GetCommentAction(FGraphActionMenuBuilder& ActionMenuBu
 
 		ActionMenuBuilder.AddAction(MakeShared<FHeartGraphSchemaAction_NewComment>(FText::GetEmpty(), MenuDescription, ToolTip, 0));
 	}
+}
+
+const UHeartGraph* UHeartEdGraphSchema::GetAssetFromEdGraph(const UEdGraph* Graph)
+{
+	if (Graph)
+	{
+		if (const UHeartGraph* HeartGraph = Graph->GetTypedOuter<UHeartGraph>())
+		{
+			return HeartGraph;
+		}
+	}
+
+	return nullptr;
 }
 
 const UHeartGraph* UHeartEdGraphSchema::GetAssetClassDefaults(const UEdGraph* Graph)

@@ -147,6 +147,11 @@ UHeartGraph* UHeartGraphNode::GetGraph() const
 	return CastChecked<UHeartGraph>(GetOuter());
 }
 
+TConstStructView<FHeartGraphPinDesc> UHeartGraphNode::ViewPin(const FHeartPinGuid& Pin) const
+{
+	return PinData.ViewPin(Pin);
+}
+
 TOptional<FHeartGraphPinDesc> UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
 {
 	return PinData.GetPinDesc(Pin);
@@ -154,10 +159,11 @@ TOptional<FHeartGraphPinDesc> UHeartGraphNode::GetPinDesc(const FHeartPinGuid& P
 
 FHeartGraphPinDesc UHeartGraphNode::GetPinDescChecked(const FHeartPinGuid& Pin) const
 {
-	if (auto Desc = PinData.GetPinDesc(Pin))
+	auto PinView = PinData.ViewPin(Pin);
+	if (PinView.IsValid())
 	{
 		checkSlow(Desc.IsSet());
-		return Desc.GetValue();
+		return PinView.Get();
 	}
 	return Heart::Graph::InvalidPinDesc;
 }
@@ -184,8 +190,6 @@ FHeartGraphPinReference UHeartGraphNode::GetPinReference(const FHeartPinGuid& Pi
 
 FHeartPinGuid UHeartGraphNode::GetPinByName(FName Name) const
 {
-	// @todo make TOptional the return type here
-
 	auto&& RetVal = PinData.Find(
 		[Name](const TPair<FHeartPinGuid, FHeartGraphPinDesc>& Desc) -> TOptional<FHeartPinGuid>
 		{
@@ -235,6 +239,11 @@ bool UHeartGraphNode::HasConnections(const FHeartPinGuid& Pin) const
 	return PinData.HasConnections(Pin);
 }
 
+TConstStructView<FHeartGraphPinConnections> UHeartGraphNode::ViewConnections(const FHeartPinGuid& Pin) const
+{
+	return PinData.ViewConnections(Pin);
+}
+
 bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGraphPinReference>& Connections) const
 {
 	if (auto Links = PinData.ViewConnections(Pin);
@@ -265,35 +274,6 @@ TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGui
 	}
 	return {};
 }
-
-TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDirection Direction) const
-{
-	const UHeartGraph* Graph = GetGraph();
-	if (!ensure(IsValid(Graph))) return {};
-
-	TSet<UHeartGraphNode*> UniqueConnections;
-
-	FindPinsByDirection(Direction).ForEach(
-		[&](const FHeartPinGuid PinGuid)
-		{
-			auto&& Links = PinData.ViewConnections(PinGuid);
-			if (!Links.IsValid())
-			{
-				return;
-			}
-
-			for (auto&& Link : Links.Get())
-			{
-				if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
-				{
-					UniqueConnections.Add(Node);
-				}
-			}
-		});
-
-	return UniqueConnections;
-}
-
 
 #if WITH_EDITOR
 bool UHeartGraphNode::CanCreate_Editor() const
@@ -392,7 +372,7 @@ bool UHeartGraphNode::RemovePin(const FHeartPinGuid& Pin)
 	return false;
 }
 
-FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction)
+FHeartGraphPinDesc UHeartGraphNode::MakeInstancedPin(const EHeartPinDirection Direction)
 {
 	FHeartGraphPinDesc PinDesc;
 
@@ -401,7 +381,7 @@ FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction
 	case EHeartPinDirection::Input:
 		if (!CanUserAddInput())
 		{
-			return FHeartPinGuid();
+			return Heart::Graph::InvalidPinDesc;
 		}
 
 		PinDesc.Name = *FString::FromInt(++InstancedInputs);
@@ -410,14 +390,14 @@ FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction
 	case EHeartPinDirection::Output:
 		if (!CanUserAddOutput())
 		{
-			return FHeartPinGuid();
+			return Heart::Graph::InvalidPinDesc;
 		}
 
 		PinDesc.Name = *FString::FromInt(++InstancedOutputs);
 		PinDesc.Direction = EHeartPinDirection::Output;
 		break;
 	default:
-		return FHeartPinGuid();
+		return Heart::Graph::InvalidPinDesc;
 	}
 
 	{
@@ -427,7 +407,17 @@ FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction
 		GetInstancedPinData(Direction, PinDesc.Tag, MutableView(PinDesc.Metadata));
 	}
 
-	return AddPin(PinDesc);
+	return PinDesc;
+}
+
+FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction)
+{
+	if (const FHeartGraphPinDesc Pin = MakeInstancedPin(Direction);
+		Pin.IsValid())
+	{
+		return AddPin(Pin);
+	}
+	return FHeartPinGuid();
 }
 
 void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
@@ -459,45 +449,100 @@ void UHeartGraphNode::OnCreate(UObject* NodeSpawningContext)
 	InstancedInputs = GetDefaultInstancedInputs();
 	InstancedOutputs = GetDefaultInstancedOutputs();
 
-	ReconstructPins();
+	ReconstructPins(true);
 
 	BP_OnCreate(NodeSpawningContext);
 }
 
-void UHeartGraphNode::ReconstructPins()
+bool UHeartGraphNode::ReconstructPins(const bool IsCreation)
 {
-	//@todo this will dump everything in PinConnections. either we need to reconstruct while preserving FGuids, or just use FNames
-	PinData = FHeartNodePinData();
+	TArray<FHeartGraphPinDesc> GatheredPins;
+	GatheredPins.Append(GetDefaultPins());
+	GatheredPins.Append(CreateDynamicPins());
 
-	TArray<FHeartGraphPinDesc> DefaultPins = GetDefaultPins();
-	TArray<FHeartGraphPinDesc> DynamicPins = CreateDynamicPins();
-	const uint8 InstancedInputNum = InstancedInputs;
-	const uint8 InstancedOutputNum = InstancedOutputs;
-	InstancedInputs = 0;
-	InstancedOutputs = 0;
-
-	// Create default inputs & outputs
-	for (auto&& DefaultPin : DefaultPins)
+	// Instanced pins (@todo move to node component)
 	{
-		AddPin(DefaultPin);
+		const uint8 InstancedInputNum = InstancedInputs;
+		const uint8 InstancedOutputNum = InstancedOutputs;
+		InstancedInputs = 0;
+		InstancedOutputs = 0;
+
+		// Create instanced inputs
+		for (uint8 i = 0; i < InstancedInputNum; ++i)
+		{
+			GatheredPins.Add(MakeInstancedPin(EHeartPinDirection::Input));
+		}
+
+		// Create instanced outputs
+		for (uint8 i = 0; i < InstancedOutputNum; ++i)
+		{
+			GatheredPins.Add(MakeInstancedPin(EHeartPinDirection::Output));
+		}
 	}
 
-	// Create dynamic inputs & outputs
-	for (auto&& DynamicPin : DynamicPins)
+	if (IsCreation)
 	{
-		AddPin(DynamicPin);
+		// Create all pins
+		for (auto&& Pin : GatheredPins)
+		{
+			AddPin(Pin);
+		}
+		return true;
 	}
-
-	// Create instanced inputs
-	for (uint8 i = 0; i < InstancedInputNum; ++i)
+	else
 	{
-		AddInstancePin(EHeartPinDirection::Input);
-	}
+		TArray<FHeartPinGuid> DiscardedPins;
 
-	// Create instanced outputs
-	for (uint8 i = 0; i < InstancedOutputNum; ++i)
-	{
-		AddInstancePin(EHeartPinDirection::Output);
+		// Iterate over existing pins and remove the ones we already have from GatheredPins, or discard them
+		for (auto&& ExistingPin : PinData.PinDescriptions)
+		{
+			bool Found = false;
+
+			for (auto It = GatheredPins.CreateIterator(); It; ++It)
+			{
+				auto&& GatheredPin = *It;
+				if (GatheredPin.Name == ExistingPin.Value.Name)
+				{
+					ExistingPin.Value = GatheredPin; // Overwrite anyway, to update other info that may have changed.
+					// @todo should we do anything about metadata?
+					It.RemoveCurrent();
+					Found = true;
+					break;
+				}
+			}
+
+			if (!Found)
+			{
+				// A pin with this name was not gathered, remove it.
+				DiscardedPins.Add(ExistingPin.Key);
+			}
+		}
+
+		bool Modified = false;
+
+		if (!GatheredPins.IsEmpty())
+		{
+			// The remaining pins in Gathered do not exist, but should
+			for (auto&& GatheredPin : GatheredPins)
+			{
+				AddPin(GatheredPin);
+			}
+
+			Modified |= true;
+		}
+
+		if (!DiscardedPins.IsEmpty())
+		{
+			// These pins exist, but shouldn't
+			for (auto&& DiscardedPin : DiscardedPins)
+			{
+				RemovePin(DiscardedPin);
+			}
+
+			Modified |= true;
+		}
+
+		return Modified;
 	}
 }
 
@@ -511,6 +556,34 @@ void UHeartGraphNode::NotifyPinConnectionsChanged(const FHeartPinGuid& Pin)
 	}
 	OnPinConnectionsChanged_Native.Broadcast(Pin);
 	OnPinConnectionsChanged.Broadcast(Pin);
+}
+
+TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDirection Direction) const
+{
+	const UHeartGraph* Graph = GetGraph();
+	if (!ensure(IsValid(Graph))) return {};
+
+	TSet<UHeartGraphNode*> UniqueConnections;
+
+	FindPinsByDirection(Direction).ForEach(
+		[&](const FHeartPinGuid PinGuid)
+		{
+			auto&& Links = PinData.ViewConnections(PinGuid);
+			if (!Links.IsValid())
+			{
+				return;
+			}
+
+			for (auto&& Link : Links.Get())
+			{
+				if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
+				{
+					UniqueConnections.Add(Node);
+				}
+			}
+		});
+
+	return UniqueConnections;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -31,7 +31,7 @@ namespace Heart::API
 	 * run in the dtor. This allows us to batch connection rewiring, and broadcast fewer events in a single frame.
 	 * Alternatively, FNodeEdit may be kept alive over several frames, and accumulate multiple edits to make in one shot.
 	 */
-	class HEART_API FNodeEdit
+	class HEART_API FNodeEdit : FNoncopyable
 	{
 	public:
 		FNodeEdit(IHeartGraphInterface* GraphInterface);
@@ -40,6 +40,9 @@ namespace Heart::API
 		~FNodeEdit();
 
 		using FNewNodeId = int32;
+
+		// A non-batched delete. If removing multiple nodes at once, create a FNodeEdit instance, and call Delete() instead.
+		static bool DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node);
 
 		/**
 		 * Queues a node to be created
@@ -129,6 +132,6 @@ namespace Heart::API
 
 		// @todo if FNodeEdit *is* kept around for multiple frames, what keeps the PendingCreates alive?
 		TArray<FPendingCreate> PendingCreates;
-		TSet<FPendingDelete> PendingDeletes;
+		TArray<FPendingDelete> PendingDeletes;
 	};
 }

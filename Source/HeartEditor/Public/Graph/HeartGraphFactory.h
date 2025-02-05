@@ -19,4 +19,8 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category = Asset)
 	TSubclassOf<class UHeartGraph> AssetClass;
+
+	// @todo set this up in ConfigureProperties
+	UPROPERTY(EditAnywhere, Category = Asset)
+	TSubclassOf<class UHeartGraphSchema> SchemaClass;
 };

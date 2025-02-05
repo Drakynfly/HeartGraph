@@ -9,6 +9,7 @@
 #include "Model/HeartGraph.h"
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
+#include "ModelView/HeartGraphSchema.h"
 #include "UMG/HeartGraphCanvasConnection.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasNode)
@@ -118,13 +119,13 @@ void UHeartGraphCanvasNode::RebuildPinConnections(const FHeartPinGuid& Pin)
 			return CreateWidget<UHeartGraphCanvasConnection>(this, ConnectionVisualizer);
 		};
 
-	auto&& Connections = GraphNode->GetConnections(Pin);
-	if (!Connections.IsSet())
+	auto&& Connections = GraphNode->ViewConnections(Pin);
+	if (!Connections.IsValid())
 	{
 		return;
 	}
 
-	for (const FHeartGraphPinReference& Connection : Connections.GetValue())
+	for (const FHeartGraphPinReference& Connection : Connections.Get())
 	{
 		const FHeartGraphPinDesc& ConnectionDesc = GraphNode->GetPinDescChecked(Connection.PinGuid);
 
@@ -168,8 +169,8 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid
 	}
 
 	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-	UClass* CanvasGraphClass = GetCanvas()->GetGraph()->GetClass();
-	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetRegistry(CanvasGraphClass);
+	UClass* SchemaClass = GetCanvas()->GetGraph()->GetSchema()->GetClass();
+	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetNodeRegistry(SchemaClass);
 	const TSubclassOf<UHeartGraphCanvasPin> PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin<UHeartGraphCanvasPin>(Desc);
 
 	if (IsValid(PinVisualizer))

@@ -198,10 +198,10 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	Heart::API::FPinEdit ConnectionEditor(HeartGraph);
 
 	// Resolve all linked pins
-	if (TOptional<FHeartGraphPinConnections> PinConnections = HeartGraphNode->GetConnections(HeartPin);
-		PinConnections.IsSet())
+	if (const auto PinConnections = HeartGraphNode->ViewConnections(HeartPin);
+		PinConnections.IsValid())
 	{
-		for (auto&& LinkedRef : PinConnections.GetValue())
+		for (auto&& LinkedRef : PinConnections.Get())
 		{
 			const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
 			if (!IsValid(LinkedNode))
@@ -211,20 +211,20 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 				continue;
 			}
 
-			auto&& LinkedPin = LinkedNode->GetPinDesc(LinkedRef.PinGuid);
-			if (!LinkedPin.IsSet())
+			auto&& LinkedPin = LinkedNode->ViewPin(LinkedRef.PinGuid);
+			if (!LinkedPin.IsValid())
 			{
 				UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
 					*HeartGraphNode.GetName(), *LinkedNode->GetName())
 				continue;
 			}
 
-			LinkedPins.Add(LinkedPin.GetValue());
+			LinkedPins.Add(LinkedPin.Get());
 
 			if (!Pin->LinkedTo.ContainsByPredicate(
-					[Desc = LinkedPin.GetValue()](const UEdGraphPin* EdGraphPin)
+					[PinName = LinkedPin.Get().Name](const UEdGraphPin* EdGraphPin)
 					{
-						return Desc.Name == EdGraphPin->PinName;
+						return PinName == EdGraphPin->PinName;
 					}))
 			{
 				// If we failed to find a connection in the EdGraph, then we need to disconnect the runtime pins
@@ -852,6 +852,19 @@ void UHeartEdGraphNode::JumpToNodeDefinition() const
 		if (ensure(IsValid(HeartGraphNode->GetNodeObject())))
 		{
 			Heart::GraphUtils::JumpToClassDefinition(HeartGraphNode->GetNodeObject()->GetClass());
+		}
+	}
+}
+
+void UHeartEdGraphNode::RefreshPins()
+{
+	if (ensure(IsValid(HeartGraphNode)))
+	{
+		const bool ModifiedPins = HeartGraphNode->ReconstructPins();
+
+		if (ModifiedPins)
+		{
+			ReconstructNode();
 		}
 	}
 }

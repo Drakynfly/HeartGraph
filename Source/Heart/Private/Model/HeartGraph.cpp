@@ -78,10 +78,9 @@ void UHeartGraph::PreSave(FObjectPreSaveContext SaveContext)
 void UHeartGraph::PostInitProperties()
 {
 	Super::PostInitProperties();
-
-	if (!IsTemplate())
+	if (!Guid.IsValid())
 	{
-		GetSchema()->RefreshGraphExtensions(this);
+		Guid = FHeartGraphGuid::New();
 	}
 }
 
@@ -90,14 +89,25 @@ void UHeartGraph::PostLoad()
 	Super::PostLoad();
 
 #if WITH_EDITOR
-	TArray<FHeartNodeGuid> DeadNodes;
+	// Clean asset in Editor, during loading
 
-	// Fix-up node map in Editor, when loading asset
-	for (auto&& Node : Nodes)
+	for (auto It = Extensions.CreateIterator(); It; ++It)
 	{
+		auto&& Extension = *It;
+		if (!Extension.Key.IsValid() ||
+			!IsValid(Extension.Value))
+		{
+			It.RemoveCurrent();
+		}
+	}
+
+	for (auto It = Nodes.CreateIterator(); It; ++It)
+	{
+		auto&& Node = *It;
+
 		if (!IsValid(Node.Value))
 		{
-			DeadNodes.Add(Node.Key);
+			It.RemoveCurrent();
 			continue;
 		}
 
@@ -109,9 +119,29 @@ void UHeartGraph::PostLoad()
 		}
 	}
 
-	for (const FHeartNodeGuid& DeadNode : DeadNodes)
+	for (auto It = NodeComponents.CreateIterator(); It; ++It)
 	{
-		Nodes.Remove(DeadNode);
+		auto& NodeMap = *It;
+		if (!IsValid(NodeMap.Key))
+		{
+			It.RemoveCurrent();
+			continue;
+		}
+
+		for (auto SubIt = NodeMap.Value.Components.CreateIterator(); It; ++It)
+		{
+			auto&& Component = *SubIt;
+			if (!Component.Key.IsValid() ||
+				!IsValid(Component.Value))
+			{
+				It.RemoveCurrent();
+			}
+		}
+	}
+
+	if (!IsTemplate())
+	{
+		GetSchema()->RefreshGraphExtensions(this);
 	}
 #endif
 }
@@ -135,11 +165,6 @@ void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 #endif
 
 	Super::PostDuplicate(DuplicateMode);
-}
-
-UHeartGraph* UHeartGraph::GetHeartGraph() const
-{
-	return const_cast<ThisClass*>(this);
 }
 
 void UHeartGraph::NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, const bool InProgress)
@@ -249,12 +274,34 @@ void UHeartGraph::GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
 
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
 {
-	return UHeartGraphSchema::StaticClass();
+	return SchemaClass;
 }
 
 const UHeartGraphSchema* UHeartGraph::GetSchema() const
 {
-	return UHeartGraphSchema::Get(GetClass());
+	// New path
+	if (IsValid(SchemaClass))
+	{
+		return SchemaClass.GetDefaultObject();
+	}
+
+	// Old path
+	UClass* Class;
+	{
+#if WITH_EDITOR
+		// GetSchemaClass is a BlueprintNativeEvent, but we should be able to call it in the editor.
+		FEditorScriptExecutionGuard ScriptExecutionGuard;
+#endif
+		Class = GetSchemaClass();
+	}
+
+	if (!ensure(IsValid(Class)))
+	{
+		UE_LOG(LogHeartGraph, Warning, TEXT("GetSchemaClass for Graph '%s' returned nullptr!"), *GetName())
+		return GetDefault<UHeartGraphSchema>();
+	}
+
+	return GetDefault<UHeartGraphSchema>(Class);
 }
 
 const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema>) const
@@ -278,7 +325,8 @@ UHeartGraphExtension* UHeartGraph::GetExtensionByGuid(const FHeartExtensionGuid 
 
 UHeartGraphExtension* UHeartGraph::GetExtension(const TSubclassOf<UHeartGraphExtension> Class) const
 {
-	if (!Class || Class == UHeartGraphExtension::StaticClass())
+	if (!IsValid(Class) ||
+		Class == UHeartGraphExtension::StaticClass())
 	{
 		return nullptr;
 	}
@@ -324,9 +372,9 @@ UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExt
 	}
 
 	UHeartGraphExtension* NewExtension = NewObject<UHeartGraphExtension>(this, Class);
-	NewExtension->Guid = FHeartExtensionGuid::New();
+	NewExtension->Guid = FHeartExtensionGuid::New(); // @todo isn't this redundant, and gets assigned in PostInitProperties?
 	Extensions.Add(NewExtension->Guid, NewExtension);
-	NewExtension->PostExtensionAdded();
+	NewExtension->PostComponentAdded();
 
 	OnExtensionAdded.Broadcast(NewExtension);
 
@@ -342,7 +390,7 @@ bool UHeartGraph::AddExtensionInstance(UHeartGraphExtension* Extension)
 		check(!Extensions.Contains(Extension->Guid));
 
 		Extensions.Add(Extension->Guid, Extension);
-		Extension->PostExtensionAdded();
+		Extension->PostComponentAdded();
 
 		OnExtensionAdded.Broadcast(Extension);
 	}
@@ -358,7 +406,7 @@ bool UHeartGraph::RemoveExtension(const FHeartExtensionGuid ExtensionGuid)
 	}
 
 	auto&& Extension = Extensions[ExtensionGuid];
-	Extension->PreExtensionRemove();
+	Extension->PreComponentRemoved();
 	Extensions.Remove(ExtensionGuid);
 	OnExtensionRemoved.Broadcast(Extension);
 	return true;
@@ -377,7 +425,7 @@ void UHeartGraph::RemoveExtensionsByClass(const TSubclassOf<UHeartGraphExtension
 
 		if (Extension.GetClass()->IsChildOf(Class))
 		{
-			Extension->PreExtensionRemove();
+			Extension->PreComponentRemoved();
 			ExtensionIt.RemoveCurrent();
 			OnExtensionRemoved.Broadcast(Extension);
 		}
@@ -443,27 +491,133 @@ void UHeartGraph::AddNode(UHeartGraphNode* Node)
 
 bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 {
-	if (!ensure(NodeGuid.IsValid()))
+	return Heart::API::FNodeEdit::DeleteNode(this, NodeGuid);
+}
+
+UHeartGraphNodeComponent* UHeartGraph::GetNodeComponent(const FHeartNodeGuid& Node, const TSubclassOf<UHeartGraphNodeComponent> Class) const
+{
+	if (!Node.IsValid() ||
+		!IsValid(Class) ||
+		Class == UHeartGraphNodeComponent::StaticClass())
+	{
+		return nullptr;
+	}
+
+	if (const FHeartGraphNodeComponentMap* ClassMap = NodeComponents.Find(Class))
+	{
+		return ClassMap->Find(Node);
+	}
+
+	return nullptr;
+}
+
+TArray<UHeartGraphNodeComponent*> UHeartGraph::GetNodeComponentsForNode(const FHeartNodeGuid& Node) const
+{
+	if (!Node.IsValid())
+	{
+		return {};
+	}
+
+	TArray<UHeartGraphNodeComponent*> Out;
+
+	for (auto&& ClassMap : NodeComponents)
+	{
+		for (auto&& NodeComponent : ClassMap.Value.Components)
+		{
+			if (NodeComponent.Key == Node)
+			{
+				Out.Add(NodeComponent.Value);
+			}
+		}
+	}
+
+	return Out;
+}
+
+TArray<UHeartGraphNodeComponent*> UHeartGraph::GetNodeComponentsOfClass(const TSubclassOf<UHeartGraphNodeComponent> Class) const
+{
+	TArray<UHeartGraphNodeComponent*> Out;
+
+	if (const FHeartGraphNodeComponentMap* NodeMap = NodeComponents.Find(Class))
+	{
+		NodeMap->Components.GenerateValueArray(ObjectPtrWrap(Out));
+	}
+
+	return Out;
+}
+
+UHeartGraphNodeComponent* UHeartGraph::FindOrAddNodeComponent(const FHeartNodeGuid& Node, const TSubclassOf<UHeartGraphNodeComponent> Class)
+{
+	if (!Node.IsValid() ||
+		!IsValid(Class) ||
+		Class == UHeartGraphNodeComponent::StaticClass())
+	{
+		return nullptr;
+	}
+
+	FHeartGraphNodeComponentMap& NodeMap = NodeComponents.FindOrAdd(Class);
+
+	// Look for an existing component for the node first.
+	if (auto&& ExistingComponent = NodeMap.Find(Node))
+	{
+		return ExistingComponent;
+	}
+
+	// Create and assign a new component for the node.
+	UHeartGraphNodeComponent* NewComponent =
+		NodeMap.Components.Add(Node, NewObject<UHeartGraphNodeComponent>(this, Class));
+
+	// @todo isn't this redundant, and gets assigned in PostInitProperties?
+	NewComponent->Guid = FHeartExtensionGuid::New();
+
+	NewComponent->PostComponentAdded();
+
+	OnComponentAdded.Broadcast(Node, NewComponent);
+
+	return NewComponent;
+}
+
+bool UHeartGraph::RemoveNodeComponent(const FHeartNodeGuid& Node, const TSubclassOf<UHeartGraphNodeComponent> Class)
+{
+	if (!Node.IsValid() ||
+		!IsValid(Class) ||
+		Class == UHeartGraphNodeComponent::StaticClass())
 	{
 		return false;
 	}
 
-	if (!Nodes.Contains(NodeGuid))
+	if (FHeartGraphNodeComponentMap* NodeMap = NodeComponents.Find(Class))
 	{
-		return false;
+		TObjectPtr<UHeartGraphNodeComponent> Component = nullptr;
+		NodeMap->Components.RemoveAndCopyValue(Node, Component);
+		if (IsValid(Component))
+		{
+			Component->PreComponentRemoved();
+			OnComponentRemoved.Broadcast(Node, Component);
+			return true;
+		}
 	}
 
-	// Remove all connections that will be orphaned by removing this node
-	Heart::API::FPinEdit(this).DisconnectAll(NodeGuid);
+	return false;
+}
 
-	auto&& NodeBeingRemoved = Nodes[NodeGuid];
-	const int32 Removed = Nodes.Remove(NodeGuid);
+void UHeartGraph::RemoveComponentsForNode(const FHeartNodeGuid& Node)
+{
+	for (auto&& NodeMap : NodeComponents)
+	{
+		NodeMap.Value.Components.Remove(Node);
+	}
+}
 
-	FHeartNodeRemoveEvent Event;
-	Event.AffectedNodes.Add(NodeBeingRemoved);
-	HandleNodeRemoveEvent(Event);
-
-	return !!Removed;
+void UHeartGraph::RemoveComponentsForNodes(const TConstArrayView<FHeartNodeGuid> InNodes)
+{
+	for (auto&& NodeMap : NodeComponents)
+	{
+		for (auto&& Node : InNodes)
+		{
+			NodeMap.Value.Components.Remove(Node);
+		}
+	}
 }
 
 Heart::API::FPinEdit UHeartGraph::EditConnections()
