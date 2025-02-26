@@ -41,7 +41,7 @@ namespace Heart::Query
 	struct FRegistryValue
 	{
 		FHeartNodeSource Source;
-		TWeakObjectPtr<UClass> GraphNode;
+		TObjectPtr<UClass> GraphNode;
 	};
 
 	// A single registered node/graph pair value
@@ -126,7 +126,7 @@ namespace Heart::Query
 				{
 					RootPair = &Registry->NodeRootTable.Get(FSetElementId::FromInteger(Key.RootIndex));
 
-					GraphNodeMax = RootPair->Value.GraphNodes.Num();
+					GraphNodeMax = RootPair->Value.NodeClasses.Classes.Num();
 					if (GraphNodeMax > 0)
 					{
 						Key.NodesIndex = 0;
@@ -146,7 +146,7 @@ namespace Heart::Query
 
 			void UpdateNode()
 			{
-				Value.GraphNode = RootPair->Value.GraphNodes[FSetElementId::FromInteger(Key.NodesIndex)].Obj;
+				Value.GraphNode = RootPair->Value.NodeClasses.Classes[FSetElementId::FromInteger(Key.NodesIndex)].Obj;
 			}
 
 		public:

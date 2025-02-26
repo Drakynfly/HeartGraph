@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-#include "HeartRegistrationClasses.h"
+#include "HeartRegistryStructs.h"
 #include "GraphNodeRegistrar.generated.h"
 
 class UHeartGraphNodeRegistry;
@@ -20,13 +20,17 @@ class HEART_API UGraphNodeRegistrar : public UPrimaryDataAsset
 
 public:
 #if WITH_EDITOR
+	virtual void PostLoad() override;
 	virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	virtual void PreEditChange(FEditPropertyChain& PropertyAboutToChange) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
+	UE_DEPRECATED(5.5, "use ClassLists instead (switching to soft classes)")
 	const FHeartRegistrationClasses& GetRegistrationList() const { return Registration; }
+
+	const FHeartRegistryClassLists& GetClassLists() const { return ClassLists; }
 
 	virtual bool ShouldRegister() const;
 
@@ -34,6 +38,8 @@ public:
 	virtual void OnDeregistered(UHeartGraphNodeRegistry* Registry) const;
 
 protected:
+	void RegisterAssets(UHeartGraphNodeRegistry* Registry) const;
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, meta = (DisplayName = "Register"))
 	void BP_Register(UHeartGraphNodeRegistry* Registry) const;
 
@@ -41,14 +47,17 @@ protected:
 	void BP_Deregister(UHeartGraphNodeRegistry* Registry) const;
 
 protected:
-    // Registration class arrays
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphNodeRegistrar")
+	FHeartRegistryClassLists ClassLists;
+
+	UE_DEPRECATED(5.5, "use ClassLists instead (switching to soft classes)")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FHeartRegistrationClasses Registration;
 
 	// Classes to register this registrar for automatically. If this is empty, it must be manually added to the Registry
 	// with UHeartGraphNodeRegistry::AddRegistrar
 	UE_DEPRECATED(5.5, "use AutoRegisterTo instead (per Schema registration)")
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (MetaClass = "/Script/Heart.HeartGraph"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (MetaClass = "/Script/Heart.HeartGraph"))
 	TArray<FSoftClassPath> AutoRegisterWith;
 
 	// Schemas to register this registrar for automatically. If this is empty, it must be manually added to the Registry

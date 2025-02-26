@@ -41,6 +41,13 @@ UWorld* UHeartGraph::GetWorld() const
 {
 	if (!IsTemplate())
 	{
+#if WITH_EDITOR
+		// @todo hack, fix this
+		static bool GetWorldRecursion = false;
+		if (GetWorldRecursion) return nullptr;
+		TGuardValue<bool> RecursionGuard(GetWorldRecursion, true);
+#endif
+
 		UWorld* World = nullptr;
 		if (GetSchema()->TryGetWorldForGraph(this, World))
 		{
@@ -199,7 +206,11 @@ void UHeartGraph::NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& Affecte
 	{
 		if (Element.IsValid())
 		{
-			Event.AffectedNodes.Add(GetNode(Element));
+			if (UHeartGraphNode* Node = GetNode(Element);
+				ensure(IsValid(Node)))
+			{
+				Event.AffectedNodes.Add(Node);
+			}
 		}
 	}
 	Event.MoveFinished = !InProgress;

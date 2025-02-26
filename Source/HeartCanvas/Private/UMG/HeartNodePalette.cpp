@@ -157,6 +157,12 @@ UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSour
 void UHeartNodePalette::RefreshPalette()
 {
 	Reset();
+
+	if (!IsValid(DisplayedRegistrySchema))
+	{
+		return;
+	}
+
 	TArray<FHeartNodeArchetype> NodeClasses;
 	Query->Run(DisplayedRegistrySchema, NodeClasses);
 	Display(NodeClasses);

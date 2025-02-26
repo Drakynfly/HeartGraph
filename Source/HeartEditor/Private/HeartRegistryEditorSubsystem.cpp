@@ -27,9 +27,8 @@ void UHeartRegistryEditorSubsystem::Initialize(FSubsystemCollectionBase& Collect
 	if (GEditor)
 	{
 		GEditor->OnBlueprintPreCompile().AddUObject(this, &ThisClass::OnBlueprintPreCompile);
+		GEditor->OnBlueprintCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
 	}
-
-	FetchAssetRegistryAssets();
 }
 
 void UHeartRegistryEditorSubsystem::Deinitialize()
@@ -47,6 +46,7 @@ void UHeartRegistryEditorSubsystem::Deinitialize()
 	if (GEditor)
 	{
 		GEditor->OnBlueprintPreCompile().RemoveAll(this);
+		GEditor->OnBlueprintCompiled().RemoveAll(this);
 	}
 
 	Super::Deinitialize();
@@ -83,11 +83,11 @@ TSubclassOf<UHeartEdGraphNode> UHeartRegistryEditorSubsystem::GetAssignedEdGraph
 	return HeartEditorModule.GetEdGraphClass(HeartGraphNodeClass);
 }
 
-void UHeartRegistryEditorSubsystem::FetchAssetRegistryAssets()
+void UHeartRegistryEditorSubsystem::RefreshAssetRegistryAssets()
 {
 	auto&& RuntimeSubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
 
-	RuntimeSubsystem->FetchAssetRegistrars(true);
+	RuntimeSubsystem->RefreshAssetRegistrars(true);
 
 	OnRefreshPalettes.Broadcast();
 }
@@ -113,7 +113,8 @@ bool UHeartRegistryEditorSubsystem::BlueprintImplementsHeartVisualizerInterface(
 
 void UHeartRegistryEditorSubsystem::OnHotReload(EReloadCompleteReason ReloadCompleteReason)
 {
-	FetchAssetRegistryAssets();
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running RefreshAssetRegistryAssets: OnHotReload"))
+	RefreshAssetRegistryAssets();
 }
 
 void UHeartRegistryEditorSubsystem::OnBlueprintPreCompile(UBlueprint* Blueprint)
@@ -126,12 +127,30 @@ void UHeartRegistryEditorSubsystem::OnBlueprintPreCompile(UBlueprint* Blueprint)
 	if (Blueprint->GeneratedClass->IsChildOf(UHeartGraphNode::StaticClass()) ||
 		BlueprintImplementsHeartVisualizerInterface(Blueprint))
 	{
-		Blueprint->OnCompiled().AddUObject(this, &ThisClass::OnBlueprintCompiled);
+		Blueprint->OnCompiled().AddUObject(this, &ThisClass::OnHeartBlueprintCompiled);
+		WaitingForCompilationToFinish = true;
 		WaitingForCompile.Add(Blueprint);
 	}
 }
 
-void UHeartRegistryEditorSubsystem::OnBlueprintCompiled(UBlueprint* Blueprint)
+void UHeartRegistryEditorSubsystem::OnBlueprintCompiled()
+{
+	// Still compiling something else?
+	if (GCompilingBlueprint) return;
+
+	if (WaitingForCompilationToFinish)
+	{
+		// After compilation is done, refresh registry assets.
+		check(WaitingForCompile.IsEmpty())
+
+		WaitingForCompilationToFinish = false;
+
+		UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running RefreshAssetRegistryAssets: OnBlueprintCompiled"))
+		RefreshAssetRegistryAssets();
+	}
+}
+
+void UHeartRegistryEditorSubsystem::OnHeartBlueprintCompiled(UBlueprint* Blueprint)
 {
 	Blueprint->OnCompiled().RemoveAll(this);
 
@@ -139,7 +158,6 @@ void UHeartRegistryEditorSubsystem::OnBlueprintCompiled(UBlueprint* Blueprint)
 
 	if (WaitingForCompile.IsEmpty())
 	{
-		FetchAssetRegistryAssets();
 	}
 }
 

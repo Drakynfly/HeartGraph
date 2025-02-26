@@ -13,6 +13,12 @@ namespace Heart::Containers
 		{
 		}
 
+		TCountedWeakPtr(TWeakObjectPtr<TClass> Obj)
+		  : Obj(Obj),
+			Count(0)
+		{
+		}
+
 		TCountedWeakPtr(TClass* Obj)
 		  : Obj(TWeakObjectPtr<TClass>(Obj)),
 			Count(0)
@@ -49,10 +55,64 @@ namespace Heart::Containers
 	};
 
 	template <typename TClass = UObject>
+	struct TCountedPtr
+	{
+		TCountedPtr()
+		  : Obj(nullptr),
+			Count(0)
+		{
+		}
+
+		TCountedPtr(TClass* Obj)
+		  : Obj(Obj),
+			Count(0)
+		{
+		}
+
+		TObjectPtr<TClass> Obj;
+		uint32 Count;
+
+		void Inc()
+		{
+			Count++;
+		}
+
+		int32 Dec()
+		{
+			Count--;
+			return Count;
+		}
+
+		friend bool operator==(const TCountedPtr& Lhs, const TCountedPtr& Rhs)
+		{
+			return Lhs.Obj == Rhs.Obj;
+		}
+
+		friend bool operator!=(const TCountedPtr& Lhs, const TCountedPtr& Rhs) { return !(Lhs == Rhs); }
+
+		friend uint32 GetTypeHash(TCountedPtr Value)
+		{
+			return HashCombine(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
+		}
+	};
+
+	template <typename TClass = UObject>
 	struct TCountedWeakClassPtr
 	{
 		TCountedWeakClassPtr()
 		  : Obj(nullptr),
+			Count(0)
+		{
+		}
+
+		TCountedWeakClassPtr(const TWeakObjectPtr<TClass> Class)
+		  : Obj(Class),
+			Count(0)
+		{
+		}
+
+		TCountedWeakClassPtr(UClass* Class)
+		  : Obj(Class),
 			Count(0)
 		{
 		}

@@ -11,7 +11,7 @@
 
 #include "HeartRegistryRuntimeSubsystem.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
+HEART_API DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
 class UHeartGraphNodeRegistry;
 using FHeartRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
@@ -51,7 +51,9 @@ protected:
 
 	// Search for Registrars defined as BP assets. The editor calls this occasionally to reload registrars as they
 	// are edited.
-	void FetchAssetRegistrars(bool ForceReload = false);
+	void FetchAssetRegistrars();
+
+	void RefreshAssetRegistrars(bool ForceRefresh = false);
 
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraphSchema>& Class);
 
@@ -115,4 +117,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UGraphNodeRegistrar> FallbackRegistrar;
+
+	TSet<FAssetData> KnownRegistrars;
 };

@@ -37,13 +37,14 @@ public:
 	TSubclassOf<UHeartEdGraphNode> GetAssignedEdGraphNodeClass(const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const;
 
 protected:
-	void FetchAssetRegistryAssets();
+	void RefreshAssetRegistryAssets();
 
 	bool BlueprintImplementsHeartVisualizerInterface(const UBlueprint* Blueprint) const;
 
 	void OnHotReload(EReloadCompleteReason ReloadCompleteReason);
 	void OnBlueprintPreCompile(UBlueprint* Blueprint);
-	void OnBlueprintCompiled(UBlueprint* Blueprint);
+	void OnBlueprintCompiled();
+	void OnHeartBlueprintCompiled(UBlueprint* Blueprint);
 
 	void PreRegistryAdded(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
 	void PostRegistryRemoved(UHeartGraphNodeRegistry* HeartGraphNodeRegistry);
@@ -55,4 +56,5 @@ public:
 
 private:
 	TSet<TWeakObjectPtr<UBlueprint>> WaitingForCompile;
+	bool WaitingForCompilationToFinish = false;
 };

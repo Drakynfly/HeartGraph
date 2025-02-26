@@ -4,15 +4,134 @@
 
 #include "UObject/Object.h"
 #include "HeartNodeSource.h"
-#include "HeartRegistrationClasses.h"
 #include "General/CountedPtr.h"
 #include "Model/HeartGraphPinTag.h"
 
 #include "HeartGraphNodeRegistry.generated.h"
 
+struct FHeartRegistryClassLists;
+
 namespace Heart::Query
 {
 	class FRegistryQueryResult;
+}
+
+namespace Heart::Registry
+{
+	class FCounter
+	{
+	public:
+		bool IsEmpty() const { return Classes.IsEmpty(); }
+
+		// Increment the reference count for a class
+		void Inc(UClass* Class)
+		{
+			Classes.FindOrAdd(Class).Inc();
+		}
+
+		// Decrement the reference count for a class
+		void Dec(UClass* Class)
+		{
+			if (auto&& ObjPtr = Classes.Find(Class))
+			{
+				if (ObjPtr->Dec() <= 0)
+				{
+					Classes.Remove(*ObjPtr);
+				}
+			}
+		}
+
+		void CollectReferences(FReferenceCollector& Collector)
+		{
+			for (auto&& Value : Classes)
+			{
+				Collector.AddStableReference(&Value.Obj);
+			}
+		}
+
+		TSet<Containers::TCountedPtr<UClass>> Classes;
+	};
+
+	template <typename TKey>
+	class TTracker
+	{
+	public:
+		bool IsEmpty() const { return Counters.IsEmpty(); }
+
+		// Find the first valid class for a key
+		TObjectPtr<UClass> Find(const TKey& Key) const
+		{
+			if (auto&& Counter = Counters.Find(Key))
+			{
+				for (auto&& CountedClass : Counter->Classes)
+				{
+					if (!IsValid(CountedClass.Obj))
+					{
+						continue;
+					}
+
+					return CountedClass.Obj;
+				}
+			}
+			return nullptr;
+		}
+
+		// Find the first valid class for a key that is equal to or a child of a parent
+		TObjectPtr<UClass> FindByClass(const TKey& Key, UClass* Parent) const
+		{
+			if (!IsValid(Parent)) return nullptr;
+
+			if (auto&& Counter = Counters.Find(Key))
+			{
+				for (auto&& CountedClass : Counter->Classes)
+				{
+					if (!IsValid(CountedClass.Obj))
+					{
+						continue;
+					}
+
+					if (CountedClass.Obj->IsChildOf(Parent))
+					{
+						return CountedClass.Obj;
+					}
+				}
+			}
+			return nullptr;
+		}
+
+		// Increment the reference count for a class
+		void Inc(const TKey& Key, UClass* Class)
+		{
+			if (!ensure(IsValid(Class))) return;
+			Counters.FindOrAdd(Key).Inc(Class);
+		}
+
+		// Decrement the reference count for a class
+		void Dec(const TKey& Key, UClass* Class)
+		{
+			if (!IsValid(Class)) return;
+
+			if (auto&& Counter = Counters.Find(Key))
+			{
+				Counter->Dec(Class);
+				if (Counter->IsEmpty())
+				{
+					Counters.Remove(Key);
+				}
+			}
+		}
+
+		void CollectReferences(FReferenceCollector& Collector)
+		{
+			for (auto&& Element : Counters)
+			{
+				Element.Value.CollectReferences(Collector);
+			}
+		}
+
+	private:
+		TMap<TKey, FCounter> Counters;
+	};
 }
 
 struct FHeartGraphPinDesc;
@@ -22,7 +141,6 @@ class UGraphNodeRegistrar;
 class UHeartGraphNodeRegistry;
 using FHeartGraphNodeRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartGraphNodeRegistryEvent, UHeartGraphNodeRegistry*, Registry);
-
 
 /**
  * Stores a list of nodes, graph nodes, usable by a Graph, along with their internal graph representations and
@@ -39,16 +157,21 @@ class HEART_API UHeartGraphNodeRegistry : public UObject
 	friend class UGraphNodeRegistrar;
 	friend Heart::Query::FRegistryQueryResult;
 
+public:
+	static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
+
 protected:
 	bool FilterObjectForRegistration(const UObject* Object) const;
 
-	void AddRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast = true);
-	void RemoveRegistrationList(const FHeartRegistrationClasses& Registration, bool Broadcast = true);
+	void AddRegistrationList(const FHeartRegistryClassLists& List, bool Broadcast = true);
+	void RemoveRegistrationList(const FHeartRegistryClassLists& List, bool Broadcast = true);
 
 	void BroadcastChange();
 
 public:
 	FHeartGraphNodeRegistryEventNative::RegistrationType& GetOnRegistryChangedNative() { return OnRegistryChangedNative; }
+
+	static void GatherReferences(const FHeartRegistryClassLists& List, TArray<FSoftObjectPath>& Objects);
 
 	Heart::Query::FRegistryQueryResult QueryRegistry() const;
 
@@ -132,23 +255,25 @@ private:
 
 	struct FNodeSourceEntry
 	{
-		TSet<Heart::Containers::TCountedWeakClassPtr<UHeartGraphNode>> GraphNodes;
+		Heart::Registry::FCounter NodeClasses;
 		TArray<TObjectPtr<UClass>> RecursiveChildren;
 		uint32 RecursiveRegistryCounter = 0;
 	};
 
+	// Maps a Node Source (a possible spawnable node type) to a counted set of Graph Node classes that supports the node type,
+	// alongside recursively added child classes (if requested by a registrar)
 	TMap<FHeartNodeSource, FNodeSourceEntry> NodeRootTable;
 
 	// Maps Graph Node classes to the visualizer class that can represent them in a displayed graph.
-	TMap<TSubclassOf<UHeartGraphNode>, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> NodeVisualizerMap;
+	Heart::Registry::TTracker<TSubclassOf<UHeartGraphNode>> NodeVisualizers;
 
-	// Maps GraphPinTags to the visualizer class that can represent them in a displayed graph.
-	TMap<FHeartGraphPinTag, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> PinVisualizerMap;
+	// Maps GraphPinTags to the visualizer classes that can represent them in a displayed graph.
+	Heart::Registry::TTracker<FHeartGraphPinTag> PinVisualizers;
 
-	// Maps GraphPinTags to the visualizer class that can represent their connections in a displayed graph.
-	TMap<FHeartGraphPinTag, TSet<Heart::Containers::TCountedWeakPtr<UClass>>> ConnectionVisualizerMap;
+	// Maps GraphPinTags to the visualizer classes that can represent their connections in a displayed graph.
+	Heart::Registry::TTracker<FHeartGraphPinTag> ConnectionVisualizers;
 
-	// We have to store these hard-ref'd to keep around the stuff in GraphClasses as we cannot UPROP TMaps of TSets
+	// Track Registrars to prevent multiple adds.
 	UPROPERTY()
 	TArray<TObjectPtr<const UGraphNodeRegistrar>> ContainedRegistrars;
 };

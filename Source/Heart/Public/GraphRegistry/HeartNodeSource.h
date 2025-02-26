@@ -12,7 +12,7 @@ struct FHeartNodeSource
 {
 	GENERATED_BODY()
 
-	FHeartNodeSource() {}
+	FHeartNodeSource() = default;
 
 	explicit FHeartNodeSource(const UObject* SourceObject)
 	{
@@ -85,8 +85,21 @@ public:
 	{
 		return GetTypeHash(SourceObject.NodeObj);
 	}
+
+	void AddStructReferencedObjects(FReferenceCollector& Collector)
+	{
+		Collector.AddStableReference(&ConstCast(NodeObj));
+	}
 };
 
+template<>
+struct TStructOpsTypeTraits<FHeartNodeSource> : public TStructOpsTypeTraitsBase2<FHeartNodeSource>
+{
+	enum
+	{
+		WithAddStructReferencedObjects = true,
+	};
+};
 
 class UHeartGraphNode;
 
@@ -98,8 +111,8 @@ struct FHeartNodeArchetype
 {
 	GENERATED_BODY()
 
-	FHeartNodeArchetype() {}
-	FHeartNodeArchetype(const TSubclassOf<UHeartGraphNode> GraphNode, const FHeartNodeSource Source)
+	FHeartNodeArchetype() = default;
+	FHeartNodeArchetype(const TSubclassOf<UHeartGraphNode>& GraphNode, const FHeartNodeSource& Source)
 	  : GraphNode(GraphNode), Source(Source) {}
 
 	// The class to instance a GraphNode with

@@ -21,7 +21,7 @@ namespace Heart::Query
 
 		return FRegistryValue{
 			Key.RecursiveIndex != INDEX_NONE ? FHeartNodeSource(Entry.Value.RecursiveChildren[Key.RecursiveIndex]) : Entry.Key,
-			Entry.Value.GraphNodes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get()};
+			Entry.Value.NodeClasses.Classes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get()};
 	}
 }
 
@@ -105,7 +105,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 	Query.ForEach(
 		[&Results](const Heart::Query::FRegistryValue& Value)
 		{
-			Results.Emplace(Value.GraphNode.Get(), Value.Source);
+			Results.Emplace(Value.GraphNode, Value.Source);
 		});
 }
 

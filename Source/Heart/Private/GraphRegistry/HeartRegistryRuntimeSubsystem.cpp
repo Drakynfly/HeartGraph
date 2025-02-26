@@ -10,7 +10,7 @@
 
 #include "HeartGraphSettings.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
+#include "Engine/AssetManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartRegistryRuntimeSubsystem)
 
@@ -33,25 +33,29 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 
 	FetchNativeRegistrars();
 
-	const FAssetRegistryModule& AssetRegistry = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+	UAssetManager::CallOrRegister_OnAssetManagerCreated(
+		FSimpleMulticastDelegate::FDelegate::CreateLambda([&]()
+		{
+			IAssetRegistry& AssetRegistry = UAssetManager::Get().GetAssetRegistry();
+			AssetRegistry.OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
+			AssetRegistry.OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
+			AssetRegistry.OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
 
-	AssetRegistry.Get().OnFilesLoaded().AddUObject(this, &ThisClass::OnFilesLoaded);
-	AssetRegistry.Get().OnAssetAdded().AddUObject(this, &ThisClass::OnAssetAdded);
-	AssetRegistry.Get().OnAssetRemoved().AddUObject(this, &ThisClass::OnAssetRemoved);
+			LoadFallbackRegistrar();
 
-	LoadFallbackRegistrar();
-
-	FetchAssetRegistrars();
+			UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running FetchAssetRegistrars: Initialize"))
+			FetchAssetRegistrars();
+		}));
 }
 
 void UHeartRegistryRuntimeSubsystem::Deinitialize()
 {
 	if (FModuleManager::Get().IsModuleLoaded(AssetRegistryConstants::ModuleName))
 	{
-		const FAssetRegistryModule& AssetRegistry = FModuleManager::GetModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-		AssetRegistry.Get().OnFilesLoaded().RemoveAll(this);
-		AssetRegistry.Get().OnAssetAdded().RemoveAll(this);
-		AssetRegistry.Get().OnAssetRemoved().RemoveAll(this);
+		IAssetRegistry& AssetRegistry = UAssetManager::Get().GetAssetRegistry();
+		AssetRegistry.OnFilesLoaded().RemoveAll(this);
+		AssetRegistry.OnAssetAdded().RemoveAll(this);
+		AssetRegistry.OnAssetRemoved().RemoveAll(this);
 	}
 }
 
@@ -65,48 +69,49 @@ void UHeartRegistryRuntimeSubsystem::LoadFallbackRegistrar()
 
 void UHeartRegistryRuntimeSubsystem::OnFilesLoaded()
 {
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnFilesLoaded"))
-
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running FetchAssetRegistrars: OnFilesLoaded"))
 	FetchAssetRegistrars();
 }
 
 void UHeartRegistryRuntimeSubsystem::OnAssetAdded(const FAssetData& AssetData)
 {
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
+	const IAssetRegistry& AssetRegistry = UAssetManager::Get().GetAssetRegistry();
 
 	// We can't try to load assets while they are still loading in. Try again later.
-	if (AssetRegistryModule.Get().IsLoadingAssets())
+	if (AssetRegistry.IsLoadingAssets())
 	{
 		return;
 	}
 
-	if (const UClass* AssetClass = AssetData.GetClass())
+	if (AssetData.IsInstanceOf(UGraphNodeRegistrar::StaticClass()))
 	{
-		if (AssetClass->IsChildOf(UGraphNodeRegistrar::StaticClass()))
-		{
-			if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
-			{
-				UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetAdded detected Registrar '%s'"), *NewRegistrar->GetName())
+		KnownRegistrars.Add(AssetData);
 
-				AutoAddRegistrar(NewRegistrar);
-			}
+		if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
+		{
+			UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetAdded detected Registrar '%s'"), *NewRegistrar->GetName())
+
+			AutoAddRegistrar(NewRegistrar);
 		}
 	}
 }
 
 void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 {
-	const UClass* Class = AssetData.GetClass();
-
-	if (IsValid(Class) && Class->IsChildOf(UGraphNodeRegistrar::StaticClass()))
+	if (AssetData.IsInstanceOf(UGraphNodeRegistrar::StaticClass()))
 	{
-		UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetRemoved detected GraphNodeRegistrar"))
+		UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetRemoved detected Registrar"))
 
-		if (auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
+		if (AssetData.IsAssetLoaded())
 		{
-			if (IsValid(RemovedRegistrar))
+			KnownRegistrars.Remove(AssetData);
+
+			if (auto&& RemovedRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
 			{
-				AutoRemoveRegistrar(RemovedRegistrar);
+				if (IsValid(RemovedRegistrar))
+				{
+					AutoRemoveRegistrar(RemovedRegistrar);
+				}
 			}
 		}
 	}
@@ -119,7 +124,7 @@ void UHeartRegistryRuntimeSubsystem::FetchNativeRegistrars()
 	TArray<UClass*> Classes;
 	GetDerivedClasses(UGraphNodeRegistrar::StaticClass(), Classes);
 
-	for (const TSubclassOf<UGraphNodeRegistrar> Class : Classes)
+	for (const TSubclassOf<UGraphNodeRegistrar>& Class : Classes)
 	{
 		if (IsValid(Class))
 		{
@@ -135,32 +140,42 @@ void UHeartRegistryRuntimeSubsystem::FetchNativeRegistrars()
 	}
 }
 
-void UHeartRegistryRuntimeSubsystem::FetchAssetRegistrars(const bool ForceReload)
+void UHeartRegistryRuntimeSubsystem::FetchAssetRegistrars()
 {
 	// @todo this is a hack to prevent this function from being recursively triggered. I'd like a cleaner solution, but this'll do...
 	static bool IsFetchingRegistryAssets = false;
 	if (IsFetchingRegistryAssets) return;
+	TGuardValue<bool> RecursionGuard(IsFetchingRegistryAssets, true);
 
 	QUICK_SCOPE_CYCLE_COUNTER(STAT_FetchAssetRegistryAssets)
 
-	const FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(AssetRegistryConstants::ModuleName);
-
-	IsFetchingRegistryAssets = true;
+	IAssetRegistry& AssetRegistry = UAssetManager::Get().GetAssetRegistry();
 
 	FARFilter RegistrarFilter;
 	RegistrarFilter.ClassPaths.Add(UGraphNodeRegistrar::StaticClass()->GetClassPathName());
 	RegistrarFilter.bRecursiveClasses = true;
 
 	TArray<FAssetData> FoundRegistrarAssets;
-	AssetRegistryModule.Get().GetAssets(RegistrarFilter, FoundRegistrarAssets);
+	AssetRegistry.GetAssets(RegistrarFilter, FoundRegistrarAssets);
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistryAssets found '%i' registrars"), FoundRegistrarAssets.Num())
+	KnownRegistrars.Append(FoundRegistrarAssets);
 
-	for (const FAssetData& RegistrarAsset : FoundRegistrarAssets)
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistrars found '%i' registrars"), FoundRegistrarAssets.Num())
+
+	RefreshAssetRegistrars();
+}
+
+void UHeartRegistryRuntimeSubsystem::RefreshAssetRegistrars(const bool ForceRefresh)
+{
+	QUICK_SCOPE_CYCLE_COUNTER(RefreshAssetRegistrars)
+
+	UE_LOG(LogHeartNodeRegistry, Log, TEXT("RefreshAssetRegistrars: '%i' known registrars"), KnownRegistrars.Num())
+
+	for (const FAssetData& RegistrarAsset : KnownRegistrars)
 	{
 		if (auto&& Registrar = Cast<UGraphNodeRegistrar>(RegistrarAsset.GetAsset()))
 		{
-			if (ForceReload)
+			if (ForceRefresh)
 			{
 				AutoRemoveRegistrar(Registrar);
 			}
@@ -168,8 +183,6 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistrars(const bool ForceReload
 			AutoAddRegistrar(Registrar);
 		}
 	}
-
-	IsFetchingRegistryAssets = false;
 }
 
 UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const TSubclassOf<UHeartGraphSchema>& Class)
