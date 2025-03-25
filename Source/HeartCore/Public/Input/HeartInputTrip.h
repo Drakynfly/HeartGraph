@@ -107,10 +107,10 @@ namespace Heart::Input
 	FORCEINLINE uint32 GetTypeHash(const FInputTrip& Trip)
 	{
 		uint32 KeyHash = 0;
-		KeyHash = HashCombine(KeyHash, ::GetTypeHash(Trip.Type));
-		KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.Key));
-		KeyHash = HashCombine(KeyHash, ::GetTypeHash(Trip.ModifierMask));
-		KeyHash = HashCombine(KeyHash, GetTypeHash(Trip.CustomKey));
+		KeyHash = HashCombineFast(KeyHash, ::GetTypeHash(Trip.Type));
+		KeyHash = HashCombineFast(KeyHash, GetTypeHash(Trip.Key));
+		KeyHash = HashCombineFast(KeyHash, ::GetTypeHash(Trip.ModifierMask));
+		KeyHash = HashCombineFast(KeyHash, GetTypeHash(Trip.CustomKey));
 		return KeyHash;
 	}
 }

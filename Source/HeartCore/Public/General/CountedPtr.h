@@ -50,7 +50,7 @@ namespace Heart::Containers
 
 		friend uint32 GetTypeHash(TCountedWeakPtr Value)
 		{
-			return HashCombine(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
+			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
 	};
 
@@ -92,7 +92,7 @@ namespace Heart::Containers
 
 		friend uint32 GetTypeHash(TCountedPtr Value)
 		{
-			return HashCombine(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
+			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
 	};
 
@@ -148,7 +148,7 @@ namespace Heart::Containers
 
 		friend uint32 GetTypeHash(TCountedWeakClassPtr Value)
 		{
-			return HashCombine(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
+			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
 	};
 }
