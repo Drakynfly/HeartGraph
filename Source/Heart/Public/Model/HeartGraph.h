@@ -8,6 +8,7 @@
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
+#include "HeartNodeQuery.h"
 #include "HeartGraph.generated.h"
 
 namespace Heart::API
@@ -162,6 +163,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|Graph")
 	void GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const;
+
+	Heart::Query::FGraphNodeQuery QueryNodes() const;
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DisplayName = "Get Nodes"))

@@ -50,4 +50,6 @@ namespace Heart::Query
 	private:
 		const UHeartGraph* Reference;
 	};
+
+	using FGraphNodeQuery = TNodeQueryResult<UHeartGraph>;
 }

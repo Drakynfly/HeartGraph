@@ -296,6 +296,11 @@ void UHeartGraph::GetNodeArray(TArray<UHeartGraphNode*>& OutNodes) const
 	Nodes.GenerateValueArray(ObjectPtrWrap(OutNodes));
 }
 
+Heart::Query::FGraphNodeQuery UHeartGraph::QueryNodes() const
+{
+	return Heart::Query::FGraphNodeQuery(this);
+}
+
 TSubclassOf<UHeartGraphSchema> UHeartGraph::GetSchemaClass_Implementation() const
 {
 	return SchemaClass;
