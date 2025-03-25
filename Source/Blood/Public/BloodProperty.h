@@ -14,7 +14,7 @@ struct BLOOD_API FBloodProperty
 {
 	GENERATED_BODY()
 
-	FBloodProperty() {}
+	FBloodProperty() = default;
 
 	UPROPERTY(EditDefaultsOnly, Category = "BloodProperty")
 	FName PropName = NAME_None;

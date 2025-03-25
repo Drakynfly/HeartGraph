@@ -18,7 +18,7 @@ struct BLOOD_API FBloodContainer
 {
 	GENERATED_BODY()
 
-	FBloodContainer() {}
+	FBloodContainer() = default;
 
 	// Copy data from an existing property bag
 	FBloodContainer(const FInstancedPropertyBag& PropertyBag)

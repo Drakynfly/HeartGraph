@@ -7,7 +7,7 @@
 class HEARTCOREEDITOR_API FHeartDefaultClassFilter : public IClassViewerFilter
 {
 public:
-	FHeartDefaultClassFilter() {}
+	FHeartDefaultClassFilter() = default;
 
 	virtual bool IsClassAllowed(const FClassViewerInitializationOptions& InInitOptions, const UClass* InClass,
 								TSharedRef<FClassViewerFilterFuncs> InFilterFuncs) override;

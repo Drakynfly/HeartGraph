@@ -9,7 +9,7 @@ struct FVector2DBounds
 {
 	GENERATED_BODY()
 
-	FVector2DBounds() {}
+	FVector2DBounds() = default;
 
 	FVector2DBounds(const FVector2D& Min, const FVector2D& Max)
 	  : Min(Min),

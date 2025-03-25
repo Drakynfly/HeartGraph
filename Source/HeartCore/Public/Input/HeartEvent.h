@@ -24,7 +24,7 @@ struct FHeartDeferredEvent
 {
 	GENERATED_BODY()
 
-	FHeartDeferredEvent() {}
+	FHeartDeferredEvent() = default;
 
 	FHeartDeferredEvent(IHeartDeferredEventHandler* Handler)
 	  : Handler(Cast<UObject>(Handler)) {}

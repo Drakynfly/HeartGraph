@@ -12,7 +12,7 @@ struct HEARTCORE_API FVectorBounds
 {
 	GENERATED_BODY()
 
-	FVectorBounds() {}
+	FVectorBounds() = default;
 
 	FVectorBounds(const FVector& Min, const FVector& Max)
 	  : Min(Min),
@@ -33,7 +33,7 @@ struct HEARTCORE_API FVector3fBounds
 {
 	GENERATED_BODY()
 
-	FVector3fBounds() {}
+	FVector3fBounds() = default;
 
 	FVector3fBounds(const FVector3f& Min, const FVector3f& Max)
 	  : Min(Min),

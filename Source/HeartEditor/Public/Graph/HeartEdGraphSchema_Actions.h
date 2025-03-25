@@ -13,7 +13,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewNode : public FEdGraphSchemaAc
 {
 	GENERATED_BODY()
 
-	FHeartGraphSchemaAction_NewNode() {}
+	FHeartGraphSchemaAction_NewNode() = default;
 
 	FHeartGraphSchemaAction_NewNode(const FHeartNodeArchetype& Archetype)
 	  : FEdGraphSchemaAction(
@@ -50,7 +50,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_Paste : public FEdGraphSchemaActi
 {
 	GENERATED_BODY()
 
-	FHeartGraphSchemaAction_Paste() {}
+	FHeartGraphSchemaAction_Paste() = default;
 
 	FHeartGraphSchemaAction_Paste(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
 	  : FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping) {}
@@ -73,7 +73,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_NewComment : public FEdGraphSchem
 {
 	GENERATED_BODY()
 
-	FHeartGraphSchemaAction_NewComment() {}
+	FHeartGraphSchemaAction_NewComment() = default;
 
 	FHeartGraphSchemaAction_NewComment(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping)
 	  : FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping) {}
@@ -96,7 +96,7 @@ struct HEARTEDITOR_API FHeartGraphSchemaAction_LinkerBinding : public FEdGraphSc
 {
 	GENERATED_BODY()
 
-	FHeartGraphSchemaAction_LinkerBinding() {}
+	FHeartGraphSchemaAction_LinkerBinding() = default;
 
 	FHeartGraphSchemaAction_LinkerBinding(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, const FName Key)
 	  : FEdGraphSchemaAction(MoveTemp(InNodeCategory), MoveTemp(InMenuDesc), MoveTemp(InToolTip), InGrouping), Key(Key) {}

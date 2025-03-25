@@ -11,7 +11,7 @@ struct HEARTCORE_API FHeartInputTrigger
 {
 	GENERATED_BODY()
 
-	virtual ~FHeartInputTrigger() {}
+	virtual ~FHeartInputTrigger() = default;
 
 	virtual TArray<Heart::Input::FInputTrip> CreateTrips() const { return TArray<Heart::Input::FInputTrip>(); }
 };

@@ -15,7 +15,7 @@ struct FHeartManualEvent
 {
 	GENERATED_BODY()
 
-	FHeartManualEvent() {}
+	FHeartManualEvent() = default;
 	FHeartManualEvent(const double Value)
 	  : EventValue(Value) {}
 
@@ -29,7 +29,7 @@ struct FHeartInputKeyParams
 {
 	GENERATED_BODY()
 
-	FHeartInputKeyParams() {}
+	FHeartInputKeyParams() = default;
 	FHeartInputKeyParams(const FInputKeyParams& Params)
 	  : Params(Params) {}
 

@@ -19,7 +19,7 @@ struct BLOOD_API FBloodBool
 {
 	GENERATED_BODY()
 
-	FBloodBool() {}
+	FBloodBool() = default;
 	FBloodBool(const bool Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -31,7 +31,7 @@ struct BLOOD_API FBloodUI8
 {
 	GENERATED_BODY()
 
-	FBloodUI8() {}
+	FBloodUI8() = default;
 	FBloodUI8(const uint8 Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -43,7 +43,7 @@ struct BLOOD_API FBloodI32
 {
 	GENERATED_BODY()
 
-	FBloodI32() {}
+	FBloodI32() = default;
 	FBloodI32(const int32 Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -55,7 +55,7 @@ struct BLOOD_API FBloodI64
 {
 	GENERATED_BODY()
 
-	FBloodI64() {}
+	FBloodI64() = default;
 	FBloodI64(const int64 Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -67,7 +67,7 @@ struct BLOOD_API FBloodFloat
 {
 	GENERATED_BODY()
 
-	FBloodFloat() {}
+	FBloodFloat() = default;
 	FBloodFloat(const float Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -79,7 +79,7 @@ struct BLOOD_API FBloodDouble
 {
 	GENERATED_BODY()
 
-	FBloodDouble() {}
+	FBloodDouble() = default;
 	FBloodDouble(const double Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -91,7 +91,7 @@ struct BLOOD_API FBloodName
 {
 	GENERATED_BODY()
 
-	FBloodName() {}
+	FBloodName() = default;
 	FBloodName(FName Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -103,7 +103,7 @@ struct BLOOD_API FBloodString
 {
 	GENERATED_BODY()
 
-	FBloodString() {}
+	FBloodString() = default;
 	FBloodString(const FString& Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -115,7 +115,7 @@ struct BLOOD_API FBloodText
 {
 	GENERATED_BODY()
 
-	FBloodText() {}
+	FBloodText() = default;
 	FBloodText(const FText& Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -127,7 +127,7 @@ struct BLOOD_API FBloodObject
 {
 	GENERATED_BODY()
 
-	FBloodObject() {}
+	FBloodObject() = default;
 	FBloodObject(const TObjectPtr<UObject> Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -144,7 +144,7 @@ struct BLOOD_API FBloodClass
 {
 	GENERATED_BODY()
 
-	FBloodClass() {}
+	FBloodClass() = default;
 	FBloodClass(const UClass* Value) : Value(Value) {}
 	FBloodClass(const TSubclassOf<UObject> Value) : Value(Value) {}
 
@@ -162,7 +162,7 @@ struct BLOOD_API FBloodSoftObject
 {
 	GENERATED_BODY()
 
-	FBloodSoftObject() {}
+	FBloodSoftObject() = default;
 	FBloodSoftObject(const TSoftObjectPtr<UObject>& Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)
@@ -179,7 +179,7 @@ struct BLOOD_API FBloodSoftClass
 {
 	GENERATED_BODY()
 
-	FBloodSoftClass() {}
+	FBloodSoftClass() = default;
 	FBloodSoftClass(const TSoftClassPtr<UObject>& Value) : Value(Value) {}
 
 	UPROPERTY(BlueprintReadWrite)

@@ -30,7 +30,7 @@ struct BLOOD_API FBloodValue
 	friend struct FBloodContainer; // @todo Temp, please improve API here, and remove this
 
 	// Blank ctor
-	FBloodValue() {}
+	FBloodValue() = default;
 
 	// Ctor from existing data. WARNING, this does not enforce, nor check, the validity of this data
 	FBloodValue(FInstancedPropertyBag&& FormattedData)

@@ -10,7 +10,7 @@ struct FHeartGuid : public FGuid
 {
 	GENERATED_BODY()
 
-	FHeartGuid() {}
+	FHeartGuid() = default;
 
 	// Explicit converter to a typed Heart Guid
 	template <
