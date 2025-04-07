@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Script/AssetDefinition_Blueprint.h"
-#include "AssetTypeActions_HeartGraphBlueprint.generated.h"
+#include "AssetDefinition_HeartGraphBlueprint.generated.h"
 
 UCLASS()
 class HEARTEDITOR_API UAssetDefinition_HeartGraphBlueprint : public UAssetDefinition_Blueprint

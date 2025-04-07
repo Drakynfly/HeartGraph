@@ -1,6 +1,6 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
-#include "Graph/AssetTypeActions_HeartGraphBlueprint.h"
+#include "Graph/AssetDefinition_HeartGraphBlueprint.h"
 #include "Model/HeartGraphBlueprint.h"
 #include "HeartEditorShared.h"
 
