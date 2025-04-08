@@ -174,7 +174,7 @@ namespace Heart::AssetEditor
 		// Toolbar must be initialized before Application Modes are added, as they will probably use the toolbar.
 		CreateToolbar();
 
-		FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+		FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 
 		// Add all registered application modes.
 		for (auto&& ModeData : HeartEditorModule.GetApplicationModes())

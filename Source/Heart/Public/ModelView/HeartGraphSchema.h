@@ -136,7 +136,9 @@ public:
 	auto GetEditorLinkerClass() const { return EditorLinkerClass; }
 
 	static FName DefaultEditorStylePropertyName() { return GET_MEMBER_NAME_CHECKED(UHeartGraphSchema, DefaultEditorStyle); }
+	static FName ConnectionDrawingPolicyPropertyName() { return GET_MEMBER_NAME_CHECKED(UHeartGraphSchema, ConnectionDrawingPolicy); }
 	FName GetDefaultEditorStyle() const { return DefaultEditorStyle; }
+	FName GetConnectionDrawingPolicy() const { return ConnectionDrawingPolicy; }
 #endif
 
 protected:
@@ -186,6 +188,10 @@ protected:
 	// Style of slate widget to use by default
 	UPROPERTY(EditAnywhere, Category = "Editor")
 	FName DefaultEditorStyle;
+
+	// Slate pin connection drawing policy to use. If None, then the EdGraph default will be used as a fallback.
+	UPROPERTY(EditAnywhere, Category = "Editor")
+	FName ConnectionDrawingPolicy;
 
 	// Action to run on the graph during PreSave.
 	UPROPERTY(EditAnywhere, Category = "Editor")

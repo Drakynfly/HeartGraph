@@ -72,14 +72,14 @@ TArray<UClass*> UHeartRegistryEditorSubsystem::GetFactoryCommonClasses()
 
 TSharedPtr<SGraphNode> UHeartRegistryEditorSubsystem::MakeSlateWidget(const FName Style, UHeartEdGraphNode* Node) const
 {
-	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	const FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 	return HeartEditorModule.MakeSlateWidget(Style, Node);
 }
 
 TSubclassOf<UHeartEdGraphNode> UHeartRegistryEditorSubsystem::GetAssignedEdGraphNodeClass(
 	const TSubclassOf<UHeartGraphNode> HeartGraphNodeClass) const
 {
-	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	const FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 	return HeartEditorModule.GetEdGraphClass(HeartGraphNodeClass);
 }
 

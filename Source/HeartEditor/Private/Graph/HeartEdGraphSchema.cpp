@@ -15,6 +15,7 @@
 
 #include "EdGraph/EdGraph.h"
 #include "Graph/HeartEdGraph.h"
+#include "HeartEditorModule.h"
 
 #include "ScopedTransaction.h"
 #include "Input/HeartInputLinkerBase.h"
@@ -218,8 +219,27 @@ TSharedPtr<FEdGraphSchemaAction> UHeartEdGraphSchema::GetCreateCommentAction() c
 	return MakeShared<FHeartGraphSchemaAction_NewComment>();
 }
 
+FConnectionDrawingPolicy* UHeartEdGraphSchema::CreateConnectionDrawingPolicy(const int32 InBackLayerID,
+	const int32 InFrontLayerID, const float InZoomFactor, const FSlateRect& InClippingRect,
+	FSlateWindowElementList& InDrawElements, UEdGraph* InGraphObj) const
+{
+	const UHeartGraphSchema* HeartSchema = CastChecked<UHeartEdGraph>(InGraphObj)->GetHeartGraph()->GetSchema();
+	if (IsValid(HeartSchema))
+	{
+		if (FConnectionDrawingPolicy* Policy = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor").
+				GetDrawingPolicyInstance(HeartSchema->GetConnectionDrawingPolicy(), this,
+					FConnectionDrawingPolicyCtorPack(InBackLayerID, InFrontLayerID, InZoomFactor, InClippingRect,
+						InDrawElements, InGraphObj)))
+		{
+			return Policy;
+		}
+	}
+
+	return Super::CreateConnectionDrawingPolicy(InBackLayerID, InFrontLayerID, InZoomFactor, InClippingRect, InDrawElements, InGraphObj);
+}
+
 void UHeartEdGraphSchema::OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB,
-	const FVector2D& GraphPosition) const
+													  const FVector2D& GraphPosition) const
 {
 	OnPinConnectionDoubleClicked(PinA, PinB, GraphPosition);
 }

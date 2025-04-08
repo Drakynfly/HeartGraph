@@ -17,25 +17,28 @@ TSharedRef<IDetailCustomization> FHeartGraphSchemaCustomization::MakeInstance()
 
 FHeartGraphSchemaCustomization::FHeartGraphSchemaCustomization()
 {
-	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	const FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 
 	StyleOptions.Append(HeartEditorModule.GetSlateStyles());
+	PolicyOptions.Append(HeartEditorModule.GetDrawingPolicies());
 }
 
 void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
 {
-	StyleProp = DetailBuilder.GetProperty(UHeartGraphSchema::DefaultEditorStylePropertyName());
+	SlateStyleProp = DetailBuilder.GetProperty(UHeartGraphSchema::DefaultEditorStylePropertyName());
+	DrawingPolicyProp = DetailBuilder.GetProperty(UHeartGraphSchema::ConnectionDrawingPolicyPropertyName());
 
-	if (StyleProp.IsValid())
+	IDetailCategoryBuilder& EditorCategory = DetailBuilder.EditCategory("Editor");
+
+	if (SlateStyleProp.IsValid())
 	{
-		DetailBuilder.HideProperty(StyleProp);
+		DetailBuilder.HideProperty(SlateStyleProp);
 
-		IDetailCategoryBuilder& EditorCategory = DetailBuilder.EditCategory("Editor");
 		FDetailWidgetRow& EditorSlateStyleRow = EditorCategory.AddCustomRow(LOCTEXT("EditorSlateStyleSearchString", "Editor Slate Style"));
 
 		EditorSlateStyleRow.NameContent()
 			[
-				StyleProp->CreatePropertyNameWidget()
+				SlateStyleProp->CreatePropertyNameWidget()
 			];
 
 		EditorSlateStyleRow.ValueContent()
@@ -43,10 +46,35 @@ void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 				SNew(SComboBox<FName>)
 				.OptionsSource(&StyleOptions)
 				.OnSelectionChanged(this, &FHeartGraphSchemaCustomization::OnStyleSelectionChanged)
-				.OnGenerateWidget(this, &FHeartGraphSchemaCustomization::OnGenerateStyleWidget)
+				.OnGenerateWidget(this, &FHeartGraphSchemaCustomization::OnGenerateNameWidget)
 				[
 					SNew(STextBlock)
 						.Text(this, &FHeartGraphSchemaCustomization::GetSelectedStyle)
+						.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
+				]
+			];
+	}
+
+	if (DrawingPolicyProp.IsValid())
+	{
+		DetailBuilder.HideProperty(DrawingPolicyProp);
+
+		FDetailWidgetRow& DrawingPolicyRow = EditorCategory.AddCustomRow(LOCTEXT("ConnectionDrawingPolicySearchString", "Connection Drawing Policy"));
+
+		DrawingPolicyRow.NameContent()
+			[
+				DrawingPolicyProp->CreatePropertyNameWidget()
+			];
+
+		DrawingPolicyRow.ValueContent()
+			[
+				SNew(SComboBox<FName>)
+				.OptionsSource(&PolicyOptions)
+				.OnSelectionChanged(this, &FHeartGraphSchemaCustomization::OnPolicySelectionChanged)
+				.OnGenerateWidget(this, &FHeartGraphSchemaCustomization::OnGenerateNameWidget)
+				[
+					SNew(STextBlock)
+						.Text(this, &FHeartGraphSchemaCustomization::GetSelectedPolicy)
 						.Font(IPropertyTypeCustomizationUtils::GetRegularFont())
 				]
 			];
@@ -55,27 +83,50 @@ void FHeartGraphSchemaCustomization::CustomizeDetails(IDetailLayoutBuilder& Deta
 
 void FHeartGraphSchemaCustomization::OnStyleSelectionChanged(const FName Name, ESelectInfo::Type SelectInfo)
 {
-	if (StyleProp.IsValid())
+	if (SlateStyleProp.IsValid())
 	{
-		StyleProp->SetValue(Name);
+		SlateStyleProp->SetValue(Name);
 	}
-}
-
-TSharedRef<SWidget> FHeartGraphSchemaCustomization::OnGenerateStyleWidget(const FName Style)
-{
-	return SNew(STextBlock)
-		.Text(FText::FromString(FName::NameToDisplayString(Style.ToString(), false)))
-		.Font(IPropertyTypeCustomizationUtils::GetRegularFont());
 }
 
 FText FHeartGraphSchemaCustomization::GetSelectedStyle() const
 {
 	FName Value;
-	if (StyleProp.IsValid())
+	if (SlateStyleProp.IsValid())
 	{
-		StyleProp->GetValue(Value);
+		SlateStyleProp->GetValue(Value);
 	}
-	return FText::FromString(FName::NameToDisplayString(Value.ToString(), false));
+	return NameToText(Value);
+}
+
+void FHeartGraphSchemaCustomization::OnPolicySelectionChanged(const FName Name, ESelectInfo::Type SelectInfo)
+{
+	if (DrawingPolicyProp.IsValid())
+	{
+		DrawingPolicyProp->SetValue(Name);
+	}
+}
+
+FText FHeartGraphSchemaCustomization::GetSelectedPolicy() const
+{
+	FName Value;
+	if (DrawingPolicyProp.IsValid())
+	{
+		DrawingPolicyProp->GetValue(Value);
+	}
+	return NameToText(Value);
+}
+
+FText FHeartGraphSchemaCustomization::NameToText(const FName Name)
+{
+	return FText::FromString(FName::NameToDisplayString(Name.ToString(), false));
+}
+
+TSharedRef<SWidget> FHeartGraphSchemaCustomization::OnGenerateNameWidget(const FName Style)
+{
+	return SNew(STextBlock)
+		.Text(NameToText(Style))
+		.Font(IPropertyTypeCustomizationUtils::GetRegularFont());
 }
 
 #undef LOCTEXT_NAMESPACE

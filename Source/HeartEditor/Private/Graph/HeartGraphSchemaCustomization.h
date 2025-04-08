@@ -17,10 +17,17 @@ public:
 
 private:
 	void OnStyleSelectionChanged(FName Name, ESelectInfo::Type SelectInfo);
-	TSharedRef<SWidget> OnGenerateStyleWidget(FName Style);
 	FText GetSelectedStyle() const;
 
-	TSharedPtr<IPropertyHandle> StyleProp;
+	void OnPolicySelectionChanged(FName Name, ESelectInfo::Type SelectInfo);
+	FText GetSelectedPolicy() const;
+
+	static FText NameToText(FName Name);
+	TSharedRef<SWidget> OnGenerateNameWidget(FName Style);
+
+	TSharedPtr<IPropertyHandle> SlateStyleProp;
+	TSharedPtr<IPropertyHandle> DrawingPolicyProp;
 
 	TArray<FName> StyleOptions;
+	TArray<FName> PolicyOptions;
 };

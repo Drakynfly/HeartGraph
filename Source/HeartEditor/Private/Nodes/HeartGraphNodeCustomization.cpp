@@ -17,7 +17,7 @@ TSharedRef<IDetailCustomization> FHeartGraphNodeCustomization::MakeInstance()
 
 FHeartGraphNodeCustomization::FHeartGraphNodeCustomization()
 {
-	const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+	const FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 
 	StyleOptions.Add(Heart::GraphUtils::DefaultStyle);
 	StyleOptions.Append(HeartEditorModule.GetSlateStyles());

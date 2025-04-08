@@ -49,7 +49,7 @@ namespace Heart::AssetEditor
 					)
 			);
 
-		FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+		FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 		ToolbarExtender = HeartEditorModule.GetToolBarExtensibilityManager()->GetAllExtenders();
 		AssetEditor->GetToolbar()->AddEditorModesToolbar(ToolbarExtender);
 	}

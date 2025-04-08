@@ -124,7 +124,7 @@ void FHeartGraphAssetToolbar::FillEditorModesToolbar(FToolBarBuilder& ToolBarBui
 			FText TooltipText;
 		};
 
-		const FHeartEditorModule& HeartEditorModule = FModuleManager::LoadModuleChecked<FHeartEditorModule>("HeartEditor");
+		const FHeartEditorModule& HeartEditorModule = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor");
 		for (auto&& Mode : HeartEditorModule.GetApplicationModes())
 		{
 			const Heart::AssetEditor::FRegisteredApplicationMode& ModeData = Mode.Value;

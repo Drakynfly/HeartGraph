@@ -31,6 +31,8 @@
 #include "Customizations/HeartGuidCustomization.h"
 
 #include "AssetEditor/ApplicationMode_Editor.h"
+#include "Graph/HeartEdGraphSchema.h"
+#include "Graph/Widget/ConnectionDrawingPolicies/DebugConnectionDrawingPolicy.h"
 #include "Input/HeartInputBindingAsset.h"
 
 static const FLazyName PropertyEditorModuleName("PropertyEditor");
@@ -39,6 +41,13 @@ static const FLazyName AssetSearchModuleName("AssetSearch");
 DEFINE_LOG_CATEGORY(LogHeartEditor);
 
 #define LOCTEXT_NAMESPACE "HeartEditorModule"
+
+FConnectionDrawingPolicy* MakeDefaultDrawingPolicy(const UHeartEdGraphSchema* Schema, const FConnectionDrawingPolicyCtorPack& CtorPack)
+{
+	return Schema->UEdGraphSchema::CreateConnectionDrawingPolicy(
+		CtorPack.InBackLayerID, CtorPack.InFrontLayerID, CtorPack.InZoomFactor,
+		CtorPack.InClippingRect, CtorPack.InDrawElements, CtorPack.InGraphObj);
+}
 
 void FHeartEditorModule::StartupModule()
 {
@@ -68,11 +77,17 @@ void FHeartEditorModule::StartupModule()
 		RegisterAssetIndexers();
 	}
 
-	RegisterSlateEditorWidget("Horizontal",
+	RegisterSlateEditorWidget(TEXT("Horizontal"),
 		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Horizontal>));
 
-	RegisterSlateEditorWidget("Vertical",
+	RegisterSlateEditorWidget(TEXT("Vertical"),
 		FOnGetSlateGraphWidgetInstance::CreateStatic(&SHeartGraphNodeBase::MakeInstance<SHeartGraphNode_Vertical>));
+
+	RegisterConnectionDrawingPolicy(TEXT("Default"),
+	 FOnGetDrawingPolicyInstance::CreateStatic(&MakeDefaultDrawingPolicy));
+
+	RegisterConnectionDrawingPolicy(TEXT("Debug"),
+		FOnGetDrawingPolicyInstance::CreateStatic(&Heart::AssetEditor::MakeDrawingPolicyInstance<Heart::Editor::FDebugConnectionDrawingPolicy>));
 
 	ModulesChangedHandle = FModuleManager::Get().OnModulesChanged().AddRaw(this, &FHeartEditorModule::ModulesChangesCallback);
 
@@ -147,18 +162,51 @@ TSharedPtr<SGraphNode> FHeartEditorModule::MakeSlateWidget(const FName Style, UH
 	return nullptr;
 }
 
-void FHeartEditorModule::RegisterEdGraphNode(const TSubclassOf<UHeartGraphNode> HeartClass,
-											 const TSubclassOf<UHeartEdGraphNode> EdClass)
+void FHeartEditorModule::RegisterConnectionDrawingPolicy(const FName Style, const FOnGetDrawingPolicyInstance& Callback)
+{
+	DrawingPolicyCallbacks.Add(Style, Callback);
+}
+
+void FHeartEditorModule::DeregisterConnectionDrawingPolicy(const FName Style)
+{
+	DrawingPolicyCallbacks.Remove(Style);
+}
+
+TArray<FName> FHeartEditorModule::GetDrawingPolicies() const
+{
+	TArray<FName> Out;
+	DrawingPolicyCallbacks.GenerateKeyArray(Out);
+	return Out;
+}
+
+FConnectionDrawingPolicy* FHeartEditorModule::GetDrawingPolicyInstance(const FName Style, const UHeartEdGraphSchema* Schema, const FConnectionDrawingPolicyCtorPack& CtorPack) const
+{
+	if (Style.IsNone())
+	{
+		return nullptr;
+	}
+
+	if (const FOnGetDrawingPolicyInstance* Callback = DrawingPolicyCallbacks.Find(Style))
+	{
+		return Callback->Execute(Schema, CtorPack);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Requested DrawingPolicy '%s' is not registered to module!"), *Style.ToString())
+	return nullptr;
+}
+
+void FHeartEditorModule::RegisterEdGraphNode(const TSubclassOf<UHeartGraphNode>& HeartClass,
+											 const TSubclassOf<UHeartEdGraphNode>& EdClass)
 {
 	HeartGraphNodeToEdGraphNodeClassMap.Add(HeartClass, EdClass);
 }
 
-void FHeartEditorModule::DeregisterEdGraphNode(const TSubclassOf<UHeartGraphNode> HeartClass)
+void FHeartEditorModule::DeregisterEdGraphNode(const TSubclassOf<UHeartGraphNode>& HeartClass)
 {
 	HeartGraphNodeToEdGraphNodeClassMap.Remove(HeartClass);
 }
 
-TSubclassOf<UHeartEdGraphNode> FHeartEditorModule::GetEdGraphClass(const TSubclassOf<UHeartGraphNode> HeartClass) const
+TSubclassOf<UHeartEdGraphNode> FHeartEditorModule::GetEdGraphClass(const TSubclassOf<UHeartGraphNode>& HeartClass) const
 {
 	if (!HeartGraphNodeToEdGraphNodeClassMap.IsEmpty())
 	{
@@ -223,7 +271,7 @@ void FHeartEditorModule::RegisterPropertyCustomizations()
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
-void FHeartEditorModule::RegisterCustomClassLayout(const TSubclassOf<UObject> Class, const FOnGetDetailCustomizationInstance& DetailLayout)
+void FHeartEditorModule::RegisterCustomClassLayout(const TSubclassOf<UObject>& Class, const FOnGetDetailCustomizationInstance& DetailLayout)
 {
 	if (Class)
 	{
