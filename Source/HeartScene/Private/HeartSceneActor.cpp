@@ -5,6 +5,11 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneActor)
 
+namespace Heart
+{
+	const FLazyName SceneGeneratorClass("SceneGenerator");
+}
+
 AHeartSceneActor::AHeartSceneActor()
 {
 	PrimaryActorTick.bCanEverTick = false;

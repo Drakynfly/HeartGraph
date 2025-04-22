@@ -56,5 +56,5 @@ struct FHeartGraphPinDesc
 
 namespace Heart::Graph
 {
-	static const FHeartGraphPinDesc InvalidPinDesc{NAME_None, {}, EHeartPinDirection::None};
+	inline const FHeartGraphPinDesc InvalidPinDesc{NAME_None, {}, EHeartPinDirection::None};
 }
