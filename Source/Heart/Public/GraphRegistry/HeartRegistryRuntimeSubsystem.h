@@ -28,14 +28,13 @@ class HEART_API UHeartRegistryRuntimeSubsystem : public UEngineSubsystem
 
 	friend class UGraphNodeRegistrar;
 	friend class UHeartGraphNodeRegistry;
+	friend class UHeartGraphSettings;
 	friend class UHeartRegistryEditorSubsystem;
 
 public:
 	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
-
-	void LoadFallbackRegistrar();
 
 	FHeartRegistryEventNative::RegistrationType& GetPostRegistryAddedNative() { return PostRegistryAddedNative; }
 	FHeartRegistryEventNative::RegistrationType& GetPreRegistryRemovedNative() { return PreRegistryRemovedNative; }
@@ -45,6 +44,8 @@ protected:
 	void OnFilesLoaded();
 	void OnAssetAdded(const FAssetData& AssetData);
 	void OnAssetRemoved(const FAssetData& AssetData);
+
+	void LoadFallbackRegistrar();
 
 	// Search for Registrars defined in code. This is called once on startup of this subsystem.
 	void FetchNativeRegistrars();

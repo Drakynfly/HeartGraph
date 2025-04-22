@@ -59,14 +59,6 @@ void UHeartRegistryRuntimeSubsystem::Deinitialize()
 	}
 }
 
-void UHeartRegistryRuntimeSubsystem::LoadFallbackRegistrar()
-{
-	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
-	{
-		FallbackRegistrar = Cast<UGraphNodeRegistrar>(Settings->FallbackVisualizerRegistrar.TryLoad());
-	}
-}
-
 void UHeartRegistryRuntimeSubsystem::OnFilesLoaded()
 {
 	UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running FetchAssetRegistrars: OnFilesLoaded"))
@@ -114,6 +106,14 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 				}
 			}
 		}
+	}
+}
+
+void UHeartRegistryRuntimeSubsystem::LoadFallbackRegistrar()
+{
+	if (auto&& Settings = GetDefault<UHeartGraphSettings>())
+	{
+		FallbackRegistrar = Cast<UGraphNodeRegistrar>(Settings->FallbackVisualizerRegistrar.TryLoad());
 	}
 }
 
