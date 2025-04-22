@@ -47,11 +47,11 @@ protected:
 	void BP_Deregister(UHeartGraphNodeRegistry* Registry) const;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphNodeRegistrar")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphNodeRegistrar", meta = (ShowOnlyInnerProperties))
 	FHeartRegistryClassLists ClassLists;
 
 	UE_DEPRECATED(5.5, "use ClassLists instead (switching to soft classes)")
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY()
 	FHeartRegistrationClasses Registration;
 
 	// Classes to register this registrar for automatically. If this is empty, it must be manually added to the Registry

@@ -52,6 +52,8 @@ void UGraphNodeRegistrar::PostLoad()
 				List.ConnectionVisualizers.Add(ConnectionVisualizer.Get());
 			}
 		}
+		Registration.GraphPinLists.Reset();
+		(void)MarkPackageDirty();
 	}
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }

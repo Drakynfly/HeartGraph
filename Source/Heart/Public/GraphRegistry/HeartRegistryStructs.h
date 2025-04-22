@@ -75,18 +75,6 @@ struct FHeartRegistrationClasses
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HeartRegistrationClasses", meta = (ForceInlineRow))
 	TMap<FHeartGraphPinTag, FHeartPinClassList> GraphPinLists;
-
-	UE_DEPRECATED(5.3, "Use GraphNodeLists.Objects instead")
-	UPROPERTY(EditAnywhere)
-	TMap<TSubclassOf<UHeartGraphNode>, FHeartObjectList> IndividualObjects;
-
-	UE_DEPRECATED(5.3, "Use GraphNodeLists.Visualizers instead")
-	UPROPERTY(EditAnywhere)
-	TArray<TObjectPtr<UClass>> NodeVisualizerClasses;
-
-	UE_DEPRECATED(5.3, "Use GraphPinLists.PinVisualizers instead")
-	UPROPERTY(EditAnywhere)
-	TArray<TObjectPtr<UClass>> PinVisualizerClasses;
 };
 
 
