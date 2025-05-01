@@ -4,6 +4,7 @@
 
 #include "BloodValue.h"
 #include "BloodContainer.h"
+#include "GameFramework/PlayerController.h"
 #include "Misc/AutomationTest.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(BloodContainerTest,

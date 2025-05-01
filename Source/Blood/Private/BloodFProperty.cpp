@@ -5,6 +5,8 @@
 #include "BloodValue.h"
 #include "BloodPrecomputedMaps.h"
 
+#include "UObject/TextProperty.h"
+
 namespace Blood::Impl
 {
 	template <typename TPropType>

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "UObject/Field.h"
 #include "Containers/Map.h"
 
 struct FBloodValue;

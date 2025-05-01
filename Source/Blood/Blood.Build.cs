@@ -29,7 +29,7 @@ public class Blood : ModuleRules
 
     public static void ApplySharedModuleSetup(ModuleRules Module, ReadOnlyTargetRules Target)
     {
-        Module.PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+        Module.PCHUsage = PCHUsageMode.NoPCHs;
         Module.DefaultBuildSettings = BuildSettingsVersion.Latest;
         Module.IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 
@@ -39,6 +39,8 @@ public class Blood : ModuleRules
         {
             Module.bUseUnity = false;
             Module.bTreatAsEngineModule = true;
+            Module.bEnableNonInlinedGenCppWarnings = true;
+            Module.UnsafeTypeCastWarningLevel = WarningLevel.Warning;
         }
     }
 }

@@ -6,6 +6,7 @@
 
 #include "BloodData.h"
 #include "BloodFProperty.h"
+#include "EdGraph/EdGraphPin.h"
 
 #include "BloodProperty.generated.h"
 

@@ -5,6 +5,7 @@
 #include "StructUtils/PropertyBag.h"
 #include "Concepts/BaseStructureProvider.h"
 #include "Concepts/VariantStructureProvider.h"
+#include "Templates/SubclassOf.h"
 
 #include "BloodData.generated.h"
 

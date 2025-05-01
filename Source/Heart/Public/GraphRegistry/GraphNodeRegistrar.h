@@ -27,8 +27,10 @@ public:
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
 
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	UE_DEPRECATED(5.5, "use ClassLists instead (switching to soft classes)")
 	const FHeartRegistrationClasses& GetRegistrationList() const { return Registration; }
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	const FHeartRegistryClassLists& GetClassLists() const { return ClassLists; }
 

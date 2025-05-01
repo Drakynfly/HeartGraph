@@ -4,6 +4,8 @@
 
 #include "BloodValue.h"
 
+#include "UObject/TextProperty.h"
+
 namespace Blood
 {
 	template <typename T>
