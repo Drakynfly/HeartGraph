@@ -36,12 +36,12 @@ struct FHeartGraphPinReference
 	{
 		return Ar << V.NodeGuid << V.PinGuid;
 	}
-};
 
-FORCEINLINE uint32 GetTypeHash(const FHeartGraphPinReference& PinReference)
-{
-	return HashCombineFast(GetTypeHash(PinReference.NodeGuid), GetTypeHash(PinReference.PinGuid));
-}
+	FORCEINLINE friend uint32 GetTypeHash(const FHeartGraphPinReference& PinReference)
+	{
+		return HashCombineFast(GetTypeHash(PinReference.NodeGuid), GetTypeHash(PinReference.PinGuid));
+	}
+};
 
 USTRUCT(BlueprintType)
 struct FHeartGraphPinConnections

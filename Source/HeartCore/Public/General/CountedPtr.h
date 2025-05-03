@@ -48,7 +48,7 @@ namespace Heart::Containers
 
 		friend bool operator!=(const TCountedWeakPtr& Lhs, const TCountedWeakPtr& Rhs) { return !(Lhs == Rhs); }
 
-		friend uint32 GetTypeHash(TCountedWeakPtr Value)
+		FORCEINLINE friend uint32 GetTypeHash(TCountedWeakPtr Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
@@ -90,7 +90,7 @@ namespace Heart::Containers
 
 		friend bool operator!=(const TCountedPtr& Lhs, const TCountedPtr& Rhs) { return !(Lhs == Rhs); }
 
-		friend uint32 GetTypeHash(TCountedPtr Value)
+		FORCEINLINE friend uint32 GetTypeHash(TCountedPtr Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
@@ -146,7 +146,7 @@ namespace Heart::Containers
 
 		friend bool operator!=(const TCountedWeakClassPtr& Lhs, const TCountedWeakClassPtr& Rhs) { return !(Lhs == Rhs); }
 
-		friend uint32 GetTypeHash(TCountedWeakClassPtr Value)
+		FORCEINLINE friend uint32 GetTypeHash(TCountedWeakClassPtr Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}

@@ -81,7 +81,7 @@ public:
 		return !(Lhs == Rhs);
 	}
 
-	friend uint32 GetTypeHash(const FHeartNodeSource SourceObject)
+	FORCEINLINE friend uint32 GetTypeHash(const FHeartNodeSource SourceObject)
 	{
 		return GetTypeHash(SourceObject.NodeObj);
 	}

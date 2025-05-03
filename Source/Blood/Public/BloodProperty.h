@@ -70,7 +70,7 @@ struct BLOOD_API FBloodProperty
 		return PropName != Other;
 	}
 
-	friend uint32 GetTypeHash(const FBloodProperty& BloodType)
+	FORCEINLINE friend uint32 GetTypeHash(const FBloodProperty& BloodType)
 	{
 		return GetTypeHash(BloodType.PropName);
 	}

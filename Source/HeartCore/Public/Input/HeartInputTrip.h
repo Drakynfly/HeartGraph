@@ -64,7 +64,7 @@ namespace Heart::Input
 		{}
 
 		FInputTrip(const FPointerEvent& PointerEvent, const ETripType Type)
-		  :	Type(Type),
+		  : Type(Type),
 			Key(PointerEvent.GetEffectingButton().IsValid() ? PointerEvent.GetEffectingButton() : *PointerEvent.GetPressedButtons().CreateConstIterator()),
 			ModifierMask(EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown()))
 		{}
@@ -75,7 +75,7 @@ namespace Heart::Input
 		    ModifierMask(ModifierKeysFromState(FSlateApplication::Get().GetModifierKeys()))
 		{}
 
-		FInputTrip(FName ManualEvent)
+		FInputTrip(const FName ManualEvent)
 		  : Type(Manual),
 			CustomKey(ManualEvent)
 		{}
@@ -102,15 +102,15 @@ namespace Heart::Input
 		{
 			return !(Lhs == Rhs);
 		}
-	};
 
-	FORCEINLINE uint32 GetTypeHash(const FInputTrip& Trip)
-	{
-		uint32 KeyHash = 0;
-		KeyHash = HashCombineFast(KeyHash, ::GetTypeHash(Trip.Type));
-		KeyHash = HashCombineFast(KeyHash, GetTypeHash(Trip.Key));
-		KeyHash = HashCombineFast(KeyHash, ::GetTypeHash(Trip.ModifierMask));
-		KeyHash = HashCombineFast(KeyHash, GetTypeHash(Trip.CustomKey));
-		return KeyHash;
-	}
+		FORCEINLINE friend uint32 GetTypeHash(const FInputTrip& Trip)
+		{
+			uint32 KeyHash = 0;
+			KeyHash = HashCombineFast(KeyHash, ::GetTypeHash(Trip.Type));
+			KeyHash = HashCombineFast(KeyHash, GetTypeHash(Trip.Key));
+			KeyHash = HashCombineFast(KeyHash, ::GetTypeHash(Trip.ModifierMask));
+			KeyHash = HashCombineFast(KeyHash, GetTypeHash(Trip.CustomKey));
+			return KeyHash;
+		}
+	};
 }

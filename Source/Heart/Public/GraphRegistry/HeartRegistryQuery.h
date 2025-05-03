@@ -29,7 +29,7 @@ namespace Heart::Query
 
 		friend bool operator!=(const FRegistryKey& Lhs, const FRegistryKey& Rhs) { return !(Lhs == Rhs); }
 
-		friend uint32 GetTypeHash(const FRegistryKey& Key)
+		FORCEINLINE friend uint32 GetTypeHash(const FRegistryKey& Key)
 		{
 			return HashCombineFast(GetTypeHash(Key.RootIndex),
 				HashCombineFast(GetTypeHash(Key.NodesIndex),
