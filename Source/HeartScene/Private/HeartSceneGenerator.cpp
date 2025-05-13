@@ -4,6 +4,7 @@
 
 #include "HeartSceneModule.h"
 #include "HeartSceneNode.h"
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "Model/HeartGraph.h"
@@ -111,7 +112,7 @@ TSubclassOf<UHeartSceneNode> UHeartSceneGenerator::GetVisualClassForNode(const U
 		return nullptr;
 	}
 
-	return RegistrySubsystem->GetNodeRegistry(Graph->GetSchema()->GetClass())
+	return RegistrySubsystem->GetNodeRegistryForGraph(Graph)
 								->GetVisualizerClassForGraphNode<UHeartSceneNode>(GraphNode->GetClass());
 }
 

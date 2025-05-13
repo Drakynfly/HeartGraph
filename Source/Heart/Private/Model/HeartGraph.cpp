@@ -676,6 +676,8 @@ bool UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
 			DEPRECATED API
 	----------------------------*/
 
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
+
 UHeartGraphNode* UHeartGraph::CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location)
 {
 	if (!ensure(IsValid(NodeClass)))

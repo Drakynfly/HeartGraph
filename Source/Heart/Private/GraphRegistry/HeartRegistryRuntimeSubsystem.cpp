@@ -6,6 +6,7 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 
+#include "Model/HeartGraph.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include "HeartGraphSettings.h"
@@ -193,7 +194,10 @@ UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(co
 
 	if (auto&& FoundRegistry = Registries.Find(Path))
 	{
-		return *FoundRegistry;
+		if (ensure(IsValid(*FoundRegistry)))
+		{
+			return *FoundRegistry;
+		}
 	}
 
 	const UClass* RegistryClass = GetDefault<UHeartGraphSchema>(Class)->GetRegistryClass();
@@ -326,6 +330,13 @@ UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetNodeRegistry(const T
 		return GetRegistry_Internal(Class);
 	}
 	return nullptr;
+}
+
+UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetNodeRegistryForGraph(const UHeartGraph* Graph)
+{
+	if (!IsValid(Graph) || !Graph->GetSchema()) return nullptr;
+	UClass* Class = Graph->GetSchema()->GetClass();
+	return GetNodeRegistry(Class);
 }
 
 void UHeartRegistryRuntimeSubsystem::AddToRegistry(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraphSchema> To)

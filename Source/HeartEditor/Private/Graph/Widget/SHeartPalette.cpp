@@ -137,7 +137,7 @@ FText SHeartPaletteItem::GetItemTooltip() const
 	return ActionPtr.Pin()->GetTooltipDescription();
 }
 
-void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> InHeartGraphAssetEditor)
+void SHeartPalette::Construct(const FArguments& InArgs, const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& InHeartGraphAssetEditor)
 {
 	HeartGraphAssetEditorPtr = InHeartGraphAssetEditor;
 
@@ -149,7 +149,7 @@ void SHeartPalette::Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEdi
 	}
 
 	UEdGraph* EdGraph = nullptr;
-	if (auto&& HeartGraph = InHeartGraphAssetEditor.Pin()->GetHeartGraph())
+	if (auto&& HeartGraph = InHeartGraphAssetEditor->GetHeartGraph())
 	{
 		EdGraph = HeartGraph->GetEdGraph();
 	}

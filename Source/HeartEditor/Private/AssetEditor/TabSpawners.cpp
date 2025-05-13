@@ -76,7 +76,7 @@ namespace Heart::AssetEditor
 
 	const FLazyName FNodePaletteSummoner::TabId("Heart_AssetEditor_NodePalette");
 
-	FNodePaletteSummoner::FNodePaletteSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated)
+	FNodePaletteSummoner::FNodePaletteSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor, const FOnPaletteCreated& InOnPaletteCreated)
 	  : FWorkflowTabFactory(TabId, AssetEditor)
 	{
 		TabLabel = LOCTEXT("NodePaletteTabLabel", "Palette");
@@ -86,7 +86,7 @@ namespace Heart::AssetEditor
 		ViewMenuDescription = LOCTEXT("NodePalette_Description", "");
 		ViewMenuTooltip = LOCTEXT("NodePalette_ToolTip", "");
 
-		HeartPalette = SNew(SHeartPalette, AssetEditor);
+		HeartPalette = SNew(SHeartPalette, AssetEditor.ToSharedRef());
 		InOnPaletteCreated.Execute(HeartPalette.ToSharedRef());
 	}
 

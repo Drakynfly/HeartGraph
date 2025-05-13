@@ -38,20 +38,13 @@ namespace Heart::Query
 	};
 
 	// A single registered node/graph pair value
-	struct FRegistryValue
-	{
-		FHeartNodeSource Source;
-		TObjectPtr<UClass> GraphNode;
-	};
-
-	// A single registered node/graph pair value
 	struct FRegistryPair
 	{
 		FRegistryKey Key;
-		FRegistryValue Value;
+		FHeartNodeArchetype Value;
 	};
 
-	class HEART_API FRegistryQueryResult : public TMapQueryBase<FRegistryQueryResult, FRegistryKey, FRegistryValue>
+	class HEART_API FRegistryQueryResult : public TMapQueryBase<FRegistryQueryResult, FRegistryKey, FHeartNodeArchetype>
 	{
 		friend TMapQueryBase;
 		friend UHeartGraphNodeRegistry;
@@ -151,7 +144,7 @@ namespace Heart::Query
 
 		public:
 			FRegistryKey Key;
-			FRegistryValue Value;
+			FHeartNodeArchetype Value;
 
 		private:
 			const UHeartGraphNodeRegistry* Registry;
@@ -181,7 +174,7 @@ namespace Heart::Query
 
 		int32 SrcNum() const { return CachedNum; }
 
-		FRegistryValue operator[](const FRegistryKey Key) const;
+		FHeartNodeArchetype operator[](const FRegistryKey Key) const;
 
 		FIterator begin() const { return FIterator(Registry.Get()); }
 		FIterator end  () const { return FIterator(); }

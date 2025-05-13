@@ -11,6 +11,7 @@
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
 
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "EdGraph/EdGraph.h"
@@ -258,8 +259,9 @@ void UHeartEdGraphSchema::CreateDefaultNodesForGraph(UEdGraph& Graph) const
 
 TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(const UHeartGraph* GraphAsset)
 {
-	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetNodeRegistry(GraphAsset->GetSchema()->GetClass());
-	auto&& SortedCategories = Registry->GetNodeCategories();
+	UHeartGraphNodeRegistry* Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetNodeRegistryForGraph(GraphAsset);
+	check(Registry != nullptr);
+	TArray<FString> SortedCategories = Registry->GetNodeCategories();
 
 	// create list of categories
 	TArray<TSharedPtr<FString>> Result;
@@ -274,7 +276,7 @@ TArray<TSharedPtr<FString>> UHeartEdGraphSchema::GetHeartGraphNodeCategories(con
 
 void UHeartEdGraphSchema::GetHeartGraphNodeActions(FGraphActionMenuBuilder& ActionMenuBuilder, const UHeartGraph* GraphAsset, const TOptional<FStringView>& CategoryName)
 {
-	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetNodeRegistry(GraphAsset->GetSchema()->GetClass());
+	auto&& Registry = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>()->GetNodeRegistryForGraph(GraphAsset);
 
 	Registry->ForEachNodeObjectClass(
 		[&CategoryName, &ActionMenuBuilder](const FHeartNodeArchetype& Archetype)

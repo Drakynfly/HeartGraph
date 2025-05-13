@@ -3,14 +3,14 @@
 #include "UMG/HeartGraphCanvasNode.h"
 
 #include "HeartCanvasPrivate.h"
-#include "UMG/HeartGraphCanvasPin.h"
 #include "UMG/HeartGraphCanvas.h"
+#include "UMG/HeartGraphCanvasConnection.h"
+#include "UMG/HeartGraphCanvasPin.h"
 
 #include "Model/HeartGraph.h"
 
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
-#include "ModelView/HeartGraphSchema.h"
-#include "UMG/HeartGraphCanvasConnection.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvasNode)
 
@@ -169,8 +169,7 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid
 	}
 
 	auto&& NodeRegistrySubsystem = GEngine->GetEngineSubsystem<UHeartRegistryRuntimeSubsystem>();
-	UClass* SchemaClass = GetCanvas()->GetGraph()->GetSchema()->GetClass();
-	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetNodeRegistry(SchemaClass);
+	auto&& CanvasGraphRegistry = NodeRegistrySubsystem->GetNodeRegistryForGraph(GetCanvas()->GetGraph());
 	const TSubclassOf<UHeartGraphCanvasPin> PinVisualizer = CanvasGraphRegistry->GetVisualizerClassForGraphPin<UHeartGraphCanvasPin>(Desc);
 
 	if (IsValid(PinVisualizer))

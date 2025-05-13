@@ -31,7 +31,7 @@ public:
 	SLATE_BEGIN_ARGS(SHeartPalette) {}
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, TWeakPtr<Heart::AssetEditor::FHeartGraphEditor> InHeartGraphAssetEditor);
+	void Construct(const FArguments& InArgs, const TSharedRef<Heart::AssetEditor::FHeartGraphEditor>& InHeartGraphAssetEditor);
 	virtual ~SHeartPalette() override;
 
 	void RequestRefresh();

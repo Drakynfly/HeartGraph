@@ -5,6 +5,7 @@
 #include "HeartEditorModule.h"
 #include "General/HeartGeneralUtils.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Nodes/HeartEdGraphNode.h"
 #include "View/HeartVisualizerInterfaces.h"

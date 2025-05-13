@@ -11,15 +11,15 @@
 #include "HeartCanvasConnectionVisualizer.h"
 #include "HeartWidgetUtilsLibrary.h"
 #include "Model/HeartGraph.h"
+#include "ModelView/HeartLayoutHelper.h"
 
+#include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
 #include "General/HeartMath.h"
 
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-#include "ModelView/HeartGraphSchema.h"
-#include "ModelView/HeartLayoutHelper.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphCanvas)
 
@@ -587,7 +587,7 @@ TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Impl
 		return nullptr;
 	}
 
-	auto&& CanvasGraphRegistry = RegistrySubsystem->GetNodeRegistry(DisplayedGraph->GetSchema()->GetClass());
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetNodeRegistryForGraph(DisplayedGraph.Get());
 	if (!IsValid(CanvasGraphRegistry))
 	{
 		return nullptr;
@@ -609,7 +609,7 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForCon
 		return nullptr;
 	}
 
-	auto&& CanvasGraphRegistry = RegistrySubsystem->GetNodeRegistry(DisplayedGraph->GetSchema()->GetClass());
+	auto&& CanvasGraphRegistry = RegistrySubsystem->GetNodeRegistryForGraph(DisplayedGraph.Get());
 	if (!IsValid(CanvasGraphRegistry))
 	{
 		return nullptr;

@@ -55,7 +55,7 @@ namespace Heart::AssetEditor
 	{
 		static const FLazyName TabId;
 
-		FNodePaletteSummoner(TSharedPtr<FHeartGraphEditor> AssetEditor, const FOnPaletteCreated& InOnPaletteCreated);
+		FNodePaletteSummoner(const TSharedPtr<FHeartGraphEditor>& AssetEditor, const FOnPaletteCreated& InOnPaletteCreated);
 
 		virtual TSharedRef<SWidget> CreateTabBody(const FWorkflowTabSpawnInfo& Info) const override;
 		virtual FText GetTabToolTipText(const FWorkflowTabSpawnInfo& Info) const override;

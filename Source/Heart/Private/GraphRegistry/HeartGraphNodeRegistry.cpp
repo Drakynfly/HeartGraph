@@ -137,13 +137,16 @@ void UHeartGraphNodeRegistry::AddRegistrationList(const FHeartRegistryClassLists
 				}
 
 				// @todo allow this to be async
-				UAssetManager::GetStreamableManager().RequestSyncLoad(ObjectPaths);
-				for (auto&& ObjectPath : ObjectPaths)
+				if (!ObjectPaths.IsEmpty())
 				{
-					if (UObject* Obj = ObjectPath.ResolveObject();
-						IsValid(Obj))
+					UAssetManager::GetStreamableManager().RequestSyncLoad(ObjectPaths);
+					for (auto&& ObjectPath : ObjectPaths)
 					{
-						NodeRootTable.FindOrAdd(FHeartNodeSource(Obj)).NodeClasses.Inc(GraphNodeClass);
+						if (UObject* Obj = ObjectPath.ResolveObject();
+							IsValid(Obj))
+						{
+							NodeRootTable.FindOrAdd(FHeartNodeSource(Obj)).NodeClasses.Inc(GraphNodeClass);
+						}
 					}
 				}
 			}
@@ -332,11 +335,15 @@ Heart::Query::FRegistryQueryResult UHeartGraphNodeRegistry::QueryRegistry() cons
 
 void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(const FHeartNodeArchetype&)>& Iter) const
 {
-	for (auto&& It : Heart::Query::FRegistryQueryResult::FRange(this))
+	for (Heart::Query::FRegistryPair&& It : Heart::Query::FRegistryQueryResult::FRange(this))
 	{
-		checkSlow(IsValid(It.Value.GraphNode));
-		checkSlow(It.Value.Source.IsValid());
-		if (!Iter({It.Value.GraphNode, It.Value.Source}))
+		if (!ensure(IsValid(It.Value.GraphNode)) ||
+			!ensure(It.Value.Source.IsValid()))
+		{
+			continue;
+		}
+
+		if (!Iter(It.Value))
 		{
 			return;
 		}

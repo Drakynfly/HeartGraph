@@ -15,13 +15,13 @@ namespace Heart::Query
 	{
 	}
 
-	FRegistryValue FRegistryQueryResult::operator[](const FRegistryKey Key) const
+	FHeartNodeArchetype FRegistryQueryResult::operator[](const FRegistryKey Key) const
 	{
 		auto&& Entry = Registry->NodeRootTable.Get(FSetElementId::FromInteger(Key.RootIndex));
 
-		return FRegistryValue{
-			Key.RecursiveIndex != INDEX_NONE ? FHeartNodeSource(Entry.Value.RecursiveChildren[Key.RecursiveIndex]) : Entry.Key,
-			Entry.Value.NodeClasses.Classes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get()};
+		return FHeartNodeArchetype{
+			Entry.Value.NodeClasses.Classes[FSetElementId::FromInteger(Key.NodesIndex)].Obj.Get(),
+			Key.RecursiveIndex != INDEX_NONE ? FHeartNodeSource(Entry.Value.RecursiveChildren[Key.RecursiveIndex]) : Entry.Key};
 	}
 }
 
@@ -40,7 +40,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 	Query.Enable(Heart::Query::ProjectionCache);
 
 	Query.Filter(
-	[&](const Heart::Query::FRegistryValue& Value)
+	[&](const FHeartNodeArchetype& Value)
 		{
 			struct FProcessEventMemory
 			{
@@ -103,7 +103,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 	Results.Reserve(Query.Num());
 
 	Query.ForEach(
-		[&Results](const Heart::Query::FRegistryValue& Value)
+		[&Results](const FHeartNodeArchetype& Value)
 		{
 			Results.Emplace(Value.GraphNode, Value.Source);
 		});

@@ -6,11 +6,10 @@
 
 #include "Templates/SubclassOf.h"
 
-#include "HeartGraphNodeRegistry.h"
-#include "Model/HeartGraph.h"
-
 #include "HeartRegistryRuntimeSubsystem.generated.h"
 
+class UHeartGraph;
+class UHeartGraphSchema;
 HEART_API DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
 class UHeartGraphNodeRegistry;
@@ -80,12 +79,15 @@ public:
 	UHeartGraphNodeRegistry* GetNodeRegistry(const TSubclassOf<UHeartGraphSchema> Class);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
+	UHeartGraphNodeRegistry* GetNodeRegistryForGraph(const UHeartGraph* Graph);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void AddToRegistry(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraphSchema> To);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void RemoveFromRegistry(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraphSchema> From);
 
-	UE_DEPRECATED(5.5, "Use GetNodeRegistry instead (with schema class)")
+	UE_DEPRECATED(5.5, "Use GetNodeRegistry or GetNodeRegistryForGraph instead (with schema class)")
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
 

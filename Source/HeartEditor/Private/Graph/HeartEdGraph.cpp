@@ -20,6 +20,12 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraph)
 
+static TAutoConsoleVariable<bool> CVarCreateDebugLinkerAction(
+	TEXT("Heart.CreateDebugLinkerAction"),
+	false,
+	TEXT("Create a basic Heart Action called \"Debug Action\" in new HeartEdGraphs.")
+);
+
 FText UHeartEditorDebugAction::GetDescription(const UObject* Target) const
 {
 	return FText::FromStringView(TEXTVIEW("Debug Action"));
@@ -171,19 +177,22 @@ void UHeartEdGraph::CreateSlateInputLinker()
 
 	SlateInputLinker = NewObject<UHeartSlateInputLinker>(this, InputLinkerClass);
 
-	FHeartBoundInput DebugInput;
+	if (CVarCreateDebugLinkerAction.GetValueOnGameThread())
+	{
+		FHeartBoundInput DebugInput;
 
-	// Create debug trigger
-	FHeartInputTrigger_Manual Trigger;
-	Trigger.Keys.Add(FName(TEXT("A")));
-	DebugInput.Triggers.Add(FInstancedStruct::Make(Trigger));
+		// Create debug trigger
+		FHeartInputTrigger_Manual Trigger;
+		Trigger.Keys.Add(FName(TEXT("A")));
+		DebugInput.Triggers.Add(FInstancedStruct::Make(Trigger));
 
-	// Create debug action
-	UHeartInputHandler_Action* DebugAction = NewObject<UHeartInputHandler_Action>();
-	DebugAction->SetAction(UHeartEditorDebugAction::StaticClass());
-	DebugInput.InputHandler = DebugAction;
+		// Create debug action
+		UHeartInputHandler_Action* DebugAction = NewObject<UHeartInputHandler_Action>();
+		DebugAction->SetAction(UHeartEditorDebugAction::StaticClass());
+		DebugInput.InputHandler = DebugAction;
 
-	SlateInputLinker->AddBindings({DebugInput});
+		SlateInputLinker->AddBindings({DebugInput});
+	}
 }
 
 void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
