@@ -5,7 +5,6 @@
 #include "InputCoreTypes.h"
 #include "StructUtils/InstancedStruct.h"
 #include "Concepts/BaseStructureProvider.h"
-#include "GameFramework/PlayerInput.h"
 #include "HeartInputActivation.generated.h"
 
 struct FBloodContainer;
@@ -23,17 +22,17 @@ struct FHeartManualEvent
 	double EventValue = 0.0;
 };
 
-// Wrapper around FInputKeyParams
+// Wrapper around FInputKeyEventArgs
 USTRUCT(BlueprintType)
-struct FHeartInputKeyParams
+struct FHeartInputKeyEventArgs
 {
 	GENERATED_BODY()
 
-	FHeartInputKeyParams() = default;
-	FHeartInputKeyParams(const FInputKeyParams& Params)
-	  : Params(Params) {}
+	FHeartInputKeyEventArgs() = default;
+	FHeartInputKeyEventArgs(const FInputKeyEventArgs& Args)
+	  : Args(Args) {}
 
-	FInputKeyParams Params;
+	FInputKeyEventArgs Args;
 };
 
 // Flag struct to mark an InputActivation as a redo
@@ -54,7 +53,7 @@ struct TIsHeartInputActivationType
 template <> struct TIsHeartInputActivationType<FHeartManualEvent>	{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FKeyEvent>			{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FPointerEvent>		{ static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FInputKeyParams>		{ static constexpr bool Value = true; };
+template <> struct TIsHeartInputActivationType<FInputKeyEventArgs>	{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FHeartActionIsRedo>	{ static constexpr bool Value = true; };
 
 /**
@@ -74,9 +73,9 @@ struct HEARTCORE_API FHeartInputActivation
 	>
 	FHeartInputActivation(const T& Type)
 	{
-		if constexpr (std::is_same_v<T, FInputKeyParams>)
+		if constexpr (std::is_same_v<T, FInputKeyEventArgs>)
 		{
-			EventStruct.InitializeAs<FHeartInputKeyParams>(Type);
+			EventStruct.InitializeAs<FHeartInputKeyEventArgs>(Type);
 		}
 		else
 		{
@@ -90,12 +89,12 @@ struct HEARTCORE_API FHeartInputActivation
 	>
 	TOptional<T> As() const
 	{
-		if constexpr (std::is_same_v<T, FInputKeyParams> ||
-					  std::is_same_v<T, FHeartInputKeyParams>)
+		if constexpr (std::is_same_v<T, FInputKeyEventArgs> ||
+					  std::is_same_v<T, FHeartInputKeyEventArgs>)
 		{
-			if (EventStruct.GetScriptStruct() == FHeartInputKeyParams::StaticStruct())
+			if (EventStruct.GetScriptStruct() == FHeartInputKeyEventArgs::StaticStruct())
 			{
-				return EventStruct.Get<FHeartInputKeyParams>().Params;
+				return EventStruct.Get<FHeartInputKeyEventArgs>().Args;
 			}
 		}
 

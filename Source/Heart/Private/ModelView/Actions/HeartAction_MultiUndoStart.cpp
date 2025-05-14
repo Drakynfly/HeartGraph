@@ -17,7 +17,7 @@ FText UHeartAction_MultiUndoStart::GetDescription(const UObject* Target) const
 
 FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments& Arguments) const
 {
-	checkfSlow(Activation.IsRedoAction(), TEXT("UHeartAction_MultiUndoStart should only be executed as a Redo!"))
+	checkfSlow(Arguments.Activation.IsRedoAction(), TEXT("UHeartAction_MultiUndoStart should only be executed as a Redo!"))
 
 	auto Interface = Cast<IHeartGraphInterface>(Arguments.Target);
 	if (!Interface)

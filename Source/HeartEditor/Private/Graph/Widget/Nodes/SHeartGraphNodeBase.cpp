@@ -74,7 +74,7 @@ void SHeartGraphNodeBase::GetOverlayBrushes(bool bSelected, const FVector2D Widg
 		if (HeartEdGraphNode->NodeBreakpoint.bBreakpointHit)
 		{
 			NodeBrush.Brush = FHeartEditorStyle::Get()->GetBrush(TEXT("HeartGraph.BreakpointHit"));
-			NodeBrush.OverlayOffset.X = WidgetSize.X - 12.0f;
+			NodeBrush.OverlayOffset.X = WidgetSize.X - 12.f;
 		}
 		else
 		{
@@ -83,7 +83,7 @@ void SHeartGraphNodeBase::GetOverlayBrushes(bool bSelected, const FVector2D Widg
 		}
 
 		NodeBrush.OverlayOffset.Y = -NodeBrush.Brush->ImageSize.Y;
-		NodeBrush.AnimationEnvelope = FVector2D(0.f, 10.f);
+		NodeBrush.AnimationEnvelope = FVector2f(0.f, 10.f);
 		Brushes.Add(NodeBrush);
 	}
 
@@ -298,8 +298,8 @@ void SHeartGraphNodeBase::CreateCommentBubble()
 			.IsGraphNodeHovered(this, &SGraphNode::IsHovered);
 
 		GetOrAddSlot(ENodeZone::TopCenter)
-			.SlotOffset(TAttribute<FVector2D>(CommentBubble.Get(), &SCommentBubble::GetOffset))
-			.SlotSize(TAttribute<FVector2D>(CommentBubble.Get(), &SCommentBubble::GetSize))
+			.SlotOffset2f(TAttribute<FVector2f>(CommentBubble.Get(), &SCommentBubble::GetOffset2f))
+			.SlotSize2f(TAttribute<FVector2f>(CommentBubble.Get(), &SCommentBubble::GetSize2f))
 			.AllowScaling(TAttribute<bool>(CommentBubble.Get(), &SCommentBubble::IsScalingAllowed))
 			.VAlign(VAlign_Top)
 			[

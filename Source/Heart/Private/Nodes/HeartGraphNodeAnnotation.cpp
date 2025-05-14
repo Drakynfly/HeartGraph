@@ -46,8 +46,8 @@ FText UHeartGraphNodeAnnotation::GetNodeCategory_Implementation(const UObject* N
 UHeartGraphNodeAnnotation_Image::UHeartGraphNodeAnnotation_Image()
 {
 #if WITH_EDITORONLY_DATA
-	GetHeartGraphNodeSparseClassData()->OverrideCanCreateInEditor = true;
-	GetHeartGraphNodeSparseClassData()->CanCreateInEditor = true;
+	GetMutableHeartGraphNodeSparseClassData()->OverrideCanCreateInEditor = true;
+	GetMutableHeartGraphNodeSparseClassData()->CanCreateInEditor = true;
 #endif
 }
 

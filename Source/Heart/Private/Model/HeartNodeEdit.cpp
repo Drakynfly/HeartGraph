@@ -11,7 +11,7 @@ namespace Heart::API
 														const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
-		checkSlow(IsValid(NodeObject));
+		checkSlow(IsValid(NodeObjectClass));
 
 		UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(Graph, GraphNodeClass);
 		NewGraphNode->Guid = FHeartNodeGuid::New();

@@ -6,7 +6,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPlayerInput)
 
-bool UHeartPlayerInput::InputKey(const FInputKeyParams& Params)
+bool UHeartPlayerInput::InputKey(const FInputKeyEventArgs& Params)
 {
 	class AStupidHackPlayerController : APlayerController
 	{

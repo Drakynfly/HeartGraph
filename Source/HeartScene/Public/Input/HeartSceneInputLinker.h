@@ -14,7 +14,7 @@ class HEARTSCENE_API UHeartSceneInputLinker : public UHeartInputLinkerBase
 	GENERATED_BODY()
 
 public:
-	virtual bool InputKey(USceneComponent* Target, const FInputKeyParams& Params);
+	virtual bool InputKey(USceneComponent* Target, const FInputKeyEventArgs& Params);
 };
 
 

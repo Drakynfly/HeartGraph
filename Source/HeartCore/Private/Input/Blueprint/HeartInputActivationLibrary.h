@@ -21,8 +21,8 @@ enum class EHeartInputActivationType : uint8
 	// This Activation was triggered by a KeyEvent
 	KeyEvent,
 
-	// This Activation was triggered by InputKeyParams
-	InputKeyParams,
+	// This Activation was triggered by InputKeyEventArgs
+	InputKeyEventArgs,
 
 	// This Activation was triggered by a PointerEvent
 	PointerEvent,
@@ -53,5 +53,5 @@ public:
 	static FPointerEvent ActivationToPointerEvent(const FHeartInputActivation& Activation);
 
 	UFUNCTION(BlueprintPure, Category = "Heart|InputActivation")
-	static FHeartInputKeyParams ActivationToInputKeyParams(const FHeartInputActivation& Activation);
+	static FHeartInputKeyEventArgs ActivationToInputKeyParams(const FHeartInputActivation& Activation);
 };

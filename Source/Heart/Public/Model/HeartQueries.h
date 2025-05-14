@@ -566,7 +566,7 @@ namespace Heart::Query
 				{
 					Results->Emplace(Element.Key);
 				}
-				checkSlow(Results->Num() = RefNum())
+				checkSlow(Results->Num() == RefNum())
 			}
 		}
 

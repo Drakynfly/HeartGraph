@@ -9,7 +9,7 @@ EHeartInputActivationType UHeartInputActivationLibrary::GetActivationType(const 
 	auto&& Struct = Activation.GetScriptStruct();
 	if (Struct == FKeyEvent::StaticStruct()) return EHeartInputActivationType::KeyEvent;
 	if (Struct == FPointerEvent::StaticStruct()) return EHeartInputActivationType::PointerEvent;
-	if (Struct == FHeartInputKeyParams::StaticStruct()) return EHeartInputActivationType::InputKeyParams;
+	if (Struct == FHeartInputKeyEventArgs::StaticStruct()) return EHeartInputActivationType::InputKeyEventArgs;
 	if (Struct == FHeartManualEvent::StaticStruct()) return EHeartInputActivationType::Manual;
 	if (Struct == FHeartActionIsRedo::StaticStruct()) return EHeartInputActivationType::Redo;
 	return EHeartInputActivationType::Invalid;
@@ -41,7 +41,7 @@ FPointerEvent UHeartInputActivationLibrary::ActivationToPointerEvent(const FHear
 	return Activation.AsOrDefault<FPointerEvent>();
 }
 
-FHeartInputKeyParams UHeartInputActivationLibrary::ActivationToInputKeyParams(const FHeartInputActivation& Activation)
+FHeartInputKeyEventArgs UHeartInputActivationLibrary::ActivationToInputKeyParams(const FHeartInputActivation& Activation)
 {
-	return Activation.AsOrDefault<FInputKeyParams>();
+	return Activation.AsOrDefault<FInputKeyEventArgs>();
 }

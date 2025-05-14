@@ -162,7 +162,6 @@ FHeartGraphPinDesc UHeartGraphNode::GetPinDescChecked(const FHeartPinGuid& Pin) 
 	auto PinView = PinData.ViewPin(Pin);
 	if (PinView.IsValid())
 	{
-		checkSlow(Desc.IsSet());
 		return PinView.Get();
 	}
 	return Heart::Graph::InvalidPinDesc;

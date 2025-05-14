@@ -18,7 +18,7 @@ DEFINE_LOG_CATEGORY(LogHeartGraph)
 UHeartGraph::UHeartGraph()
 {
 #if WITH_EDITORONLY_DATA
-	if (auto SparseGraphData = GetHeartGraphSparseClassData();
+	if (auto SparseGraphData = GetMutableHeartGraphSparseClassData();
 		SparseGraphData->GraphTypeName.IsEmpty())
 	{
 		SparseGraphData->GraphTypeName = LOCTEXT("DefaultGraphTypeName", "Heart");

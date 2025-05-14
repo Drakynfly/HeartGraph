@@ -7,7 +7,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneInputLinker)
 
-bool UHeartSceneInputLinker::InputKey(USceneComponent* Target, const FInputKeyParams& Params)
+bool UHeartSceneInputLinker::InputKey(USceneComponent* Target, const FInputKeyEventArgs& Params)
 {
 	return QuickTryCallbacks(Heart::Input::FInputTrip(Params), Target, FHeartInputActivation(Params)).WasEventCaptured();
 }

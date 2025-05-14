@@ -15,5 +15,5 @@ class HEARTSCENE_API UHeartPlayerInput : public UEnhancedPlayerInput
 	GENERATED_BODY()
 
 public:
-	virtual bool InputKey(const FInputKeyParams& Params) override;
+	virtual bool InputKey(const FInputKeyEventArgs& Params) override;
 };

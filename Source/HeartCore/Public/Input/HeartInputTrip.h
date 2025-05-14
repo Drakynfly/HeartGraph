@@ -3,7 +3,6 @@
 #pragma once
 
 #include "InputCoreTypes.h"
-#include "GameFramework/PlayerInput.h"
 
 namespace Heart::Input
 {
@@ -69,7 +68,7 @@ namespace Heart::Input
 			ModifierMask(EModifierKey::FromBools(PointerEvent.IsControlDown(), PointerEvent.IsAltDown(), PointerEvent.IsShiftDown(), PointerEvent.IsCommandDown()))
 		{}
 
-		FInputTrip(const FInputKeyParams& Params)
+		FInputTrip(const FInputKeyEventArgs& Params)
 		  : Type(InputEventToTripType(Params.Event)),
 		    Key(Params.Key),
 		    ModifierMask(ModifierKeysFromState(FSlateApplication::Get().GetModifierKeys()))
