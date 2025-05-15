@@ -40,26 +40,6 @@ void UHeartGraphNode::PostLoad()
 {
 	Super::PostLoad();
 
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	if (!PinDescriptions.IsEmpty())
-	{
-		for (auto&& Element : PinDescriptions)
-		{
-			PinData.AddPin(Element.Key, Element.Value);
-		}
-		PinDescriptions.Empty();
-	}
-
-	if (!PinConnections.IsEmpty())
-	{
-		for (auto&& Element : PinConnections)
-		{
-			PinData.GetConnectionsMutable(Element.Key) = Element.Value;
-		}
-		PinConnections.Empty();
-	}
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
-
 	if (!IsTemplate())
 	{
 		if (!IsValid(NodeObject))
@@ -167,11 +147,6 @@ FHeartGraphPinDesc UHeartGraphNode::GetPinDescChecked(const FHeartPinGuid& Pin) 
 	return Heart::Graph::InvalidPinDesc;
 }
 
-FHeartGraphPinDesc UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin, bool) const
-{
-	return GetPinDescChecked(Pin);
-}
-
 bool UHeartGraphNode::IsPinOnNode(const FHeartPinGuid& Pin) const
 {
 	return PinData.Contains(Pin);
@@ -252,16 +227,6 @@ bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGra
 		return true;
 	}
 	return false;
-}
-
-TOptional<FHeartGraphPinConnections> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin) const
-{
-	if (auto Links = PinData.ViewConnections(Pin);
-		Links.IsValid())
-	{
-		return Links.Get();
-	}
-	return NullOpt;
 }
 
 TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin, bool) const
@@ -436,11 +401,6 @@ void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
 	}
 
 	RemovePin(GetPinByName(PinName));
-}
-
-void UHeartGraphNode::OnCreate()
-{
-	OnCreate(nullptr);
 }
 
 void UHeartGraphNode::OnCreate(UObject* NodeSpawningContext)

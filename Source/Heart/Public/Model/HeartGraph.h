@@ -397,55 +397,7 @@ private:
 	----------------------------*/
 
 public:
-	template <
-		typename THeartGraphNode
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-	>
-	UE_DEPRECATED(5.3, "Use Heart::API::FNodeEdit instead")
-	THeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location)
-	{
-		checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNode_Reference(THeartGraphNode::StaticClass(), NodeObject, Location));
-	}
-
-	template <
-		typename THeartGraphNode,
-		typename TNodeObject
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value &&
-					!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::Value)
-	>
-	UE_DEPRECATED(5.3, "Use Heart::API::FNodeEdit instead")
-	THeartGraphNode* CreateNodeFromClass(const FVector2D& Location)
-	{
-		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location));
-	}
-
-	template <
-		typename THeartGraphNode
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-	>
-	UE_DEPRECATED(5.3, "Use Heart::API::FNodeEdit instead")
-	THeartGraphNode* CreateNodeFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location)
-	{
-		checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
-		return Cast<THeartGraphNode>(CreateNode_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location));
-	}
-
-	/**
-	 * Create a new node, spawning a new NodeObject from the NodeClass provided.
-	 */
-	UE_DEPRECATED(5.3, "Use CreateNode_Instanced instead")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphNode* CreateNodeFromClass(const UClass* NodeClass, const FVector2D& Location);
-
-	/**
-	 * Create a new node, using the provided NodeObject
-	 */
-	UE_DEPRECATED(5.3, "Use CreateNode_Reference instead")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	UHeartGraphNode* CreateNodeFromObject(UObject* NodeObject, const FVector2D& Location);
-
-	UE_DEPRECATED(5.5, "Please use NotifyNodeLocationChangedNotifyNodeLocationChanged instead")
+	UE_DEPRECATED(5.5, "Please use NotifyNodeLocationChanged / NotifyNodeLocationChanged (Guid version) instead")
 	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
 
 protected:

@@ -364,14 +364,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	FVector2D Location;
 
-	UE_DEPRECATED(5.3, "Use PinData instead")
-	UPROPERTY()
-	TMap<FHeartPinGuid, FHeartGraphPinDesc> PinDescriptions;
-
-	UE_DEPRECATED(5.3, "Use PinData instead")
-	UPROPERTY()
-	TMap<FHeartPinGuid, FHeartGraphPinConnections> PinConnections;
-
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "GraphNode")
 	FHeartNodePinData PinData;
 
@@ -386,18 +378,8 @@ public:
 	UE_DEPRECATED(5.4, "Use Get/Find Connections instead")
 	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
 
-    UE_DEPRECATED(5.3, "Use OnCreate(UObject*) instead. This new api allows for an optional context object")
-    virtual void OnCreate();
-
-	UE_DEPRECATED(5.3, "Replace with ViewConnections. Options create copies, so views are better")
-	TOptional<FHeartGraphPinConnections> GetConnections(const FHeartPinGuid& Pin) const;
-
 	UE_DEPRECATED(5.5, "Replace with either GetPinDescChecked or ViewPin")
 	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
-
-	UE_DEPRECATED(5.3, "Replace with either GetPinDescChecked or ViewPin")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartGraphPinDesc GetPinDesc(const FHeartPinGuid& Pin, bool DeprecationTemp) const;
 
 	UE_DEPRECATED(5.4, "Replace with FindConnections or native ViewConnections instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
