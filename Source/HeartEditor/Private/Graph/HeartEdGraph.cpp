@@ -220,7 +220,7 @@ void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
 
 	// Since we live in the HeartGraph, mark it as having changed.
 	HeartGraph->PostEditChange();
-	HeartGraph->MarkPackageDirty();
+	(void)HeartGraph->MarkPackageDirty();
 }
 
 void UHeartEdGraph::OnNodeAdded(UHeartGraphNode* HeartGraphNode)
