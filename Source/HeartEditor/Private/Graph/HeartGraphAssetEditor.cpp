@@ -466,7 +466,7 @@ namespace Heart::AssetEditor
 		InEvents.OnSelectionChanged = SGraphEditor::FOnSelectionChanged::CreateSP(this, &FHeartGraphEditor::OnSelectedNodesChanged);
 		InEvents.OnNodeDoubleClicked = FSingleNodeEvent::CreateSP(this, &FHeartGraphEditor::OnNodeDoubleClicked);
 		InEvents.OnTextCommitted = FOnNodeTextCommitted::CreateSP(this, &FHeartGraphEditor::OnNodeTitleCommitted);
-		InEvents.OnSpawnNodeByShortcut = SGraphEditor::FOnSpawnNodeByShortcut::CreateStatic(&FHeartGraphEditor::OnSpawnGraphNodeByShortcut, HeartGraph->GetEdGraph());
+		InEvents.OnSpawnNodeByShortcutAtLocation = SGraphEditor::FOnSpawnNodeByShortcutAtLocation::CreateStatic(&FHeartGraphEditor::OnSpawnGraphNodeByShortcut, HeartGraph->GetEdGraph());
 
 		GraphEditor = SNew(SGraphEditor)
 			.AdditionalCommands(ToolkitCommands)
@@ -490,7 +490,7 @@ namespace Heart::AssetEditor
 		GEditor->RedoTransaction();
 	}
 
-	FReply FHeartGraphEditor::OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2D& InPosition, UEdGraph* InGraph)
+	FReply FHeartGraphEditor::OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2f& InPosition, UEdGraph* InGraph)
 	{
 		if (FHeartSpawnNodeCommands::IsRegistered())
 		{
@@ -533,7 +533,7 @@ namespace Heart::AssetEditor
 	void FHeartGraphEditor::OnCreateComment() const
 	{
 		FHeartGraphSchemaAction_NewComment CommentAction;
-		CommentAction.PerformAction(HeartGraph->GetEdGraph(), nullptr, GraphEditor->GetPasteLocation());
+		CommentAction.PerformAction(HeartGraph->GetEdGraph(), nullptr, GraphEditor->GetPasteLocation2f());
 	}
 
 	void FHeartGraphEditor::OnStraightenConnections() const
@@ -793,7 +793,7 @@ namespace Heart::AssetEditor
 
 	void FHeartGraphEditor::PasteNodes()
 	{
-		PasteNodesHere(GraphEditor->GetPasteLocation());
+		PasteNodesHere(GraphEditor->GetPasteLocation2f());
 	}
 
 	void FHeartGraphEditor::PasteNodesHere(const FVector2D& Location)
@@ -863,7 +863,7 @@ namespace Heart::AssetEditor
 		GraphEditor->NotifyGraphChanged();
 
 		HeartGraph->PostEditChange();
-		HeartGraph->MarkPackageDirty();
+		(void)HeartGraph->MarkPackageDirty();
 	}
 
 	bool FHeartGraphEditor::CanPasteNodes() const

@@ -240,13 +240,13 @@ FConnectionDrawingPolicy* UHeartEdGraphSchema::CreateConnectionDrawingPolicy(con
 }
 
 void UHeartEdGraphSchema::OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB,
-													  const FVector2D& GraphPosition) const
+													  const FVector2f& GraphPosition) const
 {
 	OnPinConnectionDoubleClicked(PinA, PinB, GraphPosition);
 }
 
 void UHeartEdGraphSchema::OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGraphPin* PinB,
-	const FVector2D& GraphPosition) const
+	const FVector2f& GraphPosition) const
 {
 	Super::OnPinConnectionDoubleCicked(PinA, PinB, GraphPosition);
 }

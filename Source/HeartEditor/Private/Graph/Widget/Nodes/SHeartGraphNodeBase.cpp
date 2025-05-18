@@ -64,7 +64,7 @@ const FSlateBrush* SHeartGraphNodeBase::GetShadowBrush(bool bSelected) const
 	return SGraphNode::GetShadowBrush(bSelected);
 }
 
-void SHeartGraphNodeBase::GetOverlayBrushes(bool bSelected, const FVector2D WidgetSize, TArray<FOverlayBrushInfo>& Brushes) const
+void SHeartGraphNodeBase::GetOverlayBrushes(bool bSelected, const FVector2f& WidgetSize, TArray<FOverlayBrushInfo>& Brushes) const
 {
 	// Node breakpoint
 	if (HeartEdGraphNode->NodeBreakpoint.bHasBreakpoint)

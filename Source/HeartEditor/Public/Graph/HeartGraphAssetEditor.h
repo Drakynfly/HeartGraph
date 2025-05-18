@@ -103,7 +103,7 @@ namespace Heart::AssetEditor
 		static void UndoGraphAction();
 		static void RedoGraphAction();
 
-		static FReply OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2D& InPosition, UEdGraph* InGraph);
+		static FReply OnSpawnGraphNodeByShortcut(FInputChord InChord, const FVector2f& InPosition, UEdGraph* InGraph);
 
 	public:
 		/** Gets the UI selection state of this editor */

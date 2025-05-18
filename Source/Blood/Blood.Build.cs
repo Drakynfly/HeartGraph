@@ -39,8 +39,8 @@ public class Blood : ModuleRules
         {
             Module.bUseUnity = false;
             Module.bTreatAsEngineModule = true;
-            Module.bEnableNonInlinedGenCppWarnings = true;
-            Module.UnsafeTypeCastWarningLevel = WarningLevel.Warning;
+            Module.CppCompileWarningSettings.NonInlinedGenCppWarningLevel = WarningLevel.Warning;
+            Module.CppCompileWarningSettings.UnsafeTypeCastWarningLevel = WarningLevel.Warning;
         }
     }
 }

@@ -29,8 +29,8 @@ public:
 	virtual FConnectionDrawingPolicy* CreateConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID, float InZoomFactor, const FSlateRect& InClippingRect, FSlateWindowElementList& InDrawElements, UEdGraph* InGraphObj) const override;
 
 	// FIX THIS TYPO EPIC !!!
-	virtual void OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2D& GraphPosition) const override final;
-	virtual void OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2D& GraphPosition) const;
+	virtual void OnPinConnectionDoubleCicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2f& GraphPosition) const override final;
+	virtual void OnPinConnectionDoubleClicked(UEdGraphPin* PinA, UEdGraphPin* PinB, const FVector2f& GraphPosition) const;
 	// --
 
 	virtual void CreateDefaultNodesForGraph(UEdGraph& Graph) const override;
