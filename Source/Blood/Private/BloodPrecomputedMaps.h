@@ -2,14 +2,13 @@
 
 #pragma once
 
+#include "BloodValue.h"
 #include "UObject/Field.h"
 #include "Containers/Map.h"
 
-struct FBloodValue;
-
 namespace Blood
 {
-	using FFPropertyReadFunc = TFunction<FBloodValue(const FProperty* ValueProp, const uint8* ValuePtr)>;
+	using FFPropertyReadFunc = TFunctionRef<FBloodValue(const FProperty* ValueProp, const uint8* ValuePtr)>;
 
 	class FPrecomputedMaps
 	{

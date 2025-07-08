@@ -125,7 +125,7 @@ void UHeartRegistryRuntimeSubsystem::FetchNativeRegistrars()
 	TArray<UClass*> Classes;
 	GetDerivedClasses(UGraphNodeRegistrar::StaticClass(), Classes);
 
-	for (const TSubclassOf<UGraphNodeRegistrar>& Class : Classes)
+	for (TSubclassOf<UGraphNodeRegistrar> Class : Classes)
 	{
 		if (IsValid(Class))
 		{
@@ -269,7 +269,7 @@ void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(const UGraphNodeRegistrar*
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
-void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(UGraphNodeRegistrar* Registrar)
+void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(const UGraphNodeRegistrar* Registrar)
 {
 	for (auto&& ClassPath : Registrar->AutoRegisterTo)
 	{

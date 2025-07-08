@@ -14,7 +14,7 @@ HEART_API DECLARE_LOG_CATEGORY_EXTERN(LogHeartNodeRegistry, Log, All);
 
 class UHeartGraphNodeRegistry;
 using FHeartRegistryEventNative = TMulticastDelegate<void(UHeartGraphNodeRegistry*)>;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartRegistryEvent, class UHeartGraphNodeRegistry*, Registry);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHeartRegistryEvent, UHeartGraphNodeRegistry*, Registry);
 
 /**
  * Global singleton that stores a node registry for each class of Heart Graph. Runtime existence is optional, so always
@@ -26,7 +26,7 @@ class HEART_API UHeartRegistryRuntimeSubsystem : public UEngineSubsystem
 	GENERATED_BODY()
 
 	friend class UGraphNodeRegistrar;
-	friend class UHeartGraphNodeRegistry;
+	friend UHeartGraphNodeRegistry;
 	friend class UHeartGraphSettings;
 	friend class UHeartRegistryEditorSubsystem;
 
@@ -62,13 +62,13 @@ protected:
 
 	void OnRegistryChanged(UHeartGraphNodeRegistry* Registry);
 
-	UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
+	const UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
 
 	// Add a registrar to every registry for the classes that the register lists in AutoRegisterWith
 	void AutoAddRegistrar(const UGraphNodeRegistrar* Registrar);
 
 	// Remove a registrar from every registry for the classes that the register lists in AutoRegisterWith
-	void AutoRemoveRegistrar(UGraphNodeRegistrar* Registrar);
+	void AutoRemoveRegistrar(const UGraphNodeRegistrar* Registrar);
 
 	void BroadcastPostRegistryAdded(UHeartGraphNodeRegistry* Registry);
 	void BroadcastPreRegistryRemoved(UHeartGraphNodeRegistry* Registry);

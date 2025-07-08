@@ -100,7 +100,7 @@ namespace Blood::Impl
 				return true;
 			}
 			return false;
-		};
+		}
 
 		if (auto&& ClassProp = CastField<FClassProperty>(ValueProp))
 		{
@@ -110,7 +110,7 @@ namespace Blood::Impl
 				return true;
 			}
 			return false;
-		};
+		}
 
 		if (auto&& SoftObjectProp = CastField<FSoftObjectProperty>(ValueProp))
 		{
@@ -120,7 +120,7 @@ namespace Blood::Impl
 				return true;
 			}
 			return false;
-		};
+		}
 
 		if (auto&& ObjectProp = CastField<FObjectProperty>(ValueProp))
 		{
@@ -130,7 +130,7 @@ namespace Blood::Impl
 				return true;
 			}
 			return false;
-		};
+		}
 
 		// Special handling for the unique way enums are initialized
 		if (auto&& EnumProp = CastField<FEnumProperty>(ValueProp))
