@@ -2,6 +2,8 @@
 
 #include "Model/HeartGraphComponentBase.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphComponentBase)
+
 void UHeartGraphComponentBase::PostInitProperties()
 {
 	Super::PostInitProperties();

@@ -4,6 +4,8 @@
 #include "Model/HeartGraphNodeBlueprint.h"
 #include "HeartEditorShared.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(AssetTypeActions_HeartGraphNodeBlueprint)
+
 #define LOCTEXT_NAMESPACE "AssetDefinition_HeartGraphNodeBlueprint"
 
 FText UAssetDefinition_HeartGraphNodeBlueprint::GetAssetDisplayName() const
