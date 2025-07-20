@@ -131,13 +131,13 @@ public:
 	FText GetDefaultNodeCategory(const FHeartNodeSource& NodeSource) const;
 	FText GetDefaultNodeTooltip(const FHeartNodeSource& NodeSource) const;
 
-	// Returns the node title used for nodes placed in a graph, which have a valid NodeObject from which to determine a title.
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	FText GetNodeTitle(const UObject* Node) const;
-
 	// Returns the node title used for template nodes, such as those in menus and palettes that are not yet instanced.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetPreviewNodeTitle(FHeartNodeSource NodeSource, EHeartPreviewNodeNameContext Context) const;
+
+	// Returns the node title used for nodes placed in a graph, which have a valid NodeObject from which to determine a title.
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
+	FText GetNodeTitle(const UObject* Node) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
 	FText GetNodeCategory(const UObject* Node) const;
@@ -206,7 +206,7 @@ public:
 
 	TConstStructView<FHeartGraphPinDesc> ViewPin(const FHeartPinGuid& Pin) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", DisplayName = "Get Pin Info")
 	FHeartGraphPinDesc GetPinDescChecked(const FHeartPinGuid& Pin) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")

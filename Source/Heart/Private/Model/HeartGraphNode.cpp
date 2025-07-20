@@ -67,6 +67,15 @@ FText UHeartGraphNode::GetDefaultNodeTooltip(const FHeartNodeSource& NodeSource)
 	return GetNodeToolTip(NodeSource.GetDefaultObject());
 }
 
+FText UHeartGraphNode::GetPreviewNodeTitle_Implementation(const FHeartNodeSource NodeSource, EHeartPreviewNodeNameContext Context) const
+{
+	if (NodeSource.IsValid())
+	{
+		return FText::FromString(NodeSource.As<UObject>()->GetName());
+	}
+	return LOCTEXT("GetPreviewNodeTitle_Invalid", "[Invalid NodeSource]");
+}
+
 FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node) const
 {
 	if (IsValid(Node))
@@ -75,15 +84,6 @@ FText UHeartGraphNode::GetNodeTitle_Implementation(const UObject* Node) const
     }
 
     return LOCTEXT("GetNodeTitle_Invalid", "[Invalid NodeObject]");
-}
-
-FText UHeartGraphNode::GetPreviewNodeTitle_Implementation(const FHeartNodeSource NodeSource, EHeartPreviewNodeNameContext Context) const
-{
-	if (NodeSource.IsValid())
-	{
-		return FText::FromString(NodeSource.As<UObject>()->GetName());
-	}
-	return LOCTEXT("GetPreviewNodeTitle_Invalid", "[Invalid NodeSource]");
 }
 
 FText UHeartGraphNode::GetNodeCategory_Implementation(const UObject* Node) const
