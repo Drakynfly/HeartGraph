@@ -3,7 +3,6 @@
 #include "BloodFProperty.h"
 #include "BloodLog.h"
 #include "BloodValue.h"
-#include "BloodPrecomputedMaps.h"
 
 #include "UObject/TextProperty.h"
 
@@ -157,6 +156,34 @@ namespace Blood::Impl
 		return false;
 	}
 
+	template <typename T>
+	FBloodValue ReaderFunc(const T* ValueProp, const uint8* ValuePtr)
+	{
+		return ToBloodValue(*reinterpret_cast<const typename T::TCppType*>(ValuePtr));
+	}
+
+	// We have to specialize this because FSoftClassProperty's TCppType is FSoftObjectPtr, which Blood doesn't recognize
+	FBloodValue ReaderFuncSoftClass(const FSoftClassProperty* ValueProp, const uint8* ValuePtr)
+	{
+		return ToBloodValue(*reinterpret_cast<const TSoftObjectPtr<>*>(ValuePtr));
+	}
+
+	// We have to specialize this because FSoftObjectProperty's TCppType is FSoftObjectPtr, which Blood doesn't recognize
+	FBloodValue ReaderFuncSoftObject(const FSoftObjectProperty* ValueProp, const uint8* ValuePtr)
+	{
+		return ToBloodValue(*reinterpret_cast<const TSoftObjectPtr<>*>(ValuePtr));
+	}
+
+	FBloodValue ReaderFuncEnum(const FEnumProperty* EnumProp, const uint8* ValuePtr)
+	{
+		return FBloodValue(EnumProp->GetEnum(), ValuePtr);
+	}
+
+	FBloodValue ReaderFuncStruct(const FStructProperty* StructProp, const uint8* ValuePtr)
+	{
+		return FBloodValue(StructProp->Struct, ValuePtr);
+	}
+
 	FBloodValue FPropertyHelpers::ReadFromFPropertyValuePtr(const FProperty* ValueProp, const uint8* ValuePtr)
 	{
 		check(ValueProp);
@@ -181,12 +208,68 @@ namespace Blood::Impl
 			return FBloodValue();
 		}
 
-		const FFieldClass* FieldClass = ValueProp->GetClass();
-		if (const FFPropertyReadFunc* StaticLambda = FPrecomputedMaps::Get().ReaderMap.Find(FieldClass))
+		if (auto&& BoolProp = CastField<FBoolProperty>(ValueProp))
 		{
-			return (*StaticLambda)(ValueProp, ValuePtr);
+			return ReaderFunc<FBoolProperty>(BoolProp, ValuePtr);
+		}
+		if (auto&& ByteProp = CastField<FByteProperty>(ValueProp))
+		{
+			return ReaderFunc<FByteProperty>(ByteProp, ValuePtr);
+		}
+		if (auto&& IntProp = CastField<FIntProperty>(ValueProp))
+		{
+			return ReaderFunc<FIntProperty>(IntProp, ValuePtr);
+		}
+		if (auto&& Int64Prop = CastField<FInt64Property>(ValueProp))
+		{
+			return ReaderFunc<FInt64Property>(Int64Prop, ValuePtr);
+		}
+		if (auto&& FloatProp = CastField<FFloatProperty>(ValueProp))
+		{
+			return ReaderFunc<FFloatProperty>(FloatProp, ValuePtr);
+		}
+		if (auto&& DoubleProp = CastField<FDoubleProperty>(ValueProp))
+		{
+			return ReaderFunc<FDoubleProperty>(DoubleProp, ValuePtr);
+		}
+		if (auto&& NameProp = CastField<FNameProperty>(ValueProp))
+		{
+			return ReaderFunc<FNameProperty>(NameProp, ValuePtr);
+		}
+		if (auto&& StringProp = CastField<FStrProperty>(ValueProp))
+		{
+			return ReaderFunc<FStrProperty>(StringProp, ValuePtr);
+		}
+		if (auto&& TextProp = CastField<FTextProperty>(ValueProp))
+		{
+			return ReaderFunc<FTextProperty>(TextProp, ValuePtr);
+		}
+		if (auto&& ClassProp = CastField<FClassProperty>(ValueProp))
+		{
+			return ReaderFunc<FClassProperty>(ClassProp, ValuePtr);
+		}
+		if (auto&& SoftClassProp = CastField<FSoftClassProperty>(ValueProp))
+		{
+			return ReaderFuncSoftClass(SoftClassProp, ValuePtr);
+		}
+		if (auto&& ObjectProp = CastField<FObjectProperty>(ValueProp))
+		{
+			return ReaderFunc<FObjectProperty>(ObjectProp, ValuePtr);
+		}
+		if (auto&& SoftObjectProp = CastField<FSoftClassProperty>(ValueProp))
+		{
+			return ReaderFuncSoftObject(SoftObjectProp, ValuePtr);
+		}
+		if (auto&& EnumProp = CastField<FEnumProperty>(ValueProp))
+		{
+			return ReaderFuncEnum(EnumProp, ValuePtr);
+		}
+		if (auto&& StructProp = CastField<FStructProperty>(ValueProp))
+		{
+			return ReaderFuncStruct(StructProp, ValuePtr);
 		}
 
+		UE_LOG(LogBlood, Error, TEXT("Unsupported property type %s"), ToCStr(ValueProp->GetName()));
 		return FBloodValue();
 	}
 }
