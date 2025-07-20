@@ -15,7 +15,7 @@ namespace Heart::Action::History
 	{
 		struct FExecutingAction
 		{
-			FExecutingAction(const TSubclassOf<UHeartActionBase> Action, UHeartActionHistory* History, const FArguments& Arguments)
+			FExecutingAction(const TSubclassOf<UHeartActionBase>& Action, UHeartActionHistory* History, const FArguments& Arguments)
 			  : Action(Action), History(History), Arguments(Arguments) {}
 			TSubclassOf<UHeartActionBase> Action;
 			UHeartActionHistory* History;
@@ -29,9 +29,9 @@ namespace Heart::Action::History
 		 * If an action is going to be logged, should it succeed, it will be stored here, otherwise a blank Option will
 		 * fill its slot in the stack.
 		 */
-		static TArray<TOptional<FExecutingAction>> ExecutingActionsStack;
+		static TArray<FExecutingAction> ExecutingActionsStack;
 
-		void BeginLog(const UHeartActionBase* Action, const FArguments& Arguments)
+		bool BeginLog(const UHeartActionBase* Action, const FArguments& Arguments)
 		{
 			if (IsLoggable(Action, Arguments))
 			{
@@ -57,15 +57,15 @@ namespace Heart::Action::History
 						IsValid(History))
 					{
 						// Store a log for the action
-						ExecutingActionsStack.Emplace(InPlace, Action->GetClass(), History, Arguments);
-						return;
+						ExecutingActionsStack.Emplace(Action->GetClass(), History, Arguments);
+						return true;
 					}
 				}
 				// Unable to find the HeartGraph for some reason, so bail from trying to log.
 			}
 
-			// Store current action as non-loggable.
-			ExecutingActionsStack.Emplace(FNullOpt(0));
+			// This action is not being logged.
+			return false;
 		}
 
 		void EndLog(const bool Successful, FBloodContainer* UndoData)
@@ -96,7 +96,7 @@ namespace Heart::Action::History
 
 	bool IsLogging()
 	{
-		return !Impl::ExecutingActionsStack.IsEmpty() && Impl::ExecutingActionsStack.Last().IsSet();
+		return !Impl::ExecutingActionsStack.IsEmpty();
 	}
 
 	bool IsUndoable()
@@ -107,25 +107,32 @@ namespace Heart::Action::History
 
 	UHeartGraph* GetGraphFromActionStack()
 	{
-		return Impl::ExecutingActionsStack.Last()->History->GetGraph();
+		return Impl::ExecutingActionsStack.Last().History->GetGraph();
 	}
 
 	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, FActionLogic&& Lambda)
 	{
-		Impl::BeginLog(Action, Arguments);
+		const bool IsLoggingAction = Impl::BeginLog(Action, Arguments);
 
 		FHeartEvent Event;
+		FBloodContainer* UndoData = nullptr;
+
 		if (EnumHasAnyFlags(Arguments.Flags, IsRedo))
 		{
 			Event = Lambda(*Arguments.Activation.As<FHeartActionIsRedo>()->UndoneData);
-			Impl::EndLog(Event.WasEventSuccessful(), nullptr);
 		}
 		else
 		{
 			FBloodContainer NewUndoData;
+			UndoData = &NewUndoData;
 			Event = Lambda(NewUndoData);
-			Impl::EndLog(Event.WasEventSuccessful(), &NewUndoData);
 		}
+
+		if (IsLoggingAction)
+		{
+			Impl::EndLog(Event.WasEventSuccessful(), UndoData);
+		}
+
 		return Event;
 	}
 
@@ -133,14 +140,14 @@ namespace Heart::Action::History
 	{
 		if (IsLogging())
 		{
-			Impl::ExecutingActionsStack.Last().GetValue().Cancelled = true;
+			Impl::ExecutingActionsStack.Last().Cancelled = true;
 		}
 	}
 
 	bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History)
 	{
 		// Push an action frame
-		Impl::ExecutingActionsStack.Emplace(InPlace, Record.Action, History, Record.Arguments);
+		Impl::ExecutingActionsStack.Emplace(Record.Action, History, Record.Arguments);
 
 		const bool Success = Undo(Record.Action, Record.Arguments.Target, Record.UndoData);
 
