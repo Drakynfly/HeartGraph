@@ -110,6 +110,25 @@ namespace Heart::Action::History
 		return Impl::ExecutingActionsStack.Last()->History->GetGraph();
 	}
 
+	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, FActionLogic&& Lambda)
+	{
+		Impl::BeginLog(Action, Arguments);
+
+		FHeartEvent Event;
+		if (EnumHasAnyFlags(Arguments.Flags, IsRedo))
+		{
+			Event = Lambda(*Arguments.Activation.As<FHeartActionIsRedo>()->UndoneData);
+			Impl::EndLog(Event.WasEventSuccessful(), nullptr);
+		}
+		else
+		{
+			FBloodContainer NewUndoData;
+			Event = Lambda(NewUndoData);
+			Impl::EndLog(Event.WasEventSuccessful(), &NewUndoData);
+		}
+		return Event;
+	}
+
 	void CancelLog()
 	{
 		if (IsLogging())

@@ -43,12 +43,6 @@ struct TStructOpsTypeTraits<FHeartActionRecord> : public TStructOpsTypeTraitsBas
 
 namespace Heart::Action::History
 {
-	namespace Impl
-	{
-		HEART_API void BeginLog(const UHeartActionBase* Action, const FArguments& Arguments);
-		HEART_API void EndLog(bool Successful, FBloodContainer* UndoData);
-	}
-
 	// Is this action being executing in a state that we want to record?
 	HEART_API bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments);
 
@@ -60,24 +54,8 @@ namespace Heart::Action::History
 
 	// A simple wrapper around a lambda that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded if an Action History extension can be found.
-	template <typename T>
-	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, T Lambda)
-	{
-		Impl::BeginLog(Action, Arguments);
-		FHeartEvent Event;
-		if (EnumHasAnyFlags(Arguments.Flags, IsRedo))
-		{
-			Event = Lambda(*Arguments.Activation.As<FHeartActionIsRedo>()->UndoneData);
-			Impl::EndLog(Event.WasEventSuccessful(), nullptr);
-		}
-		else
-		{
-			FBloodContainer NewUndoData;
-			Event = Lambda(NewUndoData);
-			Impl::EndLog(Event.WasEventSuccessful(), &NewUndoData);
-		}
-		return Event;
-	}
+	using FActionLogic = TFunctionRef<FHeartEvent(FBloodContainer&)>;
+	HEART_API FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, FActionLogic&& Lambda);
 
 	// Cancel the executing logging context. The currently running action will not be logged.
 	HEART_API void CancelLog();
