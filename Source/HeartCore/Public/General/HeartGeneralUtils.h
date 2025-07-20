@@ -49,6 +49,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Heart|Utils|Class", meta = (BlueprintAutocast, CompactNodeTitle = "->"))
 	static UClass* ObjectAsClass(UObject* Object);
 
+	// Replicates the functionality of the "Is Valid Object" macro, but for classes.
+	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Class", meta = (ExpandBoolAsExecs = "ReturnValue"))
+	static bool IsValidClass(const UClass* InputClass);
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|Utils|Class", meta = (DeterminesOutputType = Class))
 	static const UObject* GetClassDefaultObject(UClass* Class);
 

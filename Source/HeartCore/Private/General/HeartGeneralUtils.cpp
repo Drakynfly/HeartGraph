@@ -50,6 +50,11 @@ UClass* UHeartGeneralUtils::ObjectAsClass(UObject* Object)
 	return Cast<UClass>(Object);
 }
 
+bool UHeartGeneralUtils::IsValidClass(const UClass* InputClass)
+{
+	return IsValid(InputClass);
+}
+
 const UObject* UHeartGeneralUtils::GetClassDefaultObject(UClass* Class)
 {
 	return IsValid(Class) ? Class->GetDefaultObject() : nullptr;
