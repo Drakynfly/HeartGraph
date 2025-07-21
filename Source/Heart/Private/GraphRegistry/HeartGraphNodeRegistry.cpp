@@ -468,22 +468,30 @@ TArray<TSubclassOf<UHeartGraphNode>> UHeartGraphNodeRegistry::GetGraphNodeClasse
 	return {};
 }
 
-UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase) const
+UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassOf<UHeartGraphNode> GraphNodeClass, UClass* VisualizerBase) const
 {
+	if (!IsValid(GraphNodeClass))
+	{
+		UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Invalid class passed to GetVisualizerClassForGraphNode!"))
+		return nullptr;
+	}
+
 	if (!NodeVisualizers.IsEmpty())
 	{
-		for (; IsValid(GraphNodeClass) && GraphNodeClass != UObject::StaticClass(); GraphNodeClass = GraphNodeClass->GetSuperClass())
+		for (auto TestClass = GraphNodeClass;
+			IsValid(TestClass) && TestClass != UObject::StaticClass();
+			TestClass = TestClass->GetSuperClass())
 		{
 			if (IsValid(VisualizerBase))
 			{
-				if (auto&& Class = NodeVisualizers.FindByClass(GraphNodeClass, VisualizerBase))
+				if (auto&& Class = NodeVisualizers.FindByClass(TestClass, VisualizerBase))
 				{
 					return Class;
 				}
 			}
 			else
 			{
-				if (auto&& Class = NodeVisualizers.Find(GraphNodeClass))
+				if (auto&& Class = NodeVisualizers.Find(TestClass))
 				{
 					return Class;
 				}
