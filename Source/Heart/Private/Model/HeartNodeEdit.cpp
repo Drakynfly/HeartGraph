@@ -72,7 +72,7 @@ namespace Heart::API
 	bool FNodeEdit::DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node)
 	{
 		UHeartGraph* GraphPtr = GraphInterface->GetHeartGraph();
-		checkSlow(IsValid(Graph))
+		checkSlow(IsValid(GraphPtr))
 
 		if (!ensure(Node.IsValid()))
 		{
