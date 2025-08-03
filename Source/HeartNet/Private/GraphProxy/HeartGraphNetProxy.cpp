@@ -356,7 +356,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 	if (EventType == Heart::Net::Tags::Node_ConnectionsChanged)
 	{
 		FHeartGraphConnectionEvent_Net_PinElement PinElement;
-		Flakes::WriteStruct<Flakes::NetBinary::Type>(FStructView::Make(PinElement), NodeData.Flake);
+		Flakes::WriteStruct<Flakes::NetBinary::Type>(PinElement, NodeData.Flake, nullptr);
 
 		Heart::API::FPinEdit Edit(ExistingNode);
 
@@ -624,11 +624,11 @@ void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMove
 				NodeData.Guid = Node->GetGuid();
 				if (auto&& Node3D = Cast<UHeartGraphNode3D>(Node))
 				{
-					NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(FConstStructView::Make(Node3D->GetLocation3D()));
+					NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(Node3D->GetLocation3D(), nullptr);
 				}
 				else
 				{
-					NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(FConstStructView::Make(Node->GetLocation()));
+					NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(Node->GetLocation(), nullptr);
 				}
 
 				UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
@@ -680,7 +680,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 					}
 				});
 
-			NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(FConstStructView::Make(PinElement));
+			NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(PinElement, nullptr);
 
 			UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%i bytes)"),
 				*Node->GetName(), NodeData.Flake.Data.Num());
