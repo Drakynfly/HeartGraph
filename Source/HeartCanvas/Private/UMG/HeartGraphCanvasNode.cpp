@@ -3,6 +3,7 @@
 #include "UMG/HeartGraphCanvasNode.h"
 
 #include "HeartCanvasPrivate.h"
+#include "Engine/Engine.h"
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasConnection.h"
 #include "UMG/HeartGraphCanvasPin.h"

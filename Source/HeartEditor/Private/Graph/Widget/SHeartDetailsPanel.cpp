@@ -1,6 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/Widgets/SHeartDetailsPanel.h"
+#include "PropertyEditorModule.h"
+#include "Modules/ModuleManager.h"
 
 #include "Model/HeartGraph.h"
 

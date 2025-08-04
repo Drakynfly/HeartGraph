@@ -10,6 +10,9 @@
 #include "TutorialMetaData.h"
 
 #include "SlateOptMacros.h"
+#include "Widgets/SToolTip.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "SHeartGraphNode_Vertical"
 
@@ -96,7 +99,6 @@ void SHeartGraphNode_Vertical::AddPinButton(const TSharedPtr<SHorizontalBox> Out
 		LOCTEXT("HeartNodeAddPinButton_OutputTooltip", "Adds an output pin");
 
 	TSharedPtr<SToolTip> Tooltip;
-
 	if (CustomTooltip.IsValid())
 	{
 		Tooltip = CustomTooltip;

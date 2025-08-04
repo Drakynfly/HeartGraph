@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Components/ActorComponent.h"
+#include "Components/SceneComponent.h"
 #include "View/HeartVisualizerInterfaces.h"
 
 #include "HeartSceneNode.generated.h"

@@ -6,6 +6,10 @@
 
 #include "Model/HeartGraph.h"
 
+class FToolBarBuilder;
+class FExtender;
+class UToolMenu;
+
 namespace Heart::AssetEditor
 {
 	class FHeartGraphEditor;

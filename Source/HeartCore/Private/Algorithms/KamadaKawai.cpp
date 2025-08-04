@@ -1,6 +1,8 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Algorithms/KamadaKawai.h"
+#include "Containers/ArrayView.h"
+#include "Math/Vector2D.h"
 
 namespace Nodesoup
 {

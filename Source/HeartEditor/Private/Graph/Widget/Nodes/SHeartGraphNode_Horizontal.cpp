@@ -9,6 +9,9 @@
 #include "TutorialMetaData.h"
 
 #include "SlateOptMacros.h"
+#include "Widgets/SToolTip.h"
+#include "Widgets/Images/SImage.h"
+#include "Widgets/Input/SButton.h"
 
 #define LOCTEXT_NAMESPACE "SHeartGraphNode_Horizontal"
 

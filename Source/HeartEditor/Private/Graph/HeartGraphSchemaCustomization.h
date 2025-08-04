@@ -4,6 +4,14 @@
 
 #include "IDetailCustomization.h"
 
+namespace ESelectInfo
+{
+	enum Type : int;
+}
+
+class SWidget;
+class IPropertyHandle;
+
 class FHeartGraphSchemaCustomization : public IDetailCustomization
 {
 public:

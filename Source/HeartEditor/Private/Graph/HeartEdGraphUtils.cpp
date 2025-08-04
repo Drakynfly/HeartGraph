@@ -9,6 +9,7 @@
 #include "Model/HeartGraph.h"
 
 #include "SourceCodeNavigation.h"
+#include "HAL/FileManager.h"
 #include "Kismet2/KismetEditorUtilities.h"
 
 #include "Toolkits/ToolkitManager.h"

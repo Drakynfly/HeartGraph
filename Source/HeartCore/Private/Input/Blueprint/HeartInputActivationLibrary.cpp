@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartInputActivationLibrary.h"
+#include "Input/Events.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputActivationLibrary)
 

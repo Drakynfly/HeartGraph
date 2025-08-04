@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "AssetRegistry/AssetData.h"
 #include "Subsystems/EngineSubsystem.h"
 
 #include "Templates/SubclassOf.h"

@@ -14,6 +14,7 @@
 //#include "Graph/HeartGraphIndexer.h"
 
 #include "HeartGraphSettings.h"
+#include "PropertyEditorModule.h"
 
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"

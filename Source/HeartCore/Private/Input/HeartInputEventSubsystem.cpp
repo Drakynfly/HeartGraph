@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Input/HeartInputEventSubsystem.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Input/HeartCoreInputPreprocessor.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInputEventSubsystem)

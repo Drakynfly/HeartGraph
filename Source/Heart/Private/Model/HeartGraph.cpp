@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Model/HeartGraph.h"
+#include "Engine/World.h"
 #include "Model/HeartGraphExtension.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartNodeEdit.h"

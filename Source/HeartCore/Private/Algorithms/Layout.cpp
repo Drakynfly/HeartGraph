@@ -1,6 +1,7 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Algorithms/Layout.h"
+#include "Math/Vector2D.h"
 
 namespace Nodesoup
 {

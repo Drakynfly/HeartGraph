@@ -4,6 +4,7 @@
 
 #include "HeartSceneModule.h"
 #include "HeartSceneNode.h"
+#include "Engine/Engine.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 

@@ -32,6 +32,7 @@
 #include "ScopedTransaction.h"
 #include "SNodePanel.h"
 #include "ToolMenus.h"
+#include "Framework/Application/SlateApplication.h"
 #include "Graph/HeartEdGraph.h"
 #include "Widgets/Docking/SDockTab.h"
 

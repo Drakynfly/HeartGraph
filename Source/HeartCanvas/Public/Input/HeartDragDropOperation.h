@@ -3,7 +3,9 @@
 #pragma once
 
 #include "Blueprint/DragDropOperation.h"
+#include "Input/DragAndDrop.h"
 #include "Input/HeartEvent.h"
+#include "Input/Reply.h"
 #include "HeartDragDropOperation.generated.h"
 
 namespace Heart

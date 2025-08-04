@@ -2,8 +2,12 @@
 
 #pragma once
 
+#include "Subsystems/LocalPlayerSubsystem.h"
 #include "HeartInputEventSubsystem.generated.h"
 
+struct FPointerEvent;
+struct FKeyEvent;
+class FSlateApplication;
 class FHeartCoreInputPreprocessor;
 
 UENUM(BlueprintType)

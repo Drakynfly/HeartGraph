@@ -16,6 +16,8 @@
 
 #include "Actions/HeartRemoteActionLog.h"
 #include "LogHeartNet.h"
+#include "Engine/BlueprintGeneratedClass.h"
+#include "Engine/NetDriver.h"
 #include "Providers/FlakesNetBinarySerializer.h"
 
 #include "Net/UnrealNetwork.h"

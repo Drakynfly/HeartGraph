@@ -4,6 +4,7 @@
 
 #include "WorkflowOrientedApp/WorkflowTabFactory.h"
 
+class SGraphEditor;
 class SHeartPalette;
 
 namespace Heart::AssetEditor

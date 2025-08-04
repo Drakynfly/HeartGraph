@@ -3,7 +3,9 @@
 #pragma once
 
 #include "Concepts/BaseStructureProvider.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 #include "StructUtils/InstancedStruct.h"
+#include "UObject/Interface.h"
 #include "HeartEvent.generated.h"
 
 UINTERFACE(MinimalAPI)

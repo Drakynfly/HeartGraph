@@ -2,6 +2,7 @@
 
 #include "HeartNetUtils.h"
 #include "LogHeartNet.h"
+#include "GameFramework/Actor.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartNetUtils)
 

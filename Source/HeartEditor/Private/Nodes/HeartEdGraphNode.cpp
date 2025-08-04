@@ -24,6 +24,7 @@
 #include "Textures/SlateIcon.h"
 #include "ToolMenuSection.h"
 #include "HeartGraphStatics.h"
+#include "Engine/Blueprint.h"
 #include "Input/EdGraphPointerWrappers.h"
 #include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartSlateInputLinker.h"

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Templates/SubclassOf.h"
+
 #include "HeartNodeSource.generated.h"
 
 /**

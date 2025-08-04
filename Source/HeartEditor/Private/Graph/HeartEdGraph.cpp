@@ -1,9 +1,11 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/HeartEdGraph.h"
+#include "Editor.h"
 #include "HeartEditorShared.h"
 
 #include "HeartRegistryEditorSubsystem.h"
+#include "Engine/Engine.h"
 #include "Graph/HeartEdGraphSchema.h"
 #include "Input/HeartInputBindingAsset.h"
 #include "Input/HeartInputHandler_Action.h"

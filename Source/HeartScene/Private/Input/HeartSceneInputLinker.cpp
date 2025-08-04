@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Input/HeartSceneInputLinker.h"
+#include "Components/SceneComponent.h"
 #include "Input/HeartInputActivation.h"
 #include "Input/HeartEvent.h"
 #include "Input/HeartInputLinkerInterface.h"

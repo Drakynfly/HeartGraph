@@ -21,6 +21,8 @@
 #include "ISourceControlProvider.h"
 #include "SourceControlHelpers.h"
 #include "Misc/MessageDialog.h"
+#include "Widgets/SToolTip.h"
+#include "Widgets/Layout/SSpacer.h"
 #include "WorkflowOrientedApp/SModeWidget.h"
 
 #define LOCTEXT_NAMESPACE "HeartDebuggerToolbar"

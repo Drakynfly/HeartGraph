@@ -3,6 +3,8 @@
 #pragma once
 
 #include "HeartEvent.h"
+#include "InputCoreTypes.h"
+#include "Input/Events.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HeartInputUtilsLibrary.generated.h"
 

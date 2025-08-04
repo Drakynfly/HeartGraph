@@ -4,8 +4,10 @@
 
 #include "HeartCanvasDragDropOperation.h"
 #include "Input/HeartInputHandlerAssetBase.h"
+#include "Templates/SubclassOf.h"
 #include "HeartCanvasInputHandler_DDO_Action.generated.h"
 
+class UUserWidget;
 class UHeartActionBase;
 
 /**

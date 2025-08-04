@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartSceneEditorModule.h"
+#include "Modules/ModuleManager.h"
 
 #include "HeartEditorModule.h"
 #include "HeartSceneExtension.h"

@@ -3,6 +3,7 @@
 #include "HeartWidgetUtilsLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Widget.h"
+#include "Engine/GameInstance.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartWidgetUtilsLibrary)
 

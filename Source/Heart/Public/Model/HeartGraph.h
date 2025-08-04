@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include "UObject/Object.h"
 #include "HeartGraphInterface.h"
 #include "HeartGraphNodeComponent.h"
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
 #include "HeartNodeQuery.h"
+#include "Templates/SubclassOf.h"
+#include "UObject/Object.h"
 #include "HeartGraph.generated.h"
 
 namespace Heart::API
@@ -126,7 +127,7 @@ protected:
 	------------------------*/
 public:
 #if WITH_EDITOR
-	UEdGraph* GetEdGraph() const { return HeartEdGraph; }
+	class UEdGraph* GetEdGraph() const { return HeartEdGraph; }
 	static FName GetSchemaClassPropertyName() { return GET_MEMBER_NAME_CHECKED(ThisClass, SchemaClass); }
 #endif
 

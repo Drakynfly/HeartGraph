@@ -6,6 +6,8 @@
 #include "View/HeartVisualizerInterfaces.h"
 #include "EdGraphPointerWrappers.generated.h"
 
+class UEdGraphPin;
+
 /**
  * This object is a wrapper around an UEdGraphPin pointer, to allow it to be passed through heart linkers
  */

@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "InputCoreTypes.h"
+#include "InputKeyEventArgs.h"
+#include "Engine/EngineBaseTypes.h"
+#include "Framework/Application/SlateApplication.h"
 
 namespace Heart::Input
 {

@@ -21,6 +21,7 @@
 #include "ScopedTransaction.h"
 #include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartSlateInputLinker.h"
+#include "Modules/ModuleManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphSchema)
 

@@ -2,12 +2,14 @@
 
 #pragma once
 
-#include "InputCoreTypes.h"
+#include "InputKeyEventArgs.h"
 #include "StructUtils/InstancedStruct.h"
 #include "Concepts/BaseStructureProvider.h"
 #include "HeartInputActivation.generated.h"
 
 struct FBloodContainer;
+struct FKeyEvent;
+struct FPointerEvent;
 
 USTRUCT(BlueprintType)
 struct FHeartManualEvent
@@ -50,6 +52,7 @@ struct TIsHeartInputActivationType
 {
 	static constexpr bool Value = false;
 };
+
 template <> struct TIsHeartInputActivationType<FHeartManualEvent>	{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FKeyEvent>			{ static constexpr bool Value = true; };
 template <> struct TIsHeartInputActivationType<FPointerEvent>		{ static constexpr bool Value = true; };

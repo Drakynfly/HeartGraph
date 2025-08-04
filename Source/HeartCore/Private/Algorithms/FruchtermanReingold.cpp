@@ -1,6 +1,7 @@
 // Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Algorithms/FruchtermanReingold.h"
+#include "Math/Vector2D.h"
 
 namespace Nodesoup
 {

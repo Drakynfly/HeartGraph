@@ -1,6 +1,8 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartCanvasEditorModule.h"
+#include "Modules/ModuleManager.h"
+
 #include "HeartEditorModule.h"
 
 #include "Preview/ApplicationMode_PreviewCanvas.h"

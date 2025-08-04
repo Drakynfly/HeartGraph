@@ -3,8 +3,10 @@
 #pragma once
 
 #include "Input/HeartInputHandlerAssetBase.h"
+#include "Templates/SubclassOf.h"
 #include "HeartCanvasInputHandler_HeartDDO.generated.h"
 
+class UUserWidget;
 enum class EDragPivot : uint8;
 class UHeartDragDropOperation;
 

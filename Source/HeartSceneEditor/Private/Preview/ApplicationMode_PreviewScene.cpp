@@ -6,6 +6,7 @@
 #include "TabSpawners.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/HeartGraphAssetToolbar.h"
+#include "Modules/ModuleManager.h"
 #include "Preview/HeartPreviewScene.h"
 #include "Preview/PreviewSceneConfig.h"
 

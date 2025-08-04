@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Templates/Function.h"
+
 namespace Nodesoup
 {
     /** Simple adjacency list graph structure */

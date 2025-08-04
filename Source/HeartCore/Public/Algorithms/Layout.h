@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Containers/Array.h"
+
 namespace Nodesoup
 {
 	/** Distribute vertices equally on a 1.0 radius circle */

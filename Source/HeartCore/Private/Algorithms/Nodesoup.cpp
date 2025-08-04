@@ -4,6 +4,8 @@
 #include "Algorithms/FruchtermanReingold.h"
 #include "Algorithms/KamadaKawai.h"
 #include "Algorithms/Layout.h"
+#include "Containers/Array.h"
+#include "Math/Vector2D.h"
 
 namespace Nodesoup
 {

@@ -1,7 +1,9 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "TabSpawners.h"
+#include "PropertyEditorModule.h"
 #include "Graph/HeartGraphAssetEditor.h"
+#include "Modules/ModuleManager.h"
 #include "Preview/ApplicationMode_PreviewScene.h"
 #include "Preview/HeartPreviewScene.h"
 #include "Preview/PreviewSceneConfig.h"

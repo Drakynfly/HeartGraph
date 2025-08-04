@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "HeartCoreEditorModule.h"
+#include "Modules/ModuleManager.h"
 
 DEFINE_LOG_CATEGORY(LogHeartCoreEditor);
 

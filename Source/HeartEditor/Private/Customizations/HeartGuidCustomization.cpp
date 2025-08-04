@@ -3,6 +3,7 @@
 #include "HeartGuidCustomization.h"
 
 #include "DetailWidgetRow.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "HeartGuidCustomization"
 

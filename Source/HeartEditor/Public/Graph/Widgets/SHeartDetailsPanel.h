@@ -4,6 +4,8 @@
 
 #include "Widgets/SCompoundWidget.h"
 
+class IDetailsView;
+
 namespace Heart::AssetEditor
 {
 	class FHeartGraphEditor;

@@ -8,6 +8,9 @@
 #include "View/HeartVisualizerInterfaces.h"
 #include "SlatePointerWrappers.generated.h"
 
+class FDragDropOperation;
+class SWidget;
+
 /**
  * This object is a wrapper around a SWidget shared pointer, to allow it to be passed through the heart linker
  */

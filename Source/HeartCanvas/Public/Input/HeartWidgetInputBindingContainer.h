@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartWidgetInputLinker.h"
+#include "Templates/SubclassOf.h"
 
 #include "HeartWidgetInputBindingContainer.generated.h"
 

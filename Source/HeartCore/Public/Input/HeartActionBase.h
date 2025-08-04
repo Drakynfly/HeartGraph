@@ -65,16 +65,16 @@ namespace Heart::Action
 	};
 
 	/** Gets the description for an action, optionally adaptive to a specific target */
-	HEARTCORE_API FText GetDescription(TSubclassOf<UHeartActionBase> Action, const UObject* Target = nullptr);
+	HEARTCORE_API FText GetDescription(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target = nullptr);
 
 	/** Can a Heart Action be run on a target? */
-	HEARTCORE_API bool CanExecute(TSubclassOf<UHeartActionBase> Action, const UObject* Target);
+	HEARTCORE_API bool CanExecute(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target);
 
-	HEARTCORE_API FHeartEvent Execute(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FHeartInputActivation& Activation, UObject* Payload = nullptr);
+	HEARTCORE_API FHeartEvent Execute(const TSubclassOf<UHeartActionBase>& Action, UObject* Target, const FHeartInputActivation& Activation, UObject* Payload = nullptr);
 
-	HEARTCORE_API bool CanUndo(TSubclassOf<UHeartActionBase> Action, const UObject* Target);
+	HEARTCORE_API bool CanUndo(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target);
 
-	HEARTCORE_API bool Undo(TSubclassOf<UHeartActionBase> Action, UObject* Target, const FBloodContainer& UndoData);
+	HEARTCORE_API bool Undo(const TSubclassOf<UHeartActionBase>& Action, UObject* Target, const FBloodContainer& UndoData);
 }
 ENUM_CLASS_FLAGS(Heart::Action::EExecutionFlags)
 

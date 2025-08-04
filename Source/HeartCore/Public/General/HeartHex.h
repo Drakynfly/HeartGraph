@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Misc/EnumRange.h"
+
 namespace Heart::Hex
 {
 	namespace Flat

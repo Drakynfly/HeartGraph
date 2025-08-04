@@ -6,6 +6,7 @@
 #include "TabSpawners.h"
 #include "Graph/HeartGraphAssetEditor.h"
 #include "Graph/HeartGraphAssetToolbar.h"
+#include "Modules/ModuleManager.h"
 
 #define LOCTEXT_NAMESPACE "ApplicationMode_PreviewCanvas"
 

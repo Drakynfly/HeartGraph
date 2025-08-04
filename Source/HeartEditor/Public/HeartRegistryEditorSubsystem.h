@@ -6,6 +6,7 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "HeartRegistryEditorSubsystem.generated.h"
 
+class SGraphNode;
 class UHeartEdGraphNode;
 
 /**

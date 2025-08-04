@@ -4,6 +4,10 @@
 
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 
+#if WITH_EDITOR
+#include "Engine/Engine.h"
+#endif
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphSettings)
 
 #if WITH_EDITOR

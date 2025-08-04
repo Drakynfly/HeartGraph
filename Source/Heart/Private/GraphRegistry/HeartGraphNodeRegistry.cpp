@@ -3,6 +3,7 @@
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "AssetRegistry/IAssetRegistry.h"
 #include "Engine/AssetManager.h"
+#include "Engine/Engine.h"
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartRegistryQuery.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"

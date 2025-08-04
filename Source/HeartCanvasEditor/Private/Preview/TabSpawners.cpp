@@ -4,6 +4,7 @@
 #include "Graph/HeartGraphAssetEditor.h"
 
 #include "PropertyEditorModule.h"
+#include "Modules/ModuleManager.h"
 
 #define LOCTEXT_NAMESPACE "Heart::AssetEditor::TabSpawners"
 

@@ -4,6 +4,9 @@
 #include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartSceneInputLinker.h"
 
+#include "Components/PrimitiveComponent.h"
+#include "GameFramework/PlayerController.h"
+
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartPlayerInput)
 
 bool UHeartPlayerInput::InputKey(const FInputKeyEventArgs& Params)

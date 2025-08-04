@@ -6,6 +6,7 @@
 #include "Model/HeartGraphNode.h"
 
 #include "Engine/AssetManager.h"
+#include "Engine/Engine.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GraphNodeRegistrar)
 

@@ -7,6 +7,9 @@
 #include "HeartEditorModule.h"
 #include "Graph/HeartEdGraphUtils.h"
 #include "Model/HeartGraphNode.h"
+#include "Modules/ModuleManager.h"
+#include "Widgets/Input/SComboBox.h"
+#include "Widgets/Text/STextBlock.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphNodeCustomization"
 

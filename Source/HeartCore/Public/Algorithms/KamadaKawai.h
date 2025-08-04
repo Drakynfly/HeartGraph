@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Nodesoup.h"
+#include "Containers/Array.h"
 
 namespace Nodesoup
 {

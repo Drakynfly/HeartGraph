@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include "ConnectionDrawingPolicy.h"
 #include "Modules/ModuleInterface.h"
-#include "Toolkits/IToolkit.h"
+#include "Toolkits/AssetEditorToolkit.h"
 
+class UEdGraph;
 class FApplicationMode;
 class UHeartEdGraphNode;
 class UHeartEdGraphSchema;

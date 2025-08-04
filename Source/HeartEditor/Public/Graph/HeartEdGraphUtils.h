@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "Templates/SharedPointer.h"
+#include "Toolkits/IToolkit.h"
+
+class UEdGraphNode;
 class UHeartGraph;
 
 namespace Heart

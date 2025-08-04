@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Input/HeartActionBase.h"
+#include "Templates/SubclassOf.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartActionBase)
 
@@ -31,21 +32,21 @@ namespace Heart::Action
 		return Action->Undo(Target, UndoData);
 	}
 
-	FText GetDescription(const TSubclassOf<UHeartActionBase> Action, const UObject* Target)
+	FText GetDescription(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target)
 	{
 		return IsValid(Action) ?
 			FNativeExec::GetDescription(Action->GetDefaultObject<UHeartActionBase>(), Target) :
 			FText::GetEmpty();
 	}
 
-	bool CanExecute(const TSubclassOf<UHeartActionBase> Action, const UObject* Target)
+	bool CanExecute(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target)
 	{
 		return IsValid(Action) ?
 			FNativeExec::CanExecute(Action->GetDefaultObject<UHeartActionBase>(), Target) :
 			false;
 	}
 
-	FHeartEvent Execute(const TSubclassOf<UHeartActionBase> Action, UObject* Target,
+	FHeartEvent Execute(const TSubclassOf<UHeartActionBase>& Action, UObject* Target,
 						const FHeartInputActivation& Activation, UObject* Payload)
 	{
 		if (!ensure(IsValid(Action)))
@@ -68,14 +69,14 @@ namespace Heart::Action
 		return FNativeExec::Execute(ActionObject, Args);
 	}
 
-	bool CanUndo(const TSubclassOf<UHeartActionBase> Action, const UObject* Target)
+	bool CanUndo(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target)
 	{
 		return IsValid(Action) ?
 			FNativeExec::CanUndo(Action->GetDefaultObject<UHeartActionBase>(), Target) :
 			false;
 	}
 
-	bool Undo(const TSubclassOf<UHeartActionBase> Action, UObject* Target, const FBloodContainer& UndoData)
+	bool Undo(const TSubclassOf<UHeartActionBase>& Action, UObject* Target, const FBloodContainer& UndoData)
 	{
 		if (!ensure(IsValid(Action)))
 		{

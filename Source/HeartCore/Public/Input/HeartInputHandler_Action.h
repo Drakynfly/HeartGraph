@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartInputHandler_Immediate.h"
+#include "Templates/SubclassOf.h"
 #include "HeartInputHandler_Action.generated.h"
 
 class UHeartActionBase;

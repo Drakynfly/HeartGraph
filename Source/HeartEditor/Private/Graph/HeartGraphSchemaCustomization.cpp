@@ -7,6 +7,8 @@
 #include "DetailWidgetRow.h"
 #include "HeartEditorModule.h"
 #include "ModelView/HeartGraphSchema.h"
+#include "Modules/ModuleManager.h"
+#include "Widgets/Input/SComboBox.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphSchemaCustomization"
 

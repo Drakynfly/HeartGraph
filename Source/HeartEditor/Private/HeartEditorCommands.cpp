@@ -8,6 +8,7 @@
 #include "Model/HeartGraphNode.h"
 
 #include "Misc/ConfigCacheIni.h"
+#include "Styling/AppStyle.h"
 
 #define LOCTEXT_NAMESPACE "HeartGraphCommands"
 

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "HAL/Platform.h"
+
 class IHeartGraphInterface;
 
 // Utilities for creating a grouped set of actions that get undone/redone together
