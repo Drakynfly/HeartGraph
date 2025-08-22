@@ -691,5 +691,5 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(const UGraphNodeRegistrar* Registr
 
 	Registrar->OnDeregistered(this);
 
-	ContainedRegistrars.Remove(Registrar);
+	ContainedRegistrars.RemoveSwap(Registrar);
 }

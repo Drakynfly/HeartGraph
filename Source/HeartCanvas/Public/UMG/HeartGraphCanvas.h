@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Model/HeartConcepts.h"
 #include "HeartGraphWidgetBase.h"
 
 #include "Input/HeartWidgetInputBindingContainer.h"
@@ -183,13 +184,10 @@ protected:
 			GETTERS
 	----------------------*/
 public:
-	template <
-		typename THeartGraph
-		UE_REQUIRES(TIsDerivedFrom<THeartGraph, UHeartGraph>::Value)
-	>
-	THeartGraph* GetGraph() const
+	template <Heart::CGraph T>
+	T* GetGraph() const
 	{
-		return Cast<THeartGraph>(DisplayedGraph);
+		return Cast<T>(DisplayedGraph);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvas")

@@ -47,17 +47,24 @@ struct FHeartActionIsRedo
 	FBloodContainer* UndoneData = nullptr;
 };
 
-template <typename T>
-struct TIsHeartInputActivationType
+namespace Heart
 {
-	static constexpr bool Value = false;
-};
+	template <typename T>
+	struct TIsInputActivationType
+	{
+		static constexpr bool Value = false;
+	};
 
-template <> struct TIsHeartInputActivationType<FHeartManualEvent>	{ static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FKeyEvent>			{ static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FPointerEvent>		{ static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FInputKeyEventArgs>	{ static constexpr bool Value = true; };
-template <> struct TIsHeartInputActivationType<FHeartActionIsRedo>	{ static constexpr bool Value = true; };
+	// Defines which structs are considered "Activation Types"
+	template <> struct TIsInputActivationType<FHeartManualEvent>	{ static constexpr bool Value = true; };
+	template <> struct TIsInputActivationType<FKeyEvent>			{ static constexpr bool Value = true; };
+	template <> struct TIsInputActivationType<FPointerEvent>		{ static constexpr bool Value = true; };
+	template <> struct TIsInputActivationType<FInputKeyEventArgs>	{ static constexpr bool Value = true; };
+	template <> struct TIsInputActivationType<FHeartActionIsRedo>	{ static constexpr bool Value = true; };
+
+	template<typename T>
+	concept CInputActivationType = TIsInputActivationType<T>::Value;
+}
 
 /**
  *
@@ -70,10 +77,7 @@ struct HEARTCORE_API FHeartInputActivation
 	FHeartInputActivation()
 	  : EventStruct(nullptr) {}
 
-	template <
-		typename T
-		UE_REQUIRES(TIsHeartInputActivationType<T>::Value)
-	>
+	template <Heart::CInputActivationType T>
 	FHeartInputActivation(const T& Type)
 	{
 		if constexpr (std::is_same_v<T, FInputKeyEventArgs>)
@@ -86,10 +90,7 @@ struct HEARTCORE_API FHeartInputActivation
 		}
 	}
 
-	template <
-		typename T
-		UE_REQUIRES(TIsHeartInputActivationType<T>::Value)
-	>
+	template <Heart::CInputActivationType T>
 	TOptional<T> As() const
 	{
 		if constexpr (std::is_same_v<T, FInputKeyEventArgs> ||
@@ -111,10 +112,7 @@ struct HEARTCORE_API FHeartInputActivation
 		return NullOpt;
 	}
 
-	template <
-		typename T
-		UE_REQUIRES(TIsHeartInputActivationType<T>::Value)
-	>
+	template <Heart::CInputActivationType T>
 	T AsOrDefault() const
 	{
 		if (TOptional<T> Option = As<T>();

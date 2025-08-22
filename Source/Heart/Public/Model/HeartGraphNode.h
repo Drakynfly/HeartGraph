@@ -12,6 +12,7 @@
 #include "HeartPinData.h"
 #include "HeartPinQuery.h"
 #include "GraphRegistry/HeartNodeSource.h"
+#include "Model/HeartConcepts.h"
 #include "Model/HeartGuids.h"
 #include "Model/HeartPinDirection.h"
 
@@ -183,13 +184,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeprecatedFunction, DeprecationMessage = "Function moved to library: UHeartGraphUtils::GetNodeObjectTyped", DeterminesOutputType = Class))
 	UObject* GetNodeObjectTyped(TSubclassOf<UObject> Class) const { return NodeObject; }
 
-	template <
-		typename THeartGraph
-		UE_REQUIRES(TIsDerivedFrom<THeartGraph, UHeartGraph>::Value)
-	>
-	THeartGraph* GetOwningGraph() const
+	template <Heart::CGraph T>
+	T* GetOwningGraph() const
 	{
-		return Cast<THeartGraph>(GetGraph());
+		return Cast<T>(GetGraph());
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")

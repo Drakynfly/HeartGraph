@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Model/HeartConcepts.h"
 #include "HeartGraphInterface.h"
 #include "HeartGraphNodeComponent.h"
 #include "HeartGuids.h"
@@ -145,13 +146,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
 
-	template <
-		typename THeartGraphNode
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-	>
-	THeartGraphNode* GetNode(const FHeartNodeGuid& NodeGuid) const
+	template <Heart::CGraphNode T>
+	T* GetNode(const FHeartNodeGuid& NodeGuid) const
 	{
-		return Cast<THeartGraphNode>(GetNode(NodeGuid));
+		return Cast<T>(GetNode(NodeGuid));
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
@@ -199,13 +197,10 @@ public:
 	const auto& GetExtensions() const { return Extensions; }
 
 	/** Finds the first extension of the template type. */
-	template <
-		typename TExtensionClass
-		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
-	>
-	TExtensionClass* GetExtension() const
+	template <Heart::CGraphExtension T>
+	T* GetExtension() const
 	{
-		return CastChecked<TExtensionClass>(GetExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
+		return CastChecked<T>(GetExtension(T::StaticClass()), ECastCheckedType::NullAllowed);
 	}
 
 	/** Finds the first extension of the requested class. */
@@ -224,13 +219,10 @@ public:
 	TArray<UHeartGraphExtension*> GetExtensionsOfClass(TSubclassOf<UHeartGraphExtension> Class) const;
 
 	/** Add the extension of the template class. */
-	template <
-		typename TExtensionClass
-		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
-	>
-	TExtensionClass* AddExtension()
+	template <Heart::CGraphExtension T>
+	T* AddExtension()
 	{
-		return CastChecked<TExtensionClass>(AddExtension(TExtensionClass::StaticClass()), ECastCheckedType::NullAllowed);
+		return CastChecked<T>(AddExtension(T::StaticClass()), ECastCheckedType::NullAllowed);
 	}
 
 	/** Adds a new extension of the requested class. */
@@ -250,13 +242,10 @@ public:
 	void RemoveExtensionsByClass(TSubclassOf<UHeartGraphExtension> Class);
 
 	/** Remove the extension of the template class. */
-	template <
-		typename TExtensionClass
-		UE_REQUIRES(TIsDerivedFrom<TExtensionClass, UHeartGraphExtension>::Value)
-	>
+	template <Heart::CGraphExtension T>
 	void RemoveExtensionsByClass()
 	{
-		return RemoveExtensionsByClass(TExtensionClass::StaticClass());
+		return RemoveExtensionsByClass(T::StaticClass());
 	}
 
 
@@ -284,13 +273,10 @@ public:
 
 
 	/** Finds the first component of the template type. */
-	template <
-		typename TComponentClass
-		UE_REQUIRES(TIsDerivedFrom<TComponentClass, UHeartGraphNodeComponent>::Value)
-	>
-	TComponentClass* GetNodeComponent(const FHeartNodeGuid& Node) const
+	template <Heart::CGraphNodeComponent T>
+	T* GetNodeComponent(const FHeartNodeGuid& Node) const
 	{
-		return CastChecked<TComponentClass>(GetNodeComponent(Node, TComponentClass::StaticClass()), ECastCheckedType::NullAllowed);
+		return CastChecked<T>(GetNodeComponent(Node, T::StaticClass()), ECastCheckedType::NullAllowed);
 	}
 
 	/** Finds the first component of the requested class. */
@@ -306,13 +292,10 @@ public:
 	TArray<UHeartGraphNodeComponent*> GetNodeComponentsOfClass(TSubclassOf<UHeartGraphNodeComponent> Class) const;
 
 	/** Adds a new component of the requested class. If there is already a component of this class, the existing one will be returned instead. */
-	template <
-		typename TComponentClass
-		UE_REQUIRES(TIsDerivedFrom<TComponentClass, UHeartGraphNodeComponent>::Value)
-	>
-	TComponentClass* FindOrAddNodeComponent(const FHeartNodeGuid& Node)
+	template <Heart::CGraphNodeComponent T>
+	T* FindOrAddNodeComponent(const FHeartNodeGuid& Node)
 	{
-		return CastChecked<TComponentClass>(FindOrAddNodeComponent(Node, TComponentClass::StaticClass()), ECastCheckedType::NullAllowed);
+		return CastChecked<T>(FindOrAddNodeComponent(Node, T::StaticClass()), ECastCheckedType::NullAllowed);
 	}
 
 	/** Adds a new component of the requested class. If there is already a component of this class, the existing one will be returned instead. */
@@ -324,13 +307,10 @@ public:
 	bool RemoveNodeComponent(const FHeartNodeGuid& Node, TSubclassOf<UHeartGraphNodeComponent> Class);
 
 	/** Remove the component of the template class. */
-	template <
-		typename TComponentClass
-		UE_REQUIRES(TIsDerivedFrom<TComponentClass, UHeartGraphNodeComponent>::Value)
-	>
+	template <Heart::CGraphNodeComponent T>
 	bool RemoveNodeComponent(const FHeartNodeGuid& Node)
 	{
-		return RemoveNodeComponent(Node, TComponentClass::StaticClass());
+		return RemoveNodeComponent(Node, T::StaticClass());
 	}
 
 	void RemoveComponentsForNode(const FHeartNodeGuid& Node);

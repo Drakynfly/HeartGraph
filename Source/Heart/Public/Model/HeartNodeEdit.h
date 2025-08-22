@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HeartGuids.h"
+#include "Model/HeartConcepts.h"
 #include "GraphRegistry/HeartNodeSource.h" // @todo move FHeartNodeArchetype to its own header?
 
 class UHeartGraph;
@@ -67,37 +68,30 @@ namespace Heart::API
 			const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
 
 		// Create from template graph class and node object
-		template <
-			typename THeartGraphNode
-			UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-		>
+		template <CGraphNode T>
 		FNewNodeId CreateFromObject(UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext = nullptr)
 		{
 			checkf(!NodeObject->IsA<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node object instead of an 'OBJECT' node class"));
-			return Create_Reference(THeartGraphNode::StaticClass(), NodeObject, Location, NodeSpawningContext);
+			return Create_Reference(T::StaticClass(), NodeObject, Location, NodeSpawningContext);
 		}
 
 		// Create from template node class and attempt to cast the return to the template graph class
 		template <
-			typename THeartGraphNode,
+			CGraphNode T,
 			typename TNodeObject
-			UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value &&
-						!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::Value)
+			UE_REQUIRES(!TIsDerivedFrom<TNodeObject, UHeartGraphNode>::Value)
 		>
 		FNewNodeId CreateFromClass(const FVector2D& Location, UObject* NodeSpawningContext = nullptr)
 		{
-			return Create_Instanced(THeartGraphNode::StaticClass(), TNodeObject::StaticClass(), Location, NodeSpawningContext);
+			return Create_Instanced(T::StaticClass(), TNodeObject::StaticClass(), Location, NodeSpawningContext);
 		}
 
 		// Create from node class and attempt to cast the return to the template graph class
-		template <
-			typename THeartGraphNode
-			UE_REQUIRES(TIsDerivedFrom<THeartGraphNode, UHeartGraphNode>::Value)
-		>
+		template <CGraphNode T>
 		FNewNodeId CreateFromClass(const TSubclassOf<UObject> NodeClass, const FVector2D& Location, UObject* NodeSpawningContext = nullptr)
 		{
-			checkf(!NodeClass->IsChildOf<THeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
-			return Create_Instanced(THeartGraphNode::StaticClass(), NodeClass, Location, NodeSpawningContext);
+			checkf(!NodeClass->IsChildOf<UHeartGraphNode>(), TEXT("If this trips, you've passed in a 'GRAPH' node class instead of an 'OBJECT' node class"));
+			return Create_Instanced(T::StaticClass(), NodeClass, Location, NodeSpawningContext);
 		}
 
 		// Retrieve the GraphNode for a pending creation.

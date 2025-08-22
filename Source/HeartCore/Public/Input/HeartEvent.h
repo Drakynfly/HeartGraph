@@ -31,21 +31,29 @@ struct FHeartDeferredEvent
 	FHeartDeferredEvent(IHeartDeferredEventHandler* Handler)
 	  : Handler(Cast<UObject>(Handler)) {}
 
-	FHeartDeferredEvent(const TScriptInterface<IHeartDeferredEventHandler> Handler)
+	FHeartDeferredEvent(const TScriptInterface<IHeartDeferredEventHandler>& Handler)
 	  : Handler(Handler) {}
 
 	UPROPERTY()
 	TScriptInterface<IHeartDeferredEventHandler> Handler;
 };
 
-
-template <typename T>
-struct TIsHeartEventType
+namespace Heart
 {
-	static constexpr bool Value = false;
-};
+	template <typename T>
+    struct TIsEventType
+	{
+		static constexpr bool Value = false;
+	};
 
-template <> struct TIsHeartEventType<FHeartDeferredEvent> { static constexpr bool Value = true; };
+	template <> struct TIsEventType<FHeartDeferredEvent>
+	{
+		static constexpr bool Value = true;
+	};
+
+	template<typename T>
+	concept CEventType = TIsEventType<T>::Value;
+}
 
 /**
  *
@@ -63,22 +71,16 @@ private:
 	 : Status(StatusCode) {}
 
 public:
-	template <
-		typename T,
-		typename... TArgs
-		UE_REQUIRES(TIsHeartEventType<T>::Value)
-	>
+	// Add a detail struct to this event.
+	template <Heart::CEventType T, typename... TArgs>
 	FHeartEvent& Detail(const TArgs&... Args)
 	{
 		Details.InitializeAs<T>(Args...);
 		return *this;
 	}
 
-	template <
-		typename T,
-		typename... TArgs
-		UE_REQUIRES(TIsHeartEventType<T>::Value)
-	>
+	// Get a copy of this event, with a detail struct added.
+	template <Heart::CEventType T, typename... TArgs>
 	FHeartEvent Detail(const TArgs&... Args) const
 	{
 		FHeartEvent Event = *this;
@@ -86,10 +88,7 @@ public:
 		return Event;
 	}
 
-	template <
-		typename T
-		UE_REQUIRES(TIsHeartEventType<T>::Value)
-	>
+	template <Heart::CEventType T>
 	TOptional<T> As() const
 	{
 		if constexpr (TModels_V<CBaseStructureProvider, T>)

@@ -8,7 +8,7 @@
 #include "HeartSlateReplyWrapper.generated.h"
 
 // Enable using wrapped slate Replies as Heart Events
-template <> struct TIsHeartEventType<FEventReply> { static constexpr bool Value = true; };
+template <> struct Heart::TIsEventType<FEventReply> { static constexpr bool Value = true; };
 
 namespace Heart::Input
 {
