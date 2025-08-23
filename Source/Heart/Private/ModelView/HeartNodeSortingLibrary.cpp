@@ -23,71 +23,84 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::ResolveNodes(const UHeartGrap
 	return Out;
 }
 
-TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::SortNodes(const TArray<UHeartGraphNode*>& Nodes,
+TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::SortNodes(const TArray<FHeartNodeGuid>& Nodes,
 															 const FHeartNodeComparePredicate& Predicate)
 {
 	if (!ensure(Predicate.IsBound()))
 	{
-		return TArray<UHeartGraphNode*>();
+		return TArray<FHeartNodeGuid>();
 	}
 
-	TArray<UHeartGraphNode*> OutNodes = Nodes;
+	TArray<FHeartNodeGuid> OutNodes = Nodes;
 	SortNodesInPlace(OutNodes, Predicate);
 	return OutNodes;
 }
 
-void UHeartNodeSortingLibrary::SortNodesInPlace(TArray<UHeartGraphNode*>& Nodes, const FHeartNodeComparePredicate& Predicate)
+void UHeartNodeSortingLibrary::SortNodesInPlace(TArray<FHeartNodeGuid>& Nodes, const FHeartNodeComparePredicate& Predicate)
 {
 	if (!ensure(Predicate.IsBound()))
 	{
 		return;
 	}
 
-	Algo::Sort(Nodes, [&Predicate](const UHeartGraphNode* A, const UHeartGraphNode* B)
+	Algo::Sort(Nodes, [&Predicate](const FHeartNodeGuid& A, const FHeartNodeGuid& B)
 		{
 			return Predicate.Execute(A, B);
 		});
 }
 
-TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByPredicate(const TArray<UHeartGraphNode*>& Nodes,
+TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByPredicate(const TArray<FHeartNodeGuid>& Nodes,
                                                                           const FHeartNodeFilterPredicate& Predicate)
 {
 	if (!ensure(Predicate.IsBound()))
 	{
-		return TArray<UHeartGraphNode*>();
+		return TArray<FHeartNodeGuid>();
 	}
 
-	return Nodes.FilterByPredicate([&Predicate](const UHeartGraphNode* Node)
+	return Nodes.FilterByPredicate([&Predicate](const FHeartNodeGuid& Node)
 		{
 			return Predicate.Execute(Node);
 		});
 }
 
-TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByPredicate_Exclusive(
-	const TArray<UHeartGraphNode*>& Nodes, const FHeartNodeFilterPredicate& Predicate)
+TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByPredicate_Exclusive(
+	const TArray<FHeartNodeGuid>& Nodes, const FHeartNodeFilterPredicate& Predicate)
 {
 	if (!ensure(Predicate.IsBound()))
 	{
-		return TArray<UHeartGraphNode*>();
+		return TArray<FHeartNodeGuid>();
 	}
 
-	return Nodes.FilterByPredicate([&Predicate](const UHeartGraphNode* Node)
+	return Nodes.FilterByPredicate([&Predicate](const FHeartNodeGuid& Node)
 		{
 			return !Predicate.Execute(Node);
 		});
 }
 
-TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass(const TArray<UHeartGraphNode*>& Nodes,
-                                                                      const TSet<TSubclassOf<UHeartGraphNode>>& Classes)
+TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByClass(const TScriptInterface<IHeartGraphInterface> Graph,
+																	const TArray<FHeartNodeGuid>& Nodes,
+                                                                    const TSet<TSubclassOf<UHeartGraphNode>>& Classes)
 {
 	if (!ensure(!Classes.IsEmpty()))
 	{
-		return TArray<UHeartGraphNode*>();
+		return TArray<FHeartNodeGuid>();
 	}
 
-	return Nodes.FilterByPredicate([&Classes](const UHeartGraphNode* Node)
+	const UHeartGraph* HeartGraph = Graph->GetHeartGraph();
+	if (IsValid(HeartGraph))
 	{
-		for (auto&& Class = Node->GetClass(); Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
+		return TArray<FHeartNodeGuid>();
+	}
+
+	return Nodes.FilterByPredicate([&Classes, HeartGraph](const FHeartNodeGuid& Node)
+	{
+		const UHeartGraphNode* NodePtr = HeartGraph->GetNode(Node);
+		if (!IsValid(NodePtr))
+		{
+			return false;
+		}
+
+		for (auto&& Class = NodePtr->GetClass(); Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 		{
 			if (Classes.Contains(Class))
 			{
@@ -98,17 +111,30 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass(const TArr
 	});
 }
 
-TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(const TArray<UHeartGraphNode*>& Nodes,
-                                                                                const TSet<TSubclassOf<UHeartGraphNode>>& Classes)
+TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(const TScriptInterface<IHeartGraphInterface> Graph,
+																			  const TArray<FHeartNodeGuid>& Nodes,
+                                                                              const TSet<TSubclassOf<UHeartGraphNode>>& Classes)
 {
 	if (!ensure(!Classes.IsEmpty()))
 	{
-		return TArray<UHeartGraphNode*>();
+		return TArray<FHeartNodeGuid>();
 	}
 
-	return Nodes.FilterByPredicate([&Classes](const UHeartGraphNode* Node)
+	const UHeartGraph* HeartGraph = Graph->GetHeartGraph();
+	if (IsValid(HeartGraph))
+	{
+		return TArray<FHeartNodeGuid>();
+	}
+
+	return Nodes.FilterByPredicate([&Classes, HeartGraph](const FHeartNodeGuid& Node)
 		{
-			for (auto&& Class = Node->GetClass(); Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
+			const UHeartGraphNode* NodePtr = HeartGraph->GetNode(Node);
+			if (!IsValid(NodePtr))
+			{
+				return false;
+			}
+
+			for (auto&& Class = NodePtr->GetClass(); Class && Class != UObject::StaticClass(); Class = Class->GetSuperClass())
 			{
 				if (Classes.Contains(Class))
 				{
@@ -119,14 +145,20 @@ TArray<UHeartGraphNode*> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(
 		});
 }
 
-void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphNode*>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
+void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TScriptInterface<IHeartGraphInterface> Graph, const TArray<FHeartNodeGuid>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
 {
+	const UHeartGraph* HeartGraph = Graph->GetHeartGraph();
+	if (IsValid(HeartGraph))
+	{
+		return;
+	}
+
 	EHeartPinDirection InverseDirection = Args.Direction == EHeartPinDirection::Input ? EHeartPinDirection::Output : EHeartPinDirection::Input;
 
-	TSet<UHeartGraphNode*> TrackedNodes;
+	TSet<const UHeartGraphNode*> TrackedNodes;
 
 	// Recursive function for building tree nodes
-	TFunction<FHeartTreeNode(UHeartGraphNode*)> BuildTreeNode;
+	TFunction<FHeartTreeNode(const UHeartGraphNode*)> BuildTreeNode;
 	BuildTreeNode = [InverseDirection, &BuildTreeNode, &TrackedNodes, AllowDuplicates = Args.AllowDuplicates](const UHeartGraphNode* Node)
 		{
 			FHeartTreeNode OutTreeNode;
@@ -157,8 +189,15 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 			return OutTreeNode;
 		};
 
-	for (UHeartGraphNode* Node : Nodes)
+
+	for (const FHeartNodeGuid& NodeGuid : Nodes)
 	{
+		const UHeartGraphNode* Node = HeartGraph->GetNode(NodeGuid);
+		if (!IsValid(Node))
+		{
+			continue;
+		}
+
 		// Filter by nodes that have no connections in the specified direction
 		if (Node->FindPinsByPredicate(Args.Direction,
 				[Node](const FHeartPinGuid Pin, const FHeartGraphPinDesc&)
@@ -166,7 +205,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TArray<UHeartGraphN
 					return Node->HasConnections(Pin);
 				}).Num() == 0)
 		{
-			Trees.Add(FHeartTree(Node->GetGraph(), BuildTreeNode(Node)));
+			Trees.Add(FHeartTree(HeartGraph, BuildTreeNode(Node)));
 		}
 	}
 }
