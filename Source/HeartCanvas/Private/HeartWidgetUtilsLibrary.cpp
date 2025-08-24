@@ -12,14 +12,14 @@ namespace Heart::UI
 	namespace Vectors
 	{
 		// UI directions
-		static const FVector2D Left	( 1.0,  0.0);
-		static const FVector2D Right(-1.0,  0.0);
-		static const FVector2D Up	( 0.0,  1.0);
-		static const FVector2D Down	( 0.0, -1.0);
+		static const FVector2f Left	( 1.f,  0.f);
+		static const FVector2f Right(-1.f,  0.f);
+		static const FVector2f Up	( 0.f,  1.f);
+		static const FVector2f Down	( 0.f, -1.f);
 	}
 }
 
-FVector2D UHeartWidgetUtilsLibrary::UINavigationToVector(const EUINavigation Navigation)
+FVector2f UHeartWidgetUtilsLibrary::UINavigationToVector(const EUINavigation Navigation)
 {
 	switch (Navigation)
 	{
@@ -31,17 +31,17 @@ FVector2D UHeartWidgetUtilsLibrary::UINavigationToVector(const EUINavigation Nav
 	case EUINavigation::Previous:
 	case EUINavigation::Num:
 	case EUINavigation::Invalid:
-	default: return FVector2D::ZeroVector;
+	default: return FVector2f::ZeroVector;
 	}
 }
 
-FVector2D UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
+FVector2f UHeartWidgetUtilsLibrary::GetGeometryCenter(const FGeometry& Geometry)
 {
 	return Geometry.GetLocalSize() * 0.5;
 }
 
-void UHeartWidgetUtilsLibrary::DrawSpline(FPaintContext& Context, const FVector2D& From, const FVector2D& FromTangent,
-                                          const FVector2D& To, const FVector2D& ToTangent, const float Thickness, const FLinearColor& Tint)
+void UHeartWidgetUtilsLibrary::DrawSpline(FPaintContext& Context, const FVector2f& From, const FVector2f& FromTangent,
+                                          const FVector2f& To, const FVector2f& ToTangent, const float Thickness, const FLinearColor& Tint)
 {
 	Context.MaxLayer++;
 
@@ -58,8 +58,8 @@ void UHeartWidgetUtilsLibrary::DrawSpline(FPaintContext& Context, const FVector2
 		Tint);
 }
 
-void UHeartWidgetUtilsLibrary::DrawCubicBezierSpline(FPaintContext& Context, const FVector2D& P0, const FVector2D& P1,
-	const FVector2D& P2, const FVector2D& P3, const float Thickness, const FLinearColor& Tint)
+void UHeartWidgetUtilsLibrary::DrawCubicBezierSpline(FPaintContext& Context, const FVector2f& P0, const FVector2f& P1,
+	const FVector2f& P2, const FVector2f& P3, const float Thickness, const FLinearColor& Tint)
 {
 	Context.MaxLayer++;
 
@@ -73,21 +73,21 @@ void UHeartWidgetUtilsLibrary::DrawCubicBezierSpline(FPaintContext& Context, con
 		Tint);
 }
 
-FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterLocal(const UWidget* Widget)
+FVector2f UHeartWidgetUtilsLibrary::GetWidgetCenterLocal(const UWidget* Widget)
 {
 	if (!ensure(IsValid(Widget)))
 	{
-		return FVector2D::ZeroVector;
+		return FVector2f::ZeroVector;
 	}
 
 	return GetGeometryCenter(Widget->GetTickSpaceGeometry());
 }
 
-FVector2D UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(const UWidget* Widget)
+FVector2f UHeartWidgetUtilsLibrary::GetWidgetCenterAbsolute(const UWidget* Widget)
 {
 	if (!ensure(IsValid(Widget)))
 	{
-		return FVector2D::ZeroVector;
+		return FVector2f::ZeroVector;
 	}
 
 	auto&& Geometry = Widget->GetTickSpaceGeometry();

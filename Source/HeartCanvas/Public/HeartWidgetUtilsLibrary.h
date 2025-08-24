@@ -18,26 +18,26 @@ class HEARTCANVAS_API UHeartWidgetUtilsLibrary : public UBlueprintFunctionLibrar
 
 public:
 	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
-	static FVector2D UINavigationToVector(EUINavigation Navigation);
+	static FVector2f UINavigationToVector(EUINavigation Navigation);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static FVector2D GetGeometryCenter(const FGeometry& Geometry);
+	static FVector2f GetGeometryCenter(const FGeometry& Geometry);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static void DrawSpline(UPARAM(ref) FPaintContext& Context, const FVector2D& From, const FVector2D& FromTangent,
-		const FVector2D& To, const FVector2D& ToTangent, float Thickness, const FLinearColor& Tint);
+	static void DrawSpline(UPARAM(ref) FPaintContext& Context, const FVector2f& From, const FVector2f& FromTangent,
+		const FVector2f& To, const FVector2f& ToTangent, float Thickness, const FLinearColor& Tint);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|WidgetUtilsLibrary")
-	static void DrawCubicBezierSpline(UPARAM(ref) FPaintContext& Context, const FVector2D& P0, const FVector2D& P1,
-		const FVector2D& P2, const FVector2D& P3, float Thickness, const FLinearColor& Tint);
+	static void DrawCubicBezierSpline(UPARAM(ref) FPaintContext& Context, const FVector2f& P0, const FVector2f& P1,
+		const FVector2f& P2, const FVector2f& P3, float Thickness, const FLinearColor& Tint);
 
 	/** Get the middle point of the widget in local space */
 	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
-	static FVector2D GetWidgetCenterLocal(const UWidget* Widget);
+	static FVector2f GetWidgetCenterLocal(const UWidget* Widget);
 
 	/** Get the middle point of the widget in absolute space */
 	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")
-	static FVector2D GetWidgetCenterAbsolute(const UWidget* Widget);
+	static FVector2f GetWidgetCenterAbsolute(const UWidget* Widget);
 
 	/** Shortcut function to turn a boolean into a SlateVisibility */
 	UFUNCTION(BlueprintPure, Category = "Heart|WidgetUtilsLibrary")

@@ -47,16 +47,16 @@ class HEARTCANVAS_API UHeartCanvasConnectionVisualizer : public UObject
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|CanvasConnectionVisualizer")
-	void DrawConnectionSpline(UPARAM(ref) FPaintContext& Context, const FVector2D& Start, const FVector2D& End,
+	void DrawConnectionSpline(UPARAM(ref) FPaintContext& Context, const FVector2f& Start, const FVector2f& End,
 							  const FHeartCanvasConnectionSplineParams& SplineParams) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|CanvasConnectionVisualizer")
-	void PaintTimeDrawPinConnection(UPARAM(ref) FPaintContext& Context, const FVector2D& Start, const FVector2D& End,
+	void PaintTimeDrawPinConnection(UPARAM(ref) FPaintContext& Context, const FVector2f& Start, const FVector2f& End,
 									const FHeartCanvasConnectionPinParams& GeneralParams) const;
 
 	// @todo  GraphDesktopGeometry is a hack because I don't know how to use the Context.AllocatedGeometry correctly
 	void PaintTimeDrawPinConnections(UPARAM(ref) FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, BlueprintNativeEvent, Category = "Heart|CanvasConnectionVisualizer")
-	void PaintTimeDrawPreviewConnection(UPARAM(ref) FPaintContext& Context, const FVector2D& Start, const FVector2D& End, UHeartGraphCanvasPin* FromPin) const;
+	void PaintTimeDrawPreviewConnection(UPARAM(ref) FPaintContext& Context, const FVector2f& Start, const FVector2f& End, UHeartGraphCanvasPin* FromPin) const;
 };

@@ -82,13 +82,13 @@ public:
 };
 
 void UHeartCanvasConnectionVisualizer::DrawConnectionSpline_Implementation(FPaintContext& Context,
-	const FVector2D& Start, const FVector2D& End, const FHeartCanvasConnectionSplineParams& SplineParams) const
+	const FVector2f& Start, const FVector2f& End, const FHeartCanvasConnectionSplineParams& SplineParams) const
 {
 	UHeartWidgetUtilsLibrary::DrawSpline(Context, Start, {1.0, 0.0}, End, {1.0, 0.0}, SplineParams.Thickness, SplineParams.Color);
 }
 
 void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnection_Implementation(FPaintContext& Context,
-	const FVector2D& Start, const FVector2D& End, const FHeartCanvasConnectionPinParams& PinParams) const
+	const FVector2f& Start, const FVector2f& End, const FHeartCanvasConnectionPinParams& PinParams) const
 {
 	// @todo parameterize these
 	FHeartCanvasConnectionSplineParams SplineParams;
@@ -101,7 +101,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnection_Implementation
 }
 
 void UHeartCanvasConnectionVisualizer::PaintTimeDrawPreviewConnection_Implementation(FPaintContext& Context,
-	const FVector2D& Start, const FVector2D& End, UHeartGraphCanvasPin* FromPin) const
+	const FVector2f& Start, const FVector2f& End, UHeartGraphCanvasPin* FromPin) const
 {
 	// @todo parameterize these
 	FHeartCanvasConnectionSplineParams SplineParams;
@@ -116,7 +116,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPreviewConnection_Implementa
 
 void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext& Context, const FGeometry& GraphDesktopGeometry, TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> Pins)
 {
-	for (TTuple<FHeartPinGuid, TTuple<UHeartGraphCanvasPin*, FGeometry>>& PinPair : Pins)
+	for (const TTuple<FHeartPinGuid, TTuple<UHeartGraphCanvasPin*, FGeometry>>& PinPair : Pins)
 	{
 		if (!ensureMsgf(PinPair.Key.IsValid(),
 			TEXT("PaintTimeDrawPinConnections was given invalid UHeartGraphPin!")))
@@ -139,7 +139,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 		auto&& StartGeom = PinPair.Value.Value;
 
 		// @todo kinda awful that this is the only way ive found to do this...
-		FVector2D StartPoint;
+		FVector2f StartPoint;
 
 		FVector CustomPosition;
 		bool RelativeStart;
@@ -152,7 +152,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 
 		if (HandledStart)
 		{
-			StartPoint += FVector2D(CustomPosition);
+			StartPoint += FVector2f(CustomPosition.X, CustomPosition.Y);
 		}
 
 		auto ConnectedPins =
@@ -169,7 +169,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 
 			auto&& EndGeom = ConnectedPinAndGeo->Value;
 
-			FVector2D EndPoint;
+			FVector2f EndPoint;
 			bool RelativeEnd;
 			const bool HandledEnd = IGraphPinVisualizerInterface::Execute_GetCustomAttachmentPosition(ConnectedPinAndGeo->Key, CustomPosition, RelativeEnd);
 
@@ -181,11 +181,11 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 
 			if (HandledEnd)
 			{
-				EndPoint += FVector2D(CustomPosition);
+				EndPoint += FVector2f(CustomPosition.X, CustomPosition.Y);
 			}
 
-			//const FVector2D StartPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(StartGeom);
-			//const FVector2D EndPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(EndGeom);
+			//const FVector2f StartPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(StartGeom);
+			//const FVector2f EndPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(EndGeom);
 
 			PaintTimeDrawPinConnection(Context, StartPoint, EndPoint, { PinPair.Value.Key, ConnectedPinAndGeo->Key });
 		}

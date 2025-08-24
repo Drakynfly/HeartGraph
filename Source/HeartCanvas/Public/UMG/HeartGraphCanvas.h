@@ -328,6 +328,7 @@ protected:
 	FHeartGraphPinReference PreviewConnectionPin;
 
 	// Node locations used when SyncNodeLocationsWithGraph is disabled
+	// Stored as FVector2D as that is the type the Proxy API uses.
 	TMap<FHeartNodeGuid, FVector2D> NodeLocations;
 
 

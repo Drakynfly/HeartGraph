@@ -2,4 +2,6 @@
 
 #pragma once
 
+#include "Logging/LogMacros.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogHeartNet, Log, All)

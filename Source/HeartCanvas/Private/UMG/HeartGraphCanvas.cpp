@@ -217,7 +217,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 				EndPoint = GraphGeo.AbsoluteToLocal(FSlateApplication::Get().GetCursorPos());
 			}
 
-			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, FVector2D(StartPoint), FVector2D(EndPoint), PreviewPin);
+			ConnectionVisualizer->PaintTimeDrawPreviewConnection(Context, StartPoint, EndPoint, PreviewPin);
 		}
 	}
 
