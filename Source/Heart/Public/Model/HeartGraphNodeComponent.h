@@ -10,7 +10,7 @@ class UHeartGraph;
 /**
  *
  */
-UCLASS(Abstract, BlueprintType, Blueprintable, Within = HeartGraph)
+UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew)
 class HEART_API UHeartGraphNodeComponent : public UHeartGraphComponentBase
 {
 	GENERATED_BODY()

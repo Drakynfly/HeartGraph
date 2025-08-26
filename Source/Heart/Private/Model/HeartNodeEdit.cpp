@@ -69,6 +69,46 @@ namespace Heart::API
 		HandlePending();
 	}
 
+	bool FNodeEdit::AddNode(IHeartGraphInterface* GraphInterface, UHeartGraphNode* Node)
+	{
+		checkSlow(Node->GetOuter() == GraphInterface->_getUObject());
+
+		if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
+		{
+			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
+			return false;
+		}
+
+		// @todo uncomment this and if something is tripping it, solve that!
+		/*
+		if (!ensure(IsValid(Node->GetNodeObject())))
+		{
+			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
+			return;
+		}
+		*/
+
+		UHeartGraph* Graph = GraphInterface->GetHeartGraph();
+		const FHeartNodeGuid& NodeGuid = Node->GetGuid();
+
+		if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
+		{
+			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
+			return false;
+		}
+
+		Graph->Nodes.Add(NodeGuid, Node);
+		for (auto&& Element : Node->GetDefaultComponents())
+		{
+			Graph->NodeComponents.FindOrAdd(Element->GetClass()).Components.Add(NodeGuid, DuplicateObject(Element, Graph));
+		}
+		Node->OnAddedToGraph(Graph, NodeGuid);
+		FHeartNodeAddEvent Event;
+		Event.NewNodes.Add(NodeGuid);
+		Graph->HandleNodeAddEvent(Event);
+		return true;
+	}
+
 	bool FNodeEdit::DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node)
 	{
 		UHeartGraph* GraphPtr = GraphInterface->GetHeartGraph();
@@ -92,6 +132,8 @@ namespace Heart::API
 		GraphPtr->Nodes.RemoveAndCopyValue(Node, ObjectPtrWrap(NodeBeingRemoved));
 		if (IsValid(NodeBeingRemoved))
 		{
+			NodeBeingRemoved->OnRemovedFromGraph(GraphPtr, Node);
+
 			FHeartNodeRemoveEvent Event;
 			Event.AffectedNodes.Add(NodeBeingRemoved);
 			GraphPtr->HandleNodeRemoveEvent(Event);
@@ -200,6 +242,7 @@ namespace Heart::API
 					Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
 					if (IsValid(NodeBeingRemoved))
 					{
+						NodeBeingRemoved->OnRemovedFromGraph(Graph, PendingDelete);
 						Event.AffectedNodes.Add(NodeBeingRemoved);
 					}
 				}
@@ -213,21 +256,21 @@ namespace Heart::API
 			FHeartNodeAddEvent Event;
 
 			// Pending create pass
-			for (auto&& Element : PendingCreates)
+			for (auto&& Node : PendingCreates)
 			{
-				if (!ensure(IsValid(Element)))
+				if (!ensure(IsValid(Node)))
 				{
 					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
 					continue;
 				}
 
-				if (!ensure(IsValid(Element->GetNodeObject())))
+				if (!ensure(IsValid(Node->GetNodeObject())))
 				{
 					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
 					continue;
 				}
 
-				const FHeartNodeGuid& NodeGuid = Element->GetGuid();
+				const FHeartNodeGuid& NodeGuid = Node->GetGuid();
 
 				if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
 				{
@@ -235,7 +278,12 @@ namespace Heart::API
 					continue;
 				}
 
-				Graph->Nodes.Add(NodeGuid, Element);
+				Graph->Nodes.Add(NodeGuid, Node);
+				for (auto&& Element : Node->GetDefaultComponents())
+				{
+					Graph->NodeComponents.FindOrAdd(Element->GetClass()).Components.Add(NodeGuid, DuplicateObject(Element, Graph));
+				}
+				Node->OnAddedToGraph(Graph, NodeGuid);
 				Event.NewNodes.Add(NodeGuid);
 			}
 

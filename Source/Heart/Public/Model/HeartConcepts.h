@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "Templates/RemoveReference.h"
+#include "Templates/UnrealTypeTraits.h"
+
 class UHeartGraph;
 class UHeartGraphNode;
 class UHeartGraphExtension;

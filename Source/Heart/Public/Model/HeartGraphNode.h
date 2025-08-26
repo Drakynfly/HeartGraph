@@ -20,6 +20,7 @@
 
 namespace Heart::API
 {
+	class FNodeEdit;
 	class FNodeCreator;
 }
 
@@ -71,9 +72,11 @@ struct FHeartGraphNodeSparseClassData
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	TArray<FHeartGraphPinDesc> DefaultPins;
 
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	uint8 DefaultInstancedInputs = 0;
 
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
 	UPROPERTY(EditDefaultsOnly, Category = "Pins")
 	uint8 DefaultInstancedOutputs = 0;
 
@@ -109,6 +112,7 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 	friend class UHeartEdGraphNode;
 	friend class Heart::API::FNodeCreator;
 	friend class Heart::API::FPinEdit;
+	friend class Heart::API::FNodeEdit;
 
 public:
 	UHeartGraphNode();
@@ -155,18 +159,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	FText GetInstanceTitle() const;
 
-	// @todo move to node component
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	uint8 GetInstancedInputNum() const;
-
-	// @todo move to node component
-	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
-	uint8 GetInstancedOutputNum() const;
-
 
 	/*----------------------------
 				GETTERS
 	----------------------------*/
+
+	TConstArrayView<TObjectPtr<UHeartGraphNodeComponent>> GetDefaultComponents() const { return DefaultComponents; }
 
 	FOnPinConnectionsChanged_Native::RegistrationType& GetOnPinConnectionsChanged() { return OnPinConnectionsChanged_Native; }
 	FOnGraphNodePinChanged_Native::RegistrationType& GetOnNodePinsChanged() { return OnNodePinsChanged_Native; }
@@ -232,18 +230,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	TArray<FHeartPinGuid> GetOutputPins(bool bSorted = false) const;
 
-	// @todo move to node component
-	virtual TArray<FHeartGraphPinDesc> CreateDynamicPins();
-
-	// @todo move to node component
-	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", meta = (DisplayName = "Get Dynamic Pins"))
-	TArray<FHeartGraphPinDesc> BP_GetDynamicPins() const;
-
-	// Declare the pin typed used for instanced pins. Overriding this is required for User Input/Output to work.
-	// @todo move to node component
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
-	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
-
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool HasConnections(const FHeartPinGuid& Pin) const;
 
@@ -267,12 +253,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void SetLocation(const FVector2D& NewLocation);
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	bool CanUserAddInput() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
-	bool CanUserAddOutput() const;
 
 	// Can the user create instances of this node? Only necessary to override for use in graphs with the ability to spawn nodes.
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
@@ -312,21 +292,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	bool RemovePin(const FHeartPinGuid& Pin);
 
-	FHeartGraphPinDesc MakeInstancedPin(EHeartPinDirection Direction);
-
-	// Add a numbered instance pin
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	FHeartPinGuid AddInstancePin(EHeartPinDirection Direction);
-
-	// Remove the last numbered instance pin
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	void RemoveInstancePin(EHeartPinDirection Direction);
-
 protected:
 	virtual void NotifyPinConnectionsChanged(const FHeartPinGuid& Pin);
 
 	// Called by the owning graph when we are created.
 	virtual void OnCreate(UObject* NodeSpawningContext);
+	virtual void OnAddedToGraph(UHeartGraph* Graph, FHeartNodeGuid Node);
+	virtual void OnRemovedFromGraph(UHeartGraph* Graph, FHeartNodeGuid Node);
 
 	// Returns true if pins were modified
 	bool ReconstructPins(bool IsCreation = false);
@@ -365,10 +337,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "GraphNode")
 	FHeartNodePinData PinData;
 
-	// @todo move these to a node component thing...
+	UPROPERTY(Instanced, EditAnywhere, Category = "GraphNode")
+	TArray<TObjectPtr<UHeartGraphNodeComponent>> DefaultComponents;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	uint8 InstancedInputs = 0;
 
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	uint8 InstancedOutputs = 0;
 
@@ -382,6 +358,38 @@ public:
 	UE_DEPRECATED(5.4, "Replace with FindConnections or native ViewConnections instead")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin, bool Deprecated) const;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	uint8 GetInstancedInputNum() const;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
+	uint8 GetInstancedOutputNum() const;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
+	bool CanUserAddInput() const;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Heart|GraphNode")
+	bool CanUserAddOutput() const;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, BlueprintPure = false, Category = "Heart|GraphNode")
+	void GetInstancedPinData(EHeartPinDirection Direction, FHeartGraphPinTag& Tag, TArray<UHeartGraphPinMetadata*>& Metadata) const;
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	FHeartPinGuid AddInstancePin(EHeartPinDirection Direction);
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	void RemoveInstancePin(EHeartPinDirection Direction);
+
+	UE_DEPRECATED(5.6, TEXT("Use UHeartDynamicPinsComponent instead."))
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", meta = (DisplayName = "Get Dynamic Pins"))
+	TArray<FHeartGraphPinDesc> BP_GetDynamicPins() const;
 
 protected:
 	UE_DEPRECATED(5.4, "Replace with UHeartGraphUtils::GetConnectedNodes")

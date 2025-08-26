@@ -42,6 +42,9 @@ namespace Heart::API
 
 		using FNewNodeId = int32;
 
+		// A non-batched add. If adding multiple nodes at once, create a FNodeEdit instance, and call CreateXXX() instead.
+		static bool AddNode(IHeartGraphInterface* GraphInterface, UHeartGraphNode* Node);
+
 		// A non-batched delete. If removing multiple nodes at once, create a FNodeEdit instance, and call Delete() instead.
 		static bool DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node);
 

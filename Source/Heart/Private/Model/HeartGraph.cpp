@@ -488,35 +488,7 @@ UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraph
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
-	checkSlow(Node->GetOuter() == this);
-
-	if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
-	{
-		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
-		return;
-	}
-
-	// @todo uncomment this and if something is tripping it, solve that!
-	/*
-	if (!ensure(IsValid(Node->GetNodeObject())))
-	{
-		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
-		return;
-	}
-	*/
-
-	const FHeartNodeGuid& NodeGuid = Node->GetGuid();
-
-	if (!ensure(!Nodes.Contains(NodeGuid)))
-	{
-		UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
-		return;
-	}
-
-	Nodes.Add(NodeGuid, Node);
-	FHeartNodeAddEvent Event;
-	Event.NewNodes.Add(NodeGuid);
-	HandleNodeAddEvent(Event);
+	Heart::API::FNodeEdit::AddNode(this, Node);
 }
 
 bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
@@ -564,13 +536,31 @@ TArray<UHeartGraphNodeComponent*> UHeartGraph::GetNodeComponentsForNode(const FH
 	return Out;
 }
 
-TArray<UHeartGraphNodeComponent*> UHeartGraph::GetNodeComponentsOfClass(const TSubclassOf<UHeartGraphNodeComponent> Class) const
+TArray<UHeartGraphNodeComponent*> UHeartGraph::GetAllNodeComponentsOfClass(const TSubclassOf<UHeartGraphNodeComponent> Class) const
 {
 	TArray<UHeartGraphNodeComponent*> Out;
 
 	if (const FHeartGraphNodeComponentMap* NodeMap = NodeComponents.Find(Class))
 	{
 		NodeMap->Components.GenerateValueArray(ObjectPtrWrap(Out));
+	}
+
+	return Out;
+}
+
+TArray<UHeartGraphNodeComponent*> UHeartGraph::GetNodeComponentsWithInterface(const FHeartNodeGuid& Node, UClass* Interface)
+{
+	TArray<UHeartGraphNodeComponent*> Out;
+
+	for (auto&& ComponentSet : NodeComponents)
+	{
+		if (ComponentSet.Key->ImplementsInterface(Interface))
+		{
+			if (auto&& Component = ComponentSet.Value.Find(Node))
+			{
+				Out.Add(Component);
+			}
+		}
 	}
 
 	return Out;

@@ -29,6 +29,7 @@
 #include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartSlateInputLinker.h"
 #include "ModelView/HeartGraphSchema.h"
+#include "NodeComponents/HeartInstancedPinsComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)
 
@@ -944,12 +945,26 @@ void UHeartEdGraphNode::RemoveOrphanedPin(UEdGraphPin* Pin)
 
 bool UHeartEdGraphNode::CanUserAddInput() const
 {
-	return HeartGraphNode && HeartGraphNode->CanUserAddInput() && InputPins.Num() < 256;
+	if (!IsValid(HeartGraphNode)) return false;
+
+	if (const UHeartInstancedPinsComponent* InstancedPins = HeartGraphNode->GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(HeartGraphNode->GetGuid());
+		IsValid(InstancedPins))
+	{
+		return InstancedPins->CanUserAddInput() && InputPins.Num() < 256;
+	}
+	return false;
 }
 
 bool UHeartEdGraphNode::CanUserAddOutput() const
 {
-	return HeartGraphNode && HeartGraphNode->CanUserAddOutput() && OutputPins.Num() < 256;
+	if (!IsValid(HeartGraphNode)) return false;
+
+	if (const UHeartInstancedPinsComponent* InstancedPins = HeartGraphNode->GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(HeartGraphNode->GetGuid());
+		IsValid(InstancedPins))
+	{
+		return InstancedPins->CanUserAddOutput() && OutputPins.Num() < 256;
+	}
+	return false;
 }
 
 bool UHeartEdGraphNode::CanUserRemoveInput(const UEdGraphPin* Pin) const
@@ -1009,22 +1024,23 @@ void UHeartEdGraphNode::AddInstancePin(const EEdGraphPinDirection Direction)
 	const FScopedTransaction Transaction(LOCTEXT("AddInstancePin", "Add Instance Pin"));
 	Modify();
 
-	if (Direction == EGPD_Input)
+	if (UHeartInstancedPinsComponent* InstancedPinsComponent = HeartGraphNode->GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(HeartGraphNode->GetGuid()))
 	{
-		const FHeartPinGuid& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Input);
-		auto&& Desc = HeartGraphNode->GetPinDescChecked(NewInstancePin);
-		CreateInputPin(Desc);
-		HeartGraphNode->AddPin(Desc);
-	}
-	else
-	{
-		const FHeartPinGuid& NewInstancePin = HeartGraphNode->AddInstancePin(EHeartPinDirection::Output);
-		auto&& Desc = HeartGraphNode->GetPinDescChecked(NewInstancePin);
-		CreateOutputPin(Desc);
-		HeartGraphNode->AddPin(Desc);
-	}
+		if (Direction == EGPD_Input)
+		{
+			const FHeartPinGuid& NewInstancePin = InstancedPinsComponent->AddInstancePin(HeartGraphNode->GetGuid(), EHeartPinDirection::Input);
+			auto&& Desc = HeartGraphNode->GetPinDescChecked(NewInstancePin);
+			CreateInputPin(Desc);
+		}
+		else
+		{
+			const FHeartPinGuid& NewInstancePin = InstancedPinsComponent->AddInstancePin(HeartGraphNode->GetGuid(), EHeartPinDirection::Output);
+			auto&& Desc = HeartGraphNode->GetPinDescChecked(NewInstancePin);
+			CreateOutputPin(Desc);
+		}
 
-	GetGraph()->NotifyGraphChanged();
+		GetGraph()->NotifyGraphChanged();
+	}
 }
 
 void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
@@ -1055,11 +1071,12 @@ void UHeartEdGraphNode::RemoveInstancePin(UEdGraphPin* Pin)
 		}
 	}
 
-	HeartGraphNode->RemovePinsByPredicate(Pin->Direction == EGPD_Output ? EHeartPinDirection::Output : EHeartPinDirection::Input,
-		[Pin](FHeartPinGuid, const FHeartGraphPinDesc& Desc)
-			{
-				return Pin->PinName == Desc.Name;
-			});
+	auto Direction = Pin->Direction == EGPD_Output ? EHeartPinDirection::Output : EHeartPinDirection::Input;
+
+	if (UHeartInstancedPinsComponent* InstancedPinsComponent = HeartGraphNode->GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(HeartGraphNode->GetGuid()))
+	{
+		InstancedPinsComponent->RemoveInstancePin(HeartGraphNode->GetGuid(), Direction);
+	}
 
 	ReconstructNode();
 	GetGraph()->NotifyGraphChanged();

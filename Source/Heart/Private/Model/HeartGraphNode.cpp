@@ -3,6 +3,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
 #include "Engine/World.h"
+#include "NodeComponents/HeartInstancedPinsComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNode)
 
@@ -113,16 +114,6 @@ FText UHeartGraphNode::GetInstanceTitle() const
 	return GetNodeTitle(NodeObject);
 }
 
-uint8 UHeartGraphNode::GetInstancedInputNum() const
-{
-	return InstancedInputs;
-}
-
-uint8 UHeartGraphNode::GetInstancedOutputNum() const
-{
-	return InstancedOutputs;
-}
-
 UHeartGraph* UHeartGraphNode::GetGraph() const
 {
 	return CastChecked<UHeartGraph>(GetOuter());
@@ -196,17 +187,6 @@ TArray<FHeartPinGuid> UHeartGraphNode::GetInputPins(const bool bSorted) const
 TArray<FHeartPinGuid> UHeartGraphNode::GetOutputPins(const bool bSorted) const
 {
 	return GetPinsOfDirection(EHeartPinDirection::Output, bSorted);
-}
-
-TArray<FHeartGraphPinDesc> UHeartGraphNode::CreateDynamicPins()
-{
-	checkSlow(!this->IsTemplate())
-	return BP_GetDynamicPins();
-}
-
-void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Direction, FHeartGraphPinTag& Tag,
-	TArray<UHeartGraphPinMetadata*>& Metadata) const
-{
 }
 
 bool UHeartGraphNode::HasConnections(const FHeartPinGuid& Pin) const
@@ -337,106 +317,35 @@ bool UHeartGraphNode::RemovePin(const FHeartPinGuid& Pin)
 	return false;
 }
 
-FHeartGraphPinDesc UHeartGraphNode::MakeInstancedPin(const EHeartPinDirection Direction)
-{
-	FHeartGraphPinDesc PinDesc;
-
-	switch (Direction)
-	{
-	case EHeartPinDirection::Input:
-		if (!CanUserAddInput())
-		{
-			return Heart::Graph::InvalidPinDesc;
-		}
-
-		PinDesc.Name = *FString::FromInt(++InstancedInputs);
-		PinDesc.Direction = EHeartPinDirection::Input;
-		break;
-	case EHeartPinDirection::Output:
-		if (!CanUserAddOutput())
-		{
-			return Heart::Graph::InvalidPinDesc;
-		}
-
-		PinDesc.Name = *FString::FromInt(++InstancedOutputs);
-		PinDesc.Direction = EHeartPinDirection::Output;
-		break;
-	default:
-		return Heart::Graph::InvalidPinDesc;
-	}
-
-	{
-#if WITH_EDITOR
-		FEditorScriptExecutionGuard EditorScriptExecutionGuard;
-#endif
-		GetInstancedPinData(Direction, PinDesc.Tag, MutableView(PinDesc.Metadata));
-	}
-
-	return PinDesc;
-}
-
-FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction)
-{
-	if (const FHeartGraphPinDesc Pin = MakeInstancedPin(Direction);
-		Pin.IsValid())
-	{
-		return AddPin(Pin);
-	}
-	return FHeartPinGuid();
-}
-
-void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
-{
-	FName PinName;
-
-	switch (Direction)
-	{
-	case EHeartPinDirection::Input:
-		PinName = *FString::FromInt(InstancedInputs--);
-		break;
-	case EHeartPinDirection::Output:
-		PinName = *FString::FromInt(InstancedOutputs--);
-		break;
-	default:
-		return;
-	}
-
-	RemovePin(GetPinByName(PinName));
-}
-
 void UHeartGraphNode::OnCreate(UObject* NodeSpawningContext)
 {
-	InstancedInputs = GetDefaultInstancedInputs();
-	InstancedOutputs = GetDefaultInstancedOutputs();
-
-	ReconstructPins(true);
+	//ReconstructPins(true);
 
 	BP_OnCreate(NodeSpawningContext);
+}
+
+void UHeartGraphNode::OnAddedToGraph(UHeartGraph* Graph, FHeartNodeGuid Node)
+{
+	// This allows IHeartNodeComponentPinProviders on the graph to supply us with pins.
+	ReconstructPins(true);
+}
+
+void UHeartGraphNode::OnRemovedFromGraph(UHeartGraph* Graph, FHeartNodeGuid Node)
+{
 }
 
 bool UHeartGraphNode::ReconstructPins(const bool IsCreation)
 {
 	TArray<FHeartGraphPinDesc> GatheredPins;
 	GatheredPins.Append(GetDefaultPins());
-	GatheredPins.Append(CreateDynamicPins());
 
-	// Instanced pins (@todo move to node component)
+	//TArray<IHeartNodeComponentPinProvider*> PinProviders = GetGraph()->GetNodeComponentsWithInterface<IHeartNodeComponentPinProvider>(Guid);
+	TArray<UHeartGraphNodeComponent*> PinProviders = GetGraph()->GetNodeComponentsWithInterface(Guid, IHeartNodeComponentPinProvider::UClassType::StaticClass());
+	for (UHeartGraphNodeComponent* PinProvider : PinProviders)
 	{
-		const uint8 InstancedInputNum = InstancedInputs;
-		const uint8 InstancedOutputNum = InstancedOutputs;
-		InstancedInputs = 0;
-		InstancedOutputs = 0;
-
-		// Create instanced inputs
-		for (uint8 i = 0; i < InstancedInputNum; ++i)
+		if (IHeartNodeComponentPinProvider* Pro = Cast<IHeartNodeComponentPinProvider>(PinProvider))
 		{
-			GatheredPins.Add(MakeInstancedPin(EHeartPinDirection::Input));
-		}
-
-		// Create instanced outputs
-		for (uint8 i = 0; i < InstancedOutputNum; ++i)
-		{
-			GatheredPins.Add(MakeInstancedPin(EHeartPinDirection::Output));
+			Pro->GatherPins(GatheredPins);
 		}
 	}
 
@@ -516,6 +425,51 @@ void UHeartGraphNode::NotifyPinConnectionsChanged(const FHeartPinGuid& Pin)
 	}
 	OnPinConnectionsChanged_Native.Broadcast(Pin);
 	OnPinConnectionsChanged.Broadcast(Pin);
+}
+
+uint8 UHeartGraphNode::GetInstancedInputNum() const
+{
+	const UHeartInstancedPinsComponent* Comp = GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(Guid);
+	if (!IsValid(Comp))
+	{
+		return Comp->GetInstancedInputNum();
+	}
+	return 0;
+}
+
+uint8 UHeartGraphNode::GetInstancedOutputNum() const
+{
+	const UHeartInstancedPinsComponent* Comp = GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(Guid);
+	if (!IsValid(Comp))
+	{
+		return Comp->GetInstancedOutputNum();
+	}
+	return 0;
+}
+
+void UHeartGraphNode::GetInstancedPinData_Implementation(EHeartPinDirection Direction, FHeartGraphPinTag& Tag,
+	TArray<UHeartGraphPinMetadata*>& Metadata) const
+{
+}
+
+FHeartPinGuid UHeartGraphNode::AddInstancePin(const EHeartPinDirection Direction)
+{
+	UHeartInstancedPinsComponent* Comp = GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(Guid);
+	if (!IsValid(Comp))
+	{
+		return FHeartPinGuid();
+	}
+	return Comp->AddInstancePin(Guid, Direction);
+}
+
+void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
+{
+	UHeartInstancedPinsComponent* Comp = GetGraph()->GetNodeComponent<UHeartInstancedPinsComponent>(Guid);
+	if (!IsValid(Comp))
+	{
+		return;
+	}
+	Comp->RemoveInstancePin(Guid, Direction);
 }
 
 TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDirection Direction) const

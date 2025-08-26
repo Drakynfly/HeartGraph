@@ -9,6 +9,7 @@
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
 #include "HeartNodeQuery.h"
+#include "General/TypeCastingUtils.h"
 #include "Templates/SubclassOf.h"
 #include "UObject/Object.h"
 #include "HeartGraph.generated.h"
@@ -289,7 +290,20 @@ public:
 
 	/** Finds all components of the requested class. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
-	TArray<UHeartGraphNodeComponent*> GetNodeComponentsOfClass(TSubclassOf<UHeartGraphNodeComponent> Class) const;
+	TArray<UHeartGraphNodeComponent*> GetAllNodeComponentsOfClass(TSubclassOf<UHeartGraphNodeComponent> Class) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	TArray<UHeartGraphNodeComponent*> GetNodeComponentsWithInterface(const FHeartNodeGuid& Node, UClass* Interface);
+
+	template<class T UE_REQUIRES(TIsIInterface<T>::Value)>
+	TArray<T*> GetNodeComponentsWithInterface(const FHeartNodeGuid& Node)
+	{
+		auto Objs = GetNodeComponentsWithInterface(Node, T::UClassType::StaticClass());
+		TArray<T*> Interfaces;
+		Interfaces.Reserve(Objs.Num());
+		Algo::Transform(Objs, Interfaces, [](const auto& Obj) { return Cast<T>(Obj); });
+		return Interfaces;
+	}
 
 	/** Adds a new component of the requested class. If there is already a component of this class, the existing one will be returned instead. */
 	template <Heart::CGraphNodeComponent T>

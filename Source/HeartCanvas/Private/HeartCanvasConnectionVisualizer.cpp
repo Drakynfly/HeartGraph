@@ -152,7 +152,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 
 		if (HandledStart)
 		{
-			StartPoint += FVector2f(CustomPosition.X, CustomPosition.Y);
+			StartPoint += FVector2f(static_cast<float>(CustomPosition.X), static_cast<float>(CustomPosition.Y));
 		}
 
 		auto ConnectedPins =
@@ -181,7 +181,7 @@ void UHeartCanvasConnectionVisualizer::PaintTimeDrawPinConnections(FPaintContext
 
 			if (HandledEnd)
 			{
-				EndPoint += FVector2f(CustomPosition.X, CustomPosition.Y);
+				EndPoint += FVector2f(static_cast<float>(CustomPosition.X), static_cast<float>(CustomPosition.Y));
 			}
 
 			//const FVector2f StartPoint = FGeometryHelper_TEMPEMULATOR::CenterOf(StartGeom);
