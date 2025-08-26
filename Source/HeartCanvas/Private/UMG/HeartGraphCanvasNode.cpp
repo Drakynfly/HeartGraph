@@ -188,6 +188,28 @@ UHeartGraphCanvasPin* UHeartGraphCanvasNode::CreatePinWidget(const FHeartPinGuid
 	return nullptr;
 }
 
+UHeartGraphCanvasPin* UHeartGraphCanvasNode::RemoveWidgetForPin(const FHeartPinGuid& Pin)
+{
+	ConnectionWidgets.RemoveAll(
+	[Pin](const TObjectPtr<UHeartGraphCanvasConnection>& ConnectionWidget)
+		{
+			return ConnectionWidget->FromPin.PinGuid == Pin;
+		});
+
+	for (auto&& It =  PinWidgets.CreateIterator(); It; ++It)
+	{
+		if (auto&& PinWidget = *It;
+			PinWidget->GetPinGuid() == Pin)
+		{
+			PinWidget->RemoveFromParent();
+			It.RemoveCurrentSwap();
+			return PinWidget;
+		}
+	}
+
+	return nullptr;
+}
+
 void UHeartGraphCanvasNode::DestroyPinWidget(UHeartGraphCanvasPin* PinWidget)
 {
 	ConnectionWidgets.RemoveAll(

@@ -393,7 +393,7 @@ public:
 
 protected:
 	UE_DEPRECATED(5.4, "Replace with UHeartGraphUtils::GetConnectedNodes")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
+	UFUNCTION(BlueprintCallable, meta = (DeprecatedFunction, DeprecationMessage = "Use GetConnectedNodes"))
 	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 };
 

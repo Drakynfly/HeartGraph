@@ -61,6 +61,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
 	UHeartGraphCanvasPin* CreatePinWidget(const FHeartPinGuid& Pin);
 
+	// Removal function for pin widgets if we know the guid.
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
+	UHeartGraphCanvasPin* RemoveWidgetForPin(const FHeartPinGuid& Pin);
+
+	// Faster removal function for pin widgets if we already have the widget.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphCanvasNode")
 	void DestroyPinWidget(UHeartGraphCanvasPin* PinWidget);
 

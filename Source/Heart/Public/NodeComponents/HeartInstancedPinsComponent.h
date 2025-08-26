@@ -39,9 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|InstancedPins")
 	FHeartPinGuid AddInstancePin(const FHeartNodeGuid& Node, EHeartPinDirection Direction);
 
-	// Remove the last numbered instance pin
+	// Remove the last numbered instance pin. Returns the guid of the removed pin, if a pin was removed.
 	UFUNCTION(BlueprintCallable, Category = "Heart|InstancedPins")
-	void RemoveInstancePin(const FHeartNodeGuid& Node, EHeartPinDirection Direction);
+	FHeartPinGuid RemoveInstancePin(const FHeartNodeGuid& Node, EHeartPinDirection Direction);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Config")

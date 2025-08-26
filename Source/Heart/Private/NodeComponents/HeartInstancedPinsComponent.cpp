@@ -77,25 +77,41 @@ FHeartPinGuid UHeartInstancedPinsComponent::AddInstancePin(const FHeartNodeGuid&
 	return FHeartPinGuid();
 }
 
-void UHeartInstancedPinsComponent::RemoveInstancePin(const FHeartNodeGuid& Node, const EHeartPinDirection Direction)
+FHeartPinGuid UHeartInstancedPinsComponent::RemoveInstancePin(const FHeartNodeGuid& Node, const EHeartPinDirection Direction)
 {
 	FName PinName;
 
 	switch (Direction)
 	{
 	case EHeartPinDirection::Input:
+		if (InstancedInputs == 0)
+		{
+			// Cannot remove, no instanced inputs
+			return FHeartPinGuid();
+		}
 		PinName = *FString::FromInt(--InstancedInputs);
 		break;
 	case EHeartPinDirection::Output:
+		if (InstancedOutputs == 0)
+		{
+			// Cannot remove, no instanced outputs
+			return FHeartPinGuid();
+		}
 		PinName = *FString::FromInt(--InstancedOutputs);
 		break;
 	default:
-		return;
+		return FHeartPinGuid();
 	}
 
 	if (UHeartGraphNode* GraphNode = GetGraph()->GetNode(Node);
 		IsValid(GraphNode))
 	{
-		GraphNode->RemovePin(GraphNode->GetPinByName(PinName));
+		if (const FHeartPinGuid PinGuid = GraphNode->GetPinByName(PinName);
+			GraphNode->RemovePin(PinGuid))
+		{
+			return PinGuid;
+		}
 	}
+
+	return FHeartPinGuid();
 }
