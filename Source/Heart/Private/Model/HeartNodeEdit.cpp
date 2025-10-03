@@ -71,7 +71,7 @@ namespace Heart::API
 
 	bool FNodeEdit::AddNode(IHeartGraphInterface* GraphInterface, UHeartGraphNode* Node)
 	{
-		checkSlow(Node->GetOuter() == GraphInterface->_getUObject());
+		checkSlow(Node->GetOuter() == Cast<UObject>(GraphInterface));
 
 		if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
 		{

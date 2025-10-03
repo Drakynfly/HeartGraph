@@ -79,5 +79,5 @@ void UHeartLayoutHelper::ApplyNewPositions(const TScriptInterface<IHeartGraphInt
 bool UHeartLayoutHelper_BlueprintBase::Layout(IHeartGraphInterface* Interface,
 											  const TArray<FHeartNodeGuid>& Nodes)
 {
-	return Layout_BP(Interface->_getUObject(), Nodes);
+	return Layout_BP(Cast<UObject>(Interface), Nodes);
 }

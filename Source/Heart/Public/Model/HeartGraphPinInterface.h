@@ -41,17 +41,17 @@ protected:
 
 	virtual UHeartGraphNode* GetHeartGraphNode() const override final
 	{
-		return Execute_GetNode_BP(_getUObject());
+		return Execute_GetNode_BP(Cast<UObject>(this));
 	}
 
 	virtual FHeartPinGuid GetPinGuid() const override final
 	{
-		return Execute_GetPinGuid_BP(_getUObject());
+		return Execute_GetPinGuid_BP(Cast<UObject>(this));
 	}
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Pin")
-	UHeartGraphNode* GetNode_BP();
+	UHeartGraphNode* GetNode_BP() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Pin")
 	FHeartPinGuid GetPinGuid_BP() const;

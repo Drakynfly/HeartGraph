@@ -23,7 +23,7 @@ protected:
 	// Defer to Blueprint implementation by default
 	virtual UHeartGraphNode* GetHeartGraphNode() const override
 	{
-		return Execute_GetVisualizingNode(_getUObject());
+		return Execute_GetVisualizingNode(Cast<UObject>(this));
 	}
 
 public:

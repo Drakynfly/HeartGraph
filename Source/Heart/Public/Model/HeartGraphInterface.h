@@ -63,7 +63,7 @@ protected:
 	// Defer to Blueprint implementation
 	virtual UHeartGraph* GetHeartGraph() const override final
 	{
-		return Execute_GetHeartGraph_BP(_getUObject());
+		return Execute_GetHeartGraph_BP(Cast<UObject>(this));
 	}
 
 public:

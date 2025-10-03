@@ -22,7 +22,7 @@ bool UHeartLayout_TestSpinner::Layout(IHeartGraphInterface* Interface,
 		Position = Position.GetRotated(360.0 * DeltaTime);
 	}
 
-	ApplyNewPositions(Interface->_getUObject(), Nodes, Positions);
+	ApplyNewPositions(Cast<UObject>(Interface), Nodes, Positions);
 
 	return true;
 }

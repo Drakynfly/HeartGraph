@@ -33,7 +33,7 @@ bool UHeartLayout_FruchtermanReingold::Layout(IHeartGraphInterface* Interface,
 		Accum -= IterationInterval;
 	}
 
-	ApplyNewPositions(Interface->_getUObject(), Nodes, Positions);
+	ApplyNewPositions(Cast<UObject>(Interface), Nodes, Positions);
 
 	return true;
 }

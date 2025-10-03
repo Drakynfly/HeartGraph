@@ -12,7 +12,7 @@ bool UHeartLayout_KamadaKawai::Layout(IHeartGraphInterface* Interface, const TAr
 
 	const TArray<FVector2D> NewPositions = Nodesoup::kamada_kawai(GraphAdjacencyList.AdjacencyList, Width, Height, Strength, EnergyThreshold);
 
-	ApplyNewPositions(Interface->_getUObject(), Nodes, NewPositions);
+	ApplyNewPositions(Cast<UObject>(Interface), Nodes, NewPositions);
 
 	return true;
 }
