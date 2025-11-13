@@ -4,6 +4,8 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 
+#include UE_INLINE_GENERATED_CPP_BY_NAME(HeartInstancedPinsComponent)
+
 void UHeartInstancedPinsComponent::GatherPins(TArray<FHeartGraphPinDesc>& Pins) const
 {
 	// Make a single pin we can copy.
