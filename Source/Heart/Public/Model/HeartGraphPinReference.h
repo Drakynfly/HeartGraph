@@ -54,12 +54,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "GraphPinConnections")
 	TArray<FHeartGraphPinReference> Connections;
 
-#if WITH_EDITORONLY_DATA
-	UE_DEPRECATED(5.4, "Replaced by Connections")
-	UPROPERTY()
-	TSet<FHeartGraphPinReference> Links;
-#endif
-
 public:
 	TConstArrayView<FHeartGraphPinReference> GetLinks() const UE_LIFETIMEBOUND { return Connections; }
 
@@ -67,22 +61,6 @@ public:
 	{
 		Ar << *this;
 		return true;
-	}
-
-	void PostSerialize(const FArchive& Ar)
-	{
-		if (Ar.IsLoading())
-		{
-#if WITH_EDITOR
-			PRAGMA_DISABLE_DEPRECATION_WARNINGS
-			if (!Links.IsEmpty())
-			{
-				Connections.Append(Links.Array());
-				Links.Empty();
-			}
-			PRAGMA_ENABLE_DEPRECATION_WARNINGS
-#endif
-		}
 	}
 
 	friend FArchive& operator<<(FArchive& Ar, FHeartGraphPinConnections& V)
@@ -103,6 +81,5 @@ struct TStructOpsTypeTraits<FHeartGraphPinConnections> : public TStructOpsTypeTr
 	enum
 	{
 		WithSerialize = true,
-		WithPostSerialize = true,
 	};
 };

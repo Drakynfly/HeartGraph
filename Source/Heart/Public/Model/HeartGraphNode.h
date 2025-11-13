@@ -349,15 +349,8 @@ protected:
 	uint8 InstancedOutputs = 0;
 
 public:
-	UE_DEPRECATED(5.4, "Use Get/Find Connections instead")
-	FHeartGraphPinConnections& GetLinks(const FHeartPinGuid& Pin);
-
 	UE_DEPRECATED(5.5, "Replace with either GetPinDescChecked or ViewPin")
 	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
-
-	UE_DEPRECATED(5.4, "Replace with FindConnections or native ViewConnections instead")
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
-	TSet<FHeartGraphPinReference> GetConnections(const FHeartPinGuid& Pin, bool Deprecated) const;
 
 	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
@@ -390,11 +383,6 @@ public:
 	UE_DEPRECATED(5.6, TEXT("Use UHeartDynamicPinsComponent instead."))
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|GraphNode", meta = (DisplayName = "Get Dynamic Pins"))
 	TArray<FHeartGraphPinDesc> BP_GetDynamicPins() const;
-
-protected:
-	UE_DEPRECATED(5.4, "Replace with UHeartGraphUtils::GetConnectedNodes")
-	UFUNCTION(BlueprintCallable, meta = (DeprecatedFunction, DeprecationMessage = "Use GetConnectedNodes"))
-	TSet<UHeartGraphNode*> GetConnectedGraphNodes(EHeartPinDirection Direction = EHeartPinDirection::Bidirectional) const;
 };
 
 

@@ -210,16 +210,6 @@ bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGra
 	return false;
 }
 
-TSet<FHeartGraphPinReference> UHeartGraphNode::GetConnections(const FHeartPinGuid& Pin, bool) const
-{
-	if (auto Links = PinData.ViewConnections(Pin);
-		Links.IsValid())
-	{
-		return TSet<FHeartGraphPinReference>(TArray<FHeartGraphPinReference>(Links.Get().GetLinks()));
-	}
-	return {};
-}
-
 #if WITH_EDITOR
 bool UHeartGraphNode::CanCreate_Editor() const
 {
@@ -267,11 +257,6 @@ bool UHeartGraphNode::CanDelete_Implementation() const
 bool UHeartGraphNode::CanDuplicate_Implementation() const
 {
 	return true;
-}
-
-FHeartGraphPinConnections& UHeartGraphNode::GetLinks(const FHeartPinGuid& Pin)
-{
-	return PinData.GetConnectionsMutable(Pin);
 }
 
 Heart::Query::FPinQueryResult UHeartGraphNode::FindPinsByDirection(EHeartPinDirection Direction) const
@@ -470,34 +455,6 @@ void UHeartGraphNode::RemoveInstancePin(const EHeartPinDirection Direction)
 		return;
 	}
 	Comp->RemoveInstancePin(Guid, Direction);
-}
-
-TSet<UHeartGraphNode*> UHeartGraphNode::GetConnectedGraphNodes(const EHeartPinDirection Direction) const
-{
-	const UHeartGraph* Graph = GetGraph();
-	if (!ensure(IsValid(Graph))) return {};
-
-	TSet<UHeartGraphNode*> UniqueConnections;
-
-	FindPinsByDirection(Direction).ForEach(
-		[&](const FHeartPinGuid PinGuid)
-		{
-			auto&& Links = PinData.ViewConnections(PinGuid);
-			if (!Links.IsValid())
-			{
-				return;
-			}
-
-			for (auto&& Link : Links.Get())
-			{
-				if (UHeartGraphNode* Node = Graph->GetNode(Link.NodeGuid))
-				{
-					UniqueConnections.Add(Node);
-				}
-			}
-		});
-
-	return UniqueConnections;
 }
 
 #undef LOCTEXT_NAMESPACE

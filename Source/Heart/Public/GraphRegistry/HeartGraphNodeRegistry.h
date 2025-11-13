@@ -195,9 +195,8 @@ public:
 	/**
 	 * Get the graph node class that we use to represent the given arbitrary class.
 	 */
-	UE_DEPRECATED(5.4, "Please use GetGraphNodeClassesForNode or another method of determining a NodeSource's graph node")
 	UFUNCTION(BlueprintCallable, meta = (DeprecatedFunction, DeprecationMessage = "Use GetGraphNodeClassesForNode"))
-	virtual TSubclassOf<UHeartGraphNode> GetGraphNodeClassForNode(const FHeartNodeSource NodeSource) const;
+	virtual TSubclassOf<UHeartGraphNode> GetFirstGraphNodeClassForNode(const FHeartNodeSource NodeSource) const;
 
 	/**
 	 * Get the graph node classes that we can use to represent the given arbitrary class.

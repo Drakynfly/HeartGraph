@@ -429,7 +429,7 @@ void UHeartGraphNodeRegistry::GetAllGraphNodeArchetypes(TArray<FHeartNodeArchety
 	}
 }
 
-TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetGraphNodeClassForNode(const FHeartNodeSource NodeSource) const
+TSubclassOf<UHeartGraphNode> UHeartGraphNodeRegistry::GetFirstGraphNodeClassForNode(const FHeartNodeSource NodeSource) const
 {
 	// Cursed for-loop, but it works :)
 	for (FHeartNodeSource Test = NodeSource;
