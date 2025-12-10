@@ -191,7 +191,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	if (!ensure(HeartPin.IsValid()))
 	{
-		UE_LOG(LogHeartEditor, Error, TEXT("Changed UEdGraphPin does not have a runtime equivilant!"))
+		UE_LOG(LogHeartEditor, Error, TEXT("Changed UEdGraphPin does not have a runtime equivalent!"))
 		return;
 	}
 
@@ -203,7 +203,10 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	if (const auto PinConnections = HeartGraphNode->ViewConnections(HeartPin);
 		PinConnections.IsValid())
 	{
-		for (auto&& LinkedRef : PinConnections.Get())
+		// We have to copy in order to modify during iteration.
+		FHeartGraphPinConnections Connections = PinConnections.Get();
+
+		for (auto&& LinkedRef : Connections)
 		{
 			const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
 			if (!IsValid(LinkedNode))
@@ -258,7 +261,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 			if (!ensure(ConnectedHeartPin.IsValid()))
 			{
-				UE_LOG(LogHeartEditor, Error, TEXT("Changed HeartEdGraphNode does not have a runtime equivilant!"))
+				UE_LOG(LogHeartEditor, Error, TEXT("Changed HeartEdGraphNode does not have a runtime equivalent!"))
 				break;
 			}
 

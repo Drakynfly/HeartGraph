@@ -96,7 +96,7 @@ bool FHeartNodePinData::RemoveConnection(const FHeartPinGuid Key, const FHeartGr
 {
 	if (FHeartGraphPinConnections* Connections = PinConnections.Find(Key))
 	{
-		const int32 Removed = Connections->Connections.Remove(Pin);
+		const int32 Removed = Connections->Connections.RemoveSingleSwap(Pin);
 
 		// Remove Connections element, if empty.
 		if (Connections->Connections.IsEmpty())
