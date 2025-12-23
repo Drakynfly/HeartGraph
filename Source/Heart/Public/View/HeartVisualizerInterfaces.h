@@ -21,15 +21,25 @@ class HEART_API IGraphNodeVisualizerInterface : public IHeartGraphNodeInterface
 
 protected:
 	// Defer to Blueprint implementation by default
-	virtual UHeartGraphNode* GetHeartGraphNode() const override
+	virtual UHeartGraph* GetHeartGraph() const override
 	{
-		return Execute_GetVisualizingNode(Cast<UObject>(this));
+		return Execute_GetGraph_BP(Cast<UObject>(this));
+	}
+
+	// Defer to Blueprint implementation by default
+	virtual FHeartNodeGuid GetNodeGuid() const override
+	{
+		return Execute_GetNode_BP(Cast<UObject>(this));
 	}
 
 public:
 	// Get the Heart Graph Node that this object visualizes
 	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
-	UHeartGraphNode* GetVisualizingNode() const;
+	UHeartGraph* GetGraph_BP() const;
+
+	// Get the Heart Graph Node that this object visualizes
+	UFUNCTION(BlueprintImplementableEvent, Category = "Heart|Graph")
+	FHeartNodeGuid GetNode_BP() const;
 };
 
 // This class does not need to be modified.

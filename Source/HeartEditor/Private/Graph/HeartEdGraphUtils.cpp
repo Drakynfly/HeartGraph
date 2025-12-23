@@ -127,7 +127,7 @@ namespace Heart::GraphUtils
 		check(ObjectToFocusOn);
 
 		TSharedPtr<AssetEditor::FHeartGraphEditor> HeartGraphAssetEditor;
-		if (const UHeartGraph* HeartGraph = Cast<UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph())
+		if (const UHeartGraph* HeartGraph = Cast<UHeartEdGraph>(ObjectToFocusOn)->GetHeartGraph_Implementation())
 		{
 			const TSharedPtr<IToolkit> FoundAssetEditor = FToolkitManager::Get().FindEditorForAsset(HeartGraph);
 			if (FoundAssetEditor.IsValid())

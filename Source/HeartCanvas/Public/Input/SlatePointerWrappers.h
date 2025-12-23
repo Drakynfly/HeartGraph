@@ -40,7 +40,7 @@ class HEARTCANVAS_API UHeartSlateGraph : public UHeartSlatePtr, public IHeartGra
 	GENERATED_BODY()
 
 public:
-	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
 };
 
 /**
@@ -52,7 +52,10 @@ class HEARTCANVAS_API UHeartSlateNode : public UHeartSlatePtr, public IGraphNode
 	GENERATED_BODY()
 
 public:
-	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	/** IHeartGraphNodeInterface */
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
+	/** IHeartGraphNodeInterface */
 };
 
 /**
@@ -64,8 +67,11 @@ class HEARTCANVAS_API UHeartSlatePin : public UHeartSlatePtr, public IGraphPinVi
 	GENERATED_BODY()
 
 public:
-	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	/** IHeartGraphPinInterface */
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
 	virtual FHeartPinGuid GetPinGuid() const override;
+	/** IHeartGraphPinInterface */
 };
 
 /**

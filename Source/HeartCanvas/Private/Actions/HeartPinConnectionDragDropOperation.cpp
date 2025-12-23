@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Actions/HeartPinConnectionDragDropOperation.h"
+#include "HeartCanvasLog.h"
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasPin.h"
 
@@ -46,6 +47,12 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 	if (DraggedPin.IsValid() && HoveredPin.IsValid())
 	{
 		UHeartGraph* Graph = Canvas->GetGraph();
+		if (!IsValid(Graph))
+		{
+			UE_LOG(LogHeartCanvas, Error, TEXT("Invalid graph from Canvas!"))
+			return;
+		}
+
 		auto&& FromPin = DraggedPin->GetPinReference();
 		auto&& ToPin = HoveredPin->GetPinReference();
 
@@ -62,7 +69,7 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 			if (Graph->GetSchema()->TryConnectPins(Graph, FromPin, ToPin))
 			{
 				{
-					Heart::API::FPinEdit Edit(Graph);
+					Heart::API::FPinEdit Edit(*Graph);
 					for (auto&& Element : MementoData.Original)
 					{
 						Edit.CreateAllMementos(Element.Key, MementoData.New);

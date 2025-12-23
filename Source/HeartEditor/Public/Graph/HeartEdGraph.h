@@ -30,8 +30,8 @@ class UHeartEditorDebugAction : public UHeartGraphAction
 protected:
 	virtual FText GetDescription(const UObject* Target) const override;
 	virtual bool CanExecute(const UObject* Target) const override;
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 };
 
@@ -49,15 +49,14 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostLoad() override;
 
+	// IHeartGraphInterface
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	// IHeartGraphInterface
+
 	static UEdGraph* CreateGraph(UHeartGraph* InHeartGraph);
 
 	UHeartEdGraphNode* FindEdGraphNode(const TFunction<bool(const UHeartEdGraphNode*)>& Iter);
-	UHeartEdGraphNode* FindEdGraphNodeForNode(const UHeartGraphNode* HeartGraphNode);
-
-	// IHeartGraphInterface
-	virtual UHeartGraph* GetHeartGraph() const override;
-	// IHeartGraphInterface
-
+	UHeartEdGraphNode* FindEdGraphNodeForNode(const FHeartNodeGuid& HeartNode);
 
 	UHeartSlateInputLinker* GetEditorLinker() const;
 
@@ -68,9 +67,8 @@ private:
 	// Create the EdGraph node equivalent to a HeartNode
 	void CreateEdGraphNode(UHeartGraphNode* Node);
 
-	void OnNodeAdded(UHeartGraphNode* HeartGraphNode);
-	void OnNodeRemoved(UHeartGraphNode* HeartGraphNode);
-	void OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& HeartGraphConnectionEvent);
+	void OnNodeAddedOrRemoved(const FHeartNodeAddOrRemoveEvent& Event);
+	void OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
 
 	// Transient, so it can be remade on PostLoad/CreateGraph since the class used, change be changed by the schema.
 	UPROPERTY(Transient)

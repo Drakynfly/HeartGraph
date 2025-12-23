@@ -73,3 +73,73 @@ bool FHeartReplicatedData::Delete(const FHeartGuid& Guid)
 
 	return false;
 }
+
+void FHeartReplicatedNodeComponent::PostReplicatedAdd(const FHeartReplicatedNodeComponents& Array)
+{
+	Array.OwningProxy->PostReplicatedAdd_NodeComponent(*this);
+}
+
+void FHeartReplicatedNodeComponent::PostReplicatedChange(const FHeartReplicatedNodeComponents& Array)
+{
+	Array.OwningProxy->PostReplicatedChange_NodeComponent(*this);
+}
+
+void FHeartReplicatedNodeComponent::PreReplicatedRemove(const FHeartReplicatedNodeComponents& Array)
+{
+	Array.OwningProxy->PreReplicatedRemove_NodeComponent(*this);
+}
+
+void FHeartReplicatedNodeComponent::PostReplicatedReceive(
+	const FFastArraySerializer::FPostReplicatedReceiveParameters& Parameters)
+{
+}
+
+FString FHeartReplicatedNodeComponent::GetDebugString()
+{
+	return NodeGuid.ToString() + ComponentGuid.ToString();
+}
+
+int32 FHeartReplicatedNodeComponents::IndexOf(const FHeartExtensionGuid& Guid) const
+{
+	// @todo replace with faster search than linear:
+	// keep nodes sorted somehow and use binary search probably?
+	return Items.IndexOfByPredicate(
+		[Guid](const FHeartReplicatedNodeComponent& Data)
+		{
+			return Data.ComponentGuid == Guid;
+		});
+}
+
+void FHeartReplicatedNodeComponents::Operate(const FHeartExtensionGuid& Guid,
+	const TFunctionRef<void(FHeartReplicatedNodeComponent&)>& Func)
+{
+	const int32 Index = IndexOf(Guid);
+
+	if (Index != INDEX_NONE)
+	{
+		FHeartReplicatedNodeComponent& Item = Items[Index];
+		Func(Item);
+		MarkItemDirty(Item);
+	}
+	else
+	{
+		FHeartReplicatedNodeComponent& Item = Items.AddDefaulted_GetRef();
+		Item.ComponentGuid = Guid;
+		Func(Item);
+		MarkItemDirty(Item);
+	}
+}
+
+bool FHeartReplicatedNodeComponents::Delete(const FHeartExtensionGuid& Guid)
+{
+	const int32 Index = IndexOf(Guid);
+
+	if (Index != INDEX_NONE)
+	{
+		Items.RemoveAt(Index);
+		MarkArrayDirty();
+		return true;
+	}
+
+	return false;
+}

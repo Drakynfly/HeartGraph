@@ -34,7 +34,7 @@ FHeartEvent UHeartGraphSlateAction::Execute(const Heart::Action::FArguments& Arg
 		return FHeartEvent::Invalid;
 	}
 
-	return Heart::Action::History::Log(this, Arguments,
+	return Heart::Action::History::Log(*this, Arguments,
 		[&](FBloodContainer& UndoData)
 		{
 			return ExecuteOnSlatePtr(Widget, Arguments.Activation, Arguments.Payload, UndoData);

@@ -19,8 +19,11 @@ class UHeartEdGraphPin : public UObject, public IGraphPinVisualizerInterface
 public:
 	static UHeartEdGraphPin* Wrap(const UEdGraphPin* Pin);
 
-	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	/** IHeartGraphPinInterface */
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
 	virtual FHeartPinGuid GetPinGuid() const override;
+	/** IHeartGraphPinInterface */
 
 protected:
 	const UEdGraphPin* EdGraphPin = nullptr;

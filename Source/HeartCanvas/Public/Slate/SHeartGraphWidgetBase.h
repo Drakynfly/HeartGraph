@@ -58,9 +58,10 @@ namespace Heart::Canvas
 	public:
 		SLATE_METADATA_TYPE(FNodeAndLinkerMetadata, FLinkerMetadata)
 
-		FNodeAndLinkerMetadata(UHeartGraphNode* Node, UHeartSlateInputLinker* Linker);
+		FNodeAndLinkerMetadata(UHeartGraph* Graph, const FHeartNodeGuid& Node, UHeartSlateInputLinker* Linker);
 
-		TWeakObjectPtr<UHeartGraphNode> Node;
+		TWeakObjectPtr<UHeartGraph> Graph;
+		FHeartNodeGuid Node;
 	};
 
 	/**
@@ -71,9 +72,10 @@ namespace Heart::Canvas
 	public:
 		SLATE_METADATA_TYPE(FPinAndLinkerMetadata, FLinkerMetadata)
 
-		FPinAndLinkerMetadata(UHeartGraphNode* Node, FHeartPinGuid Pin, UHeartSlateInputLinker* Linker);
+		FPinAndLinkerMetadata(UHeartGraph* Graph, const FHeartNodeGuid& Node, const FHeartPinGuid& Pin, UHeartSlateInputLinker* Linker);
 
-		TWeakObjectPtr<UHeartGraphNode> Node;
+		TWeakObjectPtr<UHeartGraph> Graph;
+		FHeartNodeGuid Node;
 		FHeartPinGuid Pin;
 	};
 
@@ -100,8 +102,8 @@ namespace Heart::Canvas
 	public:
 		SLATE_BEGIN_ARGS(SGraphCanvasWidget)
 		{}
-			SLATE_ARGUMENT(UHeartGraph*, Graph)
-			SLATE_ARGUMENT(UHeartSlateInputLinker*, Linker)
+			SLATE_ARGUMENT( UHeartGraph*, Graph )
+			SLATE_ARGUMENT( UHeartSlateInputLinker*, Linker )
 		SLATE_END_ARGS()
 
 		/** Constructs this widget with InArgs */
@@ -116,7 +118,8 @@ namespace Heart::Canvas
 	public:
 		SLATE_BEGIN_ARGS(SGraphNodeWidget)
 		{}
-			SLATE_ARGUMENT( UHeartGraphNode*, GraphNode )
+			SLATE_ARGUMENT( UHeartGraph*, Graph )
+			SLATE_ARGUMENT( FHeartNodeGuid, NodeGuid )
 			SLATE_ARGUMENT( UHeartSlateInputLinker*, Linker )
 		SLATE_END_ARGS()
 
@@ -132,7 +135,8 @@ namespace Heart::Canvas
 	public:
 		SLATE_BEGIN_ARGS(SGraphPinWidget)
 		{}
-			SLATE_ARGUMENT( UHeartGraphNode*, GraphNode )
+			SLATE_ARGUMENT( UHeartGraph*, Graph )
+			SLATE_ARGUMENT( FHeartNodeGuid, NodeGuid )
 			SLATE_ARGUMENT( FHeartPinGuid, PinGuid)
 			SLATE_ARGUMENT( UHeartSlateInputLinker*, Linker )
 		SLATE_END_ARGS()

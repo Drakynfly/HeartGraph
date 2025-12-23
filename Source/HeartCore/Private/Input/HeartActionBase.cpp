@@ -7,42 +7,42 @@
 
 namespace Heart::Action
 {
-	FText FNativeExec::GetDescription(const UHeartActionBase* Action, const UObject* Target)
+	FText FNativeExec::GetDescription(const UHeartActionBase& Action, const UObject* Target)
 	{
-		return Action->GetDescription(Target);
+		return Action.GetDescription(Target);
 	}
 
-	bool FNativeExec::CanExecute(const UHeartActionBase* Action, const UObject* Target)
+	bool FNativeExec::CanExecute(const UHeartActionBase& Action, const UObject* Target)
 	{
-		return Action->CanExecute(Target);
+		return Action.CanExecute(Target);
 	}
 
-	FHeartEvent FNativeExec::Execute(const UHeartActionBase* Action, const FArguments& Arguments)
+	FHeartEvent FNativeExec::Execute(const UHeartActionBase& Action, const FArguments& Arguments)
 	{
-		return Action->Execute(Arguments);
+		return Action.Execute(Arguments);
 	}
 
-	bool FNativeExec::CanUndo(const UHeartActionBase* Action, const UObject* Target)
+	bool FNativeExec::CanUndo(const UHeartActionBase& Action, const UObject* Target)
 	{
-		return Action->CanUndo(Target);
+		return Action.CanUndo(Target);
 	}
 
-	bool FNativeExec::Undo(const UHeartActionBase* Action, UObject* Target, const FBloodContainer& UndoData)
+	bool FNativeExec::Undo(const UHeartActionBase& Action, UObject* Target, const FBloodContainer& UndoData)
 	{
-		return Action->Undo(Target, UndoData);
+		return Action.Undo(Target, UndoData);
 	}
 
 	FText GetDescription(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target)
 	{
 		return IsValid(Action) ?
-			FNativeExec::GetDescription(Action->GetDefaultObject<UHeartActionBase>(), Target) :
+			FNativeExec::GetDescription(*Action->GetDefaultObject<UHeartActionBase>(), Target) :
 			FText::GetEmpty();
 	}
 
 	bool CanExecute(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target)
 	{
 		return IsValid(Action) ?
-			FNativeExec::CanExecute(Action->GetDefaultObject<UHeartActionBase>(), Target) :
+			FNativeExec::CanExecute(*Action->GetDefaultObject<UHeartActionBase>(), Target) :
 			false;
 	}
 
@@ -56,7 +56,7 @@ namespace Heart::Action
 
 		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Action);
 
-		if (!FNativeExec::CanExecute(ActionObject, Target))
+		if (!FNativeExec::CanExecute(*ActionObject, Target))
 		{
 			return FHeartEvent::Invalid;
 		}
@@ -66,26 +66,19 @@ namespace Heart::Action
 		Args.Activation = Activation;
 		Args.Payload = Payload;
 
-		return FNativeExec::Execute(ActionObject, Args);
+		return FNativeExec::Execute(*ActionObject, Args);
 	}
 
 	bool CanUndo(const TSubclassOf<UHeartActionBase>& Action, const UObject* Target)
 	{
 		return IsValid(Action) ?
-			FNativeExec::CanUndo(Action->GetDefaultObject<UHeartActionBase>(), Target) :
+			FNativeExec::CanUndo(*Action->GetDefaultObject<UHeartActionBase>(), Target) :
 			false;
 	}
 
 	bool Undo(const TSubclassOf<UHeartActionBase>& Action, UObject* Target, const FBloodContainer& UndoData)
 	{
-		if (!ensure(IsValid(Action)))
-		{
-			return false;
-		}
-
-		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Action);
-
-		return FNativeExec::Undo(ActionObject, Target, UndoData);
+		return FNativeExec::Undo(*GetDefault<UHeartActionBase>(Action), Target, UndoData);
 	}
 }
 

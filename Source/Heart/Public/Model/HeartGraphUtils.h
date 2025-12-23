@@ -27,6 +27,9 @@ namespace Heart::Utils
 {
 	using FFindNodePredicate = TFunctionRef<bool(const UHeartGraphNode*)>;
 
+	[[nodiscard]] HEART_API const UHeartGraphNode* GetHeartGraphNode(const IHeartGraphNodeInterface& NodeInterface);
+	[[nodiscard]] HEART_API const UHeartGraphNode* GetHeartGraphNode(const IHeartGraphPinInterface& PinInterface);
+
 	[[nodiscard]] HEART_API UHeartGraphNode* FindNodeOfClass(const UHeartGraph* Graph, TSubclassOf<UHeartGraphNode> Class);
 
 	[[nodiscard]] HEART_API UHeartGraphNode* FindNodeByPredicate(const UHeartGraph* Graph, const FFindNodePredicate& Predicate);
@@ -37,7 +40,7 @@ namespace Heart::Utils
 
 	[[nodiscard]] HEART_API Query::FPinQueryResult FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
 
-	[[nodiscard]] HEART_API TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
+	[[nodiscard]] HEART_API TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph& Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
 
 	[[nodiscard]] HEART_API TConstStructView<FHeartGraphPinDesc> ResolvePinReference(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
 }
@@ -48,7 +51,7 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_OneParam(bool, FHeartGraphNodePredicate, const U
  *
  */
 UCLASS()
-class HEART_API UHeartGraphUtils : public UBlueprintFunctionLibrary
+class UHeartGraphUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 
@@ -70,16 +73,22 @@ public:
 
 	/**			NODE ACCESSORS			*/
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class, DefaultToSelf = "Node"))
+	static const UHeartGraphNode* GetHeartGraphNodeFromNodeInterface(const TScriptInterface<IHeartGraphNodeInterface>& Node);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class, DefaultToSelf = "Pin"))
+	static const UHeartGraphNode* GetHeartGraphNodeFromPinInterface(const TScriptInterface<IHeartGraphPinInterface>& Pin);
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class, DefaultToSelf = "Graph"))
 	static UHeartGraphNode* FindNodeOfClass(const TScriptInterface<IHeartGraphInterface>& Graph, TSubclassOf<UHeartGraphNode> Class);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DefaultToSelf = "Graph"))
 	static UHeartGraphNode* FindNodeByPredicate(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphNodePredicate& Predicate);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class))
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class, DefaultToSelf = "Graph"))
 	static TArray<UHeartGraphNode*> FindAllNodesOfClass(const TScriptInterface<IHeartGraphInterface>& Graph, TSubclassOf<UHeartGraphNode> Class);
 
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DefaultToSelf = "Graph"))
 	static TArray<UHeartGraphNode*> FindAllNodesByPredicate(const TScriptInterface<IHeartGraphInterface>& Graph, const FHeartGraphNodePredicate& Predicate);
 
 	// Get all pins that match the tag.
@@ -101,19 +110,19 @@ public:
 	/**			TYPED GETTERS			*/
 
 	// Find the first extension of the requested class.
-	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class", DefaultToSelf = "Graph"))
 	static UHeartGraphExtension* FindExtension(const TScriptInterface<IHeartGraphInterface>& Graph, TSubclassOf<UHeartGraphExtension> Class);
 
 	// Gets the Heart Graph from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Graph", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))
 	static bool GetGraphTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UHeartGraph> Class, UHeartGraph*& Graph);
 
-	// Gets the Heart Node from an object representing a Heart Graph Pin, and attempts to cast it to the requested class.
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Node", ExpandBoolAsExecs = "ReturnValue"))
+	// Gets the Heart Graph Node from an object representing a Heart Graph Pin, and attempts to cast it to the requested class.
+	UFUNCTION(BlueprintCallable, Category = "Heart|GraphPin", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Node", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Pin"))
 	static bool GetGraphNodeTyped(const TScriptInterface<IHeartGraphPinInterface>& Pin, TSubclassOf<UHeartGraphNode> Class, UHeartGraphNode*& Node);
 
 	// Gets the Node Object from an object representing a Heart Graph Node, and attempts to cast it to the requested class.
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Object", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))
+	UFUNCTION(BlueprintCallable, Category = "Heart|Features|NodeObject", meta = (DeterminesOutputType = "Class", DynamicOutputParam = "Object", ExpandBoolAsExecs = "ReturnValue", DefaultToSelf = "Node"))
 	static bool GetNodeObjectTyped(const TScriptInterface<IHeartGraphNodeInterface>& Node, TSubclassOf<UObject> Class, UObject*& Object);
 
 

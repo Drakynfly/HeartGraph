@@ -8,41 +8,35 @@
 
 namespace Heart::Action::History::MultiUndo
 {
-	void Start(IHeartGraphInterface* Graph)
+	void Start(UHeartGraph& Graph)
 	{
-		check(Graph)
-		UHeartGraph* HeartGraph = Graph->GetHeartGraph();
-		if (!ensure(IsValid(HeartGraph)))
-		{
-			return;
-		}
-
-		if (UHeartActionHistory* History = HeartGraph->GetExtension<UHeartActionHistory>();
+		if (UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
 			IsValid(History))
 		{
 			FHeartActionRecord Record;
 			Record.Action = UHeartAction_MultiUndoStart::StaticClass();
-			Record.Arguments.Target = HeartGraph;
+			Record.Arguments.Target = &Graph;
 			History->AddRecord(Record);
+		}
+		else
+		{
+			UE_LOG(LogHeartGraph, Error, TEXT("Unable to Start MultiUndo, no History Extension found on graph!"))
 		}
 	}
 
-	void End(IHeartGraphInterface* Graph)
+	void End(UHeartGraph& Graph)
 	{
-		check(Graph)
-		UHeartGraph* HeartGraph = Graph->GetHeartGraph();
-		if (!ensure(IsValid(HeartGraph)))
-		{
-			return;
-		}
-
-		if (UHeartActionHistory* History = Graph->GetHeartGraph()->GetExtension<UHeartActionHistory>();
+		if (UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
 			IsValid(History))
 		{
 			FHeartActionRecord Record;
 			Record.Action = UHeartAction_MultiUndoEnd::StaticClass();
-			Record.Arguments.Target = HeartGraph;
+			Record.Arguments.Target = &Graph;
 			History->AddRecord(Record);
+		}
+		else
+		{
+			UE_LOG(LogHeartGraph, Error, TEXT("Unable to End MultiUndo, no History Extension found on graph!"))
 		}
 	}
 }

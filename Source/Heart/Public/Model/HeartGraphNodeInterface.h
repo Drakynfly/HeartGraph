@@ -2,10 +2,11 @@
 
 #pragma once
 
+#include "HeartGuids.h"
 #include "UObject/Interface.h"
 #include "HeartGraphNodeInterface.generated.h"
 
-class UHeartGraphNode;
+class UHeartGraph;
 
 UINTERFACE(NotBlueprintable)
 class HEART_API UHeartGraphNodeInterface : public UInterface
@@ -19,5 +20,8 @@ class HEART_API IHeartGraphNodeInterface
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
-	virtual UHeartGraphNode* GetHeartGraphNode() const PURE_VIRTUAL(IHeartGraphNodeInterface::GetHeartGraphNode, return nullptr; )
+	virtual UHeartGraph* GetHeartGraph() const PURE_VIRTUAL(IHeartGraphNodeInterface::GetHeartGraph, return nullptr; )
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Node")
+	virtual FHeartNodeGuid GetNodeGuid() const PURE_VIRTUAL(IHeartGraphNodeInterface::GetNodeGuid, return FHeartNodeGuid(); )
 };

@@ -7,7 +7,6 @@
 
 #include "HeartSceneNode.generated.h"
 
-class UHeartGraphNode;
 class UHeartSceneGenerator;
 
 /**
@@ -24,7 +23,8 @@ public:
 	UHeartSceneNode();
 
 	/** IHeartGraphNodeInterface */
-	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
 	/** IHeartGraphNodeInterface */
 
 protected:
@@ -35,7 +35,7 @@ protected:
 
 protected:
 	UPROPERTY()
-	TWeakObjectPtr<UHeartGraphNode> GraphNode;
+	FHeartNodeGuid GraphNode;
 
 	UPROPERTY()
 	TWeakObjectPtr<UHeartSceneGenerator> Generator;

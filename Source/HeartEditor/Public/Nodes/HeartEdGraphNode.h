@@ -25,12 +25,12 @@ public:
 	UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual ~UHeartEdGraphNode() override;
 
-// Heart Graph Node
+	// IHeartGraphNodeInterface
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
+	// IHeartGraphNodeInterface
 
-	// IGraphNodeVisualizerInterface
-	virtual UHeartGraphNode* GetHeartGraphNode() const override;
-	// IGraphNodeVisualizerInterface
-
+	UHeartGraphNode* GetHeartGraphNode() const;
 	void SetHeartGraphNode(UHeartGraphNode* InHeartGraphNode);
 
 	// UObject

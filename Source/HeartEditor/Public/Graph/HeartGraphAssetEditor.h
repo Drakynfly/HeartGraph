@@ -149,7 +149,7 @@ namespace Heart::AssetEditor
 		virtual void PasteNodes();
 
 	public:
-		virtual void PasteNodesHere(const FVector2D& Location);
+		virtual void PasteNodesHere(const FVector2f& Location);
 		virtual bool CanPasteNodes() const;
 
 	protected:

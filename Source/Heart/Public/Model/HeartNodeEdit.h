@@ -35,7 +35,8 @@ namespace Heart::API
 	class HEART_API FNodeEdit : FNoncopyable
 	{
 	public:
-		FNodeEdit(IHeartGraphInterface* GraphInterface);
+		FNodeEdit(UHeartGraph& Graph)
+			: Graph(&Graph) {}
 
 		// Dtor runs any remaining pending edits.
 		~FNodeEdit();
@@ -43,10 +44,10 @@ namespace Heart::API
 		using FNewNodeId = int32;
 
 		// A non-batched add. If adding multiple nodes at once, create a FNodeEdit instance, and call CreateXXX() instead.
-		static bool AddNode(IHeartGraphInterface* GraphInterface, UHeartGraphNode* Node);
+		static bool AddNode(UHeartGraph& Graph, UHeartGraphNode* Node);
 
 		// A non-batched delete. If removing multiple nodes at once, create a FNodeEdit instance, and call Delete() instead.
-		static bool DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node);
+		static bool DeleteNode(UHeartGraph& Graph, const FHeartNodeGuid& Node);
 
 		/**
 		 * Queues a node to be created

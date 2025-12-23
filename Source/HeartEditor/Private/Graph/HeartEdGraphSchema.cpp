@@ -98,7 +98,7 @@ const FPinConnectionResponse UHeartEdGraphSchema::CanCreateConnection(const UEdG
 
 	const UHeartGraph* Graph = OwningNodeA->GetHeartGraphNode()->GetGraph();
 
-	check(OwningNodeB->GetHeartGraphNode()->GetGraph() == Graph);
+	check(OwningNodeB->GetHeartGraph() == Graph);
 
 	if (!OwningNodeA || !OwningNodeB)
 	{
@@ -225,7 +225,7 @@ FConnectionDrawingPolicy* UHeartEdGraphSchema::CreateConnectionDrawingPolicy(con
 	const int32 InFrontLayerID, const float InZoomFactor, const FSlateRect& InClippingRect,
 	FSlateWindowElementList& InDrawElements, UEdGraph* InGraphObj) const
 {
-	const UHeartGraphSchema* HeartSchema = CastChecked<UHeartEdGraph>(InGraphObj)->GetHeartGraph()->GetSchema();
+	const UHeartGraphSchema* HeartSchema = CastChecked<UHeartEdGraph>(InGraphObj)->GetHeartGraph_Implementation()->GetSchema();
 	if (IsValid(HeartSchema))
 	{
 		if (FConnectionDrawingPolicy* Policy = FModuleManager::GetModuleChecked<FHeartEditorModule>("HeartEditor").

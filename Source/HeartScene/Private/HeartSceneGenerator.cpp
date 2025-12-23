@@ -11,7 +11,7 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "ModelView/HeartGraphSchema.h"
-#include "ModelView/HeartNodeLocationModifier.h"
+#include "Location/HeartNodeLocationModifier.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneGenerator)
 
@@ -23,22 +23,69 @@ UHeartSceneGenerator::UHeartSceneGenerator()
 	LocationModifiers = CreateDefaultSubobject<UHeartNodeLocationModifierStack>("LocationModifiers");
 }
 
-UHeartGraph* UHeartSceneGenerator::GetHeartGraph() const
+UHeartGraph* UHeartSceneGenerator::GetHeartGraph_Implementation() const
 {
 	return Graph;
 }
 
-FVector UHeartSceneGenerator::GetNodeLocation3D(const FHeartNodeGuid& Node) const
+FVector2D UHeartSceneGenerator::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
-	if (!SceneNodes.Contains(Node))
+	if (!ensure(IsValid(LocationModifiers))) return FVector2D();
+
+	if (const TObjectPtr<UHeartSceneNode>* SceneNode = SceneNodes.Find(Node))
 	{
-		return FVector();
+		if (IsValid(*SceneNode))
+		{
+			return LocationModifiers->ProxyToLocation(FVector2D(UseWorldSpaceInModifiers ? (*SceneNode)->GetComponentLocation() : (*SceneNode)->GetRelativeLocation()));
+		}
 	}
 
-	if (ensure(IsValid(LocationModifiers)))
+	return FVector2D();
+}
+
+void UHeartSceneGenerator::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, const bool InProgressMove)
+{
+	if (!ensure(IsValid(LocationModifiers))) return;
+
+	if (const TObjectPtr<UHeartSceneNode>* SceneNode = SceneNodes.Find(Node))
 	{
-		auto&& SceneNode = SceneNodes[Node];
-		return LocationModifiers->ProxyToLocation3D(UseWorldSpaceInModifiers ? SceneNode->GetComponentLocation() : SceneNode->GetRelativeLocation());
+		if (IsValid(*SceneNode))
+		{
+			FVector Proxy(Location, 0.0);
+
+			if (UseWorldSpaceInModifiers)
+			{
+				Proxy.Z = (*SceneNode)->GetComponentLocation().Z;
+			}
+			else
+			{
+				Proxy.Z = (*SceneNode)->GetRelativeLocation().Z;
+			}
+
+			Proxy = LocationModifiers->LocationToProxy3D(Proxy);
+
+			if (UseWorldSpaceInModifiers)
+			{
+				(*SceneNode)->SetWorldLocation(Proxy);
+			}
+			else
+			{
+				(*SceneNode)->SetRelativeLocation(Proxy);
+			}
+		}
+	}
+}
+
+FVector UHeartSceneGenerator::GetNodeLocation3D(const FHeartNodeGuid& Node) const
+{
+	if (!ensure(IsValid(LocationModifiers))) return FVector();
+
+	if (const TObjectPtr<UHeartSceneNode>* SceneNode = SceneNodes.Find(Node))
+	{
+		if (IsValid(*SceneNode))
+		{
+			return LocationModifiers->ProxyToLocation3D(UseWorldSpaceInModifiers ? (*SceneNode)->GetComponentLocation() : (*SceneNode)->GetRelativeLocation());
+		}
 	}
 
 	return FVector();
@@ -46,24 +93,22 @@ FVector UHeartSceneGenerator::GetNodeLocation3D(const FHeartNodeGuid& Node) cons
 
 void UHeartSceneGenerator::SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, const bool InProgressMove)
 {
-	if (!SceneNodes.Contains(Node))
+	if (!ensure(IsValid(LocationModifiers))) return;
+
+	if (const TObjectPtr<UHeartSceneNode>* SceneNode = SceneNodes.Find(Node))
 	{
-		return;
-	}
-
-	if (ensure(IsValid(LocationModifiers)))
-	{
-		auto&& SceneNode = SceneNodes[Node];
-
-		const FVector Proxy = LocationModifiers->LocationToProxy3D(Location);
-
-		if (UseWorldSpaceInModifiers)
+		if (IsValid(*SceneNode))
 		{
-			SceneNode->SetWorldLocation(Proxy);
-		}
-		else
-		{
-			SceneNode->SetRelativeLocation(Proxy);
+			const FVector Proxy = LocationModifiers->LocationToProxy3D(Location);
+
+            if (UseWorldSpaceInModifiers)
+            {
+            	(*SceneNode)->SetWorldLocation(Proxy);
+            }
+            else
+            {
+            	(*SceneNode)->SetRelativeLocation(Proxy);
+            }
 		}
 	}
 }
@@ -128,7 +173,7 @@ UHeartSceneNode* UHeartSceneGenerator::AddNodeToDisplay(UHeartGraphNode* GraphNo
 		check(SceneNode);
 
 		SceneNode->Generator = this;
-		SceneNode->GraphNode = GraphNode;
+		SceneNode->GraphNode = GraphNode->GetGuid();
 
 		SceneNodes.Add(GraphNode->GetGuid(), SceneNode);
 

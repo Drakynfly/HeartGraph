@@ -5,11 +5,11 @@
 #include "Input/HeartActionBase.h"
 #include "HeartGraphAction.generated.h"
 
+struct FHeartNodeGuid;
 class IHeartGraphInterface;
 class IHeartGraphNodeInterface;
 class IHeartGraphPinInterface;
 class UHeartGraph;
-class UHeartGraphNode;
 
 /**
  *
@@ -24,12 +24,9 @@ protected:
 	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) const override final;
 	//~ UHeartActionBase
 
-	virtual FHeartEvent ExecuteOnGraph(IHeartGraphInterface* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
-	virtual FHeartEvent ExecuteOnNode(IHeartGraphNodeInterface* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
-
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 };
 
 
@@ -47,8 +44,8 @@ protected:
 	//~ UHeartActionBase
 
 	//~ UHeartGraphAction
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	//~ UHeartGraphAction
 
@@ -63,7 +60,7 @@ protected:
 	FHeartEvent BP_ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData) const;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Node"))
-	FHeartEvent BP_ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData) const;
+	FHeartEvent BP_ExecuteOnNode(UHeartGraph* Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData) const;
 
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "Execute on Pin"))
 	FHeartEvent BP_ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, UPARAM(ref) FBloodContainer& UndoData) const;

@@ -8,14 +8,14 @@
 
 const FLazyName UHeartAction_PinsEditProxy::MementosStorage("proxy_mementos");
 
-FHeartEvent UHeartAction_PinsEditProxy::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_PinsEditProxy::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
 													   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	checkfSlow(Activation.IsRedoAction(), TEXT("UHeartAction_PinsEditProxy should only be executed as a Redo!"))
 
 	auto&& MementoData = UndoData.Get<FHeartPinsEditProxyUndoData>(MementosStorage);
 
-	Graph->EditConnections().RestoreMementos(MementoData.New);
+	Graph.EditConnections().RestoreMementos(MementoData.New);
 
 	return FHeartEvent::Handled;
 }

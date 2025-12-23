@@ -30,7 +30,8 @@ public:
 	/** IHeartInputLinkerInterface */
 
 	/** IHeartGraphNodeInterface */
-	virtual UHeartGraphNode* GetHeartGraphNode() const override;
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
 	/** IHeartGraphNodeInterface */
 
 protected:

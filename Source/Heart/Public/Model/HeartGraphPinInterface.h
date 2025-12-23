@@ -6,7 +6,7 @@
 #include "HeartGuids.h"
 #include "HeartGraphPinInterface.generated.h"
 
-class UHeartGraphNode;
+class UHeartGraph;
 
 UINTERFACE(NotBlueprintable)
 class HEART_API UHeartGraphPinInterface : public UInterface
@@ -20,7 +20,10 @@ class HEART_API IHeartGraphPinInterface
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
-	virtual UHeartGraphNode* GetHeartGraphNode() const PURE_VIRTUAL(IHeartGraphPinInterface::GetGraphNode, return nullptr; )
+	virtual UHeartGraph* GetHeartGraph() const PURE_VIRTUAL(IHeartGraphPinInterface::GetHeartGraph, return nullptr; )
+
+	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
+	virtual FHeartNodeGuid GetNodeGuid() const PURE_VIRTUAL(IHeartGraphPinInterface::GetNodeGuid, return FHeartNodeGuid(); )
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Pin")
 	virtual FHeartPinGuid GetPinGuid() const PURE_VIRTUAL(IHeartGraphPinInterface::GetPinGuid, return FHeartPinGuid(); )
@@ -39,9 +42,14 @@ class HEART_API IHeartGraphPinInterfaceBP : public IHeartGraphPinInterface
 protected:
 	// Defer to Blueprint implementations
 
-	virtual UHeartGraphNode* GetHeartGraphNode() const override final
+	virtual UHeartGraph* GetHeartGraph() const override final
 	{
-		return Execute_GetNode_BP(Cast<UObject>(this));
+		return Execute_GetGraph_BP(Cast<UObject>(this));
+	}
+
+	virtual FHeartNodeGuid GetNodeGuid() const override final
+	{
+		return Execute_GetNodeGuid_BP(Cast<UObject>(this));
 	}
 
 	virtual FHeartPinGuid GetPinGuid() const override final
@@ -51,7 +59,10 @@ protected:
 
 public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Pin")
-	UHeartGraphNode* GetNode_BP() const;
+	UHeartGraph* GetGraph_BP() const;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Pin")
+	FHeartNodeGuid GetNodeGuid_BP() const;
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Pin")
 	FHeartPinGuid GetPinGuid_BP() const;

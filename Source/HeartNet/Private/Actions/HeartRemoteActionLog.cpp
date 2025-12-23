@@ -17,7 +17,7 @@ FText UHeartRemoteActionLog::GetDescription(const UObject* Target) const
 		{ FText::FromString(Target->GetName()) });
 }
 
-FHeartEvent UHeartRemoteActionLog::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartRemoteActionLog::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
 	UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	checkfSlow(Activation.IsRedoAction(), TEXT("UHeartRemoteActionLog should only be executed as a Redo!"))

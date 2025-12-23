@@ -44,15 +44,36 @@ struct FHeartNodeRemoveEvent
 	TArray<TObjectPtr<UHeartGraphNode>> AffectedNodes;
 };
 
+UENUM()
+enum class EHeartNodeAddOrRemoveEventType : uint8
+{
+	Add,
+	Remove
+};
+
+/* Event broadcast after nodes are added to a graph */
+USTRUCT(BlueprintType)
+struct FHeartNodeAddOrRemoveEvent
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "HeartNodeAddOrRemoveEvent")
+	EHeartNodeAddOrRemoveEventType Type;
+
+	// Nodes that were added or removed. Usually just one.
+	// @todo Implement Batch node addition
+	UPROPERTY(BlueprintReadOnly, Category = "HeartNodeAddOrRemoveEvent")
+	TArray<FHeartNodeGuid> Nodes;
+};
+
 USTRUCT(BlueprintType)
 struct FHeartNodeMoveEvent
 {
 	GENERATED_BODY()
 
 	// Nodes being moved. Usually just one, but mass node movement might be enabled in graph using a marquee tool.
-	// @todo REFACTOR this should be FHeartNodeGuids
 	UPROPERTY(BlueprintReadOnly, Category = "HeartNodeMoveEvent")
-	TSet<TObjectPtr<UHeartGraphNode>> AffectedNodes;
+	TSet<FHeartNodeGuid> AffectedNodes;
 
 	// Is the move "in-progress" or finished, typically during drag-drop style movement.
 	UPROPERTY(BlueprintReadOnly, Category = "HeartNodeMoveEvent")

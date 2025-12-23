@@ -1,7 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "Graph/Widgets/Pins/SHeartGraphPin.h"
-#include "Model/HeartGraphNode.h"
+#include "Model/HeartGraph.h"
 #include "Nodes/HeartEdGraphNode.h"
 #include "Slate/SHeartGraphWidgetBase.h"
 
@@ -13,23 +13,16 @@ void SHeartGraphPin::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
 {
 	SGraphPin::Construct(SGraphPin::FArguments(), InPin);
 
-	UHeartGraphNode* GraphNode = Cast<UHeartEdGraphNode>(GraphPinObj->GetOwningNode())->GetHeartGraphNode();
-	FHeartPinGuid PinGuid;
+	const UHeartEdGraphNode* EdGraphNode = Cast<UHeartEdGraphNode>(GraphPinObj->GetOwningNode());
 
-	if (IsValid(GraphNode))
+	UHeartGraph* Graph = EdGraphNode->GetHeartGraph();
+	FHeartNodeGuid NodeGuid = EdGraphNode->GetNodeGuid();
+	const FHeartPinGuid PinGuid = Graph->FindNodePin(NodeGuid, InPin->PinName);
+
+	if (PinGuid.IsValid())
 	{
-		if (auto Option = GraphNode->QueryPins().Find(
-				[&InPin](const FHeartGraphPinDesc& Desc)
-				{
-					return Desc.Name == InPin->PinName;
-				});
-			Option.IsSet())
-		{
-			PinGuid = Option.GetValue();
-		}
+		AddMetadata(MakeShared<Heart::Canvas::FPinAndLinkerMetadata>(Graph, NodeGuid, PinGuid, InArgs._Linker));
 	}
-
-	AddMetadata(MakeShared<Heart::Canvas::FPinAndLinkerMetadata>(GraphNode, PinGuid, InArgs._Linker));
 
 	// @todo expose setting this from the schema
 	//bUsePinColorForText = true;

@@ -24,7 +24,7 @@
 // Heart Graph Node
 
 UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FVector2D Location, bool bSelectNewNode /* = true*/)
+	const FVector2f& Location, const bool bSelectNewNode /* = true*/)
 {
 	// prevent adding new nodes while playing
 	if (GEditor->PlayWorld != nullptr)
@@ -34,33 +34,33 @@ UEdGraphNode* FHeartGraphSchemaAction_NewNode::PerformAction(class UEdGraph* Par
 
 	if (ensure(Archetype.Source.IsValid() && IsValid(Archetype.GraphNode)))
 	{
-		return CreateNode(ParentGraph, FromPin, Archetype, Location, bSelectNewNode);
+		return CreateNode(ParentGraph, FromPin, Archetype, FVector2D(Location), bSelectNewNode);
 	}
 
 	return nullptr;
 }
 
 UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FHeartNodeArchetype Archetype, const FVector2D Location, const bool bSelectNewNode /*= true*/)
+	const FHeartNodeArchetype& Archetype, const FVector2D Location, const bool bSelectNewNode /*= true*/)
 {
 	const FScopedTransaction Transaction(LOCTEXT("AddNode", "Add Node"));
 
 	ParentGraph->Modify();
 
 	auto&& HeartEdGraph = CastChecked<UHeartEdGraph>(ParentGraph);
-	auto&& HeartGraph = HeartEdGraph->GetHeartGraph();
+	auto&& HeartGraph = HeartEdGraph->GetHeartGraph_Implementation();
 	HeartGraph->Modify();
 
 	UHeartGraphNode* NewGraphNode;
 	{
 		// Add runtime node to graph, this will trigger the EdGraphNode to be created by in UHeartEdGraph::CreateEdGraphNode
-		Heart::API::FNodeEdit NodeEdit(HeartGraph);
+		Heart::API::FNodeEdit NodeEdit(*HeartGraph);
 		NodeEdit.Create(Archetype, Location, nullptr);
 		NewGraphNode = NodeEdit.Get();
 	}
 	check(NewGraphNode)
 
-	auto&& HeartEdGraphNode = HeartEdGraph->FindEdGraphNodeForNode(NewGraphNode);
+	auto&& HeartEdGraphNode = HeartEdGraph->FindEdGraphNodeForNode(NewGraphNode->GetGuid());
 	if (!IsValid(HeartEdGraphNode))
 	{
 		// Failed to create EdGraphNode, bail
@@ -74,10 +74,13 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 		HeartEdGraphNode->AutowireNewNode(FromPin);
 	}
 
-	auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
-	if (HeartGraphAssetEditor.IsValid())
+	if (bSelectNewNode)
 	{
-		HeartGraphAssetEditor->SelectSingleNode(HeartEdGraphNode);
+		auto&& HeartGraphAssetEditor = Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph);
+        if (HeartGraphAssetEditor.IsValid())
+        {
+        	HeartGraphAssetEditor->SelectSingleNode(HeartEdGraphNode);
+        }
 	}
 
 	HeartGraph->PostEditChange();
@@ -87,7 +90,7 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 
 // Paste Node
 
-UEdGraphNode* FHeartGraphSchemaAction_Paste::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode/* = true*/)
+UEdGraphNode* FHeartGraphSchemaAction_Paste::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2f& Location, bool bSelectNewNode/* = true*/)
 {
 	// prevent adding new nodes while playing
 	if (GEditor->PlayWorld == nullptr)
@@ -100,7 +103,7 @@ UEdGraphNode* FHeartGraphSchemaAction_Paste::PerformAction(class UEdGraph* Paren
 
 // Comment Node
 
-UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode/* = true*/)
+UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2f& Location, bool bSelectNewNode/* = true*/)
 {
 	// prevent adding new nodes while playing
 	if (GEditor->PlayWorld != nullptr)
@@ -109,21 +112,21 @@ UEdGraphNode* FHeartGraphSchemaAction_NewComment::PerformAction(class UEdGraph* 
 	}
 
 	UEdGraphNode_Comment* CommentTemplate = NewObject<UEdGraphNode_Comment>();
-	FVector2D SpawnLocation = Location;
+	FVector2f SpawnLocation = Location;
 
 	FSlateRect Bounds;
 	if (Heart::GraphUtils::GetHeartGraphAssetEditor(ParentGraph)->GetBoundsForSelectedNodes(Bounds, 50.0f))
 	{
 		CommentTemplate->SetBounds(Bounds);
-		SpawnLocation.X = CommentTemplate->NodePosX;
-		SpawnLocation.Y = CommentTemplate->NodePosY;
+		SpawnLocation.X = static_cast<float>(CommentTemplate->NodePosX);
+		SpawnLocation.Y = static_cast<float>(CommentTemplate->NodePosY);
 	}
 
 	return FEdGraphSchemaAction_NewNode::SpawnNodeFromTemplate<UEdGraphNode_Comment>(ParentGraph, CommentTemplate, SpawnLocation);
 }
 
 UEdGraphNode* FHeartGraphSchemaAction_LinkerBinding::PerformAction(UEdGraph* ParentGraph, UEdGraphPin* FromPin,
-	const FVector2D Location, const bool bSelectNewNode)
+	const FVector2f& Location, const bool bSelectNewNode)
 {
 	UHeartEdGraph* EdGraph = CastChecked<UHeartEdGraph>(ParentGraph);
 

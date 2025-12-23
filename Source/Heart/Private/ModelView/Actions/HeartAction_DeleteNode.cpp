@@ -4,12 +4,13 @@
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNodeInterface.h"
+#include "Model/HeartGraphUtils.h"
 #include "ModelView/HeartActionHistory.h"
 #include "Providers/FlakesBinarySerializer.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartAction_DeleteNode)
 
-static const FLazyName DeletedNodeStorage("delnode");
+static constexpr FLazyName DeletedNodeStorage("delnode");
 
 bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 {
@@ -36,28 +37,31 @@ bool FHeartDeleteNodeUndoData::Serialize(FArchive& Ar)
 
 bool UHeartAction_DeleteNode::CanExecute(const UObject* Object) const
 {
-	if (Object->Implements<UHeartGraphNodeInterface>())
+	if (const IHeartGraphNodeInterface* Interface = Cast<IHeartGraphNodeInterface>(Object))
 	{
-		return Cast<IHeartGraphNodeInterface>(Object)->GetHeartGraphNode()->CanDelete();
+		if (const UHeartGraphNode* GraphNode = Heart::Utils::GetHeartGraphNode(*Interface))
+		{
+			return GraphNode->CanDelete();
+		}
 	}
 	return false;
 }
 
-FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
 												   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::IsUndoable())
 	{
 		// Cache undo data
 		FHeartDeleteNodeUndoData Data;
-		Data.DeletedNode = Node;
+		Data.DeletedNode = Graph.GetNode(Node);
 
-		Heart::API::FPinEdit(Node).CreateAllMementos(Node->GetGuid(), Data.Mementos);
+		Heart::API::FPinEdit(Graph).CreateAllMementos(Node, Data.Mementos);
 
 		UndoData.Add(DeletedNodeStorage, Data);
 	}
 
-	Node->GetGraph()->RemoveNode(Node->GetGuid());
+	Graph.RemoveNode(Node);
 
 	return FHeartEvent::Handled;
 }
@@ -74,6 +78,10 @@ bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoD
 	}
 
 	UHeartGraph* Graph = Heart::Action::History::GetGraphFromActionStack();
+	if (!IsValid(Graph))
+	{
+		return false;
+	}
 
 	// Ensure that the node is reconstructed with the correct graph outer.
 	Data.DeletedNode->Rename(nullptr, Graph);
@@ -81,7 +89,7 @@ bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoD
 	Graph->AddNode(Data.DeletedNode);
 
 	// Relink broken connections
-	Heart::API::FPinEdit(Graph).RestoreMementos(Data.Mementos);
+	Heart::API::FPinEdit(*Graph).RestoreMementos(Data.Mementos);
 
 	return true;
 }

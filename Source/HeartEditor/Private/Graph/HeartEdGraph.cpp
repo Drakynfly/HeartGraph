@@ -38,19 +38,19 @@ bool UHeartEditorDebugAction::CanExecute(const UObject* Target) const
 	return IsValid(Target);
 }
 
-FHeartEvent UHeartEditorDebugAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartEditorDebugAction::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
 													UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
-		FString::Printf(TEXT("Executing Debug Action on graph '%s'"), Graph ? *Graph->GetName() : TEXT("null")));
+		FString::Printf(TEXT("Executing Debug Action on graph '%s'"), *Graph.GetName()));
 	return FHeartEvent::Handled;
 }
 
-FHeartEvent UHeartEditorDebugAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartEditorDebugAction::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
 												   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
-	FString::Printf(TEXT("Executing Debug Action on node '%s'"), Node ? *Node->GetName() : TEXT("null")));
+	FString::Printf(TEXT("Executing Debug Action on node '%s'"), *Node.ToString()));
 	return FHeartEvent::Handled;
 }
 
@@ -58,7 +58,7 @@ FHeartEvent UHeartEditorDebugAction::ExecuteOnPin(const TScriptInterface<IHeartG
 												  const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
-	FString::Printf(TEXT("Executing Debug Action on pin '%s'"), Pin ? *Pin.GetObject()->GetName() : TEXT("null")));
+	FString::Printf(TEXT("Executing Debug Action on pin '%s'"), Pin ? *Pin->GetPinGuid().ToString() : TEXT("null")));
 	return FHeartEvent::Handled;
 }
 
@@ -73,10 +73,9 @@ void UHeartEdGraph::PostInitProperties()
 
 	if (!IsTemplate())
 	{
-		UHeartGraph* HeartGraph = GetHeartGraph();
+		UHeartGraph* HeartGraph = GetHeartGraph_Implementation();
 
-		HeartGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAdded);
-		HeartGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemoved);
+		HeartGraph->GetOnNodeAddOrRemove().AddUObject(this, &ThisClass::OnNodeAddedOrRemoved);
 		HeartGraph->GetOnNodeConnectionsChanged().AddUObject(this, &ThisClass::OnNodeConnectionsChanged);
 	}
 }
@@ -85,7 +84,7 @@ void UHeartEdGraph::PostLoad()
 {
 	Super::PostLoad();
 
-	const UHeartGraph* HeartGraph = GetHeartGraph();
+	const UHeartGraph* HeartGraph = GetHeartGraph_Implementation();
 
 	for (auto&& Element : HeartGraph->Nodes)
 	{
@@ -93,7 +92,7 @@ void UHeartEdGraph::PostLoad()
 		{
 			// For various reasons, runtime nodes could be missing a EdGraph equivalent, and we want to silently repair these,
 			// or these nodes will be invisible in the EdGraph
-			if (!IsValid(FindEdGraphNodeForNode(Element.Value)))
+			if (!IsValid(FindEdGraphNodeForNode(Element.Key)))
 			{
 				CreateEdGraphNode(Element.Value);
 			}
@@ -137,16 +136,16 @@ UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNode(const TFunction<bool(const UHe
 	return nullptr;
 }
 
-UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNodeForNode(const UHeartGraphNode* HeartGraphNode)
+UHeartEdGraphNode* UHeartEdGraph::FindEdGraphNodeForNode(const FHeartNodeGuid& HeartNode)
 {
 	return FindEdGraphNode(
-		[HeartGraphNode](const UHeartEdGraphNode* Node)
+		[HeartNode](const UHeartEdGraphNode* Node)
 		{
-			return Node->GetHeartGraphNode() == HeartGraphNode;
+			return Node->GetNodeGuid() == HeartNode;
 		});
 }
 
-UHeartGraph* UHeartEdGraph::GetHeartGraph() const
+UHeartGraph* UHeartEdGraph::GetHeartGraph_Implementation() const
 {
 	return CastChecked<UHeartGraph>(GetOuter());
 }
@@ -164,12 +163,13 @@ UHeartSlateInputLinker* UHeartEdGraph::GetEditorLinker() const
 
 void UHeartEdGraph::CreateSlateInputLinker()
 {
-	if (!IsValid(GetHeartGraph()))
+	UHeartGraph* Graph = GetHeartGraph_Implementation();
+	if (!IsValid(Graph))
 	{
 		return;
 	}
 
-	auto&& RuntimeSchema = GetHeartGraph()->GetSchema();
+	auto&& RuntimeSchema = Graph->GetSchema();
 
 	auto InputLinkerClass = RuntimeSchema->GetEditorLinkerClass();
 	if (!IsValid(InputLinkerClass))
@@ -201,7 +201,7 @@ void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
 {
 	Modify();
 
-	auto&& HeartGraph = GetHeartGraph();
+	auto&& HeartGraph = GetHeartGraph_Implementation();
 	HeartGraph->Modify();
 
 	if (!ensure(GEditor)) return;
@@ -212,8 +212,9 @@ void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
 
 	auto&& NewEdGraphNode = HeartNodeCreator.CreateNode(false, EdGraphNodeClass);
 
-	NewEdGraphNode->NodePosX = static_cast<int32>(Node->GetLocation().X);
-	NewEdGraphNode->NodePosY = static_cast<int32>(Node->GetLocation().Y);
+	const FVector2D Location = Heart::Features::Location::GetNodeLocation(*Node);
+	NewEdGraphNode->NodePosX = static_cast<int32>(Location.X);
+	NewEdGraphNode->NodePosY = static_cast<int32>(Location.Y);
 
 	// Assign runtime node pointer
 	NewEdGraphNode->SetHeartGraphNode(Node);
@@ -225,29 +226,41 @@ void UHeartEdGraph::CreateEdGraphNode(UHeartGraphNode* Node)
 	(void)HeartGraph->MarkPackageDirty();
 }
 
-void UHeartEdGraph::OnNodeAdded(UHeartGraphNode* HeartGraphNode)
+void UHeartEdGraph::OnNodeAddedOrRemoved(const FHeartNodeAddOrRemoveEvent& Event)
 {
-	if (IsValid(HeartGraphNode))
+	switch (Event.Type)
 	{
-		if (auto&& EdGraphNode = FindEdGraphNodeForNode(HeartGraphNode))
+	case EHeartNodeAddOrRemoveEventType::Add:
 		{
-			AddNode(EdGraphNode);
+			UHeartGraph* Graph = GetHeartGraph_Implementation();
+			for (auto&& Node : Event.Nodes)
+			{
+				if (UHeartGraphNode* GraphNode = Graph->GetNode(Node);
+					IsValid(GraphNode))
+				{
+					if (auto&& EdGraphNode = FindEdGraphNodeForNode(Node))
+					{
+						AddNode(EdGraphNode);
+					}
+					else
+					{
+						CreateEdGraphNode(GraphNode);
+					}
+				}
+			}
 		}
-		else
+		break;
+	case EHeartNodeAddOrRemoveEventType::Remove:
 		{
-			CreateEdGraphNode(HeartGraphNode);
+			for (auto&& Node : Event.Nodes)
+			{
+				if (auto&& EdGraphNode = FindEdGraphNodeForNode(Node))
+				{
+					EdGraphNode->DestroyNode();
+				}
+			}
 		}
-	}
-}
-
-void UHeartEdGraph::OnNodeRemoved(UHeartGraphNode* HeartGraphNode)
-{
-	if (IsValid(HeartGraphNode))
-	{
-		if (auto&& EdGraphNode = FindEdGraphNodeForNode(HeartGraphNode))
-		{
-			EdGraphNode->DestroyNode();
-		}
+		break;
 	}
 }
 
@@ -263,8 +276,8 @@ void UHeartEdGraph::OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& H
 
 	const UHeartGraphNode* NodeA = HeartGraphConnectionEvent.AffectedNodes.Get(FSetElementId::FromInteger(0));
 	const UHeartGraphNode* NodeB = HeartGraphConnectionEvent.AffectedNodes.Get(FSetElementId::FromInteger(1));
-	const UEdGraphNode* EdNodeA = FindEdGraphNodeForNode(NodeA);
-	const UEdGraphNode* EdNodeB = FindEdGraphNodeForNode(NodeB);
+	const UEdGraphNode* EdNodeA = FindEdGraphNodeForNode(NodeA->GetGuid());
+	const UEdGraphNode* EdNodeB = FindEdGraphNodeForNode(NodeB->GetGuid());
 	const FHeartPinGuid PinAGuid = HeartGraphConnectionEvent.AffectedPins.Get(FSetElementId::FromInteger(0));
 	const FHeartPinGuid PinBGuid = HeartGraphConnectionEvent.AffectedPins.Get(FSetElementId::FromInteger(1));
 

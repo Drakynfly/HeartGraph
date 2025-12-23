@@ -12,13 +12,14 @@ class UHeartNetExtensionInterface : public UInterface
 };
 
 /**
- * Optional interface that UHeartGraphExtensions can implement to customize behavior over the network.
+ * Optional interface that UHeartGraphExtensions and UHeartGraphNodeComponent can implement to customize behavior over the network.
  */
+// @todo rename this to IHeartNodeComponentInterface
 class HEARTNET_API IHeartNetExtensionInterface
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|NetExtension")
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Net")
 	bool ShouldReplicate();
 };

@@ -31,12 +31,7 @@ struct FHeartGraphNodeComponentMap
 	UPROPERTY(VisibleAnywhere, Category = "NodeComponents")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNodeComponent>> Components;
 
-	TObjectPtr<UHeartGraphNodeComponent> Find(const FHeartNodeGuid& Node) const
-	{
-		if (auto&& NodePtr = Components.Find(Node))
-		{
-			return *NodePtr;
-		}
-		return nullptr;
-	}
+	bool IsEmpty() const;
+
+	TObjectPtr<UHeartGraphNodeComponent> Find(const FHeartNodeGuid& Node) const;
 };

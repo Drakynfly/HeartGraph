@@ -4,6 +4,8 @@
 
 #include "HeartReplicatedData.h"
 #include "NativeGameplayTags.h"
+#include "Model/HeartGraph.h"
+#include "Model/HeartGraphTypes.h"
 #include "Model/HeartGuids.h"
 #include "HeartGraphNetProxy.generated.h"
 
@@ -38,7 +40,10 @@ namespace Heart::Net::Tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Node_ClientUpdateNodeObject)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Extension_Added)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Extension_Added)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Extension_Removed)
+
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(NodeComponent_Added)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(NodeComponent_Removed)
 
 	// This tag can be used for custom replicating events, but it's suggested to create unique tags.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Other)
@@ -55,6 +60,7 @@ namespace Heart::Net::Tags
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartNetProxyNodeEvent, UHeartGraphNode*, Node, FGameplayTag, EditType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHeartNetProxyExtensionEvent, UHeartGraphExtension*, Node, FGameplayTag, EditType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FHeartNetProxyNodeComponentEvent, const FHeartNodeGuid&, Node, UHeartGraphNodeComponent*, Component, FGameplayTag, EditType);
 
 /**
  * This class represents a Heart Graph over the network, and can replicate its data between connections.
@@ -65,6 +71,7 @@ class HEARTNET_API UHeartGraphNetProxy : public UObject
 	GENERATED_BODY()
 
 	friend FHeartReplicatedFlake;
+	friend FHeartReplicatedNodeComponent;
 	friend UHeartNetClient;
 
 public:
@@ -115,20 +122,23 @@ protected:
 	bool SetupGraphProxy(UHeartGraph* InSourceGraph);
 
 	// These functions are callbacks for when the source graph is changed, which propagate via replication to clients.
-	virtual void OnNodeAdded_Source(UHeartGraphNode* HeartGraphNode);
-	virtual void OnNodeRemoved_Source(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodeAddedOrRemoved_Source(const FHeartNodeAddOrRemoveEvent& AddOrRemoveEvent);
 	virtual void OnNodesMoved_Source(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeConnectionsChanged_Source(const FHeartGraphConnectionEvent& GraphConnectionEvent);
-
-	virtual void OnExtensionAdded_Source(UHeartGraphExtension* Extension);
-	virtual void OnExtensionRemoved_Source(UHeartGraphExtension* Extension);
+	virtual void OnExtensionAddedOrRemoved_Source(UHeartGraphExtension* Extension, Heart::Events::EComponentEventType Type);
+	virtual void OnNodeComponentAddedOrRemoved_Source(const FHeartNodeGuid& Node, UHeartGraphNodeComponent* Component, Heart::Events::EComponentEventType Type);
 
 	virtual bool ShouldReplicateNode(TObjectPtr<UHeartGraphNode> Node) const;
 	virtual bool ShouldReplicateExtension(TObjectPtr<UHeartGraphExtension> Extension) const;
+	virtual bool ShouldReplicateNodeComponent(const FHeartNodeGuid& Node, UHeartGraphNodeComponent* Component) const;
 
 	void UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> Node);
 	void UpdateReplicatedExtensionData(TObjectPtr<UHeartGraphExtension> Extension);
+	void UpdateReplicatedNodeComponentData(const FHeartNodeGuid& Node, const UHeartGraphNodeComponent* Component);
+
 	void EditReplicatedNodeData(const FHeartReplicatedFlake& NodeData, FGameplayTag EventType);
+	void EditReplicatedExtensionData(const FHeartReplicatedFlake& ExtensionData, FGameplayTag EventType);
+	void EditReplicatedNodeComponentData(const FHeartReplicatedNodeComponent& ComponentData, FGameplayTag EventType);
 
 
 	/**-------------------------*/
@@ -172,10 +182,11 @@ protected:
 	virtual bool CanClientPerformEvent(FGameplayTag RequestedEventType) const;
 
 	// These functions are callbacks for when the proxy graph is editing locally on the client machine.
-	virtual void OnNodeAdded_Proxy(UHeartGraphNode* HeartGraphNode);
-	virtual void OnNodeRemoved_Proxy(UHeartGraphNode* HeartGraphNode);
+	virtual void OnNodeAddedOrRemoved_Proxy(const FHeartNodeAddOrRemoveEvent& AddOrRemoveEvent);
 	virtual void OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMoveEvent);
 	virtual void OnNodeConnectionsChanged_Proxy(const FHeartGraphConnectionEvent& GraphConnectionEvent);
+	virtual void OnExtensionAddedOrRemoved_Proxy(UHeartGraphExtension* Extension, Heart::Events::EComponentEventType Type);
+	virtual void OnNodeComponentAddedOrRemoved_Proxy(const FHeartNodeGuid& Node, UHeartGraphNodeComponent* NodeComponent, Heart::Events::EComponentEventType Type);
 
 	// These functions are called on the server via RPC when a client wants to edit things.
 	virtual void OnNodeAdded_Client(const FHeartReplicatedFlake& NodeData);
@@ -185,19 +196,32 @@ protected:
 
 	virtual void UpdateNodeData_Client(const FHeartReplicatedFlake& NodeData, FGameplayTag EventType);
 
+	virtual void OnExtensionAdded_Client(const FHeartReplicatedFlake& ExtensionData);
+	virtual void OnExtensionRemoved_Client(const FHeartExtensionGuid& Extension);
+
+	virtual void OnNodeComponentAdded_Client(const FHeartReplicatedNodeComponent& ComponentData);
+	virtual void OnNodeComponentRemoved_Client(const FHeartNodeGuid& Node, const FHeartExtensionGuid& Component);
+
 	virtual void ExecuteGraphAction_Client(TSubclassOf<UHeartActionBase> Action, const FHeartRemoteGraphActionArguments& Args);
 	virtual void ExecuteUndo_Client();
 	virtual void ExecuteRedo_Client();
 
-	bool UpdateNodeProxy(const FHeartReplicatedFlake& Data, FGameplayTag EventType);
-	bool RemoveNodeProxy(const FHeartNodeGuid& Guid);
+	void UpdateNodeProxy(const FHeartReplicatedFlake& Data, FGameplayTag EventType);
+	void RemoveNodeProxy(const FHeartReplicatedFlake& Data);
 
-	bool UpdateExtensionProxy(const FHeartReplicatedFlake& Data, FGameplayTag EventType);
-	bool RemoveExtensionProxy(const FHeartExtensionGuid& Guid);
+	void UpdateExtensionProxy(const FHeartReplicatedFlake& Data, FGameplayTag EventType);
+	void RemoveExtensionProxy(const FHeartReplicatedFlake& Data);
 
-	bool PostReplicatedAdd(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake);
-	bool PostReplicatedChange(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake);
-	bool PreReplicatedRemove(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Flake);
+	void UpdateNodeComponentProxy(const FHeartReplicatedNodeComponent& Data, FGameplayTag EventType);
+	void RemoveNodeComponentProxy(const FHeartReplicatedNodeComponent& Data);
+
+	void PostReplicatedAdd(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Data);
+	void PostReplicatedChange(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Data);
+	void PreReplicatedRemove(const FHeartReplicatedData& Array, const FHeartReplicatedFlake& Data);
+
+	void PostReplicatedAdd_NodeComponent(const FHeartReplicatedNodeComponent& Data);
+	void PostReplicatedChange_NodeComponent(const FHeartReplicatedNodeComponent& Data);
+	void PreReplicatedRemove_NodeComponent(const FHeartReplicatedNodeComponent& Data);
 
 
 	/**-----------------------------*/
@@ -209,6 +233,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
 	FHeartNetProxyNodeEvent OnNodeSourceEdited;
 
+	// Called when clients edit source extensions via RPC.
+	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
+	FHeartNetProxyExtensionEvent OnExtensionSourceEdited;
+
+	// Called when clients edit source node components via RPC.
+	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
+	FHeartNetProxyNodeComponentEvent OnNodeComponentSourceEdited;
+
 	// Called when server edits proxy nodes via replication.
 	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
 	FHeartNetProxyNodeEvent OnNodeProxyUpdated;
@@ -216,6 +248,10 @@ public:
 	// Called when server edits proxy extensions via replication.
 	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
 	FHeartNetProxyExtensionEvent OnExtensionProxyUpdated;
+
+	// Called when server edits proxy extensions via replication.
+	UPROPERTY(BlueprintAssignable, Category = "Heart|NetProxy|Events")
+	FHeartNetProxyNodeComponentEvent OnNodeComponentProxyUpdated;
 
 
 	/**-------------------------*/
@@ -260,6 +296,10 @@ protected:
 	UPROPERTY(Replicated)
 	FHeartReplicatedData ReplicatedExtensions;
 
+	// Replication of UHeartGraph::NodeComponents from SourceGraph to ProxyGraph
+	UPROPERTY(Replicated)
+	FHeartReplicatedNodeComponents ReplicatedNodeComponents;
+
 private:
 	enum ERecursiveCheck
 	{
@@ -267,6 +307,8 @@ private:
 		NodeDelete,
 		ExtAdd,
 		ExtDelete,
+		CompAdd,
+		CompDelete,
 		MAX
 	};
 	bool RecursionGuards[ERecursiveCheck::MAX] = {};

@@ -110,7 +110,9 @@ UObject* UHeartGraphFactory::FactoryCreateNew(UClass* Class, UObject* InParent, 
 		NewHeartGraph = NewObject<UHeartGraph>(InParent, Class, Name, Flags | RF_Transactional, Context);
 	}
 
-	SchemaClass.GetDefaultObject()->InitializeNewGraph(NewHeartGraph);
+	const UHeartGraphSchema* Schema = NewHeartGraph->GetSchema();
+
+	Schema->InitializeNewGraph(NewHeartGraph);
 
 	UHeartEdGraph::CreateGraph(NewHeartGraph);
 	return NewHeartGraph;

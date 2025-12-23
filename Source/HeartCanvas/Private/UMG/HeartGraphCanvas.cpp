@@ -11,7 +11,7 @@
 #include "HeartCanvasConnectionVisualizer.h"
 #include "HeartWidgetUtilsLibrary.h"
 #include "Model/HeartGraph.h"
-#include "ModelView/HeartLayoutHelper.h"
+#include "Location/HeartLayoutHelper.h"
 
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
@@ -87,9 +87,16 @@ void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDe
 		SetViewOffset(Vector2fInterpTo(FVector2f(View), FVector2f(TargetView), InDeltaTime, DraggingInterpSpeed));
 	}
 
-	if (RunLayoutOnTick && IsValid(Layout))
+	UHeartGraph* Graph = GetHeartGraph_Implementation();
+	if (!IsValidChecked(Graph))
 	{
-		Layout->Layout(this, InDeltaTime);
+		return;
+	}
+
+	IHeartNodeLocationInterface* LocationInterface = Graph->GetNodeLocationInterface();
+	if (RunLayoutOnTick && IsValid(Layout) && LocationInterface)
+	{
+		Layout->Layout(*Graph, *LocationInterface, InDeltaTime);
 	}
 
 	if (NeedsToUpdatePositions)
@@ -135,6 +142,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 	// Get the set of pins for all children and synthesize geometry for culled out pins so lines can be drawn to them.
 	TMap<FHeartPinGuid, TPair<UHeartGraphCanvasPin*, FGeometry>> PinGeometries;
 	TSet<UHeartGraphCanvasPin*> VisiblePins;
+	auto LocationInterface = DisplayedGraph->GetNodeLocationInterface();
 
 	for (auto&& DisplayedNode : DisplayedNodes)
 	{
@@ -145,7 +153,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 		{
 			auto&& PinWidgets = GraphNode->GetPinWidgets();
 
-			const FVector2f NodeLoc(GraphNode->GetGraphNode()->GetLocation());
+			const FVector2f NodeLoc(LocationInterface->GetNodeLocation(GraphNode->GetNodeGuid()));
 
 			for (UHeartGraphCanvasPin* PinWidget : PinWidgets)
 			{
@@ -233,7 +241,7 @@ UHeartInputLinkerBase* UHeartGraphCanvas::ResolveLinker_Implementation() const
 	return BindingContainer.GetLinker();
 }
 
-UHeartGraph* UHeartGraphCanvas::GetHeartGraph() const
+UHeartGraph* UHeartGraphCanvas::GetHeartGraph_Implementation() const
 {
 	return DisplayedGraph.Get();
 }
@@ -246,7 +254,7 @@ FVector2D UHeartGraphCanvas::GetNodeLocation(const FHeartNodeGuid& Node) const
 
 		if (SyncNodeLocationsWithGraph || !NodeLocations.Contains(Node))
 		{
-			Location = DisplayedGraph->GetNode(Node)->GetLocation();
+			Location = DisplayedGraph->GetNodeLocationInterface()->GetNodeLocation(Node);
 		}
 		else
 		{
@@ -267,8 +275,8 @@ void UHeartGraphCanvas::SetNodeLocation(const FHeartNodeGuid& Node, const FVecto
 
 		if (SyncNodeLocationsWithGraph)
 		{
-			UHeartGraphNode* GraphNode = DisplayedGraph->GetNode(Node);
-			GraphNode->SetLocation(ProxiedLocation);
+			IHeartNodeLocationInterface* LocationInterface = DisplayedGraph->GetNodeLocationInterface();
+			LocationInterface->SetNodeLocation(Node, ProxiedLocation, InProgressMove);
 		}
 		else
 		{
@@ -313,7 +321,7 @@ void UHeartGraphCanvas::Refresh()
 	{
 		if (IsValid(GraphNode))
 		{
-			AddNodeToDisplay(GraphNode, false);
+			AddNodeToDisplay(GraphNode->GetGuid(), false);
 		}
 	}
 
@@ -333,17 +341,15 @@ void UHeartGraphCanvas::UpdateAllPositionsOnCanvas()
 
 void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* CanvasNode)
 {
-	auto&& Node = CanvasNode->GetGraphNode();
-
 	FVector2D NodeLocation;
 
-	if (!SyncNodeLocationsWithGraph && NodeLocations.Contains(Node->GetGuid()))
+	if (!SyncNodeLocationsWithGraph && NodeLocations.Contains(CanvasNode->GetNodeGuid()))
 	{
-		NodeLocation = NodeLocations[Node->GetGuid()];
+		NodeLocation = NodeLocations[CanvasNode->GetNodeGuid()];
 	}
 	else
 	{
-		NodeLocation = Node->GetLocation();
+		NodeLocation = Heart::Features::Location::GetNodeLocation(*CanvasNode);
 	}
 
 	if (UNLIKELY(NodeLocation.ContainsNaN()))
@@ -388,10 +394,10 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 				if (const TObjectPtr<UHeartGraphCanvasNode> CanvasNode = *Node)
 				{
 					// Add the canonical location of the graph node.
-					AverageNodePosition += FVector2f(CanvasNode->GetGraphNode()->GetLocation());
+					AverageNodePosition += FVector2f(Heart::Features::Location::GetNodeLocation(*CanvasNode));
 
 					// Add half the size of the node. We are focusing on the center of the node, not the corner
-					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5f * (1.0f / static_cast<float>(View.Z));
+					AverageNodePosition += CanvasNode->GetCachedGeometry().GetLocalSize() * 0.5f * (1.0f / View.Z);
 				}
 			}
 		}
@@ -439,19 +445,20 @@ void UHeartGraphCanvas::CreatePreviewConnection()
 	}
 }
 
-void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, const bool InitNodeWidget)
+void UHeartGraphCanvas::AddNodeToDisplay(const FHeartNodeGuid& Node, const bool InitNodeWidget)
 {
-	// This function is only used internally, so Node should *always* be validated prior to this point.
-	check(Node);
+	// This function is only used internally, so GraphNode should *always* be validated prior to this point.
+	auto&& GraphNode = GetGraph()->GetNode(Node);
+	check(GraphNode);
 
-	if (const TSubclassOf<UHeartGraphCanvasNode> VisualizerClass = GetVisualClassForNode(Node))
+	if (const TSubclassOf<UHeartGraphCanvasNode> VisualizerClass = GetVisualClassForNode(GraphNode))
 	{
 		auto&& Widget = CreateWidget<UHeartGraphCanvasNode>(this, VisualizerClass);
 		check(Widget);
 
 		Widget->GraphCanvas = this;
-		Widget->GraphNode = Node;
-		DisplayedNodes.Add(Node->GetGuid(), Widget);
+		Widget->GraphNode = GraphNode;
+		DisplayedNodes.Add(Node, Widget);
 
 		UCanvasPanelSlot* NodeSlot = NodeCanvas->AddChildToCanvas(Widget);
 		NodeSlot->SetZOrder(Heart::Canvas::NodeZOrder);
@@ -467,12 +474,39 @@ void UHeartGraphCanvas::AddNodeToDisplay(UHeartGraphNode* Node, const bool InitN
 
 		if (!IsDesignTime() && SyncNodeLocationsWithGraph)
 		{
-			Node->GetOnNodeLocationChanged().AddUObject(this, &ThisClass::OnNodeLocationChanged);
+			GraphNode->GetOnNodeLocationChanged().AddUObject(this, &ThisClass::OnNodeLocationChanged);
 		}
 	}
 	else
 	{
-		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Unable to determine Visual Class. Node '%s' will not be displayed"), *Node->GetName())
+		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Unable to determine Visual Class. Node '%s' will not be displayed"), *GraphNode->GetName())
+	}
+}
+
+void UHeartGraphCanvas::RemoveNodeFromDisplay(const FHeartNodeGuid& Node)
+{
+	auto&& GraphNode = GetGraph()->GetNode(Node);
+	GraphNode->GetOnNodeLocationChanged().RemoveAll(this);
+	if (!ensure(IsValid(GraphNode)))
+	{
+		return;
+	}
+
+	if (SelectedNodes.Contains(Node))
+	{
+		UnselectNode(Node);
+	}
+
+	if (DisplayedNodes.Contains(Node))
+	{
+		auto&& Value = DisplayedNodes.FindAndRemoveChecked(Node);
+
+		if (Value->GraphNode.IsValid())
+		{
+			Value->GraphNode->GetOnNodeLocationChanged().RemoveAll(this);
+		}
+
+		Value->RemoveFromParent();
 	}
 }
 
@@ -647,7 +681,7 @@ bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, con
 
 	//if (GraphNode->ShouldAllowCulling())
 	{
-		const FVector2f Location(GraphNode->GetGraphNode()->GetLocation());
+		const FVector2f Location(Heart::Features::Location::GetNodeLocation(*GraphNode));
 		const FVector2f MinClipArea = Geometry.GetLocalSize() * -GuardBandArea;
 		const FVector2f MaxClipArea = Geometry.GetLocalSize() * ( 1.f + GuardBandArea);
 		const FVector2f NodeTopLeft = ScalePositionToCanvasZoom_2f(Location);
@@ -665,46 +699,32 @@ bool UHeartGraphCanvas::IsNodeCulled(const UHeartGraphCanvasNode* GraphNode, con
 	//}
 }
 
-void UHeartGraphCanvas::OnNodeAddedToGraph(UHeartGraphNode* Node)
+void UHeartGraphCanvas::OnNodeAddOrRemove(const FHeartNodeAddOrRemoveEvent& Event)
 {
-	if (IsValid(Node))
+	switch (Event.Type)
 	{
-		AddNodeToDisplay(Node, true);
-	}
-}
-
-void UHeartGraphCanvas::OnNodeRemovedFromGraph(UHeartGraphNode* Node)
-{
-	if (!ensure(IsValid(Node)))
-	{
-		return;
-	}
-
-	Node->GetOnNodeLocationChanged().RemoveAll(this);
-
-	auto&& NodeGuid = Node->GetGuid();
-
-	if (SelectedNodes.Contains(NodeGuid))
-	{
-		UnselectNode(NodeGuid);
-	}
-
-	if (DisplayedNodes.Contains(NodeGuid))
-	{
-		auto&& Value = DisplayedNodes.FindAndRemoveChecked(NodeGuid);
-
-		if (Value->GraphNode.IsValid())
+	case EHeartNodeAddOrRemoveEventType::Add:
 		{
-			Value->GraphNode->GetOnNodeLocationChanged().RemoveAll(this);
+			for (const FHeartNodeGuid& Node : Event.Nodes)
+			{
+				AddNodeToDisplay(Node, true);
+			}
 		}
-
-		Value->RemoveFromParent();
+		break;
+	case EHeartNodeAddOrRemoveEventType::Remove:
+		{
+			for (const FHeartNodeGuid& Node : Event.Nodes)
+			{
+				RemoveNodeFromDisplay(Node);
+			}
+		}
+		break;
 	}
 }
 
-void UHeartGraphCanvas::OnNodeLocationChanged(UHeartGraphNode* Node, const FVector2D& Location)
+void UHeartGraphCanvas::OnNodeLocationChanged(const FHeartNodeGuid& Node, const FVector2D& Location)
 {
-	if (auto&& GraphNode = DisplayedNodes.Find(Node->GetGuid()))
+	if (auto&& GraphNode = DisplayedNodes.Find(Node))
 	{
 		UpdateNodePositionOnCanvas(*GraphNode);
 	}
@@ -738,12 +758,10 @@ void UHeartGraphCanvas::InvalidateNodeDisplay(const FHeartNodeGuid& NodeGuid, co
 		{
 			const bool Selected = SelectedNodes.Contains(NodeGuid);
 
-			UHeartGraphNode* GraphNode = GetGraph()->GetNode(NodeGuid);
+			RemoveNodeFromDisplay(NodeGuid);
+			AddNodeToDisplay(NodeGuid, true);
 
-			OnNodeRemovedFromGraph(GraphNode);
-			OnNodeAddedToGraph(GraphNode);
-
-			if (Selected && IsValid(GraphNode))
+			if (Selected)
 			{
 				SelectNode(NodeGuid);
 			}
@@ -812,8 +830,7 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 			return;
 		}
 
-		DisplayedGraph->GetOnNodeAdded().RemoveAll(this);
-		DisplayedGraph->GetOnNodeRemoved().RemoveAll(this);
+		DisplayedGraph->GetOnNodeAddOrRemove().RemoveAll(this);
 		Reset();
 	}
 
@@ -821,8 +838,7 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 
 	if (DisplayedGraph.IsValid())
 	{
-		DisplayedGraph->GetOnNodeAdded().AddUObject(this, &ThisClass::OnNodeAddedToGraph);
-		DisplayedGraph->GetOnNodeRemoved().AddUObject(this, &ThisClass::OnNodeRemovedFromGraph);
+		DisplayedGraph->GetOnNodeAddOrRemove().AddUObject(this, &ThisClass::OnNodeAddOrRemove);
 		Refresh();
 	}
 }

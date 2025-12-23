@@ -7,8 +7,9 @@
 #include "Model/HeartNodeEdit.h"
 #include "ModelView/HeartGraphSchema.h"
 
-#include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
 #include "UObject/ObjectSaveContext.h"
+
+#include "Model/HeartGraphNode3D.h" // @todo temp, while refactoring node location logic
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraph)
 
@@ -40,7 +41,7 @@ void UHeartGraph::AddReferencedObjects(UObject* InThis, FReferenceCollector& Col
 
 UWorld* UHeartGraph::GetWorld() const
 {
-	if (!IsTemplate())
+	if (!IsTemplate() && !FUObjectThreadContext::Get().IsRoutingPostLoad)
 	{
 #if WITH_EDITOR
 		// @todo hack, fix this
@@ -139,21 +140,30 @@ void UHeartGraph::PostLoad()
 	for (auto It = NodeComponents.CreateIterator(); It; ++It)
 	{
 		auto& NodeMap = *It;
+
+		// Remove map if the class is invalid.
 		if (!IsValid(NodeMap.Key))
 		{
 			It.RemoveCurrent();
 			continue;
 		}
 
-		for (auto SubIt = NodeMap.Value.Components.CreateIterator(); It; ++It)
+		// Remove all invalid components.
+		for (auto SubIt = NodeMap.Value.Components.CreateIterator(); SubIt; ++SubIt)
 		{
-			auto&& Component = *SubIt;
+			TPair<FHeartNodeGuid, TObjectPtr<UHeartGraphNodeComponent>>& Component = *SubIt;
 			if (!Component.Key.IsValid() ||
 				!IsValid(Component.Value) ||
 				CleanedUpNodes.Contains(Component.Key))
 			{
-				It.RemoveCurrent();
+				SubIt.RemoveCurrent();
 			}
+		}
+
+		// Remove the map if there are no components after cleanup.
+		if (NodeMap.Value.IsEmpty())
+		{
+			It.RemoveCurrent();
 		}
 	}
 
@@ -188,12 +198,57 @@ void UHeartGraph::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 	Super::PostDuplicate(DuplicateMode);
 }
 
+FVector2D UHeartGraph::GetNodeLocation(const FHeartNodeGuid& Node) const
+{
+	if (const UHeartGraphNode* GraphNode = GetNode(Node))
+	{
+		return GraphNode->GetLocation();
+	}
+	return FVector2D::ZeroVector;
+}
+
+void UHeartGraph::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove)
+{
+	if (UHeartGraphNode* GraphNode = GetNode(Node))
+	{
+		GraphNode->SetLocation(Location);
+	}
+}
+
+FVector UHeartGraph::GetNodeLocation3D(const FHeartNodeGuid& Node) const
+{
+	if (UHeartGraphNode* GraphNode = GetNode(Node))
+	{
+		if (auto&& GraphNode3D = Cast<UHeartGraphNode3D>(GraphNode))
+		{
+			return GraphNode3D->GetLocation3D();
+		}
+		return FVector(GraphNode->GetLocation(), 0.0);
+	}
+	return FVector::ZeroVector;
+}
+
+void UHeartGraph::SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, const bool InProgressMove)
+{
+	if (UHeartGraphNode* GraphNode = GetNode(Node))
+	{
+		if (auto&& GraphNode3D = Cast<UHeartGraphNode3D>(GraphNode))
+		{
+			GraphNode3D->SetLocation3D(Location);
+		}
+		else
+		{
+			GraphNode->SetLocation(FVector2D(Location));
+		}
+	}
+}
+
 void UHeartGraph::NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, const bool InProgress)
 {
 	if (!AffectedNode.IsValid()) return;
 
 	FHeartNodeMoveEvent Event;
-	Event.AffectedNodes.Add(GetNode(AffectedNode));
+	Event.AffectedNodes.Add(AffectedNode);
 	Event.MoveFinished = !InProgress;
 	HandleNodeMoveEvent(Event);
 }
@@ -203,28 +258,24 @@ void UHeartGraph::NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& Affecte
 	if (AffectedNodes.IsEmpty()) return;
 
 	FHeartNodeMoveEvent Event;
-	for (auto&& Element : AffectedNodes)
+	for (auto&& Node : AffectedNodes)
 	{
-		if (Element.IsValid())
+		if (Node.IsValid())
 		{
-			if (UHeartGraphNode* Node = GetNode(Element);
-				ensure(IsValid(Node)))
-			{
-				Event.AffectedNodes.Add(Node);
-			}
+			Event.AffectedNodes.Add(Node);
 		}
 	}
 	Event.MoveFinished = !InProgress;
 	HandleNodeMoveEvent(Event);
 }
 
-void UHeartGraph::ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const
+void UHeartGraph::ForEachNode(const TFunctionRef<bool(const TPair<FHeartNodeGuid, UHeartGraphNode*>&)>& Iter) const
 {
 	for (auto&& Element : Nodes)
 	{
 		if (ensure(Element.Value))
 		{
-			if (!Iter(Element.Value))
+			if (!Iter(Element))
 			{
 				break;
 			}
@@ -243,26 +294,9 @@ void UHeartGraph::ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*
 	}
 }
 
-void UHeartGraph::HandleNodeAddEvent(const FHeartNodeAddEvent& Event)
+void UHeartGraph::HandleNodeAddOrRemoveEvent(const FHeartNodeAddOrRemoveEvent& Event)
 {
-	// @todo batch this as well?
-	for (const FHeartNodeGuid& NodeGuid : Event.NewNodes)
-	{
-		if (UHeartGraphNode* Node = GetNode(NodeGuid);
-			ensure(IsValid(Node)))
-		{
-			OnNodeAdded.Broadcast(Node);
-		}
-	}
-}
-
-void UHeartGraph::HandleNodeRemoveEvent(const FHeartNodeRemoveEvent& Event)
-{
-	// @todo batch this as well?
-	for (UHeartGraphNode* Node : Event.AffectedNodes)
-	{
-		OnNodeRemoved.Broadcast(Node);
-	}
+	OnNodeAddOrRemove.Broadcast(Event);
 }
 
 void UHeartGraph::HandleNodeMoveEvent(const FHeartNodeMoveEvent& Event)
@@ -279,6 +313,22 @@ void UHeartGraph::HandleGraphConnectionEvent(const FHeartGraphConnectionEvent& E
 		BP_OnNodeConnectionsChanged(Event);
 	}
 	OnNodeConnectionsChanged.Broadcast(Event);
+}
+
+FHeartNodeIndex UHeartGraph::GetNodeIndex(const FHeartNodeGuid& Node) const
+{
+	const FSetElementId NodeID = Nodes.FindId(Node);
+	return FHeartNodeIndex(NodeID.AsInteger());
+}
+
+FHeartNodeGuid UHeartGraph::GetNodeGuidFromIndex(const FHeartNodeIndex NodeIndex) const
+{
+	FSetElementId NodeID = FSetElementId::FromInteger(NodeIndex.Index);
+	if (Nodes.IsValidId(NodeID))
+	{
+		return Nodes.Get(NodeID).Key;
+	}
+	return FHeartNodeGuid();
 }
 
 UHeartGraphNode* UHeartGraph::GetNode(const FHeartNodeGuid& NodeGuid) const
@@ -342,7 +392,7 @@ const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphS
 UHeartGraphExtension* UHeartGraph::GetExtensionByGuid(const FHeartExtensionGuid ExtensionGuid,
 													  TSubclassOf<UHeartGraphExtension>) const
 {
-	if (auto Extension = Extensions.Find(ExtensionGuid))
+	if (auto&& Extension = Extensions.Find(ExtensionGuid))
 	{
 		if (Extension && IsValid(*Extension))
 		{
@@ -406,7 +456,7 @@ UHeartGraphExtension* UHeartGraph::AddExtension(const TSubclassOf<UHeartGraphExt
 	Extensions.Add(NewExtension->Guid, NewExtension);
 	NewExtension->PostComponentAdded();
 
-	OnExtensionAdded.Broadcast(NewExtension);
+	OnExtensionAddOrRemove.Broadcast(NewExtension, Heart::Events::Add);
 
 	return NewExtension;
 }
@@ -422,7 +472,7 @@ bool UHeartGraph::AddExtensionInstance(UHeartGraphExtension* Extension)
 		Extensions.Add(Extension->Guid, Extension);
 		Extension->PostComponentAdded();
 
-		OnExtensionAdded.Broadcast(Extension);
+		OnExtensionAddOrRemove.Broadcast(Extension, Heart::Events::Add);
 	}
 
 	return false;
@@ -438,7 +488,7 @@ bool UHeartGraph::RemoveExtension(const FHeartExtensionGuid ExtensionGuid)
 	auto&& Extension = Extensions[ExtensionGuid];
 	Extension->PreComponentRemoved();
 	Extensions.Remove(ExtensionGuid);
-	OnExtensionRemoved.Broadcast(Extension);
+	OnExtensionAddOrRemove.Broadcast(Extension, Heart::Events::Remove);
 	return true;
 }
 
@@ -457,7 +507,7 @@ void UHeartGraph::RemoveExtensionsByClass(const TSubclassOf<UHeartGraphExtension
 		{
 			Extension->PreComponentRemoved();
 			ExtensionIt.RemoveCurrent();
-			OnExtensionRemoved.Broadcast(Extension);
+			OnExtensionAddOrRemove.Broadcast(Extension, Heart::Events::Remove);
 		}
 	}
 }
@@ -488,12 +538,12 @@ UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraph
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
-	Heart::API::FNodeEdit::AddNode(this, Node);
+	Heart::API::FNodeEdit::AddNode(*this, Node);
 }
 
 bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 {
-	return Heart::API::FNodeEdit::DeleteNode(this, NodeGuid);
+	return Heart::API::FNodeEdit::DeleteNode(*this, NodeGuid);
 }
 
 UHeartGraphNodeComponent* UHeartGraph::GetNodeComponent(const FHeartNodeGuid& Node, const TSubclassOf<UHeartGraphNodeComponent> Class) const
@@ -592,9 +642,41 @@ UHeartGraphNodeComponent* UHeartGraph::FindOrAddNodeComponent(const FHeartNodeGu
 
 	NewComponent->PostComponentAdded();
 
-	OnComponentAdded.Broadcast(Node, NewComponent);
+	OnComponentAddOrRemove.Broadcast(Node, NewComponent, Heart::Events::Add);
 
 	return NewComponent;
+}
+
+UHeartGraphNodeComponent* UHeartGraph::FindNodeComponentByGuid(const FHeartNodeGuid& Node, const FHeartExtensionGuid& ExtensionGuid) const
+{
+	for (auto&& Element : NodeComponents)
+	{
+		if (const TObjectPtr<UHeartGraphNodeComponent>& Component = Element.Value.Find(Node))
+		{
+			if (Component->GetGuid() == ExtensionGuid)
+			{
+				return Component;
+			}
+		}
+	}
+	return nullptr;
+}
+
+void UHeartGraph::FindNodeComponentByGuid(const TSubclassOf<UHeartGraphNodeComponent>& Class, const FHeartExtensionGuid& ExtensionGuid, FHeartNodeGuid& OutNode,
+										  UHeartGraphNodeComponent*& OutNodeComponent) const
+{
+	if (const FHeartGraphNodeComponentMap* NodeMap = NodeComponents.Find(Class))
+	{
+		for (auto&& Component : NodeMap->Components)
+		{
+			if (Component.Value->GetGuid() == ExtensionGuid)
+			{
+				OutNode = Component.Key;
+				OutNodeComponent = Component.Value;
+				return;
+			}
+		}
+	}
 }
 
 bool UHeartGraph::RemoveNodeComponent(const FHeartNodeGuid& Node, const TSubclassOf<UHeartGraphNodeComponent> Class)
@@ -613,7 +695,7 @@ bool UHeartGraph::RemoveNodeComponent(const FHeartNodeGuid& Node, const TSubclas
 		if (IsValid(Component))
 		{
 			Component->PreComponentRemoved();
-			OnComponentRemoved.Broadcast(Node, Component);
+			OnComponentAddOrRemove.Broadcast(Node, Component, Heart::Events::Add);
 			return true;
 		}
 	}
@@ -640,9 +722,30 @@ void UHeartGraph::RemoveComponentsForNodes(const TConstArrayView<FHeartNodeGuid>
 	}
 }
 
+FHeartPinGuid UHeartGraph::FindNodePin(const FHeartNodeGuid NodeGuid, FName PinName) const
+{
+	const UHeartGraphNode* GraphNode = GetNode(NodeGuid);
+	if (!IsValid(GraphNode))
+	{
+		return FHeartPinGuid();
+	}
+
+	if (TOptional<FHeartPinGuid> Option = GraphNode->QueryPins().Find(
+			[&PinName](const FHeartGraphPinDesc& Desc)
+			{
+				return Desc.Name == PinName;
+			});
+		Option.IsSet())
+	{
+		return Option.GetValue();
+	}
+
+	return FHeartPinGuid();
+}
+
 Heart::API::FPinEdit UHeartGraph::EditConnections()
 {
-	return Heart::API::FPinEdit(this);
+	return Heart::API::FPinEdit(*this);
 }
 
 bool UHeartGraph::ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)
@@ -670,7 +773,10 @@ bool UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
 void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const bool InProgress)
 {
 	FHeartNodeMoveEvent Event;
-	Event.AffectedNodes = AffectedNodes;
+	for (auto Element : AffectedNodes)
+	{
+		Event.AffectedNodes.Add(Element->GetGuid());
+	}
 	Event.MoveFinished = !InProgress;
 	HandleNodeMoveEvent(Event);
 }

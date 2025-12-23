@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
+#include "Location/HeartNodeLocationInterface.h"
 #include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphNode.h"
 
@@ -14,7 +15,7 @@ class UHeartNodeLocationModifierStack;
 class UHeartSceneNode;
 
 UCLASS(Blueprintable, ClassGroup = ("Heart"), meta = (BlueprintSpawnableComponent))
-class HEARTSCENE_API UHeartSceneGenerator : public UActorComponent, public IHeartGraphInterface3D
+class HEARTSCENE_API UHeartSceneGenerator : public UActorComponent, public IHeartGraphInterface, public IHeartGraphInterface3D
 {
 	GENERATED_BODY()
 
@@ -22,10 +23,12 @@ public:
 	UHeartSceneGenerator();
 
 	/** IHeartGraphInterface */
-	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
 	/** IHeartGraphInterface */
 
 	/** IHeartGraphInterface3D */
+	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override;
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove) override;
 	virtual FVector GetNodeLocation3D(const FHeartNodeGuid& Node) const override;
 	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, bool InProgressMove) override;
 	/** IHeartGraphInterface3D */

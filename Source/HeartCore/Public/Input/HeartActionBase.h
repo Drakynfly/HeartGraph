@@ -32,7 +32,7 @@ namespace Heart::Action
 
 	struct FArguments
 	{
-		// Object to run an action on.
+		// Object to run an action on. Must implement one of the Heart Interfaces: Graph, Node or Pin.
 		UObject* Target = nullptr;
 
 		// Input from the user or system that triggered this action.
@@ -57,11 +57,11 @@ namespace Heart::Action
 	// Direct access to the API of UHeartActionBase through here
 	struct HEARTCORE_API FNativeExec
 	{
-		static FText GetDescription(const UHeartActionBase* Action, const UObject* Target);
-		static bool CanExecute(const UHeartActionBase* Action, const UObject* Target);
-		static FHeartEvent Execute(const UHeartActionBase* Action, const FArguments& Arguments);
-		static bool CanUndo(const UHeartActionBase* Action, const UObject* Target);
-		static bool Undo(const UHeartActionBase* Action, UObject* Target, const FBloodContainer& UndoData);
+		static FText GetDescription(const UHeartActionBase& Action, const UObject* Target);
+		static bool CanExecute(const UHeartActionBase& Action, const UObject* Target);
+		static FHeartEvent Execute(const UHeartActionBase& Action, const FArguments& Arguments);
+		static bool CanUndo(const UHeartActionBase& Action, const UObject* Target);
+		static bool Undo(const UHeartActionBase& Action, UObject* Target, const FBloodContainer& UndoData);
 	};
 
 	/** Gets the description for an action, optionally adaptive to a specific target */

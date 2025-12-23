@@ -36,7 +36,7 @@ FHeartEvent UHeartGraphCanvasAction::Execute(const Heart::Action::FArguments& Ar
 		return FHeartEvent::Invalid;
 	}
 
-	return Heart::Action::History::Log(this, Arguments,
+	return Heart::Action::History::Log(*this, Arguments,
 		[&](FBloodContainer& UndoData)
 		{
 			return ExecuteOnWidget(Widget, Arguments.Activation, Arguments.Payload, UndoData);

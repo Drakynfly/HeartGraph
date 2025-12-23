@@ -16,20 +16,8 @@ FText UHeartAction_MultiUndoEnd::GetDescription(const UObject* Target) const
 
 bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& UndoData) const
 {
-	auto Interface = Cast<IHeartGraphInterface>(Target);
-	if (!Interface)
-	{
-		return false;
-	}
-
-	UHeartGraph* Graph = Interface->GetHeartGraph();
-	if (!ensure(IsValid(Graph)))
-	{
-		return false;
-	}
-
-	UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
-	if (!IsValid(History))
+	UHeartActionHistory* History = Heart::Action::History::GetHistoryFromActionStack();
+	if (!IsValidChecked(History))
 	{
 		return false;
 	}
@@ -62,7 +50,7 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 		}
 
 		// If not a scope marker, undo the action.
-		Heart::Action::History::UndoRecord(Record, History);
+		Heart::Action::History::UndoRecord(Record, *History);
 	}
 	while (0 < ScopeCounter);
 

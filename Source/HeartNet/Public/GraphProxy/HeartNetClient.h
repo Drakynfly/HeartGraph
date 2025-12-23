@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "HeartReplicatedData.h"
 #include "Components/ActorComponent.h"
+#include "Model/HeartGraphExtension.h"
+#include "Model/HeartGraphNodeComponent.h"
 #include "Model/HeartGuids.h"
 #include "HeartNetClient.generated.h"
 
@@ -43,10 +46,22 @@ protected:
 	void Server_OnNodesMoved(UHeartGraphNetProxy* Proxy, const FHeartNodeMoveEvent_Net& NodeMoveEvent);
 
 	UFUNCTION(Server, Reliable)
-	void Server_OnNodeRemoved(UHeartGraphNetProxy* Proxy, const FHeartNodeGuid& HeartGraphNode);
+	void Server_OnNodeRemoved(UHeartGraphNetProxy* Proxy, const FHeartNodeGuid& Node);
 
 	UFUNCTION(Server, Reliable)
 	void Server_OnNodeConnectionsChanged(UHeartGraphNetProxy* Proxy, const FHeartGraphConnectionEvent_Net& GraphConnectionEvent);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnExtensionAdded(UHeartGraphNetProxy* Proxy, const FHeartReplicatedFlake& ExtensionData);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnExtensionRemoved(UHeartGraphNetProxy* Proxy, const FHeartExtensionGuid& Extension);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnNodeComponentAdded(UHeartGraphNetProxy* Proxy, const FHeartReplicatedNodeComponent& ComponentData);
+
+	UFUNCTION(Server, Reliable)
+	void Server_OnNodeComponentRemoved(UHeartGraphNetProxy* Proxy, const FHeartNodeGuid& Node, const FHeartExtensionGuid& Component);
 
 	UFUNCTION(Server, Reliable)
 	void Server_UpdateGraphNode(UHeartGraphNetProxy* Proxy, const FHeartReplicatedFlake& NodeFlake, EHeartUpdateNodeType Type);

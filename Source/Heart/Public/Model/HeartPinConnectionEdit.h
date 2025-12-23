@@ -25,10 +25,8 @@ namespace Heart::API
 			}
 		};
 
-		FPinEdit(UHeartGraph* Graph)
-		  : Graph(Graph) {}
-
-		FPinEdit(UHeartGraphNode* Node);
+		FPinEdit(UHeartGraph& Graph)
+		  : Graph(&Graph) {}
 
 		~FPinEdit();
 

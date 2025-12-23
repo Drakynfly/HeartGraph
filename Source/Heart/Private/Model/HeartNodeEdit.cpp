@@ -2,7 +2,6 @@
 
 #include "Model/HeartNodeEdit.h"
 #include "Model/HeartGraph.h"
-#include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphNode.h"
 
 namespace Heart::API
@@ -55,23 +54,14 @@ namespace Heart::API
 		return NewGraphNode;
 	}
 
-	FNodeEdit::FNodeEdit(IHeartGraphInterface* GraphInterface)
-	{
-		if (ensureAlways(GraphInterface))
-		{
-			Graph = GraphInterface->GetHeartGraph();
-			checkSlow(IsValid(Graph))
-		}
-	}
-
 	FNodeEdit::~FNodeEdit()
 	{
 		HandlePending();
 	}
 
-	bool FNodeEdit::AddNode(IHeartGraphInterface* GraphInterface, UHeartGraphNode* Node)
+	bool FNodeEdit::AddNode(UHeartGraph& Graph, UHeartGraphNode* Node)
 	{
-		checkSlow(Node->GetOuter() == Cast<UObject>(GraphInterface));
+		checkSlow(Node->GetOuter() == Cast<UObject>(&Graph));
 
 		if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
 		{
@@ -88,55 +78,53 @@ namespace Heart::API
 		}
 		*/
 
-		UHeartGraph* Graph = GraphInterface->GetHeartGraph();
 		const FHeartNodeGuid& NodeGuid = Node->GetGuid();
 
-		if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
+		if (!ensure(!Graph.Nodes.Contains(NodeGuid)))
 		{
 			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
 			return false;
 		}
 
-		Graph->Nodes.Add(NodeGuid, Node);
+		Graph.Nodes.Add(NodeGuid, Node);
 		for (auto&& Element : Node->GetDefaultComponents())
 		{
-			Graph->NodeComponents.FindOrAdd(Element->GetClass()).Components.Add(NodeGuid, DuplicateObject(Element, Graph));
+			Graph.NodeComponents.FindOrAdd(Element->GetClass()).Components.Add(NodeGuid, DuplicateObject(Element, &Graph));
 		}
-		Node->OnAddedToGraph(Graph, NodeGuid);
-		FHeartNodeAddEvent Event;
-		Event.NewNodes.Add(NodeGuid);
-		Graph->HandleNodeAddEvent(Event);
+		Node->OnAddedToGraph(&Graph, NodeGuid);
+		FHeartNodeAddOrRemoveEvent Event;
+		Event.Type = EHeartNodeAddOrRemoveEventType::Add;
+		Event.Nodes.Add(NodeGuid);
+		Graph.HandleNodeAddOrRemoveEvent(Event);
 		return true;
 	}
 
-	bool FNodeEdit::DeleteNode(IHeartGraphInterface* GraphInterface, const FHeartNodeGuid& Node)
+	bool FNodeEdit::DeleteNode(UHeartGraph& Graph, const FHeartNodeGuid& Node)
 	{
-		UHeartGraph* GraphPtr = GraphInterface->GetHeartGraph();
-		checkSlow(IsValid(GraphPtr))
-
 		if (!ensure(Node.IsValid()))
 		{
 			return false;
 		}
 
-		if (!GraphPtr->Nodes.Contains(Node))
+		if (!Graph.Nodes.Contains(Node))
 		{
 			return false;
 		}
 
-		GraphPtr->RemoveComponentsForNode(Node);
+		Graph.RemoveComponentsForNode(Node);
 
-		FPinEdit(GraphPtr).DisconnectAll(Node);
+		FPinEdit(Graph).DisconnectAll(Node);
 
 		UHeartGraphNode* NodeBeingRemoved = nullptr;
-		GraphPtr->Nodes.RemoveAndCopyValue(Node, ObjectPtrWrap(NodeBeingRemoved));
+		Graph.Nodes.RemoveAndCopyValue(Node, ObjectPtrWrap(NodeBeingRemoved));
 		if (IsValid(NodeBeingRemoved))
 		{
-			NodeBeingRemoved->OnRemovedFromGraph(GraphPtr, Node);
+			NodeBeingRemoved->OnRemovedFromGraph(&Graph, Node);
 
-			FHeartNodeRemoveEvent Event;
-			Event.AffectedNodes.Add(NodeBeingRemoved);
-			GraphPtr->HandleNodeRemoveEvent(Event);
+			FHeartNodeAddOrRemoveEvent Event;
+			Event.Type = EHeartNodeAddOrRemoveEventType::Remove;
+			Event.Nodes.Add(Node);
+			Graph.HandleNodeAddOrRemoveEvent(Event);
 			return true;
 		}
 
@@ -223,7 +211,7 @@ namespace Heart::API
 
 			// Pending delete pass 2: Remove all connections
 			{
-				FPinEdit ConnectionsEdit(Graph);
+				FPinEdit ConnectionsEdit(*Graph);
 				for (auto&& PendingDelete : PendingDeletes)
 				{
 					// Remove all connections that will be orphaned by removing this node
@@ -234,7 +222,9 @@ namespace Heart::API
 
 			// Pending delete pass 3: Remove the nodes
 			{
-				FHeartNodeRemoveEvent Event;
+				FHeartNodeAddOrRemoveEvent Event;
+				Event.Type = EHeartNodeAddOrRemoveEventType::Remove;
+				Event.Nodes = PendingDeletes;
 
 				for (auto&& PendingDelete : PendingDeletes)
 				{
@@ -243,17 +233,17 @@ namespace Heart::API
 					if (IsValid(NodeBeingRemoved))
 					{
 						NodeBeingRemoved->OnRemovedFromGraph(Graph, PendingDelete);
-						Event.AffectedNodes.Add(NodeBeingRemoved);
 					}
 				}
 
-				Graph->HandleNodeRemoveEvent(Event);
+				Graph->HandleNodeAddOrRemoveEvent(Event);
 			}
 		}
 
 		if (!PendingCreates.IsEmpty())
 		{
-			FHeartNodeAddEvent Event;
+			FHeartNodeAddOrRemoveEvent Event;
+			Event.Type = EHeartNodeAddOrRemoveEventType::Add;
 
 			// Pending create pass
 			for (auto&& Node : PendingCreates)
@@ -284,10 +274,10 @@ namespace Heart::API
 					Graph->NodeComponents.FindOrAdd(Element->GetClass()).Components.Add(NodeGuid, DuplicateObject(Element, Graph));
 				}
 				Node->OnAddedToGraph(Graph, NodeGuid);
-				Event.NewNodes.Add(NodeGuid);
+				Event.Nodes.Add(NodeGuid);
 			}
 
-			Graph->HandleNodeAddEvent(Event);
+			Graph->HandleNodeAddOrRemoveEvent(Event);
 		}
 	}
 }

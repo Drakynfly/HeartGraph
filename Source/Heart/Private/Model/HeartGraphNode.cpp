@@ -3,7 +3,7 @@
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraph.h"
 #include "Engine/World.h"
-#include "NodeComponents/HeartInstancedPinsComponent.h"
+#include "PinProviders/HeartInstancedPinsComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraphNode)
 
@@ -25,10 +25,11 @@ UWorld* UHeartGraphNode::GetWorld() const
 {
 	if (!IsTemplate())
 	{
-		if (GetGraph())
+		if (const UHeartGraph* Graph = GetTypedOuter<UHeartGraph>();
+			IsValid(Graph))
 		{
-			UWorld* GraphWorld = GetGraph()->GetWorld();
-			if (IsValid(GraphWorld))
+			if (UWorld* GraphWorld = Graph->GetWorld();
+				IsValid(GraphWorld))
 			{
 				return GraphWorld;
 			}
@@ -52,9 +53,14 @@ void UHeartGraphNode::PostLoad()
 	}
 }
 
-UHeartGraphNode* UHeartGraphNode::GetHeartGraphNode() const
+UHeartGraph* UHeartGraphNode::GetHeartGraph() const
 {
-	return const_cast<ThisClass*>(this);
+	return GetGraph();
+}
+
+FHeartNodeGuid UHeartGraphNode::GetNodeGuid() const
+{
+	return Guid;
 }
 
 FText UHeartGraphNode::GetDefaultNodeCategory(const FHeartNodeSource& NodeSource) const
@@ -230,7 +236,7 @@ void UHeartGraphNode::SetGuid_Editor(const FGuid InGuid)
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
 {
 	Location = NewLocation;
-	OnNodeLocationChanged_Native.Broadcast(this, Location);
+	OnNodeLocationChanged_Native.Broadcast(Guid, Location);
 	OnNodeLocationChanged.Broadcast(this, Location);
 }
 
@@ -279,7 +285,7 @@ FHeartPinGuid UHeartGraphNode::AddPin(const FHeartGraphPinDesc& Desc)
 
 	PinData.AddPin(NewKey, Desc);
 
-	OnNodePinsChanged_Native.Broadcast(this);
+	OnNodePinsChanged_Native.Broadcast(Guid);
 	OnNodePinsChanged.Broadcast(this);
 
 	return NewKey;
@@ -294,7 +300,7 @@ bool UHeartGraphNode::RemovePin(const FHeartPinGuid& Pin)
 
 	if (PinData.RemovePin(Pin))
 	{
-		OnNodePinsChanged_Native.Broadcast(this);
+		OnNodePinsChanged_Native.Broadcast(Guid);
 		OnNodePinsChanged.Broadcast(this);
 		return true;
 	}

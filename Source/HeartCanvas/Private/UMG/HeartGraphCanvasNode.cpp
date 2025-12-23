@@ -37,9 +37,14 @@ UHeartInputLinkerBase* UHeartGraphCanvasNode::ResolveLinker_Implementation() con
 	return GraphCanvas.IsValid() ? Execute_ResolveLinker(GraphCanvas.Get()) : nullptr;
 }
 
-UHeartGraphNode* UHeartGraphCanvasNode::GetHeartGraphNode() const
+UHeartGraph* UHeartGraphCanvasNode::GetHeartGraph() const
 {
-	return GraphNode.Get();
+	return GraphNode.Get()->GetGraph();
+}
+
+FHeartNodeGuid UHeartGraphCanvasNode::GetNodeGuid() const
+{
+	return GraphNode.Get()->GetGuid();
 }
 
 void UHeartGraphCanvasNode::PostInitNode()

@@ -19,6 +19,6 @@ class HEARTNET_API IHeartNetNodeInterface
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintNativeEvent, Category = "Heart|NetNode")
+	UFUNCTION(BlueprintNativeEvent, Category = "Heart|Net")
 	bool ShouldReplicate();
 };

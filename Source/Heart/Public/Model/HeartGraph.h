@@ -8,8 +8,9 @@
 #include "HeartGuids.h"
 #include "HeartGraphTypes.h"
 #include "HeartGraphPinReference.h"
+#include "HeartNodeIndex.h"
 #include "HeartNodeQuery.h"
-#include "General/TypeCastingUtils.h"
+#include "Location/HeartNodeLocationInterface.h" // @todo temp, while refactoring node location logic
 #include "Templates/SubclassOf.h"
 #include "UObject/Object.h"
 #include "HeartGraph.generated.h"
@@ -29,12 +30,18 @@ DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
 namespace Heart::Events
 {
-	using FNodeAddOrRemove = TMulticastDelegate<void(UHeartGraphNode*)>;
+	using FNodeAddOrRemove = TMulticastDelegate<void(const FHeartNodeAddOrRemoveEvent&)>;
 	using FNodeMoveEventHandler = TMulticastDelegate<void(const FHeartNodeMoveEvent&)>;
 	using FConnectionEventHandler = TMulticastDelegate<void(const FHeartGraphConnectionEvent&)>;
 
-	using FGraphExtensionAddOrRemove = TMulticastDelegate<void(UHeartGraphExtension*)>;
-	using FNodeComponentAddOrRemove = TMulticastDelegate<void(FHeartNodeGuid, UHeartGraphNodeComponent*)>;
+	enum EComponentEventType
+	{
+		Add,
+		Remove,
+	};
+
+	using FGraphExtensionAddOrRemove = TMulticastDelegate<void(UHeartGraphExtension*, EComponentEventType)>;
+	using FNodeComponentAddOrRemove = TMulticastDelegate<void(const FHeartNodeGuid&, UHeartGraphNodeComponent*, EComponentEventType)>;
 }
 
 
@@ -70,6 +77,7 @@ struct FHeartGraphSparseClassData
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, SparseClassDataTypes = "HeartGraphSparseClassData")
 class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
+	, public IHeartGraphInterface3D /* @todo temp, while refactoring node location logic */
 {
 	GENERATED_BODY()
 
@@ -96,26 +104,33 @@ public:
 
 private:
 	/* IHeartGraphInterface */
-	FORCEINLINE virtual UHeartGraph* GetHeartGraph() const override final { return const_cast<ThisClass*>(this); }
+	FORCEINLINE virtual UHeartGraph* GetHeartGraph_Implementation() const override final { return const_cast<ThisClass*>(this); }
 	/* IHeartGraphInterface */
+
+	/* IHeartNodeLocationInterface */
+	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override;
+	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove) override;
+	/* IHeartNodeLocationInterface */
+
+	/* IHeartGraphInterface3D */
+	virtual FVector GetNodeLocation3D(const FHeartNodeGuid& Node) const override;
+	virtual void SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& Location, bool InProgressMove) override;
+	/* IHeartGraphInterface3D */
 
 public:
 	// @todo make these protected, gated behind an API (and rename to Handle...)
 	void NotifyNodeLocationChanged(const FHeartNodeGuid& AffectedNode, bool InProgress);
-	void NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, bool InProgress);
+	virtual void NotifyNodeLocationsChanged(const TSet<FHeartNodeGuid>& AffectedNodes, bool InProgress) override;
 
 	// Return true in Iter to continue iterating
-	void ForEachNode(const TFunctionRef<bool(UHeartGraphNode*)>& Iter) const;
+	void ForEachNode(const TFunctionRef<bool(const TPair<FHeartNodeGuid, UHeartGraphNode*>&)>& Iter) const;
 
 	// Return true in Iter to continue iterating
 	void ForEachExtension(const TFunctionRef<bool(UHeartGraphExtension*)>& Iter) const;
 
 protected:
-	// Called after nodes have been added.
-	virtual void HandleNodeAddEvent(const FHeartNodeAddEvent& Event);
-
-	// Called before nodes have been removed (nodes are still valid at the time of call).
-	virtual void HandleNodeRemoveEvent(const FHeartNodeRemoveEvent& Event);
+	// Called after nodes have been added or removed.
+	virtual void HandleNodeAddOrRemoveEvent(const FHeartNodeAddOrRemoveEvent& Event);
 
 	// Called after node locations have changed.
 	virtual void HandleNodeMoveEvent(const FHeartNodeMoveEvent& Event);
@@ -133,19 +148,18 @@ public:
 	static FName GetSchemaClassPropertyName() { return GET_MEMBER_NAME_CHECKED(ThisClass, SchemaClass); }
 #endif
 
-	Heart::Events::FNodeAddOrRemove::RegistrationType& GetOnNodeAdded() { return OnNodeAdded; }
-	Heart::Events::FNodeAddOrRemove::RegistrationType& GetOnNodeRemoved() { return OnNodeRemoved; }
+	Heart::Events::FNodeAddOrRemove::RegistrationType& GetOnNodeAddOrRemove() { return OnNodeAddOrRemove; }
 	Heart::Events::FNodeMoveEventHandler::RegistrationType& GetOnNodeMoved() { return OnNodeMoved; }
 	Heart::Events::FConnectionEventHandler::RegistrationType& GetOnNodeConnectionsChanged() { return OnNodeConnectionsChanged; }
 
-	Heart::Events::FGraphExtensionAddOrRemove::RegistrationType& GetOnExtensionAdded() { return OnExtensionAdded; }
-	Heart::Events::FGraphExtensionAddOrRemove::RegistrationType& GetOnExtensionRemoved() { return OnExtensionRemoved; }
-
-	Heart::Events::FNodeComponentAddOrRemove::RegistrationType& GetOnNodeComponentAdded() { return OnComponentAdded; }
-	Heart::Events::FNodeComponentAddOrRemove::RegistrationType& GetOnNodeComponentRemoved() { return OnComponentRemoved; }
+	Heart::Events::FGraphExtensionAddOrRemove::RegistrationType& GetOnExtensionAddOrRemove() { return OnExtensionAddOrRemove; }
+	Heart::Events::FNodeComponentAddOrRemove::RegistrationType& GetOnNodeComponentAddOrRemove() { return OnComponentAddOrRemove; }
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	FHeartGraphGuid GetGuid() const { return Guid; }
+
+	FHeartNodeIndex GetNodeIndex(const FHeartNodeGuid& Node) const;
+	FHeartNodeGuid GetNodeGuidFromIndex(FHeartNodeIndex NodeIndex) const;
 
 	template <Heart::CGraphNode T>
 	T* GetNode(const FHeartNodeGuid& NodeGuid) const
@@ -194,6 +208,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
+
+	[[nodiscard]] UE_REWRITE IHeartNodeLocationInterface* GetNodeLocationInterface() { return this; }
+	[[nodiscard]] UE_REWRITE const IHeartNodeLocationInterface* GetNodeLocationInterface() const { return this; }
 
 	const auto& GetExtensions() const { return Extensions; }
 
@@ -316,6 +333,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", Meta = (DeterminesOutputType = "Class"))
 	UHeartGraphNodeComponent* FindOrAddNodeComponent(const FHeartNodeGuid& Node, UPARAM(meta = (AllowAbstract = "false")) TSubclassOf<UHeartGraphNodeComponent> Class);
 
+	// Caution: Slow lookup of node component if all we have is the component's Node and Guid.
+	UHeartGraphNodeComponent* FindNodeComponentByGuid(const FHeartNodeGuid& Node, const FHeartExtensionGuid& ExtensionGuid) const;
+
+	// Caution: Slow lookup of node component if all we have is the component's Class and Guid.
+	void FindNodeComponentByGuid(const TSubclassOf<UHeartGraphNodeComponent>& Class, const FHeartExtensionGuid& ExtensionGuid, FHeartNodeGuid& OutNode, UHeartGraphNodeComponent*& OutNodeComponent) const;
+
 	/** Remove a node component of a class. */
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	bool RemoveNodeComponent(const FHeartNodeGuid& Node, TSubclassOf<UHeartGraphNodeComponent> Class);
@@ -329,6 +352,13 @@ public:
 
 	void RemoveComponentsForNode(const FHeartNodeGuid& Node);
 	void RemoveComponentsForNodes(TConstArrayView<FHeartNodeGuid> InNodes);
+
+
+	/*----------------------------
+			PIN DATA
+	----------------------------*/
+
+	FHeartPinGuid FindNodePin(FHeartNodeGuid NodeGuid, FName PinName) const;
 
 
 	/*----------------------------
@@ -375,16 +405,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	TMap<TSubclassOf<UHeartGraphNodeComponent>, FHeartGraphNodeComponentMap> NodeComponents;
 
-	Heart::Events::FNodeAddOrRemove OnNodeAdded;
-	Heart::Events::FNodeAddOrRemove OnNodeRemoved;
+	Heart::Events::FNodeAddOrRemove OnNodeAddOrRemove;
 	Heart::Events::FNodeMoveEventHandler OnNodeMoved;
 	Heart::Events::FConnectionEventHandler OnNodeConnectionsChanged;
 
-	Heart::Events::FGraphExtensionAddOrRemove OnExtensionAdded;
-	Heart::Events::FGraphExtensionAddOrRemove OnExtensionRemoved;
-
-	Heart::Events::FNodeComponentAddOrRemove OnComponentAdded;
-	Heart::Events::FNodeComponentAddOrRemove OnComponentRemoved;
+	Heart::Events::FGraphExtensionAddOrRemove OnExtensionAddOrRemove;
+	Heart::Events::FNodeComponentAddOrRemove OnComponentAddOrRemove;
 
 
 	/*----------------------------

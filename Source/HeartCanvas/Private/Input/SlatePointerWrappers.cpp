@@ -2,6 +2,7 @@
 
 #include "Input/SlatePointerWrappers.h"
 #include "HeartCanvasLog.h"
+#include "Model/HeartGraph.h"
 #include "Slate/SHeartGraphWidgetBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(SlatePointerWrappers)
@@ -45,7 +46,7 @@ UHeartSlatePtr* UHeartSlatePtr::Wrap(const TSharedRef<SWidget>& Widget)
 	return NewWrapper;
 }
 
-UHeartGraph* UHeartSlateGraph::GetHeartGraph() const
+UHeartGraph* UHeartSlateGraph::GetHeartGraph_Implementation() const
 {
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FGraphAndLinkerMetadata>();
 	if (!Metadata.IsValid())
@@ -57,7 +58,7 @@ UHeartGraph* UHeartSlateGraph::GetHeartGraph() const
 	return Metadata->Graph.Get();
 }
 
-UHeartGraphNode* UHeartSlateNode::GetHeartGraphNode() const
+UHeartGraph* UHeartSlateNode::GetHeartGraph() const
 {
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
 	if (!Metadata.IsValid())
@@ -66,10 +67,22 @@ UHeartGraphNode* UHeartSlateNode::GetHeartGraphNode() const
 		return nullptr;
 	}
 
-	return Metadata->Node.Get();
+	return Metadata->Graph.Get();
 }
 
-UHeartGraphNode* UHeartSlatePin::GetHeartGraphNode() const
+FHeartNodeGuid UHeartSlateNode::GetNodeGuid() const
+{
+	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
+	if (!Metadata.IsValid())
+	{
+		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
+		return FHeartNodeGuid();
+	}
+
+	return Metadata->Node;
+}
+
+UHeartGraph* UHeartSlatePin::GetHeartGraph() const
 {
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FPinAndLinkerMetadata>();
 	if (!Metadata.IsValid())
@@ -78,7 +91,19 @@ UHeartGraphNode* UHeartSlatePin::GetHeartGraphNode() const
 		return nullptr;
 	}
 
-	return Metadata->Node.Get();
+	return Metadata->Graph.Get();
+}
+
+FHeartNodeGuid UHeartSlatePin::GetNodeGuid() const
+{
+	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FPinAndLinkerMetadata>();
+	if (!Metadata.IsValid())
+	{
+		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FPinAndLinkerMetadata for slate widget!"))
+		return FHeartNodeGuid();
+	}
+
+	return Metadata->Node;
 }
 
 FHeartPinGuid UHeartSlatePin::GetPinGuid() const

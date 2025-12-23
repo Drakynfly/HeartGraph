@@ -3,7 +3,6 @@
 #include "ModelView/HeartActionHistory.h"
 #include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraph.h"
-#include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphNodeInterface.h"
 #include "Model/HeartGraphPinInterface.h"
 
@@ -31,7 +30,7 @@ namespace Heart::Action::History
 		 */
 		static TArray<FExecutingAction> ExecutingActionsStack;
 
-		bool BeginLog(const UHeartActionBase* Action, const FArguments& Arguments)
+		bool BeginLog(const UHeartActionBase& Action, const FArguments& Arguments)
 		{
 			if (IsLoggable(Action, Arguments))
 			{
@@ -40,15 +39,15 @@ namespace Heart::Action::History
 
 				if (Arguments.Target->Implements<UHeartGraphInterface>())
 				{
-					HeartGraph = Cast<IHeartGraphInterface>(Arguments.Target)->GetHeartGraph();
+					HeartGraph = IHeartGraphInterface::Execute_GetHeartGraph(Arguments.Target);
 				}
 				else if (Arguments.Target->Implements<UHeartGraphNodeInterface>())
 				{
-					HeartGraph = Cast<IHeartGraphNodeInterface>(Arguments.Target)->GetHeartGraphNode()->GetGraph();
+					HeartGraph = Cast<IHeartGraphNodeInterface>(Arguments.Target)->GetHeartGraph();
 				}
 				else if (Arguments.Target->Implements<UHeartGraphPinInterface>())
 				{
-					HeartGraph = Cast<IHeartGraphPinInterface>(Arguments.Target)->GetHeartGraphNode()->GetGraph();
+					HeartGraph = Cast<IHeartGraphPinInterface>(Arguments.Target)->GetHeartGraph();
 				}
 
 				if (IsValid(HeartGraph))
@@ -57,7 +56,7 @@ namespace Heart::Action::History
 						IsValid(History))
 					{
 						// Store a log for the action
-						ExecutingActionsStack.Emplace(Action->GetClass(), History, Arguments);
+						ExecutingActionsStack.Emplace(Action.GetClass(), History, Arguments);
 						return true;
 					}
 				}
@@ -86,7 +85,7 @@ namespace Heart::Action::History
 		}
 	}
 
-	bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments)
+	bool IsLoggable(const UHeartActionBase& Action, const FArguments& Arguments)
 	{
 		const bool ShouldLog = FNativeExec::CanUndo(Action, Arguments.Target) || EnumHasAnyFlags(Arguments.Flags, ForceRecord);
 		const bool CannotLog = EnumHasAnyFlags(Arguments.Flags, DisallowRecord | IsRedo);
@@ -110,7 +109,12 @@ namespace Heart::Action::History
 		return Impl::ExecutingActionsStack.Last().History->GetGraph();
 	}
 
-	FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, FActionLogic&& Lambda)
+	UHeartActionHistory* GetHistoryFromActionStack()
+	{
+		return Impl::ExecutingActionsStack.Last().History;
+	}
+
+	FHeartEvent Log(const UHeartActionBase& Action, const FArguments& Arguments, FActionLogic&& Lambda)
 	{
 		const bool IsLoggingAction = Impl::BeginLog(Action, Arguments);
 
@@ -144,10 +148,10 @@ namespace Heart::Action::History
 		}
 	}
 
-	bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History)
+	bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory& History)
 	{
 		// Push an action frame
-		Impl::ExecutingActionsStack.Emplace(Record.Action, History, Record.Arguments);
+		Impl::ExecutingActionsStack.Emplace(Record.Action, &History, Record.Arguments);
 
 		const bool Success = Undo(Record.Action, Record.Arguments.Target, Record.UndoData);
 
@@ -169,29 +173,24 @@ namespace Heart::Action::History
 
 		const UHeartActionBase* ActionObject = GetDefault<UHeartActionBase>(Record.Action);
 
-		return FNativeExec::Execute(ActionObject, ArgsCopy);
+		return FNativeExec::Execute(*ActionObject, ArgsCopy);
 	}
 
-	bool TryUndo(const UHeartGraph* Graph)
+	bool TryUndo(const UHeartGraph& Graph)
 	{
-		if (!IsValid(Graph))
-		{
-			return false;
-		}
-
-		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
+		UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph.GetName())
 			return false;
 		}
 
-		return TryUndo(History);
+		return TryUndo(*History);
 	}
 
-	bool TryUndo(UHeartActionHistory* History)
+	bool TryUndo(UHeartActionHistory& History)
 	{
-		auto RecordView = History->RetrieveRecordPtr();
+		auto RecordView = History.RetrieveRecordPtr();
 		if (!RecordView.IsValid() || !IsValid(RecordView.Get().Action))
 		{
 			return false;
@@ -200,26 +199,21 @@ namespace Heart::Action::History
 		return UndoRecord(RecordView.Get(), History);
 	}
 
-	FHeartEvent TryRedo(const UHeartGraph* Graph)
+	FHeartEvent TryRedo(const UHeartGraph& Graph)
 	{
-		if (!IsValid(Graph))
-		{
-			return FHeartEvent::Failed;
-		}
-
-		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
+		UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph->GetName())
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph.GetName())
 			return FHeartEvent::Failed;
 		}
 
-		return TryRedo(History);
+		return TryRedo(*History);
 	}
 
-	FHeartEvent TryRedo(UHeartActionHistory* History)
+	FHeartEvent TryRedo(UHeartActionHistory& History)
 	{
-		auto RecordView = History->AdvanceRecordPtr();
+		auto RecordView = History.AdvanceRecordPtr();
 		if (!RecordView.IsValid() || !IsValid(RecordView.Get().Action))
 		{
 			return FHeartEvent::Failed;
@@ -316,12 +310,12 @@ void UHeartActionHistory::SetMaxRecordedActions(const int32 Count)
 
 bool UHeartActionHistory::Undo()
 {
-	return Heart::Action::History::TryUndo(this);
+	return Heart::Action::History::TryUndo(*this);
 }
 
 FHeartEvent UHeartActionHistory::Redo()
 {
-	return Heart::Action::History::TryRedo(this);
+	return Heart::Action::History::TryRedo(*this);
 }
 
 void UHeartActionHistory::BroadcastPointer()

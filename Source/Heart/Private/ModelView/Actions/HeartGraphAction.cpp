@@ -11,7 +11,7 @@
 
 FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Arguments) const
 {
-	return Heart::Action::History::Log(this, Arguments,
+	return Heart::Action::History::Log(*this, Arguments,
 		[&](FBloodContainer& UndoData)
 		{
 			if (!IsValid(Arguments.Target))
@@ -19,13 +19,14 @@ FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Argument
 				return FHeartEvent::Invalid;
 			}
 
-			if (auto&& GraphInterface = Cast<IHeartGraphInterface>(Arguments.Target))
+			if (Arguments.Target->Implements<UHeartGraphInterface>())
 			{
-				return ExecuteOnGraph(GraphInterface, Arguments.Activation, Arguments.Payload, UndoData);
+				UHeartGraph* Graph = IHeartGraphInterface::Execute_GetHeartGraph(Arguments.Target);
+				return ExecuteOnGraph(*Graph, Arguments.Activation, Arguments.Payload, UndoData);
 			}
 			if (auto&& NodeInterface = Cast<IHeartGraphNodeInterface>(Arguments.Target))
 			{
-				return ExecuteOnNode(NodeInterface, Arguments.Activation, Arguments.Payload, UndoData);
+				return ExecuteOnNode(*NodeInterface->GetHeartGraph(), NodeInterface->GetNodeGuid(), Arguments.Activation, Arguments.Payload, UndoData);
 			}
 			if (Arguments.Target->Implements<UHeartGraphPinInterface>())
 			{
@@ -36,26 +37,14 @@ FHeartEvent UHeartGraphAction::Execute(const Heart::Action::FArguments& Argument
 		});
 }
 
-FHeartEvent UHeartGraphAction::ExecuteOnGraph(IHeartGraphInterface* Graph, const FHeartInputActivation& Activation,
-	UObject* ContextObject, FBloodContainer& UndoData) const
-{
-	return ExecuteOnGraph(Graph->GetHeartGraph(), Activation, ContextObject, UndoData);
-}
-
-FHeartEvent UHeartGraphAction::ExecuteOnNode(IHeartGraphNodeInterface* Node, const FHeartInputActivation& Activation,
-	UObject* ContextObject, FBloodContainer& UndoData) const
-{
-	return ExecuteOnNode(Node->GetHeartGraphNode(), Activation, ContextObject, UndoData);
-}
-
-FHeartEvent UHeartGraphAction::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartGraphAction::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
 											  UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	return FHeartEvent::Ignored;
 }
 
-FHeartEvent UHeartGraphAction::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation,
-	UObject* ContextObject, FBloodContainer& UndoData) const
+FHeartEvent UHeartGraphAction::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node,
+	const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	return FHeartEvent::Ignored;
 }
@@ -92,20 +81,20 @@ bool UHeartGraphAction_BlueprintBase::Undo(UObject* Target, const FBloodContaine
 	return true;
 }
 
-FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnGraph(UHeartGraph* Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
+FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_ExecuteOnGraph)))
 	{
-		return BP_ExecuteOnGraph(Graph, Activation, ContextObject, UndoData);
+		return BP_ExecuteOnGraph(&Graph, Activation, ContextObject, UndoData);
 	}
 	return FHeartEvent::Ignored;
 }
 
-FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnNode(UHeartGraphNode* Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
+FHeartEvent UHeartGraphAction_BlueprintBase::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (GetClass()->IsFunctionImplementedInScript(GET_FUNCTION_NAME_CHECKED(ThisClass, BP_ExecuteOnNode)))
 	{
-		return BP_ExecuteOnNode(Node, Activation, ContextObject, UndoData);
+		return BP_ExecuteOnNode(&Graph, Node, Activation, ContextObject, UndoData);
 	}
 	return FHeartEvent::Ignored;
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright Guy (Drakynfly) Lundvall. All Rights Reserved.
 
 #include "EdGraphPointerWrappers.h"
+#include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
 #include "Nodes/HeartEdGraphNode.h"
 #include "Slate/SHeartGraphWidgetBase.h"
@@ -9,32 +10,31 @@
 
 UHeartEdGraphPin* UHeartEdGraphPin::Wrap(const UEdGraphPin* Pin)
 {
+	const UHeartEdGraphNode* EdGraphNode = Cast<UHeartEdGraphNode>(Pin->GetOwningNode());
+
 	UHeartEdGraphPin* NewWrapper = NewObject<UHeartEdGraphPin>();
 	NewWrapper->EdGraphPin = Pin;
-	if (auto Node = NewWrapper->GetHeartGraphNode();
-		IsValid(Node))
-	{
-		if (auto Option = Node->QueryPins().Find(
-				[&Pin](const FHeartGraphPinDesc& Desc)
-				{
-					return Desc.Name == Pin->PinName;
-				});
-			Option.IsSet())
-		{
-			NewWrapper->PinGuid = Option.GetValue();
-		}
-	}
+	NewWrapper->PinGuid = EdGraphNode->GetHeartGraph()->FindNodePin(EdGraphNode->GetNodeGuid(), Pin->PinName);
 
 	return NewWrapper;
 }
 
-UHeartGraphNode* UHeartEdGraphPin::GetHeartGraphNode() const
+UHeartGraph* UHeartEdGraphPin::GetHeartGraph() const
 {
 	if (EdGraphPin)
 	{
-		return Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetHeartGraphNode();
+		return Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetHeartGraph();
 	}
 	return nullptr;
+}
+
+FHeartNodeGuid UHeartEdGraphPin::GetNodeGuid() const
+{
+	if (EdGraphPin)
+	{
+		return Cast<UHeartEdGraphNode>(EdGraphPin->GetOwningNode())->GetNodeGuid();
+	}
+	return FHeartNodeGuid();
 }
 
 FHeartPinGuid UHeartEdGraphPin::GetPinGuid() const

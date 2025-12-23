@@ -3,7 +3,6 @@
 #include "Slate/SHeartGraphWidgetBase.h"
 
 #include "Model/HeartGraph.h"
-#include "Model/HeartGraphNode.h"
 
 namespace Heart::Canvas
 {
@@ -15,12 +14,14 @@ namespace Heart::Canvas
 	  : FLinkerMetadata(Linker, ESlateWidgetType::Graph),
 		Graph(Graph) {}
 
-	FNodeAndLinkerMetadata::FNodeAndLinkerMetadata(UHeartGraphNode* Node, UHeartSlateInputLinker* Linker)
+	FNodeAndLinkerMetadata::FNodeAndLinkerMetadata(UHeartGraph* Graph, const FHeartNodeGuid& Node, UHeartSlateInputLinker* Linker)
 	  : FLinkerMetadata(Linker, ESlateWidgetType::Node),
+		Graph(Graph),
 		Node(Node) {}
 
-	FPinAndLinkerMetadata::FPinAndLinkerMetadata(UHeartGraphNode* Node, const FHeartPinGuid Pin, UHeartSlateInputLinker* Linker)
+	FPinAndLinkerMetadata::FPinAndLinkerMetadata(UHeartGraph* Graph, const FHeartNodeGuid& Node, const FHeartPinGuid& Pin, UHeartSlateInputLinker* Linker)
 	  : FLinkerMetadata(Linker, ESlateWidgetType::Pin),
+		Graph(Graph),
 		Node(Node),
 		Pin(Pin) {}
 
@@ -33,11 +34,11 @@ namespace Heart::Canvas
 	
 	void SGraphNodeWidget::Construct(const FArguments& InArgs)
 	{
-		AddMetadata(MakeShared<FNodeAndLinkerMetadata>(InArgs._GraphNode, InArgs._Linker));
+		AddMetadata(MakeShared<FNodeAndLinkerMetadata>(InArgs._Graph, InArgs._NodeGuid, InArgs._Linker));
 	}
 
 	void SGraphPinWidget::Construct(const FArguments& InArgs)
 	{
-		AddMetadata(MakeShared<FPinAndLinkerMetadata>(InArgs._GraphNode, InArgs._PinGuid, InArgs._Linker));
+		AddMetadata(MakeShared<FPinAndLinkerMetadata>(InArgs._Graph, InArgs._NodeGuid, InArgs._PinGuid, InArgs._Linker));
 	}
 }

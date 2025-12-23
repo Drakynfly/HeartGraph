@@ -86,7 +86,7 @@ TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByClass(const TScrip
 		return TArray<FHeartNodeGuid>();
 	}
 
-	const UHeartGraph* HeartGraph = Graph->GetHeartGraph();
+	const UHeartGraph* HeartGraph = IHeartGraphInterface::Execute_GetHeartGraph(Graph.GetObject());
 	if (IsValid(HeartGraph))
 	{
 		return TArray<FHeartNodeGuid>();
@@ -120,7 +120,7 @@ TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(co
 		return TArray<FHeartNodeGuid>();
 	}
 
-	const UHeartGraph* HeartGraph = Graph->GetHeartGraph();
+	const UHeartGraph* HeartGraph = IHeartGraphInterface::Execute_GetHeartGraph(Graph.GetObject());
 	if (IsValid(HeartGraph))
 	{
 		return TArray<FHeartNodeGuid>();
@@ -147,7 +147,7 @@ TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(co
 
 void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TScriptInterface<IHeartGraphInterface> Graph, const TArray<FHeartNodeGuid>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
 {
-	const UHeartGraph* HeartGraph = Graph->GetHeartGraph();
+	const UHeartGraph* HeartGraph = IHeartGraphInterface::Execute_GetHeartGraph(Graph.GetObject());
 	if (IsValid(HeartGraph))
 	{
 		return;
@@ -159,16 +159,16 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TScriptInterface<IH
 
 	// Recursive function for building tree nodes
 	TFunction<FHeartTreeNode(const UHeartGraphNode*)> BuildTreeNode;
-	BuildTreeNode = [InverseDirection, &BuildTreeNode, &TrackedNodes, AllowDuplicates = Args.AllowDuplicates](const UHeartGraphNode* Node)
+	BuildTreeNode = [HeartGraph, InverseDirection, &BuildTreeNode, &TrackedNodes, AllowDuplicates = Args.AllowDuplicates](const UHeartGraphNode* Node)
 		{
 			FHeartTreeNode OutTreeNode;
 			OutTreeNode.Node = Node->GetGuid();
 
-			const TArray<FHeartNodeGuid> OutputLinks = Heart::Utils::GetConnectedNodes(Node->GetGraph(), OutTreeNode.Node, InverseDirection);
+			const TArray<FHeartNodeGuid> OutputLinks = Heart::Utils::GetConnectedNodes(*HeartGraph, OutTreeNode.Node, InverseDirection);
 
 			for (auto&& OutputLink : OutputLinks)
 			{
-				if (auto&& ConnectedNode = Node->GetGraph()->GetNode(OutputLink))
+				if (auto&& ConnectedNode = HeartGraph->GetNode(OutputLink))
 				{
 					if (TrackedNodes.Contains(ConnectedNode))
 					{

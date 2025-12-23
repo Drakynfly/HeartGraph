@@ -4,15 +4,17 @@
 
 #include "Model/HeartConcepts.h"
 #include "HeartGraphWidgetBase.h"
+#include "Location/HeartNodeLocationInterface.h"
+#include "Location/HeartNodeLocationModifier.h"
 
 #include "Input/HeartWidgetInputBindingContainer.h"
 
 #include "Model/HeartGraphInterface.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartGraphPinReference.h"
-#include "ModelView/HeartNodeLocationModifier.h"
 
 #include "General/VectorBounds.h"
+#include "Model/HeartGraphTypes.h"
 
 #include "HeartGraphCanvas.generated.h"
 
@@ -97,7 +99,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGraphViewChanged);
  * Base class for displaying a graph using UMG widgets on a canvas panel.
  */
 UCLASS()
-class HEARTCANVAS_API UHeartGraphCanvas : public UHeartGraphWidgetBase, public IHeartGraphInterface
+class HEARTCANVAS_API UHeartGraphCanvas : public UHeartGraphWidgetBase, public IHeartGraphInterface, public IHeartNodeLocationInterface
 {
 	GENERATED_BODY()
 
@@ -119,10 +121,13 @@ public:
 	/** IHeartInputLinkerInterface */
 
 	/** IHeartGraphInterface */
-	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual UHeartGraph* GetHeartGraph_Implementation() const override;
+	/** IHeartGraphInterface */
+
+	/** IHeartNodeLocationInterface */
 	virtual FVector2D GetNodeLocation(const FHeartNodeGuid& Node) const override;
 	virtual void SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove) override;
-	/** IHeartGraphInterface */
+	/** IHeartNodeLocationInterface */
 
 	// Used by UHeartPinConnectionDragDropOperation to notify us about what its doing, so we can draw the preview link
 	void SetPreviewConnection(const FHeartGraphPinReference& Reference);
@@ -167,7 +172,8 @@ protected:
 
 	void CreatePreviewConnection();
 
-	void AddNodeToDisplay(UHeartGraphNode* Node, bool InitNodeWidget);
+	void AddNodeToDisplay(const FHeartNodeGuid& Node, bool InitNodeWidget);
+	void RemoveNodeFromDisplay(const FHeartNodeGuid& Node);
 
 	void SetViewOffset(const FVector2f& Value);
 	void AddToViewOffset(const FVector2f& Value);
@@ -175,9 +181,8 @@ protected:
 	void SetZoom(float Value);
 	void AddToZoom(float Value);
 
-	void OnNodeAddedToGraph(UHeartGraphNode* Node);
-	void OnNodeRemovedFromGraph(UHeartGraphNode* Node);
-	void OnNodeLocationChanged(UHeartGraphNode* Node, const FVector2D& Location);
+	void OnNodeAddOrRemove(const FHeartNodeAddOrRemoveEvent& Event);
+	void OnNodeLocationChanged(const FHeartNodeGuid& Node, const FVector2D& Location);
 
 
 	/*----------------------

@@ -32,6 +32,7 @@
 #include "ScopedTransaction.h"
 #include "SNodePanel.h"
 #include "ToolMenus.h"
+#include "Features/NodeObjectUtils.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Graph/HeartEdGraph.h"
 #include "Widgets/Docking/SDockTab.h"
@@ -265,7 +266,7 @@ namespace Heart::AssetEditor
 		auto AllNodes = HeartGraph->GetNodes();
 		for (auto&& GraphNode : AllNodes)
 		{
-			if (!EdGraph->FindEdGraphNodeForNode(GraphNode.Value))
+			if (!EdGraph->FindEdGraphNodeForNode(GraphNode.Key))
 			{
 				EdGraph->CreateEdGraphNode(GraphNode.Value);
 			}
@@ -589,10 +590,10 @@ namespace Heart::AssetEditor
 
 			for (TSet<UObject*>::TConstIterator SetIt(Nodes); SetIt; ++SetIt)
 			{
-				if (auto&& GraphNode = Cast<UHeartEdGraphNode>(*SetIt))
+				if (auto&& EdGraphNode = Cast<UHeartEdGraphNode>(*SetIt))
 				{
-					SelectedGraphObjects.Add(GraphNode->GetHeartGraphNode());
-					SelectedObjects.Add(GraphNode->GetHeartGraphNode()->GetNodeObject());
+					SelectedGraphObjects.Add(EdGraphNode->GetHeartGraphNode());
+					SelectedObjects.Add(Features::NodeObject::GetNodeObject(*EdGraphNode));
 				}
 				else
 				{
@@ -797,7 +798,7 @@ namespace Heart::AssetEditor
 		PasteNodesHere(GraphEditor->GetPasteLocation2f());
 	}
 
-	void FHeartGraphEditor::PasteNodesHere(const FVector2D& Location)
+	void FHeartGraphEditor::PasteNodesHere(const FVector2f& Location)
 	{
 		SetUISelectionState(NAME_None);
 
@@ -818,7 +819,7 @@ namespace Heart::AssetEditor
 		FEdGraphUtilities::ImportNodesFromText(HeartGraph->GetEdGraph(), TextToImport, /*out*/ PastedNodes);
 
 		//Average position of nodes so we can move them while still maintaining relative distances to each other
-		FVector2D AvgNodePosition(0.0f, 0.0f);
+		FVector2f AvgNodePosition(0.0f, 0.0f);
 
 		for (TSet<UEdGraphNode*>::TIterator It(PastedNodes); It; ++It)
 		{

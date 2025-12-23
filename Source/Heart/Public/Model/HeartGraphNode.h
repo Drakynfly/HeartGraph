@@ -29,8 +29,8 @@ class UHeartGraph;
 class UHeartGraphNode;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged_Native, const FHeartPinGuid&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged_Native, UHeartGraphNode*);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged_Native, UHeartGraphNode*, const FVector2D&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged_Native, const FHeartNodeGuid&);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged_Native, const FHeartNodeGuid& Node, const FVector2D&);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPinConnectionsChanged, const FHeartPinGuid&, Pin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGraphNodePinChanged, UHeartGraphNode*, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnGraphNodeLocationChanged, UHeartGraphNode*, Node, const FVector2D&, Location);
@@ -124,7 +124,8 @@ public:
 
 private:
 	/** IHeartGraphNodeInterface */
-	virtual UHeartGraphNode* GetHeartGraphNode() const override final;
+	virtual UHeartGraph* GetHeartGraph() const override;
+	virtual FHeartNodeGuid GetNodeGuid() const override;
 	/** IHeartGraphNodeInterface */
 
 

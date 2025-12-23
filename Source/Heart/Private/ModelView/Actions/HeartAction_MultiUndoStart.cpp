@@ -19,20 +19,8 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 {
 	checkfSlow(Arguments.Activation.IsRedoAction(), TEXT("UHeartAction_MultiUndoStart should only be executed as a Redo!"))
 
-	auto Interface = Cast<IHeartGraphInterface>(Arguments.Target);
-	if (!Interface)
-	{
-		return FHeartEvent::Invalid;
-	}
-
-	UHeartGraph* Graph = Interface->GetHeartGraph();
-	if (!ensure(IsValid(Graph)))
-	{
-		return FHeartEvent::Invalid;
-	}
-
-	UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
-	if (!IsValid(History))
+	UHeartActionHistory* History = Heart::Action::History::GetHistoryFromActionStack();
+	if (!IsValidChecked(History))
 	{
 		return FHeartEvent::Failed;
 	}

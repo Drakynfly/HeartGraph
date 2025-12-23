@@ -44,7 +44,7 @@ struct TStructOpsTypeTraits<FHeartActionRecord> : public TStructOpsTypeTraitsBas
 namespace Heart::Action::History
 {
 	// Is this action being executing in a state that we want to record?
-	HEART_API bool IsLoggable(const UHeartActionBase* Action, const FArguments& Arguments);
+	HEART_API bool IsLoggable(const UHeartActionBase& Action, const FArguments& Arguments);
 
 	// Are we currently running an undoable action?
 	HEART_API bool IsUndoable();
@@ -52,22 +52,25 @@ namespace Heart::Action::History
 	// Callable while inside an Execute or Undo callstack; retrieves the owning Graph for the History Extension on top
 	HEART_API UHeartGraph* GetGraphFromActionStack();
 
+	// Callable while inside an Execute or Undo callstack; retrieves the History Extension on top
+	HEART_API UHeartActionHistory* GetHistoryFromActionStack();
+
 	// A simple wrapper around a lambda that executes an action. If the action is loggable, and it succeeds, it will be
 	// recorded if an Action History extension can be found.
 	using FActionLogic = TFunctionRef<FHeartEvent(FBloodContainer&)>;
-	HEART_API FHeartEvent Log(const UHeartActionBase* Action, const FArguments& Arguments, FActionLogic&& Lambda);
+	HEART_API FHeartEvent Log(const UHeartActionBase& Action, const FArguments& Arguments, FActionLogic&& Lambda);
 
 	// Cancel the executing logging context. The currently running action will not be logged.
 	HEART_API void CancelLog();
 
-	HEART_API bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory* History);
+	HEART_API bool UndoRecord(const FHeartActionRecord& Record, UHeartActionHistory& History);
 	HEART_API FHeartEvent RedoRecord(const FHeartActionRecord& Record);
 
-	HEART_API bool TryUndo(const UHeartGraph* Graph);
-	HEART_API bool TryUndo(UHeartActionHistory* History);
+	HEART_API bool TryUndo(const UHeartGraph& Graph);
+	HEART_API bool TryUndo(UHeartActionHistory& History);
 
-	HEART_API FHeartEvent TryRedo(const UHeartGraph* Graph);
-	HEART_API FHeartEvent TryRedo(UHeartActionHistory* History);
+	HEART_API FHeartEvent TryRedo(const UHeartGraph& Graph);
+	HEART_API FHeartEvent TryRedo(UHeartActionHistory& History);
 }
 
 

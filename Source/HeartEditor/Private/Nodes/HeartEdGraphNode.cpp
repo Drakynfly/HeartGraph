@@ -29,7 +29,7 @@
 #include "Input/HeartInputLinkerBase.h"
 #include "Input/HeartSlateInputLinker.h"
 #include "ModelView/HeartGraphSchema.h"
-#include "NodeComponents/HeartInstancedPinsComponent.h"
+#include "PinProviders/HeartInstancedPinsComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartEdGraphNode)
 
@@ -47,6 +47,25 @@ UHeartEdGraphNode::UHeartEdGraphNode(const FObjectInitializer& ObjectInitializer
 UHeartEdGraphNode::~UHeartEdGraphNode()
 {
 	UnsubscribeToExternalChanges();
+}
+
+UHeartGraph* UHeartEdGraphNode::GetHeartGraph() const
+{
+	if (UHeartEdGraph* HeartEdGraph = Cast<UHeartEdGraph>(GetGraph());
+		IsValid(HeartEdGraph))
+	{
+		return HeartEdGraph->GetHeartGraph_Implementation();
+	}
+	return nullptr;
+}
+
+FHeartNodeGuid UHeartEdGraphNode::GetNodeGuid() const
+{
+	if (ensure(IsValid(HeartGraphNode)))
+	{
+		return HeartGraphNode->GetGuid();
+	}
+	return FHeartNodeGuid();
 }
 
 UHeartGraphNode* UHeartEdGraphNode::GetHeartGraphNode() const
@@ -139,8 +158,9 @@ void UHeartEdGraphNode::PreSave(const FObjectPreSaveContext SaveContext)
 		FVector2D NewLocation;
 		NewLocation.X = NodePosX;
 		NewLocation.Y = NodePosY;
-		HeartGraphNode->SetLocation(NewLocation);
-		HeartGraphNode->GetGraph()->NotifyNodeLocationChanged(HeartGraphNode->Guid, false);
+		UHeartGraph* Graph = GetHeartGraph();
+		Graph->GetNodeLocationInterface()->SetNodeLocation(HeartGraphNode->Guid, NewLocation, false);
+		Graph->NotifyNodeLocationChanged(HeartGraphNode->Guid, false);
 	}
 }
 
@@ -183,6 +203,11 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	Super::PinConnectionListChanged(Pin);
 
 	UHeartGraph* HeartGraph = HeartGraphNode->GetGraph();
+	if (!ensure(IsValid(HeartGraph)))
+	{
+		UE_LOG(LogHeartEditor, Error, TEXT("PinConnectionListChanged: Failed to resolve heart graph!"))
+		return;
+	}
 
 	// Get the matching HeartPin for the EdGraphPin that was changed
 	const FHeartPinGuid& HeartPin = HeartGraphNode->GetPinByName(Pin->PinName);
@@ -191,13 +216,13 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	if (!ensure(HeartPin.IsValid()))
 	{
-		UE_LOG(LogHeartEditor, Error, TEXT("Changed UEdGraphPin does not have a runtime equivalent!"))
+		UE_LOG(LogHeartEditor, Error, TEXT("PinConnectionListChanged: Changed UEdGraphPin does not have a runtime equivalent!"))
 		return;
 	}
 
 	TArray<FHeartGraphPinDesc> LinkedPins;
 
-	Heart::API::FPinEdit ConnectionEditor(HeartGraph);
+	Heart::API::FPinEdit ConnectionEditor(*HeartGraph);
 
 	// Resolve all linked pins
 	if (const auto PinConnections = HeartGraphNode->ViewConnections(HeartPin);
@@ -211,7 +236,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
 			if (!IsValid(LinkedNode))
 			{
-				UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
+				UE_LOG(LogHeartEditor, Warning, TEXT("PinConnectionListChanged: HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
 					*HeartGraphNode.GetName())
 				continue;
 			}
@@ -219,7 +244,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			auto&& LinkedPin = LinkedNode->ViewPin(LinkedRef.PinGuid);
 			if (!LinkedPin.IsValid())
 			{
-				UE_LOG(LogHeartEditor, Warning, TEXT("HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
+				UE_LOG(LogHeartEditor, Warning, TEXT("PinConnectionListChanged: HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
 					*HeartGraphNode.GetName(), *LinkedNode->GetName())
 				continue;
 			}
@@ -261,7 +286,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 			if (!ensure(ConnectedHeartPin.IsValid()))
 			{
-				UE_LOG(LogHeartEditor, Error, TEXT("Changed HeartEdGraphNode does not have a runtime equivalent!"))
+				UE_LOG(LogHeartEditor, Error, TEXT("PinConnectionListChanged: Changed HeartEdGraphNode does not have a runtime equivalent!"))
 				break;
 			}
 
@@ -290,7 +315,7 @@ void UHeartEdGraphNode::PostCopyNode()
 	// Make sure this HeartGraphNode is owned by the HeartGraph it's being pasted into
 	if (HeartGraphNode)
 	{
-		auto&& HeartGraph = CastChecked<UHeartEdGraph>(GetGraph())->GetHeartGraph();
+		auto&& HeartGraph = CastChecked<UHeartEdGraph>(GetGraph())->GetHeartGraph_Implementation();
 
 		if (HeartGraphNode->GetOuter() != HeartGraph)
 		{

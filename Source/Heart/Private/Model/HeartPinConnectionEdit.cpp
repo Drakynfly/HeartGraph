@@ -6,9 +6,6 @@
 
 namespace Heart::API
 {
-	FPinEdit::FPinEdit(UHeartGraphNode* Node)
-	  : Graph(Node->GetGraph()) {}
-
 	FPinEdit::~FPinEdit()
 	{
 		if (!Modified())
