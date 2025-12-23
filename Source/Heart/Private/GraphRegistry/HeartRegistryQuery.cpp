@@ -35,30 +35,37 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 	}
 
 	Heart::Query::FRegistryQueryResult Query(Subsystem->GetNodeRegistry(SchemaClass));
+	if (Query.IsEmpty())
+	{
+		return;
+	}
 
 	// Enabling the ProjectionCache is a good idea here because we are jumping into the BP VM, which is
 	// undoubtably less efficient than hashing the results
 	Query.Enable(Heart::Query::ProjectionCache);
 
-	Query.Filter(
-	[&](const FHeartNodeArchetype& Value)
-		{
-			struct FProcessEventMemory
-			{
-				FHeartNodeSource NodeSource;
-				bool RetVal;
-			};
+	if (EnableFilters && !ScriptFilters.IsEmpty())
+	{
+		Query.Filter(
+        [&](const FHeartNodeArchetype& Value)
+        	{
+        		struct FProcessEventMemory
+        		{
+        			FHeartNodeSource NodeSource;
+        			bool RetVal;
+        		};
 
-			return Algo::AllOf(ScriptFilters,
-				[Value](const FScriptDelegate& Delegate)
-				{
-					FProcessEventMemory Memory{Value.Source};
-					Delegate.ProcessDelegate<UObject>(&Memory);
-					return Memory.RetVal;
-				});
-		});
+        		return Algo::AllOf(ScriptFilters,
+        			[Value](const FScriptDelegate& Delegate)
+        			{
+        				FProcessEventMemory Memory{Value.Source};
+        				Delegate.ProcessDelegate<UObject>(&Memory);
+        				return Memory.RetVal;
+        			});
+        	});
+	}
 
-	if (ScriptSort.IsBound())
+	if (EnableSort && ScriptSort.IsBound())
 	{
 		switch (SortMode)
 		{
@@ -79,19 +86,50 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 			break;
 		case Score:
 			{
-				Query.SortBy(
-					[&](const Heart::Query::FRegistryKey A)
+				struct FKeyedScore
+				{
+					Heart::Query::FRegistryKey Key;
+					double Score;
+				};
+				TArray<FKeyedScore> Scores;
+
+				// Score each result.
+				Query.ForEach(
+					[&](const Heart::Query::FRegistryKey& Key)
 					{
 						struct FProcessEventMemory
 						{
 							FHeartNodeSource NodeSource;
 							double RetVal;
 						};
-						FProcessEventMemory Memory{Query[A].Source};
+						FProcessEventMemory Memory{Query[Key].Source};
 						ScriptSort.ProcessDelegate<UObject>(&Memory);
-						return Memory.RetVal;
-					},
-					TGreater<>());
+						Scores.Add({Key, Memory.RetVal});
+					});
+
+				// Sort so highest is first.
+				Algo::SortBy(Scores, &FKeyedScore::Score, TGreater<>());
+
+				const double LowestScoreToAccept = Scores[0].Score * (1.0 - ScoreSort_SuccessPercentage);
+
+				const int32 IndexOfWorstSuccess = Algo::LowerBoundBy(Scores, LowestScoreToAccept, &FKeyedScore::Score, TGreater<>());
+
+				const int32 PruneIndexStart = [&]()
+				{
+					if (ScoreSort_MaximumResults > 0)
+					{
+						return FMath::Min(IndexOfWorstSuccess + 1, ScoreSort_MaximumResults);
+					}
+					return IndexOfWorstSuccess;
+				}();
+
+				// Copy only the passing values into the Results
+				Results.Reserve(PruneIndexStart);
+				for (int32 i = 0; i < PruneIndexStart; ++i)
+				{
+					Results.Emplace(Query[Scores[i].Key]);
+				}
+				return;
 			}
 			break;
 		case Default:
@@ -106,7 +144,7 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 	Query.ForEach(
 		[&Results](const FHeartNodeArchetype& Value)
 		{
-			Results.Emplace(Value.GraphNode, Value.Source);
+			Results.Emplace(Value);
 		});
 }
 
@@ -122,16 +160,23 @@ void UHeartRegistryQuery::ClearFilters()
 	ScriptFilters.Empty();
 }
 
+void UHeartRegistryQuery::SetFiltersEnabled(const bool Enabled)
+{
+	EnableFilters = Enabled;
+}
+
 void UHeartRegistryQuery::SetSortByComparison(const FHeartRegistryBlueprintSort& Predicate)
 {
    	ScriptSort.BindUFunction(const_cast<UObject*>(Predicate.GetUObject()), Predicate.GetFunctionName());
 	SortMode = ESortMode::Comparison;
 }
 
-void UHeartRegistryQuery::SetSortByScore(const FHeartRegistryBlueprintScore& Predicate)
+void UHeartRegistryQuery::SetSortByScore(const FHeartRegistryBlueprintScore& Predicate, const double SuccessPercentage, const int32 MaximumResults)
 {
 	ScriptSort.BindUFunction(const_cast<UObject*>(Predicate.GetUObject()), Predicate.GetFunctionName());
 	SortMode = ESortMode::Score;
+	ScoreSort_SuccessPercentage = SuccessPercentage;
+	ScoreSort_MaximumResults = MaximumResults;
 }
 
 void UHeartRegistryQuery::SetSortByDefault()
@@ -144,4 +189,9 @@ void UHeartRegistryQuery::ClearSort()
 {
 	ScriptSort.Clear();
 	SortMode = ESortMode::Off;
+}
+
+void UHeartRegistryQuery::SetSortEnabled(const bool Enabled)
+{
+	EnableSort = Enabled;
 }

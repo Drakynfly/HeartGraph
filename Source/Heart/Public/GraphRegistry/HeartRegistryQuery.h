@@ -52,14 +52,11 @@ namespace Heart::Query
 		class FIterator
 		{
 		public:
-			explicit FIterator(const UHeartGraphNodeRegistry* Registry)
-			  : Registry(Registry)
+			explicit FIterator(const UHeartGraphNodeRegistry& Registry)
+			  : Registry(&Registry)
 			{
-				if (IsValid(Registry))
-				{
-					SourceMax = Registry->NodeRootTable.Num();
-					Advance();
-				}
+				SourceMax = Registry.NodeRootTable.Num();
+				Advance();
 			}
 
 			explicit FIterator()
@@ -157,7 +154,7 @@ namespace Heart::Query
 		// A for-each range for iterating over the reference data
 		struct FRange
 		{
-			explicit FRange(const UHeartGraphNodeRegistry* Registry)
+			explicit FRange(const UHeartGraphNodeRegistry& Registry)
 			  : Iterator(FIterator(Registry)) {}
 
 			FIterator Iterator;
@@ -176,7 +173,14 @@ namespace Heart::Query
 
 		FHeartNodeArchetype operator[](const FRegistryKey Key) const;
 
-		FIterator begin() const { return FIterator(Registry.Get()); }
+		FIterator begin() const
+		{
+			if (auto RegistryPtr = Registry.Get())
+			{
+				return FIterator(*Registry.Get());
+			}
+			return FIterator();
+		}
 		FIterator end  () const { return FIterator(); }
 
 	private:
@@ -208,11 +212,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void ClearFilters();
 
+	// Used to turn filters on/off without resetting them.
+	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
+	void SetFiltersEnabled(bool Enabled);
+
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void SetSortByComparison(const FHeartRegistryBlueprintSort& Predicate);
 
+	/*
+	 * Set a callback to use to sort the results by a score.
+	 * @param SuccessPercentage The scalar for what percentage of scores are not filtered, e.g. 0.10 means "show only the top 10.0%"
+	 * @param MaximumResults The maximum number of results
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
-	void SetSortByScore(const FHeartRegistryBlueprintScore& Predicate);
+	void SetSortByScore(const FHeartRegistryBlueprintScore& Predicate, double SuccessPercentage = 1.0, int32 MaximumResults = 0);
 
 	// Use the built-in sort function for the queried data.
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
@@ -221,9 +234,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
 	void ClearSort();
 
+	// Used to turn sort on/off without resetting them.
+	UFUNCTION(BlueprintCallable, Category = "Heart|RegistryQuery")
+	void SetSortEnabled(bool Enabled);
+
 protected:
 	TArray<FScriptDelegate> ScriptFilters;
 	FScriptDelegate ScriptSort;
+
+	// The scalar for what percentage of scores are not filtered when using Score Sort, e.g. 0.10 means "show only the top 10.0%"
+	double ScoreSort_SuccessPercentage = 1.0;
+
+	// The maximum number of results when using Score Sort.
+	int32 ScoreSort_MaximumResults = 0;
 
 	enum ESortMode
 	{
@@ -240,4 +263,7 @@ protected:
 		Score
 	};
 	ESortMode SortMode;
+
+	bool EnableFilters;
+	bool EnableSort;
 };

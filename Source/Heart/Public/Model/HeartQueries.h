@@ -553,6 +553,11 @@ namespace Heart::Query
 			return RefNum();
 		}
 
+		FORCEINLINE bool IsEmpty() const
+		{
+			return Num() == 0;
+		}
+
 	private:
 		// This function makes a copy of the reference data, and stores it in Results, where it can be pruned down by
 		// filters, or re-ordered by sorting.

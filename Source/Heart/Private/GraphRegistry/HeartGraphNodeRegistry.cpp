@@ -336,7 +336,7 @@ Heart::Query::FRegistryQueryResult UHeartGraphNodeRegistry::QueryRegistry() cons
 
 void UHeartGraphNodeRegistry::ForEachNodeObjectClass(const TFunctionRef<bool(const FHeartNodeArchetype&)>& Iter) const
 {
-	for (Heart::Query::FRegistryPair&& It : Heart::Query::FRegistryQueryResult::FRange(this))
+	for (Heart::Query::FRegistryPair&& It : Heart::Query::FRegistryQueryResult::FRange(*this))
 	{
 		if (!ensure(IsValid(It.Value.GraphNode)) ||
 			!ensure(It.Value.Source.IsValid()))
