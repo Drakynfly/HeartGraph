@@ -5,8 +5,6 @@
 #include "HeartGraphComponentBase.h"
 #include "HeartGraphExtension.generated.h"
 
-class UHeartGraph;
-
 /**
  * Extensions are the HeartGraph equivalent to 'ActorComponents'. They are added to graphs by their schema, or manually
  * at runtime.
@@ -16,13 +14,7 @@ class HEART_API UHeartGraphExtension : public UHeartGraphComponentBase
 {
 	GENERATED_BODY()
 
-	friend UHeartGraph;
-
 public:
-	// Get the owning Heart Graph
-	UFUNCTION(BlueprintCallable, Category = "Heart|Extension")
-	UHeartGraph* GetGraph() const;
-
 	virtual void PostComponentAdded() override
 	{
 		PRAGMA_DISABLE_DEPRECATION_WARNINGS

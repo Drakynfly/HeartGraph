@@ -86,7 +86,10 @@ bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoD
 	// Ensure that the node is reconstructed with the correct graph outer.
 	Data.DeletedNode->Rename(nullptr, Graph);
 
+	// @todo replace this with node data export/import
+	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	Graph->AddNode(Data.DeletedNode);
+	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	// Relink broken connections
 	Heart::API::FPinEdit(*Graph).RestoreMementos(Data.Mementos);

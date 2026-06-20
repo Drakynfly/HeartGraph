@@ -13,7 +13,7 @@ class UHeartNodeLocationModifier;
  * A pass-through class for redirecting an accessor through proxy function to alter the location.
  */
 UCLASS()
-class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartGraphInterface3D
+class HEART_API UHeartNodeLocationProxy : public UObject, public IHeartNodeLocationInterface, public IHeartGraphInterface3D
 {
 	GENERATED_BODY()
 

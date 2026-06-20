@@ -16,15 +16,15 @@ namespace Heart::API
 	public:
 		// Create a HeartGraphNode that is the outer of its own instanced NodeObject, created from the NodeObjectClass.
 		static UHeartGraphNode* CreateNode_Instanced(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-			const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+			const UClass* NodeObjectClass, UObject* NodeSpawningContext = nullptr);
 
 		// Create a HeartGraphNode that is the outer of its own instanced NodeObject, duplicated from the NodeTemplate.
 		static UHeartGraphNode* CreateNode_Duplicate(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-			const UObject* NodeTemplate, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+			const UObject* NodeTemplate, UObject* NodeSpawningContext = nullptr);
 
 		// Create a HeartGraphNode whose NodeObject is a reference to an external object.
 		static UHeartGraphNode* CreateNode_Reference(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-			const UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext = nullptr);
+			const UObject* NodeObject, UObject* NodeSpawningContext = nullptr);
 	};
 
 	/*
@@ -125,7 +125,11 @@ namespace Heart::API
 		// The graph we are editing
 		TObjectPtr<UHeartGraph> Graph;
 
-		using FPendingCreate = TObjectPtr<UHeartGraphNode>;
+		struct FPendingCreate
+		{
+			TObjectPtr<UHeartGraphNode> Node;
+			FVector2D Location;
+		};
 		using FPendingDelete = FHeartNodeGuid;
 
 		// @todo if FNodeEdit *is* kept around for multiple frames, what keeps the PendingCreates alive?

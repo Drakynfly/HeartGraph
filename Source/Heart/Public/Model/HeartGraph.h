@@ -25,6 +25,7 @@ class UHeartGraph;
 class UHeartGraphExtension;
 class UHeartGraphNode;
 class UHeartGraphSchema;
+class UHeartNodeLocationComponentBase;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogHeartGraph, Log, All)
 
@@ -77,12 +78,12 @@ struct FHeartGraphSparseClassData
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, SparseClassDataTypes = "HeartGraphSparseClassData")
 class HEART_API UHeartGraph : public UObject, public IHeartGraphInterface
-	, public IHeartGraphInterface3D /* @todo temp, while refactoring node location logic */
+	, public IHeartNodeLocationInterface, public IHeartGraphInterface3D /* @todo temp, while refactoring node location logic */
 {
 	GENERATED_BODY()
 
 	friend class UHeartEdGraph;
-	friend class UHeartGraphSchema;
+	friend UHeartGraphSchema;
 	friend Heart::API::FNodeEdit;
 	friend Heart::API::FPinEdit;
 
@@ -209,8 +210,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph", meta = (DeterminesOutputType = Class), DisplayName = "Get Schema Typed")
 	const UHeartGraphSchema* GetSchemaTyped_K2(TSubclassOf<UHeartGraphSchema> Class) const;
 
-	[[nodiscard]] UE_REWRITE IHeartNodeLocationInterface* GetNodeLocationInterface() { return this; }
-	[[nodiscard]] UE_REWRITE const IHeartNodeLocationInterface* GetNodeLocationInterface() const { return this; }
+	[[nodiscard]] IHeartNodeLocationInterface* GetNodeLocationInterface();
+	[[nodiscard]] const IHeartNodeLocationInterface* GetNodeLocationInterface() const;
 
 	const auto& GetExtensions() const { return Extensions; }
 
@@ -279,6 +280,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode", meta = (DisplayName = "Create Node (reference)"))
 	UHeartGraphNode* CreateNode_Reference(TSubclassOf<UHeartGraphNode> GraphNodeClass, const UObject* NodeObject, const FVector2D& Location);
 
+	UE_DEPRECATED(5.7, "Create Node now automatically adds the node. Usually not necessary to call this")
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
 	void AddNode(UHeartGraphNode* Node);
 
@@ -392,6 +394,9 @@ private:
 
 	UPROPERTY(Instanced, VisibleAnywhere, Category = "Graph")
 	TMap<FHeartNodeGuid, TObjectPtr<UHeartGraphNode>> Nodes;
+
+	UPROPERTY(Instanced, VisibleAnywhere, Category = "Graph")
+	TObjectPtr<UHeartNodeLocationComponentBase> NodeLocationComponent;
 
 	// All extensions, including those added by the schema
 	UPROPERTY(Instanced, VisibleAnywhere, Category = "Components")

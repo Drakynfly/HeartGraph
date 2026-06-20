@@ -10,12 +10,11 @@
 #include "HeartSceneGenerator.generated.h"
 
 class UHeartGraph;
-class UHeartGraphNode3D;
 class UHeartNodeLocationModifierStack;
 class UHeartSceneNode;
 
 UCLASS(Blueprintable, ClassGroup = ("Heart"), meta = (BlueprintSpawnableComponent))
-class HEARTSCENE_API UHeartSceneGenerator : public UActorComponent, public IHeartGraphInterface, public IHeartGraphInterface3D
+class HEARTSCENE_API UHeartSceneGenerator : public UActorComponent, public IHeartGraphInterface, public IHeartNodeLocationInterface, public IHeartGraphInterface3D
 {
 	GENERATED_BODY()
 

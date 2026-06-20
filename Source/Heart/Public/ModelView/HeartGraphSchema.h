@@ -11,6 +11,7 @@ class UHeartGraph;
 class UHeartGraphNodeRegistry;
 class UHeartGraphExtension;
 class UHeartGraphAction;
+class UHeartNodeLocationComponentBase;
 
 /**
  * This is the type of response the graph editor should take when making a connection
@@ -165,6 +166,9 @@ protected:
 	void CreateDefaultNodesForGraph(UHeartGraph* Graph) const;
 
 protected:
+	UPROPERTY(EditAnywhere, Category = "Extensions")
+	TSubclassOf<UHeartNodeLocationComponentBase> LocationComponentClass;
+
 	// These extensions are copied to each asset instance. They can be edited at runtime, but are otherwise, identical
 	// for every instance of the graph class bound to this schema.
 	UPROPERTY(EditAnywhere, Instanced, Category = "Extensions")

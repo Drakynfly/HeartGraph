@@ -3,8 +3,11 @@
 #include "ModelView/HeartGraphSchema.h"
 
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
+#include "Location/Heart2DLocationComponent.h"
+#include "Location/HeartNodeLocationComponentBase.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphExtension.h"
+#include "Model/HeartGraphNode.h"
 #include "Model/HeartPinConnectionEdit.h"
 #include "ModelView/Actions/HeartGraphAction.h"
 #include "UObject/ObjectSaveContext.h"
@@ -13,6 +16,8 @@
 
 UHeartGraphSchema::UHeartGraphSchema()
 {
+	LocationComponentClass = UHeart2DLocationComponent::StaticClass();
+
 #if WITH_EDITORONLY_DATA
 	DefaultEditorStyle = "Horizontal";
 #endif
@@ -83,29 +88,70 @@ void UHeartGraphSchema::OnPreSaveGraph(UHeartGraph* HeartGraph, const FObjectPre
 
 void UHeartGraphSchema::RefreshGraphExtensions(UHeartGraph* HeartGraph) const
 {
-	// Reset the "all extensions" map.
-	HeartGraph->Extensions.Empty(DefaultExtensions.Num() + HeartGraph->InstancedExtensions.Num());
-
-	// Add the Schema Extensions.
-	for (auto&& Extension : DefaultExtensions)
+	// Update Node Location Component
 	{
-		if (!IsValid(Extension))
+		UClass* CurrentClass = nullptr;
+		if (const UHeartNodeLocationComponentBase* LocationInterface = HeartGraph->NodeLocationComponent)
 		{
-			continue;
+			CurrentClass = LocationInterface->GetClass();
 		}
 
-		HeartGraph->AddExtensionInstance(DuplicateObject(Extension, HeartGraph));
+		if (CurrentClass != LocationComponentClass)
+		{
+			if (IsValid(LocationComponentClass))
+			{
+				UHeartNodeLocationComponentBase* OldComponent = HeartGraph->NodeLocationComponent;
+				HeartGraph->NodeLocationComponent = NewObject<UHeartNodeLocationComponentBase>(HeartGraph, LocationComponentClass);
+				HeartGraph->NodeLocationComponent->PostComponentAdded();
+				if (OldComponent)
+				{
+					FInstancedStruct MigrationData;
+					OldComponent->ExportMigrationData(MigrationData);
+					HeartGraph->NodeLocationComponent->ImportMigrationData(MigrationData);
+				}
+				else
+				{
+					PRAGMA_DISABLE_DEPRECATION_WARNINGS
+					for (auto&& Element : HeartGraph->GetNodes())
+					{
+						HeartGraph->NodeLocationComponent->SetNodeLocation(Element.Value->GetGuid(), Element.Value->GetLocation(), false);
+					}
+					PRAGMA_ENABLE_DEPRECATION_WARNINGS
+				}
+			}
+			else
+			{
+				HeartGraph->NodeLocationComponent = nullptr;
+			}
+		}
 	}
 
-	// Add the Graph Extensions.
-	for (auto&& Extension : HeartGraph->InstancedExtensions)
+	// Update Extensions Map
 	{
-		if (!IsValid(Extension))
+		// Reset the "all extensions" map.
+		HeartGraph->Extensions.Empty(DefaultExtensions.Num() + HeartGraph->InstancedExtensions.Num());
+
+		// Add the Schema Extensions.
+		for (auto&& Extension : DefaultExtensions)
 		{
-			continue;
+			if (!IsValid(Extension))
+			{
+				continue;
+			}
+
+			HeartGraph->AddExtensionInstance(DuplicateObject(Extension, HeartGraph));
 		}
 
-		HeartGraph->AddExtensionInstance(Extension);
+		// Add the Graph Extensions.
+		for (auto&& Extension : HeartGraph->InstancedExtensions)
+		{
+			if (!IsValid(Extension))
+			{
+				continue;
+			}
+
+			HeartGraph->AddExtensionInstance(Extension);
+		}
 	}
 }
 

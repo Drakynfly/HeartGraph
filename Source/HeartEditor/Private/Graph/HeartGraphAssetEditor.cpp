@@ -846,7 +846,11 @@ namespace Heart::AssetEditor
 			{
 				UHeartGraphNode* GraphNode = EdGraphNode->GetHeartGraphNode();
 				GraphNode->SetGuid_Editor(Node->NodeGuid);
+
+				// @todo replace this with node data export/import
+				PRAGMA_DISABLE_DEPRECATION_WARNINGS
 				HeartGraph->AddNode(GraphNode);
+				PRAGMA_ENABLE_DEPRECATION_WARNINGS
 			}
 
 			// Select the newly pasted stuff

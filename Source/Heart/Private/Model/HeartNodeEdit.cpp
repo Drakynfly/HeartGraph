@@ -7,7 +7,7 @@
 namespace Heart::API
 {
 	UHeartGraphNode* FNodeCreator::CreateNode_Instanced(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-														const UClass* NodeObjectClass, const FVector2D& Location, UObject* NodeSpawningContext)
+														const UClass* NodeObjectClass, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
 		checkSlow(IsValid(NodeObjectClass));
@@ -15,7 +15,6 @@ namespace Heart::API
 		UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(Graph, GraphNodeClass);
 		NewGraphNode->Guid = FHeartNodeGuid::New();
 		NewGraphNode->NodeObject = NewObject<UObject>(NewGraphNode, NodeObjectClass);
-		NewGraphNode->Location = Location;
 
 		NewGraphNode->OnCreate(NodeSpawningContext);
 
@@ -23,7 +22,7 @@ namespace Heart::API
 	}
 
 	UHeartGraphNode* FNodeCreator::CreateNode_Duplicate(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-														const UObject* NodeTemplate, const FVector2D& Location, UObject* NodeSpawningContext)
+														const UObject* NodeTemplate, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
 		checkSlow(IsValid(NodeTemplate));
@@ -31,7 +30,6 @@ namespace Heart::API
 		UHeartGraphNode* NewGraphNode = NewObject<UHeartGraphNode>(Graph, GraphNodeClass);
 		NewGraphNode->Guid = FHeartNodeGuid::New();
 		NewGraphNode->NodeObject = DuplicateObject(NodeTemplate, Graph);
-		NewGraphNode->Location = Location;
 
 		NewGraphNode->OnCreate(NodeSpawningContext);
 
@@ -39,7 +37,7 @@ namespace Heart::API
 	}
 
 	UHeartGraphNode* FNodeCreator::CreateNode_Reference(UHeartGraph* Graph, const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
-														const UObject* NodeObject, const FVector2D& Location, UObject* NodeSpawningContext)
+														const UObject* NodeObject, UObject* NodeSpawningContext)
 	{
 		checkSlow(IsValid(GraphNodeClass));
 		checkSlow(IsValid(NodeObject));
@@ -47,7 +45,6 @@ namespace Heart::API
 		auto&& NewGraphNode = NewObject<UHeartGraphNode>(Graph, GraphNodeClass);
 		NewGraphNode->Guid = FHeartNodeGuid::New();
 		NewGraphNode->NodeObject = const_cast<UObject*>(NodeObject); // @todo temp const_cast in lieu of proper const safety enforcement
-		NewGraphNode->Location = Location;
 
 		NewGraphNode->OnCreate(NodeSpawningContext);
 
@@ -63,7 +60,9 @@ namespace Heart::API
 	{
 		checkSlow(Node->GetOuter() == Cast<UObject>(&Graph));
 
-		if (!ensure(IsValid(Node) && Node->GetGuid().IsValid()))
+		const FHeartNodeGuid& NodeGuid = Node->GetGuid();
+
+		if (!ensure(IsValid(Node) && NodeGuid.IsValid()))
 		{
 			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
 			return false;
@@ -77,8 +76,6 @@ namespace Heart::API
 			return;
 		}
 		*/
-
-		const FHeartNodeGuid& NodeGuid = Node->GetGuid();
 
 		if (!ensure(!Graph.Nodes.Contains(NodeGuid)))
 		{
@@ -115,8 +112,8 @@ namespace Heart::API
 
 		FPinEdit(Graph).DisconnectAll(Node);
 
-		UHeartGraphNode* NodeBeingRemoved = nullptr;
-		Graph.Nodes.RemoveAndCopyValue(Node, ObjectPtrWrap(NodeBeingRemoved));
+		TObjectPtr<UHeartGraphNode> NodeBeingRemoved = nullptr;
+		Graph.Nodes.RemoveAndCopyValue(Node, NodeBeingRemoved);
 		if (IsValid(NodeBeingRemoved))
 		{
 			NodeBeingRemoved->OnRemovedFromGraph(&Graph, Node);
@@ -139,45 +136,45 @@ namespace Heart::API
 		// @todo this would not work, in the rare edge case of making a node with a UClass as a referenced source
 		if (const UClass* AsClass = Archetype.Source.As<UClass>())
 		{
-			NewGraphNode = FNodeCreator::CreateNode_Instanced(Graph, Archetype.GraphNode, AsClass, Location, NodeSpawningContext);
+			NewGraphNode = FNodeCreator::CreateNode_Instanced(Graph, Archetype.GraphNode, AsClass, NodeSpawningContext);
 		}
 		else
 		{
-			NewGraphNode = FNodeCreator::CreateNode_Reference(Graph, Archetype.GraphNode, Archetype.Source.As<UObject>(), Location, NodeSpawningContext);
+			NewGraphNode = FNodeCreator::CreateNode_Reference(Graph, Archetype.GraphNode, Archetype.Source.As<UObject>(), NodeSpawningContext);
 		}
 		checkSlow(NewGraphNode)
 
-		return PendingCreates.Emplace(NewGraphNode);
+		return PendingCreates.Add({NewGraphNode, Location});
 	}
 
 	FNodeEdit::FNewNodeId FNodeEdit::Create_Instanced(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
 													  const UClass* NodeObjectClass, const FVector2D& Location,
 													  UObject* NodeSpawningContext)
 	{
-		return PendingCreates.Emplace(FNodeCreator::CreateNode_Instanced(Graph, GraphNodeClass, NodeObjectClass, Location, NodeSpawningContext));
+		return PendingCreates.Add({FNodeCreator::CreateNode_Instanced(Graph, GraphNodeClass, NodeObjectClass, NodeSpawningContext), Location});
 	}
 
 	FNodeEdit::FNewNodeId FNodeEdit::Create_Duplicate(const TSubclassOf<UHeartGraphNode>& GraphNodeClass,
 		const UObject* NodeTemplate, const FVector2D& Location, UObject* NodeSpawningContext)
 	{
-		return PendingCreates.Emplace(FNodeCreator::CreateNode_Duplicate(Graph, GraphNodeClass, NodeTemplate, Location, NodeSpawningContext));
+		return PendingCreates.Add({FNodeCreator::CreateNode_Duplicate(Graph, GraphNodeClass, NodeTemplate, NodeSpawningContext), Location});
 	}
 
 	FNodeEdit::FNewNodeId FNodeEdit::Create_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
 													  const UObject* NodeObject, const FVector2D& Location,
 													  UObject* NodeSpawningContext)
 	{
-		return PendingCreates.Emplace(FNodeCreator::CreateNode_Reference(Graph, GraphNodeClass, NodeObject, Location, NodeSpawningContext));
+		return PendingCreates.Add({FNodeCreator::CreateNode_Reference(Graph, GraphNodeClass, NodeObject, NodeSpawningContext), Location});
 	}
 
 	UHeartGraphNode* FNodeEdit::GetGraphNode(const FNewNodeId Id) const
 	{
-		return PendingCreates[Id];
+		return PendingCreates[Id].Node;
 	}
 
 	UHeartGraphNode* FNodeEdit::Get() const
 	{
-		return PendingCreates.Last();
+		return PendingCreates.Last().Node;
 	}
 
 	void FNodeEdit::Delete(const FHeartNodeGuid& NodeGuid)
@@ -228,8 +225,8 @@ namespace Heart::API
 
 				for (auto&& PendingDelete : PendingDeletes)
 				{
-					UHeartGraphNode* NodeBeingRemoved;
-					Graph->Nodes.RemoveAndCopyValue(PendingDelete, ObjectPtrWrap(NodeBeingRemoved));
+					TObjectPtr<UHeartGraphNode> NodeBeingRemoved;
+					Graph->Nodes.RemoveAndCopyValue(PendingDelete, NodeBeingRemoved);
 					if (IsValid(NodeBeingRemoved))
 					{
 						NodeBeingRemoved->OnRemovedFromGraph(Graph, PendingDelete);
@@ -245,22 +242,24 @@ namespace Heart::API
 			FHeartNodeAddOrRemoveEvent Event;
 			Event.Type = EHeartNodeAddOrRemoveEventType::Add;
 
+			IHeartNodeLocationInterface* LocationInterface = Graph->GetNodeLocationInterface();
+
 			// Pending create pass
-			for (auto&& Node : PendingCreates)
+			for (auto&& Pending : PendingCreates)
 			{
-				if (!ensure(IsValid(Node)))
+				if (!ensure(IsValid(Pending.Node)))
 				{
 					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
 					continue;
 				}
 
-				if (!ensure(IsValid(Node->GetNodeObject())))
+				if (!ensure(IsValid(Pending.Node->GetNodeObject())))
 				{
 					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
 					continue;
 				}
 
-				const FHeartNodeGuid& NodeGuid = Node->GetGuid();
+				const FHeartNodeGuid& NodeGuid = Pending.Node->GetGuid();
 
 				if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
 				{
@@ -268,12 +267,16 @@ namespace Heart::API
 					continue;
 				}
 
-				Graph->Nodes.Add(NodeGuid, Node);
-				for (auto&& Element : Node->GetDefaultComponents())
+				Graph->Nodes.Add(NodeGuid, Pending.Node);
+
+				LocationInterface->SetNodeLocation(NodeGuid, Pending.Location, false);
+
+				for (auto&& Element : Pending.Node->GetDefaultComponents())
 				{
 					Graph->NodeComponents.FindOrAdd(Element->GetClass()).Components.Add(NodeGuid, DuplicateObject(Element, Graph));
 				}
-				Node->OnAddedToGraph(Graph, NodeGuid);
+
+				Pending.Node->OnAddedToGraph(Graph, NodeGuid);
 				Event.Nodes.Add(NodeGuid);
 			}
 

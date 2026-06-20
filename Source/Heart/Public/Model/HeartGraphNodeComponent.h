@@ -5,8 +5,6 @@
 #include "HeartGraphComponentBase.h"
 #include "HeartGraphNodeComponent.generated.h"
 
-class UHeartGraph;
-
 /**
  *
  */
@@ -14,12 +12,6 @@ UCLASS(Abstract, BlueprintType, Blueprintable, EditInlineNew)
 class HEART_API UHeartGraphNodeComponent : public UHeartGraphComponentBase
 {
 	GENERATED_BODY()
-
-	friend class UHeartGraph;
-
-public:
-	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNodeComponent")
-	UHeartGraph* GetGraph() const;
 };
 
 

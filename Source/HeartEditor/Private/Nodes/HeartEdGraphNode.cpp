@@ -117,8 +117,6 @@ void UHeartEdGraphNode::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 
 			auto&& DuplicatedNode = DuplicateObject(HeartGraphNode, HeartGraphNode->GetOuter());
 			DuplicatedNode->Guid = FHeartNodeGuid::New();
-			DuplicatedNode->Location = FVector2D(NodePosX, NodePosY);
-
 
 			// If the Graph Node's Object is owned within the graph, we should make a copy of it.
 			if (HeartGraphNode->NodeObject->GetOuter() == HeartGraphNode ||
@@ -132,8 +130,12 @@ void UHeartEdGraphNode::PostDuplicate(const EDuplicateMode::Type DuplicateMode)
 				DuplicatedNode->NodeObject = HeartGraphNode->NodeObject;
 			}
 
-
+			// @todo replace this with node data export/import
+			PRAGMA_DISABLE_DEPRECATION_WARNINGS
+			DuplicatedNode->Location = FVector2D(NodePosX, NodePosY);
 			HeartGraphNode->GetGraph()->AddNode(DuplicatedNode);
+			PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
 			HeartGraphNode = DuplicatedNode;
 		}
 	}

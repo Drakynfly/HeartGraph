@@ -109,6 +109,8 @@ class HEART_API UHeartGraphNode : public UObject, public IHeartGraphNodeInterfac
 {
 	GENERATED_BODY()
 
+	friend class UHeart2DLocationComponent; // @Todo temp, until event system is added
+	friend class UHeart3DLocationComponent; // @Todo temp, until event system is added
 	friend class UHeartEdGraphNode;
 	friend class Heart::API::FNodeCreator;
 	friend class Heart::API::FPinEdit;
@@ -198,8 +200,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Heart|GraphNode")
 	FHeartNodeGuid GetGuid() const { return Guid; }
 
+	UE_DEPRECATED(5.7, "Location is now managed by the Node Location Interface on the Graph")
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Heart|GraphNode")
-	FVector2D GetLocation() const { return Location; }
+	FVector2D GetLocation() const
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		return Location;
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+	}
 
 	TConstStructView<FHeartGraphPinDesc> ViewPin(const FHeartPinGuid& Pin) const;
 
@@ -252,6 +260,7 @@ public:
 	void SetGuid_Editor(FGuid InGuid);
 #endif
 
+	UE_DEPRECATED(5.7, "Location is now managed by the Node Location Interface on the Graph")
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")
 	void SetLocation(const FVector2D& NewLocation);
 
@@ -313,6 +322,8 @@ protected:
 
 	FOnPinConnectionsChanged_Native OnPinConnectionsChanged_Native;
 	FOnGraphNodePinChanged_Native OnNodePinsChanged_Native;
+
+	// @todo migrate event
 	FOnGraphNodeLocationChanged_Native OnNodeLocationChanged_Native;
 
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
@@ -321,6 +332,7 @@ protected:
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnGraphNodePinChanged OnNodePinsChanged;
 
+	// @todo migrate event
 	UPROPERTY(BlueprintAssignable, Transient, Category = "Events")
 	FOnGraphNodeLocationChanged OnNodeLocationChanged;
 
@@ -332,6 +344,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Category = "GraphNode")
 	FHeartNodeGuid Guid;
 
+	UE_DEPRECATED(5.7, "Location is now managed by the Node Location Interface on the Graph")
 	UPROPERTY(BlueprintReadOnly, Category = "GraphNode")
 	FVector2D Location;
 

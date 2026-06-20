@@ -3,7 +3,6 @@
 #include "Actions/HeartCanvasNodeMoveDragDropOperation.h"
 
 #include "Model/HeartGraph.h"
-#include "Model/HeartGraphNode.h"
 
 #include "UMG/HeartGraphCanvas.h"
 #include "UMG/HeartGraphCanvasNode.h"

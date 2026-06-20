@@ -235,9 +235,11 @@ void UHeartGraphNode::SetGuid_Editor(const FGuid InGuid)
 
 void UHeartGraphNode::SetLocation(const FVector2D& NewLocation)
 {
+	PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	Location = NewLocation;
 	OnNodeLocationChanged_Native.Broadcast(Guid, Location);
 	OnNodeLocationChanged.Broadcast(this, Location);
+	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
 bool UHeartGraphNode::CanUserAddInput_Implementation() const

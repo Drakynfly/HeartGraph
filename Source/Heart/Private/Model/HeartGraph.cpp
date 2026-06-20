@@ -2,14 +2,13 @@
 
 #include "Model/HeartGraph.h"
 #include "Engine/World.h"
+#include "Location/HeartNodeLocationComponentBase.h"
 #include "Model/HeartGraphExtension.h"
 #include "Model/HeartGraphNode.h"
 #include "Model/HeartNodeEdit.h"
 #include "ModelView/HeartGraphSchema.h"
 
 #include "UObject/ObjectSaveContext.h"
-
-#include "Model/HeartGraphNode3D.h" // @todo temp, while refactoring node location logic
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraph)
 
@@ -202,16 +201,21 @@ FVector2D UHeartGraph::GetNodeLocation(const FHeartNodeGuid& Node) const
 {
 	if (const UHeartGraphNode* GraphNode = GetNode(Node))
 	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		return GraphNode->GetLocation();
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	}
+
 	return FVector2D::ZeroVector;
 }
 
-void UHeartGraph::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, bool InProgressMove)
+void UHeartGraph::SetNodeLocation(const FHeartNodeGuid& Node, const FVector2D& Location, const bool InProgressMove)
 {
 	if (UHeartGraphNode* GraphNode = GetNode(Node))
 	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		GraphNode->SetLocation(Location);
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	}
 }
 
@@ -219,11 +223,9 @@ FVector UHeartGraph::GetNodeLocation3D(const FHeartNodeGuid& Node) const
 {
 	if (UHeartGraphNode* GraphNode = GetNode(Node))
 	{
-		if (auto&& GraphNode3D = Cast<UHeartGraphNode3D>(GraphNode))
-		{
-			return GraphNode3D->GetLocation3D();
-		}
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
 		return FVector(GraphNode->GetLocation(), 0.0);
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	}
 	return FVector::ZeroVector;
 }
@@ -232,14 +234,9 @@ void UHeartGraph::SetNodeLocation3D(const FHeartNodeGuid& Node, const FVector& L
 {
 	if (UHeartGraphNode* GraphNode = GetNode(Node))
 	{
-		if (auto&& GraphNode3D = Cast<UHeartGraphNode3D>(GraphNode))
-		{
-			GraphNode3D->SetLocation3D(Location);
-		}
-		else
-		{
-			GraphNode->SetLocation(FVector2D(Location));
-		}
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		GraphNode->SetLocation(FVector2D(Location));
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	}
 }
 
@@ -389,6 +386,20 @@ const UHeartGraphSchema* UHeartGraph::GetSchemaTyped_K2(TSubclassOf<UHeartGraphS
 	return GetSchema();
 }
 
+IHeartNodeLocationInterface* UHeartGraph::GetNodeLocationInterface()
+{
+	if (NodeLocationComponent)
+	{
+		return NodeLocationComponent;
+	}
+	return this;
+}
+
+const IHeartNodeLocationInterface* UHeartGraph::GetNodeLocationInterface() const
+{
+	return const_cast<ThisClass*>(this)->GetNodeLocationInterface();
+}
+
 UHeartGraphExtension* UHeartGraph::GetExtensionByGuid(const FHeartExtensionGuid ExtensionGuid,
 													  TSubclassOf<UHeartGraphExtension>) const
 {
@@ -521,7 +532,13 @@ UHeartGraphNode* UHeartGraph::CreateNode_Instanced(const TSubclassOf<UHeartGraph
 		return nullptr;
 	}
 
-	return Heart::API::FNodeCreator::CreateNode_Instanced(this, GraphNodeClass, NodeObjectClass, Location);
+	UHeartGraphNode* NewNode = Heart::API::FNodeCreator::CreateNode_Instanced(this, GraphNodeClass, NodeObjectClass);
+
+	Heart::API::FNodeEdit::AddNode(*this, NewNode);
+
+	NodeLocationComponent->SetNodeLocation(NewNode->GetGuid(), Location, false);
+
+	return NewNode;
 }
 
 UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraphNode> GraphNodeClass,
@@ -533,12 +550,28 @@ UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraph
 		return nullptr;
 	}
 
-	return Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject, Location);
+	UHeartGraphNode* NewNode = Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject);
+
+	Heart::API::FNodeEdit::AddNode(*this, NewNode);
+
+	NodeLocationComponent->SetNodeLocation(NewNode->GetGuid(), Location, false);
+
+	return NewNode;
 }
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
 	Heart::API::FNodeEdit::AddNode(*this, Node);
+
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	if (Node->GetLocation() != FVector2D::ZeroVector)
+	{
+		if (NodeLocationComponent)
+		{
+			NodeLocationComponent->SetNodeLocation(Node->GetGuid(), Node->GetLocation(), false);
+		}
+	}
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
 bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)

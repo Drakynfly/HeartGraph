@@ -395,7 +395,10 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 
 		if (UHeartGraphNode* NewNode = Flakes::CreateObject<UHeartGraphNode, Flakes::NetBinary::Type>(NodeData.Flake, SourceGraph))
 		{
+			// @todo replace this with node data export/import
+			PRAGMA_DISABLE_DEPRECATION_WARNINGS
 			SourceGraph->AddNode(NewNode);
+			PRAGMA_ENABLE_DEPRECATION_WARNINGS
 			OnNodeSourceEdited.Broadcast(NewNode, EventType);
 		}
 		return;
@@ -420,7 +423,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 		else
 		{
 			const FVector2D Location = Flakes::CreateStruct<Flakes::NetBinary::Type, FVector2D>(NodeData.Flake);
-			Interface3D->SetNodeLocation(ExistingNode->GetGuid(), Location, false);
+			LocationInterface->SetNodeLocation(ExistingNode->GetGuid(), Location, false);
 		}
 
 		OnNodeSourceEdited.Broadcast(ExistingNode, EventType);
@@ -1206,7 +1209,11 @@ void UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, con
 		{
 			// Prevent OnNodeAddedOrRemoved_Proxy from pinging this back to the server
 			TGuardValue<bool> bRecursionGuard(RecursionGuards[NodeAdd], true);
+
+			// @todo replace this with node data export/import
+			PRAGMA_DISABLE_DEPRECATION_WARNINGS
 			ProxyGraph->AddNode(NewNode);
+			PRAGMA_ENABLE_DEPRECATION_WARNINGS
 		}
 
 		OnNodeProxyUpdated.Broadcast(NewNode, EventType);

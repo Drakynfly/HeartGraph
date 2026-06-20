@@ -3,7 +3,6 @@
 #include "Location/HeartNodeLocationInterface.h"
 #include "Model/HeartGraph.h"
 #include "Model/HeartGraphNode.h"
-#include "Model/HeartGraphNode3D.h"
 
 FVector2D UHeartNodeLocationAccessorLibrary::GetNodeLocation_Pointer(
 	const TScriptInterface<IHeartNodeLocationInterface>& Accessor, UHeartGraphNode* Node)
@@ -18,13 +17,13 @@ void UHeartNodeLocationAccessorLibrary::SetNodeLocation_Pointer(
 }
 
 FVector UHeartNodeLocationAccessorLibrary::GetNodeLocation3D_Pointer(
-	const TScriptInterface<IHeartGraphInterface3D>& Accessor, UHeartGraphNode3D* Node)
+	const TScriptInterface<IHeartGraphInterface3D>& Accessor, UHeartGraphNode* Node)
 {
 	return Accessor->GetNodeLocation3D(Node->GetGuid());
 }
 
 void UHeartNodeLocationAccessorLibrary::SetNodeLocation3D_Pointer(
-	const TScriptInterface<IHeartGraphInterface3D>& Accessor, UHeartGraphNode3D* Node, const FVector& Location, const bool InProgressMove)
+	const TScriptInterface<IHeartGraphInterface3D>& Accessor, UHeartGraphNode* Node, const FVector& Location, const bool InProgressMove)
 {
 	Accessor->SetNodeLocation3D(Node->GetGuid(), Location, InProgressMove);
 }
