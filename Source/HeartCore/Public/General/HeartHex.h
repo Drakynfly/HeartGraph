@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include "Containers/StaticArray.h"
+
+#include "Math/Vector2D.h"
+
 #include "Misc/EnumRange.h"
 
 namespace Heart::Hex

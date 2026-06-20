@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace Type
+namespace Heart::Utils
 {
 	template <typename TOut, typename TIn>
 	[[nodiscard]] static TOut Cast(TIn&& In)

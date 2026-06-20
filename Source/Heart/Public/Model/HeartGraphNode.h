@@ -173,7 +173,13 @@ public:
 	template <typename TNodeClass>
 	TNodeClass* GetNodeObject() const
 	{
-		return Cast<TNodeClass>(NodeObject);
+		return CastChecked<TNodeClass>(NodeObject, ECastCheckedType::NullAllowed);
+	}
+
+	template <typename TNodeClass>
+	TNodeClass* GetNodeObjectChecked() const
+	{
+		return CastChecked<TNodeClass>(NodeObject, ECastCheckedType::NullChecked);
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|GraphNode")

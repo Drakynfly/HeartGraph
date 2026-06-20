@@ -101,7 +101,7 @@ public:
 		return NullOpt;
 	}
 
-	const UScriptStruct* GetScriptStruct() const { return Details.GetScriptStruct(); }
+	UE_REWRITE const UScriptStruct* GetScriptStruct() const { return Details.GetScriptStruct(); }
 
 	// Event that was invalid, and not handled
 	static const FHeartEvent Invalid;

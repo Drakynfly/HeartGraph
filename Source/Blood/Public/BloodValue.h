@@ -3,7 +3,7 @@
 #pragma once
 
 #include "BloodData.h"
-#include "PropertyBag.h"
+#include "StructUtils/PropertyBag.h"
 
 #include "BloodValue.generated.h"
 
