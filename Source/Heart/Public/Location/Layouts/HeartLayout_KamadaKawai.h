@@ -14,7 +14,7 @@ class HEART_API UHeartLayout_KamadaKawai : public UHeartLayoutHelper
 	GENERATED_BODY()
 
 public:
-	virtual bool Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface, const TArray<FHeartNodeGuid>& Nodes) override;
+	virtual bool Layout(TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface, const TArray<FHeartNodeGuid>& Nodes) override;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Config")

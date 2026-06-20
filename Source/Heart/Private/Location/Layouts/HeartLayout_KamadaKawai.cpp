@@ -6,7 +6,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayout_KamadaKawai)
 
-bool UHeartLayout_KamadaKawai::Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface, const TArray<FHeartNodeGuid>& Nodes)
+bool UHeartLayout_KamadaKawai::Layout(TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface, const TArray<FHeartNodeGuid>& Nodes)
 {
 	const FHeartGraphAdjacencyList GraphAdjacencyList = GetGraphAdjacencyList(Graph, Nodes);
 

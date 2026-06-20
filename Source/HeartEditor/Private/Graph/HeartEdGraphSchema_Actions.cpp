@@ -54,7 +54,7 @@ UHeartEdGraphNode* FHeartGraphSchemaAction_NewNode::CreateNode(UEdGraph* ParentG
 	UHeartGraphNode* NewGraphNode;
 	{
 		// Add runtime node to graph, this will trigger the EdGraphNode to be created by in UHeartEdGraph::CreateEdGraphNode
-		Heart::API::FNodeEdit NodeEdit(*HeartGraph);
+		Heart::API::FNodeEdit NodeEdit(HeartGraph);
 		NodeEdit.Create(Archetype, Location, nullptr);
 		NewGraphNode = NodeEdit.Get();
 	}

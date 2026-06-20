@@ -16,7 +16,7 @@ bool UHeartAction_AutoLayout::CanExecute(const UObject* Target) const
 	return IsValid(Target) && Target->Implements<UHeartGraphInterface>();
 }
 
-FHeartEvent UHeartAction_AutoLayout::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_AutoLayout::ExecuteOnGraph(TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation,
 													UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	UHeartLayoutHelper* LayoutHelper = Cast<UHeartLayoutHelper>(ContextObject);
@@ -40,9 +40,9 @@ FHeartEvent UHeartAction_AutoLayout::ExecuteOnGraph(UHeartGraph& Graph, const FH
 	{
 		TMap<FHeartNodeGuid, FVector2D> OriginalLocations;
 
-		IHeartNodeLocationInterface* LocationInterface = Graph.GetNodeLocationInterface();
+		IHeartNodeLocationInterface* LocationInterface = Graph->GetNodeLocationInterface();
 
-		Graph.ForEachNode(
+		Graph->ForEachNode(
 			[&](const TPair<FHeartNodeGuid, UHeartGraphNode*>& Pair)
 			{
 				OriginalLocations.Add(Pair.Key, LocationInterface->GetNodeLocation(Pair.Key));
@@ -52,7 +52,7 @@ FHeartEvent UHeartAction_AutoLayout::ExecuteOnGraph(UHeartGraph& Graph, const FH
 		UndoData.Add(OriginalLocationsStorage, OriginalLocations);
 	}
 
-	LayoutHelper->Layout(Graph, *Graph.GetNodeLocationInterface());
+	LayoutHelper->Layout(Graph, *Graph->GetNodeLocationInterface());
 	return FHeartEvent::Handled;
 }
 

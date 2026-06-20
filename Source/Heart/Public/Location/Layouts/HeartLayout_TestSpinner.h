@@ -14,5 +14,5 @@ class HEART_API UHeartLayout_TestSpinner : public UHeartLayoutHelper
 	GENERATED_BODY()
 
 public:
-	virtual bool Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface, const TArray<FHeartNodeGuid>& Nodes, float DeltaTime) override;
+	virtual bool Layout(TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface, const TArray<FHeartNodeGuid>& Nodes, float DeltaTime) override;
 };

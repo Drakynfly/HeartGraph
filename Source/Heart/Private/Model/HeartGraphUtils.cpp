@@ -117,12 +117,12 @@ namespace Heart::Utils
 			});
 	}
 
-	TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph& Graph, const FHeartNodeGuid& Node, const EHeartPinDirection Direction)
+	TArray<FHeartNodeGuid> GetConnectedNodes(const TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const EHeartPinDirection Direction)
 	{
 		if (!Node.IsValid()) return {};
 
 		TSet<FHeartNodeGuid> UniqueConnections;
-		const UHeartGraphNode* GraphNode = Graph.GetNode(Node);
+		const UHeartGraphNode* GraphNode = Graph->GetNode(Node);
 		if (!IsValid(GraphNode))
 		{
 			return {};
@@ -250,10 +250,10 @@ TArray<FHeartPinGuid> UHeartGraphUtils::FindPinsByTag(const UHeartGraphNode* Nod
 	return Heart::Utils::FindPinsByTag(Node, Tag).Get();
 }
 
-TArray<FHeartNodeGuid> UHeartGraphUtils::GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node,
+TArray<FHeartNodeGuid> UHeartGraphUtils::GetConnectedNodes(UHeartGraph* Graph, const FHeartNodeGuid& Node,
 	const EHeartPinDirection Direction)
 {
-	return Heart::Utils::GetConnectedNodes(*Graph, Node, Direction);
+	return Heart::Utils::GetConnectedNodes(Graph, Node, Direction);
 }
 
 bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const UHeartGraphNode* B)
@@ -267,7 +267,7 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 		bool CheckForLoop(const UHeartGraphNode* StartNode, const UHeartGraphNode* EndNode)
 		{
 			VisitedNodes.Add(EndNode->GetGuid());
-			return TraverseInputNodesToRoot(*StartNode->GetGraph(), StartNode->GetGuid());
+			return TraverseInputNodesToRoot(StartNode->GetGraph(), StartNode->GetGuid());
 		}
 
 	private:
@@ -276,7 +276,7 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 		 * @param	Node	The node to start traversal at
 		 * @return true if we reached a root node (i.e. a node with no input pins), false if we encounter a node we have already seen
 		 */
-		bool TraverseInputNodesToRoot(const UHeartGraph& Graph, const FHeartNodeGuid& Node)
+		bool TraverseInputNodesToRoot(const TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node)
 		{
 			VisitedNodes.Add(Node);
 

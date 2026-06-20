@@ -38,19 +38,19 @@ FHeartEvent UHeartAction_DisconnectPins::ExecuteOnPin(const TScriptInterface<IHe
 	if (Heart::Action::History::IsUndoable())
 	{
 		FHeartDisconnectPinsUndoData Data;
-		Heart::API::FPinEdit(*Graph).CreateMementos(PinRef, Data.Mementos).DisconnectAll(PinRef);
+		Heart::API::FPinEdit(Graph).CreateMementos(PinRef, Data.Mementos).DisconnectAll(PinRef);
 		UndoData.Add(DisconnectPinsStorage, Data);
 	}
 	else
 	{
 		// Quick path when not undoable; don't bother caching mementos
-		Heart::API::FPinEdit(*Graph).DisconnectAll(PinRef);
+		Heart::API::FPinEdit(Graph).DisconnectAll(PinRef);
 	}
 
 	return FHeartEvent::Handled;
 }
 
-FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_DisconnectPins::ExecuteOnNode(const TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
 													   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::IsUndoable())
@@ -78,7 +78,7 @@ bool UHeartAction_DisconnectPins::Undo(UObject* Target, const FBloodContainer& U
 		return false;
 	}
 
-	Heart::API::FPinEdit(*Graph).RestoreMementos(Data.Mementos);
+	Heart::API::FPinEdit(Graph).RestoreMementos(Data.Mementos);
 
 	return true;
 }

@@ -7,21 +7,21 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayoutHelper)
 
-bool UHeartLayoutHelper::Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface)
+bool UHeartLayoutHelper::Layout(const TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface)
 {
 	TArray<FHeartNodeGuid> AllNodes;
-	Graph.GetNodeGuids(AllNodes);
+	Graph->GetNodeGuids(AllNodes);
 	return Layout(Graph, Interface, AllNodes);
 }
 
-bool UHeartLayoutHelper::Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface, const float DeltaTime)
+bool UHeartLayoutHelper::Layout(const TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface, const float DeltaTime)
 {
 	TArray<FHeartNodeGuid> AllNodes;
-	Graph.GetNodeGuids(AllNodes);
+	Graph->GetNodeGuids(AllNodes);
 	return Layout(Graph, Interface, AllNodes, DeltaTime);
 }
 
-FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const UHeartGraph& Graph, const TArray<FHeartNodeGuid>& Nodes)
+FHeartGraphAdjacencyList UHeartLayoutHelper::GetGraphAdjacencyList(const TNotNull<UHeartGraph*> Graph, const TArray<FHeartNodeGuid>& Nodes)
 {
 	FHeartGraphAdjacencyList Result;
 
@@ -62,8 +62,8 @@ void UHeartLayoutHelper::ApplyNewPositions(const TScriptInterface<IHeartNodeLoca
     Interface->NotifyNodeLocationsChanged(Touched, TempInProgressToPreventNetReplication);
 }
 
-bool UHeartLayoutHelper_BlueprintBase::Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface,
+bool UHeartLayoutHelper_BlueprintBase::Layout(const TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface,
 											  const TArray<FHeartNodeGuid>& Nodes)
 {
-	return Layout_BP(&Graph, Cast<UObject>(&Interface), Nodes);
+	return Layout_BP(Graph, Cast<UObject>(&Interface), Nodes);
 }

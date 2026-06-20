@@ -6,7 +6,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayout_TestSpinner)
 
-bool UHeartLayout_TestSpinner::Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface,
+bool UHeartLayout_TestSpinner::Layout(TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface,
 									  const TArray<FHeartNodeGuid>& Nodes, const float DeltaTime)
 {
 	TArray<FVector2D> Positions;

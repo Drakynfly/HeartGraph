@@ -38,7 +38,7 @@ class HEART_API UHeartAction_DisconnectPins : public UHeartGraphAction
 protected:
 	virtual bool CanExecute(const UObject* Object) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>&, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual bool CanUndo(const UObject* Target) const override { return true; }
 	virtual bool Undo(UObject* Target, const FBloodContainer& UndoData) const override;
 };

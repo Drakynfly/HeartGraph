@@ -24,8 +24,8 @@ protected:
 	virtual FHeartEvent Execute(const Heart::Action::FArguments& Arguments) const override final;
 	//~ UHeartActionBase
 
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+	virtual FHeartEvent ExecuteOnGraph(TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
+	virtual FHeartEvent ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const;
 };
 
@@ -44,8 +44,8 @@ protected:
 	//~ UHeartActionBase
 
 	//~ UHeartGraphAction
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnGraph(TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	//~ UHeartGraphAction
 

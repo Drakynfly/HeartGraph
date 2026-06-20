@@ -30,8 +30,8 @@ class UHeartEditorDebugAction : public UHeartGraphAction
 protected:
 	virtual FText GetDescription(const UObject* Target) const override;
 	virtual bool CanExecute(const UObject* Target) const override;
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnGraph(TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 };
 

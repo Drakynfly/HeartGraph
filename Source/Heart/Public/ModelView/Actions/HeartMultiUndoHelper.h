@@ -9,6 +9,6 @@ class UHeartGraph;
 // Utilities for creating a grouped set of actions that get undone/redone together
 namespace Heart::Action::History::MultiUndo
 {
-	HEART_API void Start(UHeartGraph& Graph);
-	HEART_API void End(UHeartGraph& Graph);
+	HEART_API void Start(TNotNull<UHeartGraph*> Graph);
+	HEART_API void End(TNotNull<UHeartGraph*> Graph);
 }

@@ -38,15 +38,15 @@ bool UHeartEditorDebugAction::CanExecute(const UObject* Target) const
 	return IsValid(Target);
 }
 
-FHeartEvent UHeartEditorDebugAction::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartEditorDebugAction::ExecuteOnGraph(const TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation,
 													UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),
-		FString::Printf(TEXT("Executing Debug Action on graph '%s'"), *Graph.GetName()));
+		FString::Printf(TEXT("Executing Debug Action on graph '%s'"), *Graph->GetName()));
 	return FHeartEvent::Handled;
 }
 
-FHeartEvent UHeartEditorDebugAction::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartEditorDebugAction::ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
 												   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	GEngine->AddOnScreenDebugMessage(uint64(this), 10.f, Heart::EditorShared::HeartColor.ToFColor(true),

@@ -436,7 +436,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 		FHeartGraphConnectionEvent_Net_PinElement PinElement;
 		Flakes::WriteStruct<Flakes::NetBinary::Type>(PinElement, NodeData.Flake, nullptr);
 
-		Heart::API::FPinEdit Edit(*SourceGraph);
+		Heart::API::FPinEdit Edit(SourceGraph);
 
 		for (auto&& Element : PinElement.PinConnections)
 		{
@@ -1162,7 +1162,7 @@ void UHeartGraphNetProxy::ExecuteUndo_Client()
 		return;
 	}
 
-	Heart::Action::History::TryUndo(*SourceGraph);
+	Heart::Action::History::TryUndo(SourceGraph);
 }
 
 void UHeartGraphNetProxy::ExecuteRedo_Client()
@@ -1179,7 +1179,7 @@ void UHeartGraphNetProxy::ExecuteRedo_Client()
 		return;
 	}
 
-	Heart::Action::History::TryRedo(*SourceGraph);
+	Heart::Action::History::TryRedo(SourceGraph);
 }
 
 void UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, const FGameplayTag EventType)

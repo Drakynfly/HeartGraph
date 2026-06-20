@@ -9,6 +9,7 @@
 #include "ModelView/HeartGraphSchema.h"
 
 #include "UObject/ObjectSaveContext.h"
+#include "UObject/UObjectThreadContext.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartGraph)
 
@@ -534,7 +535,7 @@ UHeartGraphNode* UHeartGraph::CreateNode_Instanced(const TSubclassOf<UHeartGraph
 
 	UHeartGraphNode* NewNode = Heart::API::FNodeCreator::CreateNode_Instanced(this, GraphNodeClass, NodeObjectClass);
 
-	Heart::API::FNodeEdit::AddNode(*this, NewNode);
+	Heart::API::FNodeEdit::AddNode(this, NewNode);
 
 	NodeLocationComponent->SetNodeLocation(NewNode->GetGuid(), Location, false);
 
@@ -552,7 +553,7 @@ UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraph
 
 	UHeartGraphNode* NewNode = Heart::API::FNodeCreator::CreateNode_Reference(this, GraphNodeClass, NodeObject);
 
-	Heart::API::FNodeEdit::AddNode(*this, NewNode);
+	Heart::API::FNodeEdit::AddNode(this, NewNode);
 
 	NodeLocationComponent->SetNodeLocation(NewNode->GetGuid(), Location, false);
 
@@ -561,7 +562,7 @@ UHeartGraphNode* UHeartGraph::CreateNode_Reference(const TSubclassOf<UHeartGraph
 
 void UHeartGraph::AddNode(UHeartGraphNode* Node)
 {
-	Heart::API::FNodeEdit::AddNode(*this, Node);
+	Heart::API::FNodeEdit::AddNode(this, Node);
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	if (Node->GetLocation() != FVector2D::ZeroVector)
@@ -576,7 +577,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 bool UHeartGraph::RemoveNode(const FHeartNodeGuid& NodeGuid)
 {
-	return Heart::API::FNodeEdit::DeleteNode(*this, NodeGuid);
+	return Heart::API::FNodeEdit::DeleteNode(this, NodeGuid);
 }
 
 UHeartGraphNodeComponent* UHeartGraph::GetNodeComponent(const FHeartNodeGuid& Node, const TSubclassOf<UHeartGraphNodeComponent> Class) const
@@ -778,7 +779,7 @@ FHeartPinGuid UHeartGraph::FindNodePin(const FHeartNodeGuid NodeGuid, FName PinN
 
 Heart::API::FPinEdit UHeartGraph::EditConnections()
 {
-	return Heart::API::FPinEdit(*this);
+	return Heart::API::FPinEdit(this);
 }
 
 bool UHeartGraph::ConnectPins(const FHeartGraphPinReference& PinA, const FHeartGraphPinReference& PinB)

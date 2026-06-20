@@ -15,8 +15,8 @@ class HEART_API UHeartUndoAction : public UHeartGraphAction
 
 protected:
 	virtual bool CanExecute(const UObject* Target) const override { return true; }
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnGraph(TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 };
 
@@ -30,7 +30,7 @@ class HEART_API UHeartRedoAction : public UHeartGraphAction
 
 protected:
 	virtual bool CanExecute(const UObject* Target) const override { return true; }
-	virtual FHeartEvent ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
-	virtual FHeartEvent ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnGraph(TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
+	virtual FHeartEvent ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 	virtual FHeartEvent ExecuteOnPin(const TScriptInterface<IHeartGraphPinInterface>& Pin, const FHeartInputActivation& Activation, UObject* ContextObject, FBloodContainer& UndoData) const override;
 };

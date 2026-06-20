@@ -96,7 +96,7 @@ void UHeartGraphCanvas::NativeTick(const FGeometry& MyGeometry, const float InDe
 	IHeartNodeLocationInterface* LocationInterface = Graph->GetNodeLocationInterface();
 	if (RunLayoutOnTick && IsValid(Layout) && LocationInterface)
 	{
-		Layout->Layout(*Graph, *LocationInterface, InDeltaTime);
+		Layout->Layout(Graph, *LocationInterface, InDeltaTime);
 	}
 
 	if (NeedsToUpdatePositions)

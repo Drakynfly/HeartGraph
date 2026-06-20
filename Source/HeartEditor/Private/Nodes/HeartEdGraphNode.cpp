@@ -224,7 +224,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	TArray<FHeartGraphPinDesc> LinkedPins;
 
-	Heart::API::FPinEdit ConnectionEditor(*HeartGraph);
+	Heart::API::FPinEdit ConnectionEditor(HeartGraph);
 
 	// Resolve all linked pins
 	if (const auto PinConnections = HeartGraphNode->ViewConnections(HeartPin);

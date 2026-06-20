@@ -176,12 +176,12 @@ namespace Heart::Action::History
 		return FNativeExec::Execute(*ActionObject, ArgsCopy);
 	}
 
-	bool TryUndo(const UHeartGraph& Graph)
+	bool TryUndo(const TNotNull<UHeartGraph*> Graph)
 	{
-		UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
+		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph.GetName())
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
 			return false;
 		}
 
@@ -199,12 +199,12 @@ namespace Heart::Action::History
 		return UndoRecord(RecordView.Get(), History);
 	}
 
-	FHeartEvent TryRedo(const UHeartGraph& Graph)
+	FHeartEvent TryRedo(const TNotNull<UHeartGraph*> Graph)
 	{
-		UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
+		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph.GetName())
+			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph->GetName())
 			return FHeartEvent::Failed;
 		}
 

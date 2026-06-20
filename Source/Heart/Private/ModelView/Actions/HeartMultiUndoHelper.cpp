@@ -8,14 +8,14 @@
 
 namespace Heart::Action::History::MultiUndo
 {
-	void Start(UHeartGraph& Graph)
+	void Start(const TNotNull<UHeartGraph*> Graph)
 	{
-		if (UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
+		if (UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 			IsValid(History))
 		{
 			FHeartActionRecord Record;
 			Record.Action = UHeartAction_MultiUndoStart::StaticClass();
-			Record.Arguments.Target = &Graph;
+			Record.Arguments.Target = Graph;
 			History->AddRecord(Record);
 		}
 		else
@@ -24,14 +24,14 @@ namespace Heart::Action::History::MultiUndo
 		}
 	}
 
-	void End(UHeartGraph& Graph)
+	void End(TNotNull<UHeartGraph*> Graph)
 	{
-		if (UHeartActionHistory* History = Graph.GetExtension<UHeartActionHistory>();
+		if (UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 			IsValid(History))
 		{
 			FHeartActionRecord Record;
 			Record.Action = UHeartAction_MultiUndoEnd::StaticClass();
-			Record.Arguments.Target = &Graph;
+			Record.Arguments.Target = Graph;
 			History->AddRecord(Record);
 		}
 		else

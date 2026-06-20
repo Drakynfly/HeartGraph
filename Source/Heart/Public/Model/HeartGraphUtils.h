@@ -40,7 +40,7 @@ namespace Heart::Utils
 
 	[[nodiscard]] HEART_API Query::FPinQueryResult FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
 
-	[[nodiscard]] HEART_API TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph& Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
+	[[nodiscard]] HEART_API TArray<FHeartNodeGuid> GetConnectedNodes(const TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
 
 	[[nodiscard]] HEART_API TConstStructView<FHeartGraphPinDesc> ResolvePinReference(const UHeartGraph* Graph, const FHeartGraphPinReference& Reference);
 }
@@ -96,7 +96,7 @@ public:
 	static TArray<FHeartPinGuid> FindPinsByTag(const UHeartGraphNode* Node, FHeartGraphPinTag Tag);
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|Graph")
-	static TArray<FHeartNodeGuid> GetConnectedNodes(const UHeartGraph* Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
+	static TArray<FHeartNodeGuid> GetConnectedNodes(UHeartGraph* Graph, const FHeartNodeGuid& Node, EHeartPinDirection Direction = EHeartPinDirection::Bidirectional);
 
 
 	/**			NODE MISC UTILS			*/

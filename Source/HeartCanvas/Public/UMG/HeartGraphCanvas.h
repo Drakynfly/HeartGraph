@@ -69,7 +69,7 @@ struct FHeartDragIntoViewSettings
 	bool InterpDragIntoView = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))
-	float DragMultiplier = 0.1;
+	float DragMultiplier = 0.1f;
 
 	// Drag-into-view input is clamped to this magnitude.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "HeartDragIntoViewSettings", meta = (EditCondition = "EnableDragIntoView"))

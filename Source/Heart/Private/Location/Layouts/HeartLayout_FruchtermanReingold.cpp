@@ -7,7 +7,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartLayout_FruchtermanReingold)
 
-bool UHeartLayout_FruchtermanReingold::Layout(UHeartGraph& Graph, IHeartNodeLocationInterface& Interface,
+bool UHeartLayout_FruchtermanReingold::Layout(TNotNull<UHeartGraph*> Graph, IHeartNodeLocationInterface& Interface,
 											  const TArray<FHeartNodeGuid>& Nodes, const float DeltaTime)
 {
 	TArray<FVector2D> Positions;

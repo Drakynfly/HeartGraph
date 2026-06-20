@@ -16,12 +16,12 @@ FText UHeartAction_MoveNodeProxy::GetDescription(const UObject* Target) const
 	return LOCTEXT("Description", "Move Node Helper");
 }
 
-FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(UHeartGraph& Graph, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(const TNotNull<UHeartGraph*> Graph, const FHeartInputActivation& Activation,
 													   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	checkfSlow(Activation.IsRedoAction(), TEXT("HeartAction_MoveNodeProxy should only be executed as a Redo!"))
 
-	IHeartNodeLocationInterface* NodeLocationInterface = Graph.GetNodeLocationInterface();
+	IHeartNodeLocationInterface* NodeLocationInterface = Graph->GetNodeLocationInterface();
 
 	auto&& LocationData = UndoData.Get<FHeartMoveNodeProxyUndoData>(LocationStorage);
 
@@ -33,7 +33,7 @@ FHeartEvent UHeartAction_MoveNodeProxy::ExecuteOnGraph(UHeartGraph& Graph, const
 		NodeLocationInterface->SetNodeLocation(NodeLocations.Key, NodeLocations.Value.New, false);
 	}
 
-	Graph.NotifyNodeLocationsChanged(Touched, false);
+	Graph->NotifyNodeLocationsChanged(Touched, false);
 
 	return FHeartEvent::Handled;
 }

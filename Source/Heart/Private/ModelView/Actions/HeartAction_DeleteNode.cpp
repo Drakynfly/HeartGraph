@@ -47,21 +47,21 @@ bool UHeartAction_DeleteNode::CanExecute(const UObject* Object) const
 	return false;
 }
 
-FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(UHeartGraph& Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
+FHeartEvent UHeartAction_DeleteNode::ExecuteOnNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node, const FHeartInputActivation& Activation,
 												   UObject* ContextObject, FBloodContainer& UndoData) const
 {
 	if (Heart::Action::History::IsUndoable())
 	{
 		// Cache undo data
 		FHeartDeleteNodeUndoData Data;
-		Data.DeletedNode = Graph.GetNode(Node);
+		Data.DeletedNode = Graph->GetNode(Node);
 
 		Heart::API::FPinEdit(Graph).CreateAllMementos(Node, Data.Mementos);
 
 		UndoData.Add(DeletedNodeStorage, Data);
 	}
 
-	Graph.RemoveNode(Node);
+	Graph->RemoveNode(Node);
 
 	return FHeartEvent::Handled;
 }
@@ -92,7 +92,7 @@ bool UHeartAction_DeleteNode::Undo(UObject* Target, const FBloodContainer& UndoD
 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	// Relink broken connections
-	Heart::API::FPinEdit(*Graph).RestoreMementos(Data.Mementos);
+	Heart::API::FPinEdit(Graph).RestoreMementos(Data.Mementos);
 
 	return true;
 }

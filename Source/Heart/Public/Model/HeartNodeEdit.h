@@ -37,7 +37,8 @@ namespace Heart::API
 	public:
 		UE_NONCOPYABLE(FNodeEdit)
 
-		FNodeEdit(IHeartGraphInterface* GraphInterface);
+		FNodeEdit(const TNotNull<UHeartGraph*> Graph)
+		  : Graph(Graph) {}
 
 		// Dtor runs any remaining pending edits.
 		~FNodeEdit();
@@ -45,10 +46,10 @@ namespace Heart::API
 		using FNewNodeId = int32;
 
 		// A non-batched add. If adding multiple nodes at once, create a FNodeEdit instance, and call CreateXXX() instead.
-		static bool AddNode(UHeartGraph& Graph, UHeartGraphNode* Node);
+		static bool AddNode(TNotNull<UHeartGraph*> Graph, UHeartGraphNode* Node);
 
 		// A non-batched delete. If removing multiple nodes at once, create a FNodeEdit instance, and call Delete() instead.
-		static bool DeleteNode(UHeartGraph& Graph, const FHeartNodeGuid& Node);
+		static bool DeleteNode(TNotNull<UHeartGraph*> Graph, const FHeartNodeGuid& Node);
 
 		/**
 		 * Queues a node to be created
@@ -124,11 +125,11 @@ namespace Heart::API
 		void HandlePending();
 
 		// The graph we are editing
-		TObjectPtr<UHeartGraph> Graph;
+		TNotNull<UHeartGraph*> Graph;
 
 		struct FPendingCreate
 		{
-			TObjectPtr<UHeartGraphNode> Node;
+			TNotNull<UHeartGraphNode*> Node;
 			FVector2D Location;
 		};
 		using FPendingDelete = FHeartNodeGuid;

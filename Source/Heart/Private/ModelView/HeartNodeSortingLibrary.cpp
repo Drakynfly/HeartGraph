@@ -147,7 +147,7 @@ TArray<FHeartNodeGuid> UHeartNodeSortingLibrary::FilterNodesByClass_Exclusive(co
 
 void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TScriptInterface<IHeartGraphInterface> Graph, const TArray<FHeartNodeGuid>& Nodes, const FNodeLooseToTreeArgs& Args, TArray<FHeartTree>& Trees)
 {
-	const UHeartGraph* HeartGraph = IHeartGraphInterface::Execute_GetHeartGraph(Graph.GetObject());
+	UHeartGraph* HeartGraph = IHeartGraphInterface::Execute_GetHeartGraph(Graph.GetObject());
 	if (IsValid(HeartGraph))
 	{
 		return;
@@ -164,7 +164,7 @@ void UHeartNodeSortingLibrary::SortLooseNodesIntoTrees(const TScriptInterface<IH
 			FHeartTreeNode OutTreeNode;
 			OutTreeNode.Node = Node->GetGuid();
 
-			const TArray<FHeartNodeGuid> OutputLinks = Heart::Utils::GetConnectedNodes(*HeartGraph, OutTreeNode.Node, InverseDirection);
+			const TArray<FHeartNodeGuid> OutputLinks = Heart::Utils::GetConnectedNodes(HeartGraph, OutTreeNode.Node, InverseDirection);
 
 			for (auto&& OutputLink : OutputLinks)
 			{
