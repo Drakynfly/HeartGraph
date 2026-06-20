@@ -234,8 +234,6 @@ void SHeartGraphNode_Vertical::UpdateGraphNode()
 	FGraphNodeMetaData TagMeta(TEXT("HeartGraphNode"));
 	PopulateMetaTag(&TagMeta);
 
-	ContentScale.Bind(this, &SGraphNode::GetContentScale);
-
 	const TSharedPtr<SVerticalBox> InnerVerticalBox = SNew(SVerticalBox)
 		+ SVerticalBox::Slot()
 			.HAlign(HAlign_Fill)

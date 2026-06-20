@@ -60,6 +60,5 @@ namespace Heart::AssetEditor
 		const TSharedPtr<FHeartGraphEditor> AssetEditor = HeartGraphAssetEditorPtr.Pin();
 		AssetEditor->RegisterTabSpawners(InTabManager.ToSharedRef());
 		AssetEditor->PushTabFactories(TabFactories);
-		FApplicationMode::RegisterTabFactories(InTabManager);
 	}
 }

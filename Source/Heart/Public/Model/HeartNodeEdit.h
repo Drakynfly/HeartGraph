@@ -32,11 +32,12 @@ namespace Heart::API
 	 * run in the dtor. This allows us to batch connection rewiring, and broadcast fewer events in a single frame.
 	 * Alternatively, FNodeEdit may be kept alive over several frames, and accumulate multiple edits to make in one shot.
 	 */
-	class HEART_API FNodeEdit : FNoncopyable
+	class HEART_API FNodeEdit
 	{
 	public:
-		FNodeEdit(UHeartGraph& Graph)
-			: Graph(&Graph) {}
+		UE_NONCOPYABLE(FNodeEdit)
+
+		FNodeEdit(IHeartGraphInterface* GraphInterface);
 
 		// Dtor runs any remaining pending edits.
 		~FNodeEdit();

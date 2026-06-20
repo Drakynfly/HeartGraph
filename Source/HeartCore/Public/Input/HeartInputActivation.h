@@ -128,7 +128,7 @@ struct HEARTCORE_API FHeartInputActivation
 		return EventStruct.GetScriptStruct() == FHeartActionIsRedo::StaticStruct();
 	}
 
-	const UScriptStruct* GetScriptStruct() const { return EventStruct.GetScriptStruct(); }
+	UE_REWRITE const UScriptStruct* GetScriptStruct() const { return EventStruct.GetScriptStruct(); }
 
 	friend FArchive& operator<<(FArchive& Ar, FHeartInputActivation& Activation)
 	{

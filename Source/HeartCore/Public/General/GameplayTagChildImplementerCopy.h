@@ -73,13 +73,21 @@ class TTypedTagStaticImplCopy
 		/*
 		LLM_SCOPE(ELLMTag::UI);
 		*/
-		UGameplayTagsManager::OnLastChanceToAddNativeTags().AddLambda([this]()
+		OnLastChanceToAddNativeTagsHandle = UGameplayTagsManager::CallOrRegister_OnAddNativeTagsDelegate(
+			FSimpleMulticastDelegate::FDelegate::CreateLambda([this]()
 			{
 				StaticImpl.RootTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagT::GetRootTagStr());
-			});
+			}));
 	}
+
+	~TTypedTagStaticImplCopy()
+	{
+		UGameplayTagsManager::UnregisterNativeTagDelegate(OnLastChanceToAddNativeTagsHandle);
+	}
+
 	TagT RootTag;
 	static TTypedTagStaticImplCopy StaticImpl;
+	FDelegateHandle OnLastChanceToAddNativeTagsHandle;
 };
 
 template <typename TagT>

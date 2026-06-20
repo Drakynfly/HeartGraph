@@ -41,14 +41,12 @@ namespace Heart::Containers
 			return Value;
 		}
 
-		friend bool operator==(const TCountedWeakPtr& Lhs, const TCountedWeakPtr& Rhs)
+		[[nodiscard]] UE_REWRITE bool UEOpEquals(const TCountedWeakPtr& Other) const
 		{
-			return Lhs.Obj == Rhs.Obj;
+			return Obj == Other.Obj;
 		}
 
-		friend bool operator!=(const TCountedWeakPtr& Lhs, const TCountedWeakPtr& Rhs) { return !(Lhs == Rhs); }
-
-		FORCEINLINE friend uint32 GetTypeHash(TCountedWeakPtr Value)
+		friend [[nodiscard]] UE_REWRITE uint32 GetTypeHash(const TCountedWeakPtr& Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
@@ -83,14 +81,12 @@ namespace Heart::Containers
 			return Count;
 		}
 
-		friend bool operator==(const TCountedPtr& Lhs, const TCountedPtr& Rhs)
+		[[nodiscard]] UE_REWRITE bool UEOpEquals(const TCountedPtr& Other) const
 		{
-			return Lhs.Obj == Rhs.Obj;
+			return Obj == Other.Obj;
 		}
 
-		friend bool operator!=(const TCountedPtr& Lhs, const TCountedPtr& Rhs) { return !(Lhs == Rhs); }
-
-		FORCEINLINE friend uint32 GetTypeHash(TCountedPtr Value)
+		friend [[nodiscard]] UE_REWRITE uint32 GetTypeHash(const TCountedPtr& Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
@@ -139,14 +135,12 @@ namespace Heart::Containers
 			return Value;
 		}
 
-		friend bool operator==(const TCountedWeakClassPtr& Lhs, const TCountedWeakClassPtr& Rhs)
+		[[nodiscard]] UE_REWRITE bool UEOpEquals(const TCountedWeakClassPtr& Other) const
 		{
-			return Lhs.Obj == Rhs.Obj;
+			return Obj == Other.Obj;
 		}
 
-		friend bool operator!=(const TCountedWeakClassPtr& Lhs, const TCountedWeakClassPtr& Rhs) { return !(Lhs == Rhs); }
-
-		FORCEINLINE friend uint32 GetTypeHash(TCountedWeakClassPtr Value)
+		friend [[nodiscard]] UE_REWRITE uint32 GetTypeHash(const TCountedWeakClassPtr& Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
