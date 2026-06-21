@@ -130,11 +130,6 @@ TConstStructView<FHeartGraphPinDesc> UHeartGraphNode::ViewPin(const FHeartPinGui
 	return PinData.ViewPin(Pin);
 }
 
-TOptional<FHeartGraphPinDesc> UHeartGraphNode::GetPinDesc(const FHeartPinGuid& Pin) const
-{
-	return PinData.GetPinDesc(Pin);
-}
-
 FHeartGraphPinDesc UHeartGraphNode::GetPinDescChecked(const FHeartPinGuid& Pin) const
 {
 	auto PinView = PinData.ViewPin(Pin);

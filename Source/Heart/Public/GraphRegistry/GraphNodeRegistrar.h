@@ -20,17 +20,11 @@ class HEART_API UGraphNodeRegistrar : public UPrimaryDataAsset
 
 public:
 #if WITH_EDITOR
-	virtual void PostLoad() override;
 	virtual void PreEditChange(FProperty* PropertyAboutToChange) override;
 	virtual void PreEditChange(FEditPropertyChain& PropertyAboutToChange) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
 #endif
-
-PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	UE_DEPRECATED(5.5, "use ClassLists instead (switching to soft classes)")
-	const FHeartRegistrationClasses& GetRegistrationList() const { return Registration; }
-PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	const FHeartRegistryClassLists& GetClassLists() const { return ClassLists; }
 
@@ -51,16 +45,6 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphNodeRegistrar", meta = (ShowOnlyInnerProperties))
 	FHeartRegistryClassLists ClassLists;
-
-	UE_DEPRECATED(5.5, "use ClassLists instead (switching to soft classes)")
-	UPROPERTY()
-	FHeartRegistrationClasses Registration;
-
-	// Classes to register this registrar for automatically. If this is empty, it must be manually added to the Registry
-	// with UHeartGraphNodeRegistry::AddRegistrar
-	UE_DEPRECATED(5.5, "use AutoRegisterTo instead (per Schema registration)")
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (MetaClass = "/Script/Heart.HeartGraph"))
-	TArray<FSoftClassPath> AutoRegisterWith;
 
 	// Schemas to register this registrar for automatically. If this is empty, it must be manually added to the Registry
 	// with UHeartGraphNodeRegistry::AddRegistrar

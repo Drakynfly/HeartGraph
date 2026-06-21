@@ -369,9 +369,6 @@ protected:
 	uint8 InstancedOutputs = 0;
 
 public:
-	UE_DEPRECATED(5.5, "Replace with either GetPinDescChecked or ViewPin")
-	TOptional<FHeartGraphPinDesc> GetPinDesc(const FHeartPinGuid& Pin) const;
-
 	UE_DEPRECATED(5.6, TEXT("Use UHeartInstancedPinsComponent instead."))
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category = "Heart|GraphNode")
 	uint8 GetInstancedInputNum() const;

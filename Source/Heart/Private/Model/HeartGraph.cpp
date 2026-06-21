@@ -798,24 +798,3 @@ bool UHeartGraph::DisconnectAllPins(const FHeartGraphPinReference& Pin)
 }
 
 #undef LOCTEXT_NAMESPACE
-
-
-	/*----------------------------
-			DEPRECATED API
-	----------------------------*/
-
-void UHeartGraph::NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, const bool InProgress)
-{
-	FHeartNodeMoveEvent Event;
-	for (auto Element : AffectedNodes)
-	{
-		Event.AffectedNodes.Add(Element->GetGuid());
-	}
-	Event.MoveFinished = !InProgress;
-	HandleNodeMoveEvent(Event);
-}
-
-void UHeartGraph::NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event)
-{
-	HandleGraphConnectionEvent(Event);
-}

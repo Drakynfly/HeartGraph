@@ -416,17 +416,4 @@ private:
 
 	Heart::Events::FGraphExtensionAddOrRemove OnExtensionAddOrRemove;
 	Heart::Events::FNodeComponentAddOrRemove OnComponentAddOrRemove;
-
-
-	/*----------------------------
-			DEPRECATED API
-	----------------------------*/
-
-public:
-	UE_DEPRECATED(5.5, "Please use NotifyNodeLocationChanged / NotifyNodeLocationChanged (Guid version) instead")
-	virtual void NotifyNodeLocationsChanged(const TSet<UHeartGraphNode*>& AffectedNodes, bool InProgress);
-
-protected:
-	UE_DEPRECATED(5.5, "Please use HandleGraphConnectionEvent instead")
-	virtual void NotifyNodeConnectionsChanged(const FHeartGraphConnectionEvent& Event);
 };

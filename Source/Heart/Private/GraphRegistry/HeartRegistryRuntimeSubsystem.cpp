@@ -217,17 +217,6 @@ UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(co
 	return NewRegistry;
 }
 
-UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(const TSubclassOf<UHeartGraph>& Class)
-{
-	check(Class);
-
-	const FSoftClassPath Path(Class);
-
-	TSubclassOf<UHeartGraphSchema> SchemaClass = GetDefault<UHeartGraph>(Class)->GetSchema()->GetClass();
-
-	return GetRegistry_Internal(SchemaClass);
-}
-
 void UHeartRegistryRuntimeSubsystem::OnRegistryChanged(UHeartGraphNodeRegistry* Registry)
 {
 	BroadcastOnAnyRegistryChanged(Registry);
@@ -252,21 +241,6 @@ void UHeartRegistryRuntimeSubsystem::AutoAddRegistrar(const UGraphNodeRegistrar*
 			}
 		}
 	}
-
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	for (auto&& ClassPath : Registrar->AutoRegisterWith)
-	{
-		if (const TSubclassOf<UHeartGraph> Class = ClassPath.TryLoadClass<UHeartGraph>())
-		{
-			auto&& Registry = GetRegistry_Internal(Class);
-			check(Registry);
-			if (!Registry->IsRegistered(Registrar))
-			{
-				Registry->AddRegistrar(Registrar);
-			}
-		}
-	}
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
 void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(const UGraphNodeRegistrar* Registrar)
@@ -278,16 +252,6 @@ void UHeartRegistryRuntimeSubsystem::AutoRemoveRegistrar(const UGraphNodeRegistr
 			GetRegistry_Internal(Class)->RemoveRegistrar(Registrar);
 		}
 	}
-
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	for (auto&& ClassPath : Registrar->AutoRegisterWith)
-	{
-		if (const TSubclassOf<UHeartGraph> Class = ClassPath.TryLoadClass<UHeartGraph>())
-		{
-			GetRegistry_Internal(Class)->RemoveRegistrar(Registrar);
-		}
-	}
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }
 
 void UHeartRegistryRuntimeSubsystem::BroadcastPostRegistryAdded(UHeartGraphNodeRegistry* Registry)
@@ -347,25 +311,4 @@ void UHeartRegistryRuntimeSubsystem::AddToRegistry(UGraphNodeRegistrar* Registra
 void UHeartRegistryRuntimeSubsystem::RemoveFromRegistry(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraphSchema> From)
 {
 	GetNodeRegistry(From)->RemoveRegistrar(Registrar);
-}
-
-UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry(const TSubclassOf<UHeartGraph> Class)
-{
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	return GetRegistry_Internal(Class);
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
-}
-
-void UHeartRegistryRuntimeSubsystem::AddRegistrar(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraph> To)
-{
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	GetRegistry(To)->AddRegistrar(Registrar);
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
-}
-
-void UHeartRegistryRuntimeSubsystem::RemoveRegistrar(UGraphNodeRegistrar* Registrar, const TSubclassOf<UHeartGraph> From)
-{
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	GetRegistry(From)->RemoveRegistrar(Registrar);
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
 }

@@ -23,34 +23,6 @@ UHeartGraphSchema::UHeartGraphSchema()
 #endif
 }
 
-const UHeartGraphSchema* UHeartGraphSchema::Get(const TSubclassOf<UHeartGraph>& GraphClass)
-{
-	if (!ensure(IsValid(GraphClass)))
-	{
-		return GetDefault<UHeartGraphSchema>();
-	}
-
-	const UHeartGraph* DefaultHeartGraph = GetDefault<UHeartGraph>(GraphClass);
-
-	UClass* Class;
-	{
-#if WITH_EDITOR
-		// GetSchemaClass is a BlueprintNativeEvent, but we should be able to call it in the editor.
-		// This is always safe, as it's a const function running on the CDO.
-		FEditorScriptExecutionGuard ScriptExecutionGuard;
-#endif
-		Class = DefaultHeartGraph->GetSchemaClass();
-	}
-
-	if (!ensure(IsValid(Class)))
-	{
-		UE_LOG(LogHeartGraph, Warning, TEXT("GetSchemaClass for Graph Class '%s' returned nullptr!"), *GraphClass->GetName())
-		return GetDefault<UHeartGraphSchema>();
-	}
-
-	return GetDefault<UHeartGraphSchema>(Class);
-}
-
 bool UHeartGraphSchema::TryGetWorldForGraph_Implementation(const UHeartGraph* HeartGraph, UWorld*& World) const
 {
 	return false;

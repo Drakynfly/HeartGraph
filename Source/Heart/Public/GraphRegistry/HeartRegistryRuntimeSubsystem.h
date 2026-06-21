@@ -58,9 +58,6 @@ protected:
 
 	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraphSchema>& Class);
 
-	UE_DEPRECATED(5.5, "Use the overload that takes a Schema class")
-	UHeartGraphNodeRegistry* GetRegistry_Internal(const TSubclassOf<UHeartGraph>& Class);
-
 	void OnRegistryChanged(UHeartGraphNodeRegistry* Registry);
 
 	const UGraphNodeRegistrar* GetFallbackRegistrar() const { return FallbackRegistrar; }
@@ -87,18 +84,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
 	void RemoveFromRegistry(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraphSchema> From);
-
-	UE_DEPRECATED(5.5, "Use GetNodeRegistry or GetNodeRegistryForGraph instead (with schema class)")
-	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
-	UHeartGraphNodeRegistry* GetRegistry(const TSubclassOf<UHeartGraph> Class);
-
-	UE_DEPRECATED(5.5, "Use AddToRegistry instead (with schema class)")
-	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
-	void AddRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> To);
-
-	UE_DEPRECATED(5.5, "Use RemoveFromRegistry instead (with schema class)")
-	UFUNCTION(BlueprintCallable, Category = "Heart|RuntimeRegistry")
-	void RemoveRegistrar(UGraphNodeRegistrar* Registrar, TSubclassOf<UHeartGraph> From);
 
 protected:
 	UPROPERTY(BlueprintAssignable, Category = "Events")

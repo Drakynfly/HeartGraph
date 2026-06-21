@@ -59,12 +59,7 @@ namespace Heart::API
 	private:
 		void Internal_Disconnect(UHeartGraphNode* NodeA, const FHeartGraphPinReference& PinA, UHeartGraphNode* NodeB, const FHeartGraphPinReference& PinB);
 
-		UHeartGraph* Graph;
+		TNotNull<UHeartGraph*> Graph;
 		TMultiMap<UHeartGraphNode*, FHeartPinGuid> ChangedPins;
 	};
-}
-
-namespace Heart::Connections
-{
-	using FEdit UE_DEPRECATED(5.5, "Class renamed and moved to Heart::API::FPinEdit") = Heart::API::FPinEdit;
 }

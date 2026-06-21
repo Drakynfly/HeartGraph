@@ -95,34 +95,6 @@ class HEART_API UHeartGraphSchema : public UObject // Based on UEdGraphSchema
 public:
 	UHeartGraphSchema();
 
-	// Get schema, not checked for the type
-	UE_DEPRECATED(5.5, "Schemas are now asset specific, call GetSchema on a graph asset.")
-	static const UHeartGraphSchema* Get(const TSubclassOf<UHeartGraph>& GraphClass);
-
-	// Get schema, cast to a specific class, or nullptr
-	template <
-		typename THeartGraphSchema
-		UE_REQUIRES(TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
-	>
-	UE_DEPRECATED(5.5, "Schemas are now asset specific, call GetSchema on a graph asset.")
-	static const THeartGraphSchema* Get(const TSubclassOf<UHeartGraph> GraphClass)
-	{
-		return Cast<THeartGraphSchema>(Get(GraphClass));
-	}
-
-	// Get schema, cast to a specific class, or nullptr, with templated graph class
-	template <
-		typename THeartGraph = UHeartGraph,
-		typename THeartGraphSchema = UHeartGraphSchema
-		UE_REQUIRES(TIsDerivedFrom<THeartGraph,		  UHeartGraph>::Value &&
-					TIsDerivedFrom<THeartGraphSchema, UHeartGraphSchema>::Value)
-	>
-	UE_DEPRECATED(5.5, "Schemas are now asset specific, call GetSchema on a graph asset.")
-	static const THeartGraphSchema* Get()
-	{
-		return Cast<THeartGraphSchema>(Get(THeartGraph::StaticClass()));
-	}
-
 	// Called when a graph is created, to run first-time setup.
 	void InitializeNewGraph(UHeartGraph* HeartGraph) const;
 
@@ -173,12 +145,6 @@ protected:
 	// for every instance of the graph class bound to this schema.
 	UPROPERTY(EditAnywhere, Instanced, Category = "Extensions")
 	TArray<TObjectPtr<UHeartGraphExtension>> DefaultExtensions;
-
-	// These extension classes are used to add extensions to each asset instance. These instances are uniquely
-	// customizable per instance, as only the existence of these classes is validated against.
-	UE_DEPRECATED(5.5, TEXT("This property is no longer supported, please use DefaultExtensions"))
-	UPROPERTY(VisibleAnywhere, Category = "Extensions")
-	TArray<TSubclassOf<UHeartGraphExtension>> AdditionalExtensionClasses;
 
 #if WITH_EDITORONLY_DATA
 	// Enable to have the runtime function CanPinsConnect called by the EdGraphSchema for this graph.

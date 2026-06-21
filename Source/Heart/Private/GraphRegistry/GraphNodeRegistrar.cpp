@@ -3,7 +3,6 @@
 #include "GraphRegistry/GraphNodeRegistrar.h"
 #include "GraphRegistry/HeartGraphNodeRegistry.h"
 #include "GraphRegistry/HeartRegistryRuntimeSubsystem.h"
-#include "Model/HeartGraphNode.h"
 
 #include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
@@ -11,54 +10,6 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GraphNodeRegistrar)
 
 #if WITH_EDITOR
-
-void UGraphNodeRegistrar::PostLoad()
-{
-	Super::PostLoad();
-
-	PRAGMA_DISABLE_DEPRECATION_WARNINGS
-	if (!Registration.GraphNodeLists.IsEmpty())
-	{
-		for (auto&& Element : Registration.GraphNodeLists)
-		{
-			auto& List = ClassLists.NodeLists.Add(Element.Key.Get());
-			for (auto&& Class : Element.Value.Classes)
-			{
-				FHeartRegistryClass& RegistryClass = List.Classes.AddDefaulted_GetRef();
-				RegistryClass.Class = Class.Class.Get();
-				RegistryClass.Recursive = Class.Recursive;
-			}
-			for (auto&& Object : Element.Value.Objects)
-			{
-				List.Objects.Add(Object);
-			}
-			for (auto&& Visualizer : Element.Value.Visualizers)
-			{
-				List.Visualizers.Add(Visualizer.Get());
-			}
-		}
-		Registration.GraphNodeLists.Reset();
-		(void)MarkPackageDirty();
-	}
-	if (!Registration.GraphPinLists.IsEmpty())
-	{
-		for (auto&& Element : Registration.GraphPinLists)
-		{
-			auto& List = ClassLists.PinLists.Add(Element.Key);
-			for (auto&& PinVisualizer : Element.Value.PinVisualizers)
-			{
-				List.PinVisualizers.Add(PinVisualizer.Get());
-			}
-			for (auto&& ConnectionVisualizer : Element.Value.ConnectionVisualizers)
-			{
-				List.ConnectionVisualizers.Add(ConnectionVisualizer.Get());
-			}
-		}
-		Registration.GraphPinLists.Reset();
-		(void)MarkPackageDirty();
-	}
-	PRAGMA_ENABLE_DEPRECATION_WARNINGS
-}
 
 /**
  * We always unregister ourself before we are edited. This will prevent the registry from holding onto stuff we are no
