@@ -191,7 +191,7 @@ namespace Heart::Action::History
 	bool TryUndo(UHeartActionHistory& History)
 	{
 		auto RecordView = History.RetrieveRecordPtr();
-		if (!RecordView.IsValid() || !IsValid(RecordView.Get().Action))
+		if (!RecordView.IsValid() || !IsValid(RecordView->Action))
 		{
 			return false;
 		}
@@ -214,7 +214,7 @@ namespace Heart::Action::History
 	FHeartEvent TryRedo(UHeartActionHistory& History)
 	{
 		auto RecordView = History.AdvanceRecordPtr();
-		if (!RecordView.IsValid() || !IsValid(RecordView.Get().Action))
+		if (!RecordView.IsValid() || !IsValid(RecordView->Action))
 		{
 			return FHeartEvent::Failed;
 		}

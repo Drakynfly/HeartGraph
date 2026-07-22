@@ -292,8 +292,8 @@ void UHeartEdGraph::OnNodeConnectionsChanged(const FHeartGraphConnectionEvent& H
 			auto NodeBView = NodeB->ViewConnections(PinBGuid);
 
 			if (NodeAView.IsValid() && NodeBView.IsValid() &&
-				NodeAView.Get().GetLinks().Contains(NodeB->GetPinReference(PinBGuid)) &&
-				NodeBView.Get().GetLinks().Contains(NodeA->GetPinReference(PinAGuid)))
+				NodeAView->GetLinks().Contains(NodeB->GetPinReference(PinBGuid)) &&
+				NodeBView->GetLinks().Contains(NodeA->GetPinReference(PinAGuid)))
 			{
 				EdGraphPinA->MakeLinkTo(EdGraphPinB);
 			}

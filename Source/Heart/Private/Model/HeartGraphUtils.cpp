@@ -138,7 +138,7 @@ namespace Heart::Utils
 					return;
 				}
 
-				const TConstArrayView<FHeartGraphPinReference> LinksArrayView = LinksView.Get().GetLinks();
+				const TConstArrayView<FHeartGraphPinReference> LinksArrayView = LinksView->GetLinks();
 				UniqueConnections.Reserve(LinksArrayView.Num());
 
 				for (auto&& Link : LinksArrayView)

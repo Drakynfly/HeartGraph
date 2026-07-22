@@ -58,7 +58,7 @@ struct FHeartNodeAddOrRemoveEvent
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, Category = "HeartNodeAddOrRemoveEvent")
-	EHeartNodeAddOrRemoveEventType Type;
+	EHeartNodeAddOrRemoveEventType Type = EHeartNodeAddOrRemoveEventType::Add;
 
 	// Nodes that were added or removed. Usually just one.
 	// @todo Implement Batch node addition

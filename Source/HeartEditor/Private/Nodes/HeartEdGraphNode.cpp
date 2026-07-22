@@ -254,7 +254,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			LinkedPins.Add(LinkedPin.Get());
 
 			if (!Pin->LinkedTo.ContainsByPredicate(
-					[PinName = LinkedPin.Get().Name](const UEdGraphPin* EdGraphPin)
+					[PinName = LinkedPin->Name](const UEdGraphPin* EdGraphPin)
 					{
 						return PinName == EdGraphPin->PinName;
 					}))

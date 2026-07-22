@@ -66,7 +66,7 @@ namespace Heart::API
 		if (auto&& Connections = Node->PinData.ViewConnections(Pin.PinGuid);
 			Connections.IsValid())
 		{
-			for (const TArray<FHeartGraphPinReference> ConnectionsCopy(Connections.Get().GetLinks());
+			for (const TArray<FHeartGraphPinReference> ConnectionsCopy(Connections->GetLinks());
 				 const FHeartGraphPinReference& Link : ConnectionsCopy)
 			{
 				UHeartGraphNode* BNode = Graph->GetNode(Link.NodeGuid);

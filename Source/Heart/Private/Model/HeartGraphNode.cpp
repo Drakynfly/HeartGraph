@@ -205,7 +205,7 @@ bool UHeartGraphNode::FindConnections(const FHeartPinGuid& Pin, TArray<FHeartGra
 	if (auto Links = PinData.ViewConnections(Pin);
 		Links.IsValid())
 	{
-		Connections = Links.Get().GetLinks();
+		Connections = Links->GetLinks();
 		return true;
 	}
 	return false;
