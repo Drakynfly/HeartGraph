@@ -473,7 +473,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 {
 	if (!IsValid(GraphNodeClass))
 	{
-		UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Invalid class passed to GetVisualizerClassForGraphNode!"))
+		UE_LOGF(LogHeartNodeRegistry, Warning, "Invalid class passed to GetVisualizerClassForGraphNode!")
 		return nullptr;
 	}
 
@@ -521,7 +521,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphNode(const TSubclassO
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a node visualizer for class '%s'"), *GraphNodeClass->GetName())
+	UE_LOGF(LogHeartNodeRegistry, Warning, "Registry was unable to find a node visualizer for class '%ls'", *GraphNodeClass->GetName())
 
 	return nullptr;
 }
@@ -571,7 +571,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphPin(const FHeartGraph
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a pin visualizer for Tag '%s'"), *GraphPinDesc.Tag.GetTagName().ToString())
+	UE_LOGF(LogHeartNodeRegistry, Warning, "Registry was unable to find a pin visualizer for Tag '%ls'", *GraphPinDesc.Tag.GetTagName().ToString())
 
 	return nullptr;
 }
@@ -585,7 +585,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 	switch ((FromPinDesc.Tag.IsValid() ? 1 : 0) + (ToPinDesc.Tag.IsValid() ? 2 : 0))
 	{
 	case 0:
-		UE_LOG(LogHeartNodeRegistry, Error, TEXT("Tried to retrieve connection visualizer with two invalid tags!"));
+		UE_LOGF(LogHeartNodeRegistry, Error, "Tried to retrieve connection visualizer with two invalid tags!");
 		return nullptr;
 	case 1:
 		SearchTag = FromPinDesc.Tag;
@@ -596,7 +596,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 	case 3:
 		if (FromPinDesc.Tag != ToPinDesc.Tag)
 		{
-			UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Retrieving connection visualizer with mismatching tags! Defaulting to From Pin Tag"));
+			UE_LOGF(LogHeartNodeRegistry, Warning, "Retrieving connection visualizer with mismatching tags! Defaulting to From Pin Tag");
 		}
 		SearchTag = FromPinDesc.Tag;
 		break;
@@ -646,7 +646,7 @@ UClass* UHeartGraphNodeRegistry::GetVisualizerClassForGraphConnection(const FHea
 		}
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Registry was unable to find a connection visualizer from Tag '%s' to Tag '%s'"),
+	UE_LOGF(LogHeartNodeRegistry, Warning, "Registry was unable to find a connection visualizer from Tag '%ls' to Tag '%ls'",
 											 *FromPinDesc.Tag.GetTagName().ToString(), *ToPinDesc.Tag.GetTagName().ToString())
 
 	return nullptr;
@@ -662,11 +662,11 @@ void UHeartGraphNodeRegistry::AddRegistrar(const UGraphNodeRegistrar* Registrar)
 	// Only allow registry once
 	if (ContainedRegistrars.Contains(Registrar))
 	{
-		UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Tried to add Registrar that was already registered: '%s'!"), *Registrar->GetName());
+		UE_LOGF(LogHeartNodeRegistry, Warning, "Tried to add Registrar that was already registered: '%ls'!", *Registrar->GetName());
 		return;
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartGraphNodeRegistry adding registrar '%s'"), *Registrar->GetName())
+	UE_LOGF(LogHeartNodeRegistry, Verbose, "HeartGraphNodeRegistry adding registrar '%ls'", *Registrar->GetName())
 
 	Registrar->OnRegistered(this);
 
@@ -683,11 +683,11 @@ void UHeartGraphNodeRegistry::RemoveRegistrar(const UGraphNodeRegistrar* Registr
 	if (!ContainedRegistrars.Contains(Registrar))
 	{
 		// We really can't warn against this, since the registrars try to remove themselves precautionarily
-		//UE_LOG(LogHeartNodeRegistry, Warning, TEXT("Tried to remove Registrar that wasn't registered!"));
+		//UE_LOGF(LogHeartNodeRegistry, Warning, "Tried to remove Registrar that wasn't registered!")
 		return;
 	}
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartGraphNodeRegistry removing registrar '%s'"), *Registrar->GetName())
+	UE_LOGF(LogHeartNodeRegistry, Verbose, "HeartGraphNodeRegistry removing registrar '%ls'", *Registrar->GetName())
 
 	Registrar->OnDeregistered(this);
 

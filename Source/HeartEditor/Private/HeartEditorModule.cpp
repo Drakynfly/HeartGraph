@@ -192,7 +192,7 @@ FConnectionDrawingPolicy* FHeartEditorModule::GetDrawingPolicyInstance(const FNa
 		return Callback->Execute(Schema, CtorPack);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Requested DrawingPolicy '%s' is not registered to module!"), *Style.ToString())
+	UE_LOGF(LogHeartEditor, Warning, "Requested DrawingPolicy '%ls' is not registered to module!", *Style.ToString())
 	return nullptr;
 }
 

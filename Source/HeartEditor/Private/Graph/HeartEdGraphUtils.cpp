@@ -113,7 +113,7 @@ namespace Heart::GraphUtils
 	{
 		if (!HeartGraph->GetEdGraph())
 		{
-			UE_LOG(LogHeartEditor, Error, TEXT("HeartEdGraph is invalid for HeartGraph '%s'!"), *HeartGraph->GetName())
+			UE_LOGF(LogHeartEditor, Error, "HeartEdGraph is invalid for HeartGraph '%ls'!", *HeartGraph->GetName())
 			//return nullptr;
 		}
 

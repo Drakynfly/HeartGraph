@@ -30,7 +30,7 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 {
 	Super::Initialize(Collection);
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem Initialized"))
+	UE_LOGF(LogHeartNodeRegistry, Log, "HeartRegistryRuntimeSubsystem Initialized")
 
 	FetchNativeRegistrars();
 
@@ -44,7 +44,7 @@ void UHeartRegistryRuntimeSubsystem::Initialize(FSubsystemCollectionBase& Collec
 
 			LoadFallbackRegistrar();
 
-			UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running FetchAssetRegistrars: Initialize"))
+			UE_LOGF(LogHeartNodeRegistry, Log, "-- Running FetchAssetRegistrars: Initialize")
 			FetchAssetRegistrars();
 		}));
 }
@@ -62,7 +62,7 @@ void UHeartRegistryRuntimeSubsystem::Deinitialize()
 
 void UHeartRegistryRuntimeSubsystem::OnFilesLoaded()
 {
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running FetchAssetRegistrars: OnFilesLoaded"))
+	UE_LOGF(LogHeartNodeRegistry, Log, "-- Running FetchAssetRegistrars: OnFilesLoaded")
 	FetchAssetRegistrars();
 }
 
@@ -82,7 +82,7 @@ void UHeartRegistryRuntimeSubsystem::OnAssetAdded(const FAssetData& AssetData)
 
 		if (auto&& NewRegistrar = Cast<UGraphNodeRegistrar>(AssetData.GetAsset()))
 		{
-			UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetAdded detected Registrar '%s'"), *NewRegistrar->GetName())
+			UE_LOGF(LogHeartNodeRegistry, Log, "HeartRegistryRuntimeSubsystem OnAssetAdded detected Registrar '%ls'", *NewRegistrar->GetName())
 
 			AutoAddRegistrar(NewRegistrar);
 		}
@@ -93,7 +93,7 @@ void UHeartRegistryRuntimeSubsystem::OnAssetRemoved(const FAssetData& AssetData)
 {
 	if (AssetData.IsInstanceOf(UGraphNodeRegistrar::StaticClass()))
 	{
-		UE_LOG(LogHeartNodeRegistry, Log, TEXT("HeartRegistryRuntimeSubsystem OnAssetRemoved detected Registrar"))
+		UE_LOGF(LogHeartNodeRegistry, Log, "HeartRegistryRuntimeSubsystem OnAssetRemoved detected Registrar")
 
 		if (AssetData.IsAssetLoaded())
 		{
@@ -161,7 +161,7 @@ void UHeartRegistryRuntimeSubsystem::FetchAssetRegistrars()
 
 	KnownRegistrars.Append(FoundRegistrarAssets);
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("FetchAssetRegistrars found '%i' registrars"), FoundRegistrarAssets.Num())
+	UE_LOGF(LogHeartNodeRegistry, Log, "FetchAssetRegistrars found '%i' registrars", FoundRegistrarAssets.Num())
 
 	RefreshAssetRegistrars();
 }
@@ -170,7 +170,7 @@ void UHeartRegistryRuntimeSubsystem::RefreshAssetRegistrars(const bool ForceRefr
 {
 	QUICK_SCOPE_CYCLE_COUNTER(RefreshAssetRegistrars)
 
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("RefreshAssetRegistrars: '%i' known registrars"), KnownRegistrars.Num())
+	UE_LOGF(LogHeartNodeRegistry, Log, "RefreshAssetRegistrars: '%i' known registrars", KnownRegistrars.Num())
 
 	for (const FAssetData& RegistrarAsset : KnownRegistrars)
 	{
@@ -204,7 +204,7 @@ UHeartGraphNodeRegistry* UHeartRegistryRuntimeSubsystem::GetRegistry_Internal(co
 
 	if (!IsValid(RegistryClass))
 	{
-		UE_LOG(LogHeartNodeRegistry, Warning, TEXT("GetRegistryClass returned invalid class for Graph '%s'!"), *Class->GetName())
+		UE_LOGF(LogHeartNodeRegistry, Warning, "GetRegistryClass returned invalid class for Graph '%ls'!", *Class->GetName())
 		RegistryClass = UHeartGraphNodeRegistry::StaticClass();
 	}
 

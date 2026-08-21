@@ -20,7 +20,7 @@ namespace Heart::Action::History::MultiUndo
 		}
 		else
 		{
-			UE_LOG(LogHeartGraph, Error, TEXT("Unable to Start MultiUndo, no History Extension found on graph!"))
+			UE_LOGF(LogHeartGraph, Error, "Unable to Start MultiUndo, no History Extension found on graph!")
 		}
 	}
 
@@ -36,7 +36,7 @@ namespace Heart::Action::History::MultiUndo
 		}
 		else
 		{
-			UE_LOG(LogHeartGraph, Error, TEXT("Unable to End MultiUndo, no History Extension found on graph!"))
+			UE_LOGF(LogHeartGraph, Error, "Unable to End MultiUndo, no History Extension found on graph!")
 		}
 	}
 }

@@ -116,7 +116,7 @@ bool UHeartRegistryEditorSubsystem::BlueprintImplementsHeartVisualizerInterface(
 
 void UHeartRegistryEditorSubsystem::OnHotReload(EReloadCompleteReason ReloadCompleteReason)
 {
-	UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running RefreshAssetRegistryAssets: OnHotReload"))
+	UE_LOGF(LogHeartNodeRegistry, Log, "-- Running RefreshAssetRegistryAssets: OnHotReload")
 	RefreshAssetRegistryAssets();
 }
 
@@ -148,7 +148,7 @@ void UHeartRegistryEditorSubsystem::OnBlueprintCompiled()
 
 		WaitingForCompilationToFinish = false;
 
-		UE_LOG(LogHeartNodeRegistry, Log, TEXT("-- Running RefreshAssetRegistryAssets: OnBlueprintCompiled"))
+		UE_LOGF(LogHeartNodeRegistry, Log, "-- Running RefreshAssetRegistryAssets: OnBlueprintCompiled")
 		RefreshAssetRegistryAssets();
 	}
 }

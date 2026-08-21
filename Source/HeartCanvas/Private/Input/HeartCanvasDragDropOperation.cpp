@@ -22,7 +22,7 @@ bool UHeartCanvasDragDropOperation::OnHoverWidget(UWidget* Widget)
 		return LastHoveredResult;
 	}
 
-	UE_LOG(LogHeartCanvas, Log, TEXT("OnHoverWidget changed: %s"), Widget ? *Widget->GetName() : TEXT("nullptr"))
+	UE_LOGF(LogHeartCanvas, Log, "OnHoverWidget changed: %ls", Widget ? *Widget->GetName() : TEXT("nullptr"))
 
 	// If there could be a current hover than clear it
 	if (!LastHovered.IsExplicitlyNull())

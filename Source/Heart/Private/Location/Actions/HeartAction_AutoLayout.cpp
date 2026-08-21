@@ -32,7 +32,7 @@ FHeartEvent UHeartAction_AutoLayout::ExecuteOnGraph(TNotNull<UHeartGraph*> Graph
 
 	if (!IsValid(LayoutHelper))
 	{
-		UE_LOG(LogHeartGraph, Error, TEXT("UHeartAction_AutoLayout expects a context action that is a instance or class pointer of a UHeartLayoutHelper type."))
+		UE_LOGF(LogHeartGraph, Error, "UHeartAction_AutoLayout expects a context action that is a instance or class pointer of a UHeartLayoutHelper type.")
 		return FHeartEvent::Failed;
 	}
 

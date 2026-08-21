@@ -259,7 +259,7 @@ namespace Heart::AssetEditor
 
 		for (auto&& GraphNode : DupesToRemove)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Removing duplicate EdGraphNode. (Drakynfly: Please track down how these are created!)"))
+			UE_LOGF(LogTemp, Warning, "Removing duplicate EdGraphNode. (Drakynfly: Please track down how these are created!)")
 			EdGraph->RemoveNode(GraphNode);
 		}
 

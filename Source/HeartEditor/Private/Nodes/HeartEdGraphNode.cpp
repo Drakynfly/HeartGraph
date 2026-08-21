@@ -207,7 +207,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 	UHeartGraph* HeartGraph = HeartGraphNode->GetGraph();
 	if (!ensure(IsValid(HeartGraph)))
 	{
-		UE_LOG(LogHeartEditor, Error, TEXT("PinConnectionListChanged: Failed to resolve heart graph!"))
+		UE_LOGF(LogHeartEditor, Error, "PinConnectionListChanged: Failed to resolve heart graph!")
 		return;
 	}
 
@@ -218,7 +218,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 	if (!ensure(HeartPin.IsValid()))
 	{
-		UE_LOG(LogHeartEditor, Error, TEXT("PinConnectionListChanged: Changed UEdGraphPin does not have a runtime equivalent!"))
+		UE_LOGF(LogHeartEditor, Error, "PinConnectionListChanged: Changed UEdGraphPin does not have a runtime equivalent!")
 		return;
 	}
 
@@ -238,7 +238,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			const UHeartGraphNode* LinkedNode = HeartGraph->GetNode(LinkedRef.NodeGuid);
 			if (!IsValid(LinkedNode))
 			{
-				UE_LOG(LogHeartEditor, Warning, TEXT("PinConnectionListChanged: HeartGraphNode '%s' has an invalid Linked Node. It should be fixed up!"),
+				UE_LOGF(LogHeartEditor, Warning, "PinConnectionListChanged: HeartGraphNode '%ls' has an invalid Linked Node. It should be fixed up!",
 					*HeartGraphNode.GetName())
 				continue;
 			}
@@ -246,7 +246,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 			auto&& LinkedPin = LinkedNode->ViewPin(LinkedRef.PinGuid);
 			if (!LinkedPin.IsValid())
 			{
-				UE_LOG(LogHeartEditor, Warning, TEXT("PinConnectionListChanged: HeartGraphNode '%s' has an invalid Linked Pin to node '%s'. It should be fixed up!"),
+				UE_LOGF(LogHeartEditor, Warning, "PinConnectionListChanged: HeartGraphNode '%ls' has an invalid Linked Pin to node '%ls'. It should be fixed up!",
 					*HeartGraphNode.GetName(), *LinkedNode->GetName())
 				continue;
 			}
@@ -288,7 +288,7 @@ void UHeartEdGraphNode::PinConnectionListChanged(UEdGraphPin* Pin)
 
 			if (!ensure(ConnectedHeartPin.IsValid()))
 			{
-				UE_LOG(LogHeartEditor, Error, TEXT("PinConnectionListChanged: Changed HeartEdGraphNode does not have a runtime equivalent!"))
+				UE_LOGF(LogHeartEditor, Error, "PinConnectionListChanged: Changed HeartEdGraphNode does not have a runtime equivalent!")
 				break;
 			}
 

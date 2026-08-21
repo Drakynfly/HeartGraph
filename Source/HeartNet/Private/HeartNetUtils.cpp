@@ -21,9 +21,8 @@ bool UHeartNetUtils::AddObjectToActorReplicateSubObjectList(AActor* Actor, UObje
 	{
 		if (Object->GetTypedOuter<AActor>() != Actor)
 		{
-			UE_LOG(LogHeartNet, Warning,
-				TEXT("AddObjectToActorReplicateSubObjectList: Should not register Object to Actor that does not own it."
-						" GivenActor: '%s', Object: '%s' DirectOuter: '%s', FirstActorOuter: '%s'"),
+			UE_LOGF(LogHeartNet, Warning,
+				"AddObjectToActorReplicateSubObjectList: Should not register Object to Actor that does not own it. GivenActor: '%ls', Object: '%ls' DirectOuter: '%ls', FirstActorOuter: '%ls'",
 				*Actor->GetName(), *Object->GetName(), *Object->GetOuter()->GetName(),
 				*Object->GetTypedOuter<AActor>()->GetName())
 			return false;

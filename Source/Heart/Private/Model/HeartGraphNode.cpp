@@ -47,8 +47,8 @@ void UHeartGraphNode::PostLoad()
 	{
 		if (!IsValid(NodeObject))
 		{
-			UE_LOG(LogHeartGraph, Error,
-				TEXT("[%s]'s NodeObject failed to load. This should always be a valid object. This node will need to be deleted and recreated!"), *GetName())
+			UE_LOGF(LogHeartGraph, Error,
+				"[%ls]'s NodeObject failed to load. This should always be a valid object. This node will need to be deleted and recreated!", *GetName())
 		}
 	}
 }

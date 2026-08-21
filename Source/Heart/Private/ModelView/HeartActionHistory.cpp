@@ -181,7 +181,7 @@ namespace Heart::Action::History
 		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Undo; Graph '%s' has no History extension!"), *Graph->GetName())
+			UE_LOGF(LogHeartGraph, Warning, "Cannot perform Undo; Graph '%ls' has no History extension!", *Graph->GetName())
 			return false;
 		}
 
@@ -204,7 +204,7 @@ namespace Heart::Action::History
 		UHeartActionHistory* History = Graph->GetExtension<UHeartActionHistory>();
 		if (!IsValid(History))
 		{
-			UE_LOG(LogHeartGraph, Warning, TEXT("Cannot perform Redo; Graph '%s' has no History extension!"), *Graph->GetName())
+			UE_LOGF(LogHeartGraph, Warning, "Cannot perform Redo; Graph '%ls' has no History extension!", *Graph->GetName())
 			return FHeartEvent::Failed;
 		}
 

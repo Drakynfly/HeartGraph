@@ -32,7 +32,7 @@ FHeartEvent UHeartAction_MultiUndoStart::Execute(const Heart::Action::FArguments
 		if (!RecordView.IsValid())
 		{
 			// Reached the end of records to redo unexpectedly.
-			UE_LOG(LogHeartGraph, Warning, TEXT("Redo of MultiUndo ran until most recent record without hitting an End!"))
+			UE_LOGF(LogHeartGraph, Warning, "Redo of MultiUndo ran until most recent record without hitting an End!")
 			break;
 		}
 

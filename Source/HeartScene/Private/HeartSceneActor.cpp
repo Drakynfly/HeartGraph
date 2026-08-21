@@ -2,6 +2,7 @@
 
 #include "HeartSceneActor.h"
 #include "HeartSceneGenerator.h"
+#include "HeartSceneModule.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(HeartSceneActor)
 
@@ -24,7 +25,7 @@ void AHeartSceneActor::BeginPlay()
 	SceneGenerator = FindComponentByClass<UHeartSceneGenerator>();
 	if (!IsValid(SceneGenerator))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HeartSceneActor '%s' does not have a Scene Generate component. Please add one!"), *GetName())
+		UE_LOGF(LogHeartGraphScene, Warning, "HeartSceneActor '%ls' does not have a Scene Generate component. Please add one!", *GetName())
 	}
 	Super::BeginPlay();
 }

@@ -29,7 +29,7 @@ bool UHeartAction_MultiUndoEnd::Undo(UObject* Target, const FBloodContainer& Und
 		if (!RecordView.IsValid())
 		{
 			// Reached the end of records to undo unexpectedly.
-			UE_LOG(LogHeartGraph, Warning, TEXT("Undo of MultiUndo ran until oldest record without hitting a Start!"))
+			UE_LOGF(LogHeartGraph, Warning, "Undo of MultiUndo ran until oldest record without hitting a Start!")
 			break;
 		}
 

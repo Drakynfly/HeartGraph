@@ -135,7 +135,7 @@ int32 UHeartGraphCanvas::NativePaint(const FPaintArgs& Args, const FGeometry& Al
 
 	if (!ensure(IsValid(ConnectionVisualizer)))
 	{
-		UE_LOG(LogHeartGraphCanvas, Error, TEXT("ConnectionVisualizer is invalid: cannot display pin connections!"))
+		UE_LOGF(LogHeartGraphCanvas, Error, "ConnectionVisualizer is invalid: cannot display pin connections!")
 		return SuperLayerID;
 	}
 
@@ -305,7 +305,7 @@ void UHeartGraphCanvas::Refresh()
 {
 	if (!ensure(DisplayedNodes.IsEmpty()))
 	{
-		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("HeartGraphCanvas cannot refresh, as it has not been reset."))
+		UE_LOGF(LogHeartGraphCanvas, Warning, "HeartGraphCanvas cannot refresh, as it has not been reset.")
 		return;
 	}
 
@@ -361,7 +361,7 @@ void UHeartGraphCanvas::UpdateNodePositionOnCanvas(const UHeartGraphCanvasNode* 
 
 	if (!ensure(IsValid(CanvasSlot)))
 	{
-		UE_LOG(LogHeartGraphCanvas, Error, TEXT("HeartGraphCanvasNodes must be added to a canvas"))
+		UE_LOGF(LogHeartGraphCanvas, Error, "HeartGraphCanvasNodes must be added to a canvas")
 		return;
 	}
 
@@ -479,7 +479,7 @@ void UHeartGraphCanvas::AddNodeToDisplay(const FHeartNodeGuid& Node, const bool 
 	}
 	else
 	{
-		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Unable to determine Visual Class. Node '%s' will not be displayed"), *GraphNode->GetName())
+		UE_LOGF(LogHeartGraphCanvas, Warning, "Unable to determine Visual Class. Node '%ls' will not be displayed", *GraphNode->GetName())
 	}
 }
 
@@ -616,9 +616,9 @@ TSubclassOf<UHeartGraphCanvasNode> UHeartGraphCanvas::GetVisualClassForNode_Impl
 
 	if (!IsValid(RegistrySubsystem))
 	{
-		UE_LOG(LogHeartGraphCanvas, Error,
-			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
-					"This error occured in UHeartGraphCanvas::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		UE_LOGF(LogHeartGraphCanvas, Error,
+			"Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+			"This error occured in UHeartGraphCanvas::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!")
 		return nullptr;
 	}
 
@@ -638,9 +638,9 @@ TSubclassOf<UHeartGraphCanvasConnection> UHeartGraphCanvas::GetVisualClassForCon
 
 	if (!IsValid(RegistrySubsystem))
 	{
-		UE_LOG(LogHeartGraphCanvas, Error,
-			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
-					"This error occured in UHeartGraphCanvas::GetVisualClassForPreviewConnection. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		UE_LOGF(LogHeartGraphCanvas, Error,
+			"Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+			"This error occured in UHeartGraphCanvas::GetVisualClassForPreviewConnection. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!")
 		return nullptr;
 	}
 
@@ -826,7 +826,7 @@ void UHeartGraphCanvas::SetGraph(UHeartGraph* Graph)
 	{
 		if (DisplayedGraph == Graph)
 		{
-			UE_LOG(LogHeartGraphCanvas, Warning, TEXT("Attempted to SetGraph to currently displayed graph. This will do nothing!"))
+			UE_LOGF(LogHeartGraphCanvas, Warning, "Attempted to SetGraph to currently displayed graph. This will do nothing!")
 			return;
 		}
 

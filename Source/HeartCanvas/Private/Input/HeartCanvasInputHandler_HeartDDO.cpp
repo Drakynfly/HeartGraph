@@ -56,7 +56,7 @@ FHeartEvent UHeartCanvasInputHandler_HeartDDO::OnTriggered(UObject* Target, cons
 
 	if (!NewDDO->SetupDragDropOperation())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Created DDO (%s) unnecessarily, figure out why"), *NewDDO->GetClass()->GetName())
+		UE_LOGF(LogHeartCanvas, Warning, "Created DDO (%ls) unnecessarily, figure out why", *NewDDO->GetClass()->GetName())
 		return FHeartEvent::Invalid;
 	}
 

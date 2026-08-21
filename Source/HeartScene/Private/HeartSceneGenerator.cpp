@@ -152,9 +152,9 @@ TSubclassOf<UHeartSceneNode> UHeartSceneGenerator::GetVisualClassForNode(const U
 
 	if (!IsValid(RegistrySubsystem))
 	{
-		UE_LOG(LogHeartGraphScene, Error,
-			TEXT("Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
-					"This error occured in UHeartSceneGenerator::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!"))
+		UE_LOGF(LogHeartGraphScene, Error,
+			"Registry Subsystem not found! Make sure to enable `CreateRuntimeRegistrySubsystem` in project settings to access the subsystem!\n"
+			"This error occured in UHeartSceneGenerator::GetVisualClassForNode. You can override this function to not use the registry subsystem if `CreateRuntimeRegistrySubsystem` is disabled on purpose!")
 		return nullptr;
 	}
 
@@ -185,7 +185,7 @@ UHeartSceneNode* UHeartSceneGenerator::AddNodeToDisplay(UHeartGraphNode* GraphNo
 	}
 	else
 	{
-		UE_LOG(LogHeartGraphScene, Warning, TEXT("Unable to determine Visual Class. Node '%s' will not be displayed"), *GraphNode->GetName())
+		UE_LOGF(LogHeartGraphScene, Warning, "Unable to determine Visual Class. Node '%ls' will not be displayed", *GraphNode->GetName())
 		return nullptr;
 	}
 }

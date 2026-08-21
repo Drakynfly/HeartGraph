@@ -34,7 +34,7 @@ UHeartSlatePtr* UHeartSlatePtr::Wrap(const TSharedRef<SWidget>& Widget)
 	}
 	else
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FLinkerMetadata for slate widget!")
 		NewWrapper = NewObject<UHeartSlatePtr>();
 	}
 
@@ -51,7 +51,7 @@ UHeartGraph* UHeartSlateGraph::GetHeartGraph_Implementation() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FGraphAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FGraphAndLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FGraphAndLinkerMetadata for slate widget!")
 		return nullptr;
 	}
 
@@ -63,7 +63,7 @@ UHeartGraph* UHeartSlateNode::GetHeartGraph() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FNodeAndLinkerMetadata for slate widget!")
 		return nullptr;
 	}
 
@@ -75,7 +75,7 @@ FHeartNodeGuid UHeartSlateNode::GetNodeGuid() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FNodeAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FNodeAndLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FNodeAndLinkerMetadata for slate widget!")
 		return FHeartNodeGuid();
 	}
 
@@ -87,7 +87,7 @@ UHeartGraph* UHeartSlatePin::GetHeartGraph() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FPinAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FPinAndLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FPinAndLinkerMetadata for slate widget!")
 		return nullptr;
 	}
 
@@ -99,7 +99,7 @@ FHeartNodeGuid UHeartSlatePin::GetNodeGuid() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FPinAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FPinAndLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FPinAndLinkerMetadata for slate widget!")
 		return FHeartNodeGuid();
 	}
 
@@ -111,7 +111,7 @@ FHeartPinGuid UHeartSlatePin::GetPinGuid() const
 	auto&& Metadata = SlatePointer->GetMetaData<Heart::Canvas::FPinAndLinkerMetadata>();
 	if (!Metadata.IsValid())
 	{
-		UE_LOG(LogHeartCanvas, Warning, TEXT("Unable to find FPinAndLinkerMetadata for slate widget!"))
+		UE_LOGF(LogHeartCanvas, Warning, "Unable to find FPinAndLinkerMetadata for slate widget!")
 		return FHeartPinGuid();
 	}
 

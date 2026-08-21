@@ -340,7 +340,7 @@ void UHeartGraphNetProxy::UpdateReplicatedNodeData(TObjectPtr<UHeartGraphNode> N
 		[Node](FHeartReplicatedFlake& Data)
 		{
 			Data.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(Node);
-			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated node '%s' (%llu bytes)"),
+			UE_LOGF(LogHeartNet, Log, "Updated replicated node '%ls' (%llu bytes)",
 				*Node->GetName(), Data.Flake.Data.NumBytes());
 		});
 }
@@ -353,7 +353,7 @@ void UHeartGraphNetProxy::UpdateReplicatedExtensionData(TObjectPtr<UHeartGraphEx
 		[Extension](FHeartReplicatedFlake& Data)
 		{
 			Data.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(Extension);
-			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated extension '%s' (%llu bytes)"),
+			UE_LOGF(LogHeartNet, Log, "Updated replicated extension '%ls' (%llu bytes)",
 				*Extension->GetName(), Data.Flake.Data.NumBytes());
 		});
 }
@@ -367,7 +367,7 @@ void UHeartGraphNetProxy::UpdateReplicatedNodeComponentData(const FHeartNodeGuid
 		{
 			Data.NodeGuid = Node;
 			Data.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(Component);
-			UE_LOG(LogHeartNet, Log, TEXT("Updated replicated node Component '%s' (%llu bytes)"),
+			UE_LOGF(LogHeartNet, Log, "Updated replicated node Component '%ls' (%llu bytes)",
 				*Component->GetName(), Data.Flake.Data.NumBytes());
 		});
 }
@@ -378,7 +378,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 
 	if (!IsValid(SourceGraph))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("[UHeartGraphNetProxy::EditReplicatedNodeData] Invalid Source Graph!"))
+		UE_LOGF(LogHeartNet, Warning, "[UHeartGraphNetProxy::EditReplicatedNodeData] Invalid Source Graph!")
 		return;
 	}
 
@@ -389,7 +389,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 	{
 		if (IsValid(ExistingNode))
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Client edit tried to create node '%s' that already exists in source graph!"), *NodeData.Guid.ToString())
+			UE_LOGF(LogHeartNet, Warning, "Client edit tried to create node '%ls' that already exists in source graph!", *NodeData.Guid.ToString())
 			return;
 		}
 
@@ -406,7 +406,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 
 	if (!IsValid(ExistingNode))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client edit tried to edit node '%s' that does not exist in source graph!"), *NodeData.Guid.ToString())
+		UE_LOGF(LogHeartNet, Warning, "Client edit tried to edit node '%ls' that does not exist in source graph!", *NodeData.Guid.ToString())
 		return;
 	}
 
@@ -451,7 +451,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeData(const FHeartReplicatedFlake& No
 	{
 		if (ExistingNode->GetNodeObject()->GetOuter() != ExistingNode)
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Attempted to write to a non-instanced NodeObject!"))
+			UE_LOGF(LogHeartNet, Warning, "Attempted to write to a non-instanced NodeObject!")
 			return;
 		}
 		Flakes::WriteObject<Flakes::NetBinary::Type>(ExistingNode->GetNodeObject(), NodeData.Flake);
@@ -475,7 +475,7 @@ void UHeartGraphNetProxy::EditReplicatedExtensionData(const FHeartReplicatedFlak
 
 	if (!IsValid(SourceGraph))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("[UHeartGraphNetProxy::EditReplicatedExtensionData] Invalid Source Graph!"))
+		UE_LOGF(LogHeartNet, Warning, "[UHeartGraphNetProxy::EditReplicatedExtensionData] Invalid Source Graph!")
 		return;
 	}
 
@@ -486,7 +486,7 @@ void UHeartGraphNetProxy::EditReplicatedExtensionData(const FHeartReplicatedFlak
 	{
 		if (IsValid(ExistingExtension))
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Client edit tried to create extension '%s' that already exists in source graph!"), *ExtensionData.Guid.ToString())
+			UE_LOGF(LogHeartNet, Warning, "Client edit tried to create extension '%ls' that already exists in source graph!", *ExtensionData.Guid.ToString())
 			return;
 		}
 
@@ -500,7 +500,7 @@ void UHeartGraphNetProxy::EditReplicatedExtensionData(const FHeartReplicatedFlak
 
 	if (!IsValid(ExistingExtension))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client edit tried to edit extension '%s' that does not exist in source graph!"), *ExtensionData.Guid.ToString())
+		UE_LOGF(LogHeartNet, Warning, "Client edit tried to edit extension '%ls' that does not exist in source graph!", *ExtensionData.Guid.ToString())
 		return;
 	}
 
@@ -520,7 +520,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeComponentData(const FHeartReplicated
 
 	if (!IsValid(SourceGraph))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("[UHeartGraphNetProxy::EditReplicatedNodeComponentData] Invalid Source Graph!"))
+		UE_LOGF(LogHeartNet, Warning, "[UHeartGraphNetProxy::EditReplicatedNodeComponentData] Invalid Source Graph!")
 		return;
 	}
 
@@ -531,7 +531,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeComponentData(const FHeartReplicated
 	{
 		if (IsValid(ExistingComponent))
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Client edit tried to create node component '%s' that already exists in source graph!"), *ComponentData.ComponentGuid.ToString())
+			UE_LOGF(LogHeartNet, Warning, "Client edit tried to create node component '%ls' that already exists in source graph!", *ComponentData.ComponentGuid.ToString())
 			return;
 		}
 
@@ -546,7 +546,7 @@ void UHeartGraphNetProxy::EditReplicatedNodeComponentData(const FHeartReplicated
 
 	if (!IsValid(ExistingComponent))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client edit tried to edit node component '%s' that does not exist in source graph!"), *ComponentData.ComponentGuid.ToString())
+		UE_LOGF(LogHeartNet, Warning, "Client edit tried to edit node component '%ls' that does not exist in source graph!", *ComponentData.ComponentGuid.ToString())
 		return;
 	}
 
@@ -661,19 +661,19 @@ void UHeartGraphNetProxy::ExecuteGraphActionOnServer(const TSubclassOf<UHeartAct
 		}
 	}
 
-	UE_LOG(LogHeartNet, Log, TEXT("Proxy: ExecuteGraphAction"))
+	UE_LOGF(LogHeartNet, Log, "Proxy: ExecuteGraphAction")
 	LocalClient->Server_ExecuteGraphAction(this, Action, Args);
 }
 
 void UHeartGraphNetProxy::ExecuteUndoOnServer()
 {
-	UE_LOG(LogHeartNet, Log, TEXT("Proxy: UndoGraphAction"))
+	UE_LOGF(LogHeartNet, Log, "Proxy: UndoGraphAction")
 	LocalClient->Server_UndoGraphAction(this);
 }
 
 void UHeartGraphNetProxy::ExecuteRedoOnServer()
 {
-	UE_LOG(LogHeartNet, Log, TEXT("Proxy: RedoGraphAction"))
+	UE_LOGF(LogHeartNet, Log, "Proxy: RedoGraphAction")
 	LocalClient->Server_RedoGraphAction(this);
 }
 
@@ -761,7 +761,7 @@ void UHeartGraphNetProxy::OnNodeAddedOrRemoved_Proxy(const FHeartNodeAddOrRemove
 		{
 			if (RecursionGuards[NodeAdd]) return;
 
-			UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeAdded"))
+			UE_LOGF(LogHeartNet, Log, "Proxy: OnNodeAdded")
 
 			ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
 			for (auto&& Node : AddOrRemoveEvent.Nodes)
@@ -771,7 +771,7 @@ void UHeartGraphNetProxy::OnNodeAddedOrRemoved_Proxy(const FHeartNodeAddOrRemove
 				FHeartReplicatedFlake NodeData;
 				NodeData.Guid = Node;
 				NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(GraphNode);
-				UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%llu bytes)"),
+				UE_LOGF(LogHeartNet, Log, "Sending node RPC data '%ls' (%llu bytes)",
 					*GraphNode->GetName(), NodeData.Flake.Data.NumBytes());
 
 				LocalClient->Server_OnNodeAdded(this, NodeData);
@@ -782,7 +782,7 @@ void UHeartGraphNetProxy::OnNodeAddedOrRemoved_Proxy(const FHeartNodeAddOrRemove
 		{
 			if (RecursionGuards[NodeDelete]) return;
 
-			UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeRemoved"))
+			UE_LOGF(LogHeartNet, Log, "Proxy: OnNodeRemoved")
 			ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
 
 			for (auto&& Node : AddOrRemoveEvent.Nodes)
@@ -803,7 +803,7 @@ void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMove
 
 	if (NodeMoveEvent.MoveFinished)
 	{
-		UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodesMoved"))
+		UE_LOGF(LogHeartNet, Log, "Proxy: OnNodesMoved")
 		ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
 
 		IHeartNodeLocationInterface* LocationInterface = ProxyGraph->GetNodeLocationInterface();
@@ -823,7 +823,7 @@ void UHeartGraphNetProxy::OnNodesMoved_Proxy(const FHeartNodeMoveEvent& NodeMove
 					NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(LocationInterface->GetNodeLocation(Node), nullptr);
 				}
 
-				UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%llu bytes)"),
+				UE_LOGF(LogHeartNet, Log, "Sending node RPC data '%ls' (%llu bytes)",
 					*Node.ToString(), NodeData.Flake.Data.NumBytes());
 				return NodeData;
 			});
@@ -841,7 +841,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 		return;
 	}
 
-	UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeConnectionsChanged"))
+	UE_LOGF(LogHeartNet, Log, "Proxy: OnNodeConnectionsChanged")
 	ensure(LocalClient->GetOwnerRole() == ROLE_AutonomousProxy);
 
 	auto ByAffected = [&GraphConnectionEvent](const FHeartPinGuid Pin)
@@ -874,7 +874,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Proxy(const FHeartGraphConnec
 
 			NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(PinElement, nullptr);
 
-			UE_LOG(LogHeartNet, Log, TEXT("Sending node RPC data '%s' (%llu bytes)"),
+			UE_LOGF(LogHeartNet, Log, "Sending node RPC data '%ls' (%llu bytes)",
 				*Node->GetName(), NodeData.Flake.Data.NumBytes());
 
 			return NodeData;
@@ -897,13 +897,13 @@ void UHeartGraphNetProxy::OnExtensionAddedOrRemoved_Proxy(UHeartGraphExtension* 
 		{
 			if (RecursionGuards[ExtAdd]) return;
 
-			UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnExtensionAdded"))
+			UE_LOGF(LogHeartNet, Log, "Proxy: OnExtensionAdded")
 
 			{
 				FHeartReplicatedFlake ExtensionData;
 				ExtensionData.Guid = Extension->GetGuid();
 				ExtensionData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(Extension);
-				UE_LOG(LogHeartNet, Log, TEXT("Sending extension RPC data '%s' (%llu bytes)"),
+				UE_LOGF(LogHeartNet, Log, "Sending extension RPC data '%ls' (%llu bytes)",
 					*Extension->GetName(), ExtensionData.Flake.Data.NumBytes());
 
 				LocalClient->Server_OnExtensionAdded(this, ExtensionData);
@@ -914,7 +914,7 @@ void UHeartGraphNetProxy::OnExtensionAddedOrRemoved_Proxy(UHeartGraphExtension* 
 		{
 			if (RecursionGuards[ExtDelete]) return;
 
-			UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnExtensionRemoved"))
+			UE_LOGF(LogHeartNet, Log, "Proxy: OnExtensionRemoved")
 
 			{
 				LocalClient->Server_OnExtensionRemoved(this, Extension->GetGuid());
@@ -939,14 +939,14 @@ void UHeartGraphNetProxy::OnNodeComponentAddedOrRemoved_Proxy(const FHeartNodeGu
 		{
 			if (RecursionGuards[CompAdd]) return;
 
-			UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeComponentAdded"))
+			UE_LOGF(LogHeartNet, Log, "Proxy: OnNodeComponentAdded")
 
 			{
 				FHeartReplicatedNodeComponent NodeData;
 				NodeData.NodeGuid = Node;
 				NodeData.ComponentGuid = NodeComponent->GetGuid();
 				NodeData.Flake = Flakes::MakeFlake<Flakes::NetBinary::Type>(NodeComponent);
-				UE_LOG(LogHeartNet, Log, TEXT("Sending node component RPC data '%s' (%llu bytes)"),
+				UE_LOGF(LogHeartNet, Log, "Sending node component RPC data '%ls' (%llu bytes)",
 					*NodeComponent->GetName(), NodeData.Flake.Data.NumBytes());
 
 				LocalClient->Server_OnNodeComponentAdded(this, NodeData);
@@ -957,7 +957,7 @@ void UHeartGraphNetProxy::OnNodeComponentAddedOrRemoved_Proxy(const FHeartNodeGu
 		{
 			if (RecursionGuards[CompDelete]) return;
 
-			UE_LOG(LogHeartNet, Log, TEXT("Proxy: OnNodeComponentRemoved"))
+			UE_LOGF(LogHeartNet, Log, "Proxy: OnNodeComponentRemoved")
 
 			{
 				LocalClient->Server_OnNodeComponentRemoved(this, Node, NodeComponent->GetGuid());
@@ -971,7 +971,7 @@ void UHeartGraphNetProxy::OnNodeAdded_Client(const FHeartReplicatedFlake& NodeDa
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Added))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s' on node '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls' on node '%ls'",
 			*Heart::Net::Tags::Node_Added.GetTag().ToString(),
 			*NodeData.Guid.ToString())
 		return;
@@ -984,7 +984,7 @@ void UHeartGraphNetProxy::OnNodeRemoved_Client(const FHeartNodeGuid& NodeGuid)
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Removed))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s' on node '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls' on node '%ls'",
 			*Heart::Net::Tags::Node_Removed.GetTag().ToString(),
 			*NodeGuid.ToString())
 		return;
@@ -994,7 +994,7 @@ void UHeartGraphNetProxy::OnNodeRemoved_Client(const FHeartNodeGuid& NodeGuid)
 	{
 		if (!SourceGraph->RemoveNode(NodeGuid))
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Client attempt to perform remove node failed: '%s'"),
+			UE_LOGF(LogHeartNet, Warning, "Client attempt to perform remove node failed: '%ls'",
 				*NodeGuid.ToString())
 		}
 	}
@@ -1004,7 +1004,7 @@ void UHeartGraphNetProxy::OnNodesMoved_Client(const FHeartNodeMoveEvent_Net& Nod
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_Moved))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls'",
 			*Heart::Net::Tags::Node_Moved.GetTag().ToString())
 		return;
 	}
@@ -1019,7 +1019,7 @@ void UHeartGraphNetProxy::OnNodeConnectionsChanged_Client(const FHeartGraphConne
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Node_ConnectionsChanged))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls'",
 			*Heart::Net::Tags::Node_ConnectionsChanged.GetTag().ToString())
 		return;
 	}
@@ -1034,7 +1034,7 @@ void UHeartGraphNetProxy::UpdateNodeData_Client(const FHeartReplicatedFlake& Nod
 {
 	if (!CanClientPerformEvent(EventType))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s'"), *EventType.ToString())
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls'", *EventType.ToString())
 		return;
 	}
 
@@ -1045,7 +1045,7 @@ void UHeartGraphNetProxy::OnExtensionAdded_Client(const FHeartReplicatedFlake& E
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Extension_Added))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s' on node '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls' on node '%ls'",
 			*Heart::Net::Tags::Extension_Added.GetTag().ToString(),
 			*ExtensionData.Guid.ToString())
 		return;
@@ -1058,7 +1058,7 @@ void UHeartGraphNetProxy::OnExtensionRemoved_Client(const FHeartExtensionGuid& E
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Extension_Removed))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s' on node '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls' on node '%ls'",
 			*Heart::Net::Tags::Extension_Removed.GetTag().ToString(),
 			*Extension.ToString())
 		return;
@@ -1068,7 +1068,7 @@ void UHeartGraphNetProxy::OnExtensionRemoved_Client(const FHeartExtensionGuid& E
 	{
 		if (!SourceGraph->RemoveExtension(Extension))
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Client attempt to perform remove extension failed: '%s'"),
+			UE_LOGF(LogHeartNet, Warning, "Client attempt to perform remove extension failed: '%ls'",
 				*Extension.ToString())
 		}
 	}
@@ -1078,7 +1078,7 @@ void UHeartGraphNetProxy::OnNodeComponentAdded_Client(const FHeartReplicatedNode
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::NodeComponent_Added))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s' on node '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls' on node '%ls'",
 			*Heart::Net::Tags::NodeComponent_Added.GetTag().ToString(),
 			*ComponentData.NodeGuid.ToString())
 		return;
@@ -1091,7 +1091,7 @@ void UHeartGraphNetProxy::OnNodeComponentRemoved_Client(const FHeartNodeGuid& No
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::NodeComponent_Removed))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to perform illegal event: '%s' on node '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to perform illegal event: '%ls' on node '%ls'",
 			*Heart::Net::Tags::NodeComponent_Removed.GetTag().ToString(),
 			*Node.ToString())
 		return;
@@ -1103,7 +1103,7 @@ void UHeartGraphNetProxy::OnNodeComponentRemoved_Client(const FHeartNodeGuid& No
 
 		if (!SourceGraph->RemoveNodeComponent(Node, NodeComponent->GetClass()))
 		{
-			UE_LOG(LogHeartNet, Warning, TEXT("Client attempt to perform remove node component failed: '%s'"),
+			UE_LOGF(LogHeartNet, Warning, "Client attempt to perform remove node component failed: '%ls'",
 				*Component.ToString())
 		}
 	}
@@ -1113,14 +1113,14 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const TSubclassOf<UHeartActi
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Permission_Actions))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to execute graph action: '%s'"),
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to execute graph action: '%ls'",
 			*Heart::Net::Tags::Permission_Actions.GetTag().ToString())
 		return;
 	}
 
 	if (!IsValid(Action))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Graph Action data sent from client failed deserialization from flake!"))
+		UE_LOGF(LogHeartNet, Warning, "Graph Action data sent from client failed deserialization from flake!")
 		return;
 	}
 
@@ -1143,7 +1143,7 @@ void UHeartGraphNetProxy::ExecuteGraphAction_Client(const TSubclassOf<UHeartActi
 
 	if (!Heart::Action::Execute(Action, Target, Args.Activation).WasEventSuccessful())
 	{
-		UE_LOG(LogHeartNet, Log, TEXT("Graph Action data received from client, but Execute failed."))
+		UE_LOGF(LogHeartNet, Log, "Graph Action data received from client, but Execute failed.")
 		return;
 	}
 }
@@ -1152,13 +1152,13 @@ void UHeartGraphNetProxy::ExecuteUndo_Client()
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Permission_UndoRedo))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to undo action!"))
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to undo action!")
 		return;
 	}
 
 	if (!IsValid(SourceGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid Source Graph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid Source Graph!")
 		return;
 	}
 
@@ -1169,13 +1169,13 @@ void UHeartGraphNetProxy::ExecuteRedo_Client()
 {
 	if (!CanClientPerformEvent(Heart::Net::Tags::Permission_UndoRedo))
 	{
-		UE_LOG(LogHeartNet, Warning, TEXT("Client attempted to redo action!"))
+		UE_LOGF(LogHeartNet, Warning, "Client attempted to redo action!")
 		return;
 	}
 
 	if (!IsValid(SourceGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid Source Graph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid Source Graph!")
 		return;
 	}
 
@@ -1186,7 +1186,7 @@ void UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, con
 {
 	if (!IsValid(ProxyGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid ProxyGraph!")
 		return;
 	}
 
@@ -1202,7 +1202,7 @@ void UHeartGraphNetProxy::UpdateNodeProxy(const FHeartReplicatedFlake& Data, con
 		UHeartGraphNode* NewNode = Flakes::CreateObject<UHeartGraphNode, Flakes::NetBinary::Type>(Data.Flake, ProxyGraph);
 		if (!IsValid(NewNode))
 		{
-			UE_LOG(LogHeartNet, Error, TEXT("Failed to create Node from flake!"))
+			UE_LOGF(LogHeartNet, Error, "Failed to create Node from flake!")
 			return;
 		}
 
@@ -1224,7 +1224,7 @@ void UHeartGraphNetProxy::RemoveNodeProxy(const FHeartReplicatedFlake& Data)
 {
 	if (!IsValid(ProxyGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid ProxyGraph!")
 		return;
 	}
 
@@ -1245,7 +1245,7 @@ void UHeartGraphNetProxy::RemoveNodeProxy(const FHeartReplicatedFlake& Data)
 	}
 	if (!Result)
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Failed to remove node from ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Failed to remove node from ProxyGraph!")
 	}
 }
 
@@ -1253,7 +1253,7 @@ void UHeartGraphNetProxy::UpdateExtensionProxy(const FHeartReplicatedFlake& Data
 {
 	if (!IsValid(ProxyGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid ProxyGraph!")
 		return;
 	}
 
@@ -1269,7 +1269,7 @@ void UHeartGraphNetProxy::UpdateExtensionProxy(const FHeartReplicatedFlake& Data
 		UHeartGraphExtension* NewExtension = Flakes::CreateObject<UHeartGraphExtension, Flakes::NetBinary::Type>(Data.Flake, ProxyGraph);
 		if (!IsValid(NewExtension))
 		{
-			UE_LOG(LogHeartNet, Error, TEXT("Failed to create Extension from flake!"))
+			UE_LOGF(LogHeartNet, Error, "Failed to create Extension from flake!")
 			return;
 		}
 
@@ -1287,7 +1287,7 @@ void UHeartGraphNetProxy::RemoveExtensionProxy(const FHeartReplicatedFlake& Data
 {
 	if (!IsValid(ProxyGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid ProxyGraph!")
 		return;
 	}
 
@@ -1303,7 +1303,7 @@ void UHeartGraphNetProxy::RemoveExtensionProxy(const FHeartReplicatedFlake& Data
 
 	if (!Result)
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Failed to remove node extension from ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Failed to remove node extension from ProxyGraph!")
 	}
 }
 
@@ -1311,7 +1311,7 @@ void UHeartGraphNetProxy::UpdateNodeComponentProxy(const FHeartReplicatedNodeCom
 {
 	if (!IsValid(ProxyGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid ProxyGraph!")
 		return;
 	}
 
@@ -1326,7 +1326,7 @@ void UHeartGraphNetProxy::UpdateNodeComponentProxy(const FHeartReplicatedNodeCom
 
 	if (!IsValid(NodeComponent))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Unable to update proxy node component! Failed to create node component."))
+		UE_LOGF(LogTemp, Error, "Unable to update proxy node component! Failed to create node component.")
 		return;
 	}
 
@@ -1347,7 +1347,7 @@ void UHeartGraphNetProxy::RemoveNodeComponentProxy(const FHeartReplicatedNodeCom
 {
 	if (!IsValid(ProxyGraph))
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Invalid ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Invalid ProxyGraph!")
 		return;
 	}
 
@@ -1366,7 +1366,7 @@ void UHeartGraphNetProxy::RemoveNodeComponentProxy(const FHeartReplicatedNodeCom
 
 	if (!Result)
 	{
-		UE_LOG(LogHeartNet, Error, TEXT("Failed to remove node component from ProxyGraph!"))
+		UE_LOGF(LogHeartNet, Error, "Failed to remove node component from ProxyGraph!")
 	}
 }
 

@@ -64,7 +64,7 @@ namespace Heart::API
 
 		if (!ensure(IsValid(Node) && NodeGuid.IsValid()))
 		{
-			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add invalid node!"))
+			UE_LOGF(LogHeartGraph, Error, "Tried to add invalid node!")
 			return false;
 		}
 
@@ -72,14 +72,14 @@ namespace Heart::API
 		/*
 		if (!ensure(IsValid(Node->GetNodeObject())))
 		{
-			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
+			UE_LOGF(LogHeartGraph, Error, "Tried to add a node with invalid object!")
 			return;
 		}
 		*/
 
 		if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
 		{
-			UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
+			UE_LOGF(LogHeartGraph, Error, "Tried to add node already in graph!")
 			return false;
 		}
 
@@ -249,7 +249,7 @@ namespace Heart::API
 			{
 				if (!ensure(IsValid(Pending.Node->GetNodeObject())))
 				{
-					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add a node with invalid object!"))
+					UE_LOGF(LogHeartGraph, Error, "Tried to add a node with invalid object!")
 					continue;
 				}
 
@@ -257,7 +257,7 @@ namespace Heart::API
 
 				if (!ensure(!Graph->Nodes.Contains(NodeGuid)))
 				{
-					UE_LOG(LogHeartGraph, Error, TEXT("Tried to add node already in graph!"))
+					UE_LOGF(LogHeartGraph, Error, "Tried to add node already in graph!")
 					continue;
 				}
 

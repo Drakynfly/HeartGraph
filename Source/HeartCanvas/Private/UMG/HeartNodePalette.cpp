@@ -36,7 +36,7 @@ bool UHeartNodePalette::Initialize()
 
 	if (!IsValid(DisplayedRegistrySchema))
 	{
-		UE_LOG(LogHeartGraphCanvas, Warning, TEXT("DisplayedRegistrySchema is invalid, Node Palette will not display anything. (%s)"), *GetName())
+		UE_LOGF(LogHeartGraphCanvas, Warning, "DisplayedRegistrySchema is invalid, Node Palette will not display anything. (%ls)", *GetName())
 	}
 
 	return Super;
@@ -150,7 +150,7 @@ UUserWidget* UHeartNodePalette::CreateNodeWidgetFromFactory(const FHeartNodeSour
 		return NewNodeWidget;
 	}
 
-	UE_LOG(LogHeartGraphCanvas, Warning, TEXT("WidgetClass not found in WidgetFactory for '%s'. It will not be displayed!"), *Obj->GetName())
+	UE_LOGF(LogHeartGraphCanvas, Warning, "WidgetClass not found in WidgetFactory for '%ls'. It will not be displayed!", *Obj->GetName())
 	return nullptr;
 }
 

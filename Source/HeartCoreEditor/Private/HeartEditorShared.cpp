@@ -32,7 +32,7 @@ namespace Heart::EditorShared
 			}
 			else
 			{
-				UE_LOG(LogHeartCoreEditor, Error, TEXT("%s"), *ErrorMessage.ToString());
+				UE_LOGF(LogHeartCoreEditor, Error, "%ls", *ErrorMessage.ToString());
 				bSuccess = SettingsHelpers::MakeWritable(FileName);
 
 				if (bSuccess)

@@ -49,7 +49,7 @@ void UHeartPinConnectionDragDropOperation::Drop_Implementation(const FPointerEve
 		UHeartGraph* Graph = Canvas->GetGraph();
 		if (!IsValid(Graph))
 		{
-			UE_LOG(LogHeartCanvas, Error, TEXT("Invalid graph from Canvas!"))
+			UE_LOGF(LogHeartCanvas, Error, "Invalid graph from Canvas!")
 			return;
 		}
 

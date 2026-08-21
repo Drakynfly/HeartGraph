@@ -375,7 +375,7 @@ const UHeartGraphSchema* UHeartGraph::GetSchema() const
 
 	if (!ensure(IsValid(Class)))
 	{
-		UE_LOG(LogHeartGraph, Warning, TEXT("GetSchemaClass for Graph '%s' returned nullptr!"), *GetName())
+		UE_LOGF(LogHeartGraph, Warning, "GetSchemaClass for Graph '%ls' returned nullptr!", *GetName())
 		return GetDefault<UHeartGraphSchema>();
 	}
 
