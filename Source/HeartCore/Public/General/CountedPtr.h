@@ -46,7 +46,7 @@ namespace Heart::Containers
 			return Obj == Other.Obj;
 		}
 
-		friend [[nodiscard]] UE_REWRITE uint32 GetTypeHash(const TCountedWeakPtr& Value)
+		[[nodiscard]] UE_REWRITE friend uint32 GetTypeHash(const TCountedWeakPtr& Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
@@ -86,7 +86,7 @@ namespace Heart::Containers
 			return Obj == Other.Obj;
 		}
 
-		friend [[nodiscard]] UE_REWRITE uint32 GetTypeHash(const TCountedPtr& Value)
+		[[nodiscard]] UE_REWRITE friend uint32 GetTypeHash(const TCountedPtr& Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}
@@ -140,7 +140,7 @@ namespace Heart::Containers
 			return Obj == Other.Obj;
 		}
 
-		friend [[nodiscard]] UE_REWRITE uint32 GetTypeHash(const TCountedWeakClassPtr& Value)
+		[[nodiscard]] UE_REWRITE friend uint32 GetTypeHash(const TCountedWeakClassPtr& Value)
 		{
 			return HashCombineFast(GetTypeHash(Value.Obj), GetTypeHash(Value.Count));
 		}

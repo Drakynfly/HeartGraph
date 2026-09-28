@@ -287,7 +287,7 @@ bool UHeartGraphUtils::WouldConnectionCreateLoop(const UHeartGraphNode* A, const
 			{
 				if (VisitedNodes.Contains(LinkedNode))
 				{
-					return false;
+					continue;
 				}
 				return TraverseInputNodesToRoot(Graph, LinkedNode);
 			}

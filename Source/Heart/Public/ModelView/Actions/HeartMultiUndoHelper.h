@@ -3,6 +3,7 @@
 #pragma once
 
 #include "HAL/Platform.h"
+#include "Misc/NotNull.h"
 
 class UHeartGraph;
 

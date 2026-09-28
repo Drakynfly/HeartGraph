@@ -28,7 +28,7 @@ namespace Nodesoup
         // Ideal length for all edges. We don't really care, the layout is going to be scaled.
         // Let's choose 1.0 as the initial positions will be on a radius 1.0 circle, so we're
         // on the same order of magnitude
-        const double Length = 1.0 / BiggestDistance;
+        const double Length = 1.0 / static_cast<double>(BiggestDistance);
 
         // init springs lengths and strengths matrices
         for (int32 i = 0; i < Graph.Num(); i++)
@@ -40,7 +40,7 @@ namespace Nodesoup
                 FSpring& Spring = VertexSprings.AddDefaulted_GetRef();
                 if (i != j)
                 {
-                    const size_t Distance = Distances[i][j];
+                    const double Distance = Distances[i][j];
                     Spring.Length = Distance * Length;
                     Spring.Strength = Strength / (Distance * Distance);
                 }

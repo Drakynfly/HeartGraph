@@ -120,7 +120,8 @@ namespace Heart::AssetEditor
 		bool CanEdit() const;
 		static EVisibility GetDebuggerVisibility();
 
-		TSet<UHeartEdGraphNode*> GetSelectedHeartGraphNodes() const;
+		UHeartEdGraphNode* GetFirstSelectedHeartGraphNode() const;
+		TArray<UHeartEdGraphNode*> GetSelectedHeartGraphNodes() const;
 		int32 GetNumberOfSelectedNodes() const;
 		bool GetBoundsForSelectedNodes(FSlateRect& Rect, float Padding) const;
 

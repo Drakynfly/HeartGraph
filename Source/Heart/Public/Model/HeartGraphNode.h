@@ -126,8 +126,11 @@ public:
 
 private:
 	/** IHeartGraphNodeInterface */
+	// Implemented for compatibility with generic API. Not intended to be callable directly.
+	// ReSharper disable CppOverrideWithDifferentVisibility
 	virtual UHeartGraph* GetHeartGraph() const override;
 	virtual FHeartNodeGuid GetNodeGuid() const override;
+	// ReSharper restore CppOverrideWithDifferentVisibility
 	/** IHeartGraphNodeInterface */
 
 

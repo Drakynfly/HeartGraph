@@ -553,16 +553,29 @@ namespace Heart::AssetEditor
 		return GEditor->PlayWorld ? EVisibility::Visible : EVisibility::Collapsed;
 	}
 
-	TSet<UHeartEdGraphNode*> FHeartGraphEditor::GetSelectedHeartGraphNodes() const
+	UHeartEdGraphNode* FHeartGraphEditor::GetFirstSelectedHeartGraphNode() const
 	{
-		TSet<UHeartEdGraphNode*> Result;
+		const FGraphPanelSelectionSet SelectedNodes = GraphEditor->GetSelectedNodes();
+		for (FGraphPanelSelectionSet::TConstIterator NodeIt(SelectedNodes); NodeIt; ++NodeIt)
+		{
+			if (auto&& SelectedNode = Cast<UHeartEdGraphNode>(*NodeIt))
+			{
+				return  SelectedNode;
+			}
+		}
+		return nullptr;
+	}
+
+	TArray<UHeartEdGraphNode*> FHeartGraphEditor::GetSelectedHeartGraphNodes() const
+	{
+		TArray<UHeartEdGraphNode*> Result;
 
 		const FGraphPanelSelectionSet SelectedNodes = GraphEditor->GetSelectedNodes();
 		for (FGraphPanelSelectionSet::TConstIterator NodeIt(SelectedNodes); NodeIt; ++NodeIt)
 		{
 			if (auto&& SelectedNode = Cast<UHeartEdGraphNode>(*NodeIt))
 			{
-				Result.Emplace(SelectedNode);
+				Result.AddUnique(SelectedNode);
 			}
 		}
 
@@ -823,9 +836,9 @@ namespace Heart::AssetEditor
 
 		for (TSet<UEdGraphNode*>::TIterator It(PastedNodes); It; ++It)
 		{
-			auto&& Node = *It;
-			AvgNodePosition.X += Node->NodePosX;
-			AvgNodePosition.Y += Node->NodePosY;
+			UEdGraphNode* Node = *It;
+			AvgNodePosition.X += static_cast<float>(Node->NodePosX);
+			AvgNodePosition.Y += static_cast<float>(Node->NodePosY);
 		}
 
 		if (PastedNodes.Num() > 0)
@@ -856,8 +869,8 @@ namespace Heart::AssetEditor
 			// Select the newly pasted stuff
 			GraphEditor->SetNodeSelection(Node, true);
 
-			Node->NodePosX = static_cast<int32>((Node->NodePosX - AvgNodePosition.X) + Location.X);
-			Node->NodePosY = static_cast<int32>((Node->NodePosY - AvgNodePosition.Y) + Location.Y);
+			Node->NodePosX = static_cast<int32>((static_cast<float>(Node->NodePosX) - AvgNodePosition.X) + Location.X);
+			Node->NodePosY = static_cast<int32>((static_cast<float>(Node->NodePosY) - AvgNodePosition.Y) + Location.Y);
 
 			Node->SnapToGrid(SNodePanel::GetSnapGridSize());
 		}
@@ -924,12 +937,10 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanAddInput() const
 	{
-		if (CanEdit() && GetSelectedHeartGraphNodes().Num() == 1)
+		auto SelectedNodes = GetSelectedHeartGraphNodes();
+		if (CanEdit() && SelectedNodes.Num() == 1)
 		{
-			for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
-			{
-				return SelectedNode->CanUserAddInput();
-			}
+			return SelectedNodes[0]->CanUserAddInput();
 		}
 
 		return false;
@@ -945,12 +956,10 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanAddOutput() const
 	{
-		if (CanEdit() && GetSelectedHeartGraphNodes().Num() == 1)
+		auto SelectedNodes = GetSelectedHeartGraphNodes();
+		if (CanEdit() && SelectedNodes.Num() == 1)
 		{
-			for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
-			{
-				return SelectedNode->CanUserAddOutput();
-			}
+			return SelectedNodes[0]->CanUserAddOutput();
 		}
 
 		return false;
@@ -1012,9 +1021,10 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanAddBreakpoint() const
 	{
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+		auto SelectedNodes = GetSelectedHeartGraphNodes();
+		if (CanEdit() && SelectedNodes.Num() == 1)
 		{
-			return !SelectedNode->NodeBreakpoint.HasBreakpoint();
+			return !SelectedNodes[0]->NodeBreakpoint.HasBreakpoint();
 		}
 
 		return false;
@@ -1054,11 +1064,11 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanRemoveBreakpoint() const
 	{
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+		const UHeartEdGraphNode* SelectedNode = GetFirstSelectedHeartGraphNode();
+		if (IsValid(SelectedNode))
 		{
 			return SelectedNode->NodeBreakpoint.HasBreakpoint();
 		}
-
 		return false;
 	}
 
@@ -1104,7 +1114,8 @@ namespace Heart::AssetEditor
 			}
 		}
 
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+		const UHeartEdGraphNode* SelectedNode = GetFirstSelectedHeartGraphNode();
+		if (IsValid(SelectedNode))
 		{
 			return SelectedNode->NodeBreakpoint.CanEnableBreakpoint();
 		}
@@ -1146,7 +1157,8 @@ namespace Heart::AssetEditor
 
 	bool FHeartGraphEditor::CanDisableBreakpoint() const
 	{
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+		const UHeartEdGraphNode* SelectedNode = GetFirstSelectedHeartGraphNode();
+		if (IsValid(SelectedNode))
 		{
 			return SelectedNode->NodeBreakpoint.IsBreakpointEnabled();
 		}
@@ -1199,11 +1211,10 @@ namespace Heart::AssetEditor
 
 	void FHeartGraphEditor::JumpToGraphNodeDefinition() const
 	{
-		// Iterator used but should only contain one node
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+		const UHeartEdGraphNode* SelectedNode = GetFirstSelectedHeartGraphNode();
+		if (IsValid(SelectedNode))
 		{
 			SelectedNode->JumpToDefinition();
-			return;
 		}
 	}
 
@@ -1214,10 +1225,10 @@ namespace Heart::AssetEditor
 			return false;
 		}
 
-		// Iterator used but should only contain one node
-		for (auto&& EdGraphNode : GetSelectedHeartGraphNodes())
+		const UHeartEdGraphNode* SelectedNode = GetFirstSelectedHeartGraphNode();
+		if (IsValid(SelectedNode))
 		{
-			return EdGraphNode && IsValid(EdGraphNode->GetHeartGraphNode());
+			return IsValid(SelectedNode->GetHeartGraphNode());
 		}
 
 		return false;
@@ -1225,11 +1236,10 @@ namespace Heart::AssetEditor
 
 	void FHeartGraphEditor::JumpToNodeObjectDefinition() const
 	{
-		// Iterator used but should only contain one node
-		for (auto&& SelectedNode : GetSelectedHeartGraphNodes())
+		UHeartEdGraphNode* SelectedNode = GetFirstSelectedHeartGraphNode();
+		if (IsValid(SelectedNode))
 		{
 			SelectedNode->JumpToNodeDefinition();
-			return;
 		}
 	}
 
@@ -1240,11 +1250,13 @@ namespace Heart::AssetEditor
     		return false;
 	    }
 
-		// Iterator used but should only contain one node
 		for (auto&& EdGraphNode : GetSelectedHeartGraphNodes())
 		{
-			return EdGraphNode && IsValid(EdGraphNode->GetHeartGraphNode())
-				&& IsValid(EdGraphNode->GetHeartGraphNode()->GetNodeObject());
+			if (EdGraphNode && IsValid(EdGraphNode->GetHeartGraphNode())
+				&& IsValid(EdGraphNode->GetHeartGraphNode()->GetNodeObject()))
+			{
+				return true;
+			}
 		}
 
 	    return false;

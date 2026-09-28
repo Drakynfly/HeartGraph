@@ -132,7 +132,6 @@ void UHeartRegistryQuery::Run(const TSubclassOf<UHeartGraphSchema>& SchemaClass,
 				}
 				return;
 			}
-			break;
 		case Default:
 			Query.Sort();
 		case Off:

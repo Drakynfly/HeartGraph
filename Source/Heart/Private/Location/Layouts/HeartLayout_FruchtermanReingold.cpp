@@ -26,7 +26,7 @@ bool UHeartLayout_FruchtermanReingold::Layout(TNotNull<UHeartGraph*> Graph, IHea
 	}
 
 	Accum += DeltaTime;
-	const float IterationInterval = 1.f / IterationsPerSecond;
+	const float IterationInterval = 1.f / static_cast<float>(IterationsPerSecond);
 	while (Accum > IterationInterval)
 	{
 		Algorithm.GetValue()(Positions);

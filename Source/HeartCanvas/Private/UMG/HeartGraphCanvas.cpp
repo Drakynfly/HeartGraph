@@ -402,7 +402,7 @@ void UHeartGraphCanvas::UpdateAfterSelectionChanged()
 			}
 		}
 
-		AverageNodePosition *= 1.f / SelectedNodes.Num();
+		AverageNodePosition *= 1.f / static_cast<float>(SelectedNodes.Num());
 
 		if (PanToSelectionSettings.EnablePanToSelection)
 		{

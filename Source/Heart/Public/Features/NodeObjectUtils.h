@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Templates/Casts.h"
+
 class IHeartGraphNodeInterface;
 
 namespace Heart::Features::NodeObject

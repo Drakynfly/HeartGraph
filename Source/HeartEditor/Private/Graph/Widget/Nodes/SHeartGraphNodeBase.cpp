@@ -113,13 +113,13 @@ void SHeartGraphNodeBase::GetPinBrush(const bool bLeftSide, const float WidgetWi
 		{
 			PinBrush.Brush = FHeartEditorStyle::Get()->GetBrush(TEXT("HeartGraph.PinBreakpointHit"));
 			PinBrush.OverlayOffset.X = bLeftSide ? 0.0f : (WidgetWidth - 36.0f);
-			PinBrush.OverlayOffset.Y = 12.0f + PinIndex * 28.0f;
+			PinBrush.OverlayOffset.Y = 12.0f + static_cast<float>(PinIndex) * 28.0f;
 		}
 		else
 		{
 			PinBrush.Brush = FHeartEditorStyle::Get()->GetBrush(Breakpoint.bBreakpointEnabled ? TEXT("HeartGraph.BreakpointEnabled") : TEXT("HeartGraph.BreakpointDisabled"));
 			PinBrush.OverlayOffset.X = bLeftSide ? -24.0f : WidgetWidth;
-			PinBrush.OverlayOffset.Y = 16.0f + PinIndex * 28.0f;
+			PinBrush.OverlayOffset.Y = 16.0f + static_cast<float>(PinIndex) * 28.0f;
 		}
 
 		PinBrush.AnimationEnvelope = FVector2D(0.f, 10.f);
